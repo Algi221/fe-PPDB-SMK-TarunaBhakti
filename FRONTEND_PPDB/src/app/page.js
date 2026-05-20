@@ -25,8 +25,13 @@ import {
   Layers,
   Video,
   AlertCircle,
-  Palette
+  Palette,
+  Sun,
+  Moon,
+  Users
 } from "lucide-react";
+
+import DataPendaftarTable from "../components/DataPendaftarTable";
 
 export default function Home() {
   // Navigation & UI States
@@ -36,13 +41,31 @@ export default function Home() {
   const [activeModal, setActiveModal] = useState(null); // 'syarat' | 'alur' | 'beasiswa'
   const [selectedMajorDetail, setSelectedMajorDetail] = useState(null); // PPLG | TKJ | DKV | BC | TE
   
-  // Mock Dashboard State
-  const [dashboardChecks, setDashboardChecks] = useState({
-    isiFormulir: true,
-    uploadBerkas: true,
-    tesWawancara: false,
-    pengumumanAkhir: false
-  });
+
+
+  // Dark Mode
+  const [isDark, setIsDark] = useState(false);
+
+  useEffect(() => {
+    const saved = localStorage.getItem('ppdb-theme');
+    if (saved === 'dark') {
+      document.documentElement.classList.add('dark');
+      // eslint-disable-next-line
+      setIsDark(true);
+    }
+  }, []);
+
+  const toggleDark = () => {
+    const next = !isDark;
+    setIsDark(next);
+    if (next) {
+      document.documentElement.classList.add('dark');
+      localStorage.setItem('ppdb-theme', 'dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+      localStorage.setItem('ppdb-theme', 'light');
+    }
+  };
 
   // Handle Scroll to make Navbar beautiful
   useEffect(() => {
@@ -144,10 +167,6 @@ export default function Home() {
     }
   ];
 
-  // Interactive metrics calculation based on dashboard check state
-  const completedCount = Object.values(dashboardChecks).filter(Boolean).length;
-  const progressPercent = Math.round((completedCount / 4) * 100);
-
   return (
     <div className="relative min-h-screen flex flex-col overflow-x-hidden">
       
@@ -174,7 +193,14 @@ export default function Home() {
             <a href="#kemitraan" className="btn-nav-link">Mitra Industri</a>
           </div>
 
-          <div className="nav-actions">
+          <div className="flex items-center gap-3">
+            <button 
+              onClick={toggleDark} 
+              className="flex items-center justify-center w-10 h-10 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors border border-slate-200 dark:border-slate-700" 
+              title={isDark ? 'Mode Terang' : 'Mode Gelap'}
+            >
+              {isDark ? <Sun size={18} /> : <Moon size={18} />}
+            </button>
             <Link href="/daftar" className="btn-primary-pill">
               Daftar
             </Link>
@@ -267,182 +293,9 @@ export default function Home() {
               <div className="w-4"></div>
             </div>
 
-            {/* Dashboard Inside View */}
-            <div className="dashboard-view">
-              
-              {/* Sidebar of the Student Admission Dashboard */}
-              <div className="mock-sidebar">
-                <div>
-                  <div className="sidebar-logo flex items-center gap-2">
-                    <img src="/logo_smktb.png" alt="Logo" className="w-5 h-5 object-contain shrink-0" /> PPDB Taruna Bhakti
-                  </div>
-                  <div className="sidebar-menu">
-                    <div className="sidebar-item active">
-                      <Layers size={14} /> Dashboard
-                    </div>
-                    <div className="sidebar-item" onClick={() => { setActiveModal("wizard"); setWizardStep(1); }}>
-                      <FileText size={14} /> Formulir Daftar
-                    </div>
-                    <div className="sidebar-item" onClick={() => alert("Hubungi Helpdesk PPDB: +62 812-3456-7890")}>
-                      <HelpCircle size={14} /> Bantuan
-                    </div>
-                  </div>
-                </div>
-                
-                {/* User avatar on footer */}
-                <div className="sidebar-footer">
-                  <div className="avatar">CB</div>
-                  <div className="avatar-info">
-                    <h4>Calon Bintang</h4>
-                    <p>NISN: 0081234xxx</p>
-                  </div>
-                </div>
-              </div>
-
-              {/* Central Content Panel of the Dashboard */}
-              <div className="mock-content">
-                <div className="content-header">
-                  <div>
-                    <h2 className="text-slate-800 font-bold">Halo, Calon Taruna Baru! 👋</h2>
-                    <p className="text-[10px] text-slate-400 mt-0.5">Pantau status pendaftaran online Anda di sini.</p>
-                  </div>
-                  <div className="header-meta">
-                    <div className="notification-bell">
-                      <Bell size={14} />
-                    </div>
-                    <div className="status-badge">
-                      <span></span> Jalur Rapor - Terverifikasi
-                    </div>
-                  </div>
-                </div>
-
-                {/* Dashboard Metrics */}
-                <div className="mock-metrics">
-                  
-                  <div className="metric-card">
-                    <div className="card-head">
-                      <span>KELENGKAPAN BERKAS</span>
-                      <FileText size={12} />
-                    </div>
-                    <h3>{progressPercent}%</h3>
-                    <p><span>{completedCount} dari 4 Selesai</span></p>
-                  </div>
-
-                  <div className="metric-card">
-                    <div className="card-head">
-                      <span>STATUS KELULUSAN</span>
-                      <Award size={12} />
-                    </div>
-                    <h3 className="text-amber-500 text-[16px] font-extrabold mt-1">Tahap Seleksi</h3>
-                    <p><span>Berkas Terverifikasi</span></p>
-                  </div>
-
-                  <div className="metric-card">
-                    <div className="card-head">
-                      <span>TES WAWANCARA</span>
-                      <Calendar size={12} />
-                    </div>
-                    <h3 className="text-[14px] mt-1.5 font-bold">24 Mei 2026</h3>
-                    <p className="text-slate-500 font-normal"><span>Lab PPLG - 08.00 WIB</span></p>
-                  </div>
-
-                </div>
-
-                {/* Dashboard Core Two Column Split */}
-                <div className="dashboard-grid">
-                  
-                  {/* Left Column: Interactive Tasks */}
-                  <div className="todo-card text-left">
-                    <div className="chart-title !mb-3">
-                      <span>Alur Proses Seleksi Anda</span>
-                      <span className="text-[10px] text-slate-400 font-normal">Centang untuk simulasi</span>
-                    </div>
-                    
-                    <div className="todo-list">
-                      
-                      <div className={`todo-item ${dashboardChecks.isiFormulir ? "completed" : ""}`}>
-                        <div 
-                          className={`todo-checkbox ${dashboardChecks.isiFormulir ? "checked" : ""}`}
-                          onClick={() => setDashboardChecks(prev => ({ ...prev, isiFormulir: !prev.isiFormulir }))}
-                        >
-                          {dashboardChecks.isiFormulir && <Check />}
-                        </div>
-                        <span className="todo-text">Pengisian Formulir Pendaftaran</span>
-                      </div>
-
-                      <div className={`todo-item ${dashboardChecks.uploadBerkas ? "completed" : ""}`}>
-                        <div 
-                          className={`todo-checkbox ${dashboardChecks.uploadBerkas ? "checked" : ""}`}
-                          onClick={() => setDashboardChecks(prev => ({ ...prev, uploadBerkas: !prev.uploadBerkas }))}
-                        >
-                          {dashboardChecks.uploadBerkas && <Check />}
-                        </div>
-                        <span className="todo-text">Unggah Rapor & Dokumen Penunjang</span>
-                      </div>
-
-                      <div className={`todo-item ${dashboardChecks.tesWawancara ? "completed" : ""}`}>
-                        <div 
-                          className={`todo-checkbox ${dashboardChecks.tesWawancara ? "checked" : ""}`}
-                          onClick={() => setDashboardChecks(prev => ({ ...prev, tesWawancara: !prev.tesWawancara }))}
-                        >
-                          {dashboardChecks.tesWawancara && <Check />}
-                        </div>
-                        <span className="todo-text">Tes Wawancara & Minat Bakat (Offline)</span>
-                      </div>
-
-                      <div className={`todo-item ${dashboardChecks.pengumumanAkhir ? "completed" : ""}`}>
-                        <div 
-                          className={`todo-checkbox ${dashboardChecks.pengumumanAkhir ? "checked" : ""}`}
-                          onClick={() => setDashboardChecks(prev => ({ ...prev, pengumumanAkhir: !prev.pengumumanAkhir }))}
-                        >
-                          {dashboardChecks.pengumumanAkhir && <Check />}
-                        </div>
-                        <span className="todo-text">Pengumuman Kelulusan Akhir & Daftar Ulang</span>
-                      </div>
-
-                    </div>
-                  </div>
-
-                  {/* Right Column: Chart Mockup */}
-                  <div className="chart-card">
-                    <div className="chart-title">
-                      <span>Statistik Kuota</span>
-                      <span className="text-[9px] bg-slate-100 text-slate-600 px-1.5 py-0.5 rounded-full font-bold">Terisi</span>
-                    </div>
-                    
-                    <div className="chart-placeholder">
-                      {/* Interactive CSS charts based on school capacity */}
-                      <div className="chart-bar-wrapper">
-                        <div className="chart-bar" style={{ height: "92%" }}></div>
-                        <span className="chart-bar-label">RPL</span>
-                      </div>
-                      <div className="chart-bar-wrapper">
-                        <div className="chart-bar" style={{ height: "85%" }}></div>
-                        <span className="chart-bar-label">TJKT</span>
-                      </div>
-                      <div className="chart-bar-wrapper">
-                        <div className="chart-bar" style={{ height: "76%" }}></div>
-                        <span className="chart-bar-label">DKV</span>
-                      </div>
-                      <div className="chart-bar-wrapper">
-                        <div className="chart-bar" style={{ height: "64%" }}></div>
-                        <span className="chart-bar-label">BC</span>
-                      </div>
-                      <div className="chart-bar-wrapper">
-                        <div className="chart-bar" style={{ height: "72%" }}></div>
-                        <span className="chart-bar-label">AN</span>
-                      </div>
-                      <div className="chart-bar-wrapper">
-                        <div className="chart-bar" style={{ height: "48%" }}></div>
-                        <span className="chart-bar-label">TE</span>
-                      </div>
-                    </div>
-                  </div>
-
-                </div>
-
-              </div>
-
+            {/* Data Pendaftar Table View */}
+            <div className="dashboard-view block w-full p-6 h-[600px] bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xl relative z-10 rounded-2xl transition-colors duration-300">
+              <DataPendaftarTable />
             </div>
 
           </div>

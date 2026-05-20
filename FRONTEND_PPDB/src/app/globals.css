@@ -1,6 +1,6 @@
 @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
 @import "tailwindcss";
-
+@custom-variant dark (&:is(.dark *));
 /* Modern & Premium Design System for PPDB SMK Taruna Bhakti */
 :root {
   --primary: #0066ff;
@@ -9,13 +9,170 @@
   --secondary: #0ea5e9;
   --dark: #0f172a;
   --dark-muted: #475569;
-  --light-bg: #f8fafc;
-  --glass-bg: rgba(255, 255, 255, 0.75);
+  --light-bg: #f4f9ff;
+  --glass-bg: rgba(255, 255, 255, 0.85);
   --glass-border: rgba(255, 255, 255, 0.45);
   --glass-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.05);
   --card-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.03), 0 1px 3px 0 rgba(0, 0, 0, 0.01);
   --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   --font-family: 'Plus Jakarta Sans', sans-serif;
+  /* Form & input colors */
+  --input-bg: #f8fafc;
+  --input-border: #e2e8f0;
+  --input-text: #0f172a;
+  --card-bg: #ffffff;
+  --section-bg: #f1f5f9;
+}
+
+/* ==================== DARK MODE ==================== */
+html.dark {
+  --dark: #e2e8f0;
+  --dark-muted: #94a3b8;
+  --light-bg: #0d1117;
+  --glass-bg: rgba(22, 30, 50, 0.75);
+  --glass-border: rgba(255, 255, 255, 0.08);
+  --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+  --input-bg: #1e2a3b;
+  --input-border: #2d3f57;
+  --input-text: #e2e8f0;
+  --card-bg: #161f2e;
+  --section-bg: #111827;
+}
+
+html.dark body {
+  background-color: var(--light-bg);
+  color: var(--dark);
+}
+
+html.dark .bg-glow-1 {
+  background: radial-gradient(circle, rgba(14, 165, 233, 0.2) 0%, rgba(0, 102, 255, 0.07) 70%);
+}
+html.dark .bg-glow-2 {
+  background: radial-gradient(circle, rgba(0, 102, 255, 0.15) 0%, rgba(14, 165, 233, 0.04) 75%);
+}
+html.dark .bg-glow-3 {
+  background: radial-gradient(circle, rgba(99, 102, 241, 0.12) 0%, rgba(30, 41, 59, 0.1) 80%);
+}
+
+/* Navbar dark mode */
+html.dark .navbar {
+  background: rgba(13, 17, 23, 0.85);
+  border-color: rgba(255, 255, 255, 0.07);
+}
+html.dark .navbar.scrolled {
+  background: rgba(13, 17, 23, 0.92);
+}
+html.dark .btn-nav-link {
+  color: #ffffff;
+}
+html.dark .btn-nav-link:hover {
+  color: #60a5fa;
+  background-color: rgba(96, 165, 250, 0.08);
+}
+html.dark .logo-text {
+  color: #e2e8f0;
+}
+
+/* Cards, sections, glass containers dark mode */
+html.dark .bg-white,
+html.dark .bg-white\/80 {
+  background-color: var(--card-bg) !important;
+}
+html.dark .border-slate-100,
+html.dark .border-slate-200 {
+  border-color: var(--input-border) !important;
+}
+html.dark .text-slate-800,
+html.dark .text-slate-700 {
+  color: #e2e8f0 !important;
+}
+html.dark .text-slate-600,
+html.dark .text-slate-500,
+html.dark .text-slate-400 {
+  color: #94a3b8 !important;
+}
+
+/* Form inputs dark mode */
+html.dark input[type="text"],
+html.dark input[type="date"],
+html.dark input[type="number"],
+html.dark input[type="email"],
+html.dark select,
+html.dark textarea {
+  background-color: var(--input-bg) !important;
+  border-color: var(--input-border) !important;
+  color: var(--input-text) !important;
+}
+html.dark input::placeholder,
+html.dark textarea::placeholder {
+  color: #4a6080 !important;
+}
+html.dark input:focus,
+html.dark select:focus,
+html.dark textarea:focus {
+  border-color: #3b82f6 !important;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15) !important;
+}
+
+/* Radio/checkbox button cards in dark */
+html.dark .bg-slate-50 {
+  background-color: #1a2540 !important;
+}
+html.dark .bg-blue-50 {
+  background-color: rgba(59, 130, 246, 0.12) !important;
+}
+html.dark .border-blue-400 {
+  border-color: #3b82f6 !important;
+}
+html.dark .text-blue-700 {
+  color: #93c5fd !important;
+}
+
+/* Progress stepper dark */
+html.dark .bg-slate-100 {
+  background-color: #1e2a3b !important;
+}
+
+/* Footer dark */
+html.dark footer {
+  background: #0d1117;
+  border-color: #1e293b;
+  color: #475569;
+}
+html.dark .bg-white\/50,
+html.dark .bg-white\/40,
+html.dark .bg-white\/60 {
+  background-color: rgba(22, 31, 46, 0.7) !important;
+  border-color: rgba(255,255,255,0.06) !important;
+}
+
+/* Success screen dark */
+html.dark .bg-emerald-100 {
+  background-color: rgba(16, 185, 129, 0.15) !important;
+}
+
+/* Dark mode toggle button */
+.dark-mode-toggle {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  border: 1px solid var(--glass-border);
+  background: var(--glass-bg);
+  backdrop-filter: blur(10px);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--dark-muted);
+  transition: var(--transition);
+  font-size: 16px;
+  flex-shrink: 0;
+}
+.dark-mode-toggle:hover {
+  background: rgba(0, 102, 255, 0.08);
+  color: var(--primary);
+  border-color: rgba(0, 102, 255, 0.2);
+  transform: rotate(15deg) scale(1.05);
 }
 
 html {
@@ -366,7 +523,6 @@ body {
   transform: translateX(4px);
 }
 
-/* Floating Badges */
 .floating-badge {
   position: absolute;
   background: var(--glass-bg);
@@ -378,11 +534,35 @@ body {
   display: flex;
   align-items: center;
   gap: 12px;
-  box-shadow: 0 10px 30px rgba(0, 102, 255, 0.03), var(--glass-shadow);
+  box-shadow: 0 10px 40px rgba(0, 102, 255, 0.12), var(--glass-shadow);
   z-index: 5;
   cursor: pointer;
   transition: var(--transition);
   user-select: none;
+}
+
+/* Localized blue glow aura behind the badge (matching reference image) */
+.floating-badge::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 140%;
+  height: 180%;
+  transform: translate(-50%, -50%);
+  background: radial-gradient(circle, rgba(0, 102, 255, 0.25) 0%, transparent 70%);
+  filter: blur(20px);
+  z-index: -1;
+  pointer-events: none;
+  opacity: 0.8;
+  transition: var(--transition);
+}
+
+.floating-badge:hover::before {
+  opacity: 1;
+  width: 160%;
+  height: 200%;
+  background: radial-gradient(circle, rgba(0, 102, 255, 0.3) 0%, transparent 70%);
 }
 
 .floating-badge:hover {
@@ -533,14 +713,12 @@ body {
 
 /* Dashboard View */
 .dashboard-view {
-  background: #f8fafc;
-  border-radius: 12px;
   min-height: 400px;
-  display: grid;
-  grid-template-columns: 200px 1fr;
+  display: flex;
+  flex-direction: column;
   overflow: hidden;
-  color: var(--dark);
   text-align: left;
+  transition: var(--transition);
 }
 
 .mock-sidebar {
