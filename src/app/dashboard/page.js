@@ -2,6 +2,8 @@
 
 import React, { useState } from "react";
 import { usePPDB } from "@/context/PPDBContext";
+import { Users, ShieldCheck, Clock, AlertTriangle, TrendingUp, BookOpen, Terminal, ArrowRight } from "lucide-react";
+import Link from "next/link";
 
 export default function DashboardOverview() {
   const { applicants, wsLogs } = usePPDB();
@@ -15,12 +17,12 @@ export default function DashboardOverview() {
 
   // Major distribution statistics
   const majorsList = [
-    { name: "PPLG / RPL", dbName: "Rekayasa Perangkat Lunak", color: "#3b82f6" },
+    { name: "PPLG / RPL", dbName: "Rekayasa Perangkat Lunak", color: "#2563eb" },
     { name: "TJKT", dbName: "Teknik Jaringan Komputer & Telekomunikasi", color: "#0ea5e9" },
-    { name: "DKV", dbName: "Desain Komunikasi Visual", color: "#8b5cf6" },
-    { name: "Broadcasting", dbName: "Broadcasting & Perfilman", color: "#ec4899" },
-    { name: "Elektronika", dbName: "Teknik Elektronika", color: "#f59e0b" },
-    { name: "Animasi", dbName: "Animasi", color: "#10b981" }
+    { name: "DKV", dbName: "Desain Komunikasi Visual", color: "#6366f1" },
+    { name: "Broadcasting", dbName: "Broadcasting & Perfilman", color: "#f59e0b" },
+    { name: "Elektronika", dbName: "Teknik Elektronika", color: "#10b981" },
+    { name: "Animasi", dbName: "Animasi", color: "#ec4899" }
   ];
 
   const majorDistribution = majorsList.map((m) => {
@@ -43,7 +45,6 @@ export default function DashboardOverview() {
   });
 
   // Trend data: last 7 days registration counts
-  // Fallback to static distribution if empty
   const getTrendData = () => {
     const days = [];
     const counts = [];
@@ -53,7 +54,6 @@ export default function DashboardOverview() {
       const dateString = d.toLocaleDateString("id-ID", { weekday: "short" });
       days.push(dateString);
 
-      // count how many applicants registered on this day (ignoring time)
       const count = applicants.filter((a) => {
         const regDate = new Date(a.tgl_daftar || a.createdAt || Date.now());
         return regDate.toDateString() === d.toDateString();
@@ -92,68 +92,60 @@ export default function DashboardOverview() {
     : "";
 
   return (
-    <div className="space-y-8 animate-in fade-in duration-500">
+    <div className="space-y-8 animate-in fade-in duration-500 text-left">
       
       {/* 4 Metric Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
         {/* Card 1: Total */}
-        <div className="bg-[#161f2e]/70 border border-white/5 rounded-3xl p-6 relative overflow-hidden backdrop-blur-md hover:border-blue-500/25 transition-all group">
+        <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800/60 rounded-3xl p-6 relative overflow-hidden shadow-[0_2px_12px_rgba(0,0,0,0.02)] hover:shadow-[0_8px_20px_rgba(0,0,0,0.04)] hover:border-blue-500/30 transition-all duration-300 group">
           <div className="absolute top-0 right-0 w-24 h-24 rounded-full bg-blue-500/5 blur-2xl group-hover:bg-blue-500/10 transition-all"></div>
           <div className="flex items-center justify-between mb-4">
-            <span className="text-xs font-bold uppercase tracking-wider text-slate-400">Total Pendaftar</span>
-            <div className="w-10 h-10 rounded-2xl bg-blue-500/10 text-blue-400 flex items-center justify-center">
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-              </svg>
+            <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400 dark:text-slate-500">Total Pendaftar</span>
+            <div className="w-10 h-10 rounded-2xl bg-blue-50 dark:bg-blue-950/50 text-blue-600 dark:text-blue-400 flex items-center justify-center">
+              <Users size={20} />
             </div>
           </div>
-          <h3 className="text-3xl font-extrabold text-white leading-none mb-1">{totalCount}</h3>
-          <span className="text-[10px] text-slate-500 font-semibold tracking-wide uppercase">Calon Siswa Baru Terdaftar</span>
+          <h3 className="text-3xl font-black text-slate-800 dark:text-white leading-none mb-1">{totalCount}</h3>
+          <span className="text-[9px] text-slate-400 dark:text-slate-500 font-bold uppercase tracking-wider">Calon Siswa Baru Terdaftar</span>
         </div>
 
         {/* Card 2: Approved */}
-        <div className="bg-[#161f2e]/70 border border-white/5 rounded-3xl p-6 relative overflow-hidden backdrop-blur-md hover:border-emerald-500/25 transition-all group">
+        <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800/60 rounded-3xl p-6 relative overflow-hidden shadow-[0_2px_12px_rgba(0,0,0,0.02)] hover:shadow-[0_8px_20px_rgba(0,0,0,0.04)] hover:border-emerald-500/30 transition-all duration-300 group">
           <div className="absolute top-0 right-0 w-24 h-24 rounded-full bg-emerald-500/5 blur-2xl group-hover:bg-emerald-500/10 transition-all"></div>
           <div className="flex items-center justify-between mb-4">
-            <span className="text-xs font-bold uppercase tracking-wider text-slate-400">Terverifikasi</span>
-            <div className="w-10 h-10 rounded-2xl bg-emerald-500/10 text-emerald-400 flex items-center justify-center">
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-              </svg>
+            <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400 dark:text-slate-500">Terverifikasi</span>
+            <div className="w-10 h-10 rounded-2xl bg-emerald-50 dark:bg-emerald-950/50 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
+              <ShieldCheck size={20} />
             </div>
           </div>
-          <h3 className="text-3xl font-extrabold text-emerald-400 leading-none mb-1">{approvedCount}</h3>
-          <span className="text-[10px] text-slate-500 font-semibold tracking-wide uppercase">Berkas Lolos Validasi</span>
+          <h3 className="text-3xl font-black text-emerald-600 dark:text-emerald-400 leading-none mb-1">{approvedCount}</h3>
+          <span className="text-[9px] text-slate-400 dark:text-slate-500 font-bold uppercase tracking-wider">Berkas Lolos Validasi</span>
         </div>
 
         {/* Card 3: Pending */}
-        <div className="bg-[#161f2e]/70 border border-white/5 rounded-3xl p-6 relative overflow-hidden backdrop-blur-md hover:border-amber-500/25 transition-all group">
+        <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800/60 rounded-3xl p-6 relative overflow-hidden shadow-[0_2px_12px_rgba(0,0,0,0.02)] hover:shadow-[0_8px_20px_rgba(0,0,0,0.04)] hover:border-amber-500/30 transition-all duration-300 group">
           <div className="absolute top-0 right-0 w-24 h-24 rounded-full bg-amber-500/5 blur-2xl group-hover:bg-amber-500/10 transition-all"></div>
           <div className="flex items-center justify-between mb-4">
-            <span className="text-xs font-bold uppercase tracking-wider text-slate-400">Menunggu Verifikasi</span>
-            <div className="w-10 h-10 rounded-2xl bg-amber-500/10 text-amber-400 flex items-center justify-center">
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
+            <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400 dark:text-slate-500">Menunggu Verifikasi</span>
+            <div className="w-10 h-10 rounded-2xl bg-amber-50 dark:bg-amber-950/50 text-amber-600 dark:text-amber-400 flex items-center justify-center">
+              <Clock size={20} />
             </div>
           </div>
-          <h3 className="text-3xl font-extrabold text-amber-400 leading-none mb-1">{pendingCount}</h3>
-          <span className="text-[10px] text-slate-500 font-semibold tracking-wide uppercase">Menunggu Pemeriksaan</span>
+          <h3 className="text-3xl font-black text-amber-650 dark:text-amber-400 leading-none mb-1">{pendingCount}</h3>
+          <span className="text-[9px] text-slate-400 dark:text-slate-500 font-bold uppercase tracking-wider">Menunggu Pemeriksaan</span>
         </div>
 
         {/* Card 4: Rejected */}
-        <div className="bg-[#161f2e]/70 border border-white/5 rounded-3xl p-6 relative overflow-hidden backdrop-blur-md hover:border-rose-500/25 transition-all group">
+        <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800/60 rounded-3xl p-6 relative overflow-hidden shadow-[0_2px_12px_rgba(0,0,0,0.02)] hover:shadow-[0_8px_20px_rgba(0,0,0,0.04)] hover:border-rose-500/30 transition-all duration-300 group">
           <div className="absolute top-0 right-0 w-24 h-24 rounded-full bg-rose-500/5 blur-2xl group-hover:bg-rose-500/10 transition-all"></div>
           <div className="flex items-center justify-between mb-4">
-            <span className="text-xs font-bold uppercase tracking-wider text-slate-400">Ditolak / Gugur</span>
-            <div className="w-10 h-10 rounded-2xl bg-rose-500/10 text-rose-400 flex items-center justify-center">
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
+            <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400 dark:text-slate-500">Ditolak / Gugur</span>
+            <div className="w-10 h-10 rounded-2xl bg-rose-50 dark:bg-rose-950/50 text-rose-600 dark:text-rose-400 flex items-center justify-center">
+              <AlertTriangle size={20} />
             </div>
           </div>
-          <h3 className="text-3xl font-extrabold text-rose-400 leading-none mb-1">{rejectedCount}</h3>
-          <span className="text-[10px] text-slate-500 font-semibold tracking-wide uppercase">Berkas Tidak Memenuhi Syarat</span>
+          <h3 className="text-3xl font-black text-rose-600 dark:text-rose-400 leading-none mb-1">{rejectedCount}</h3>
+          <span className="text-[9px] text-slate-400 dark:text-slate-500 font-bold uppercase tracking-wider">Berkas Tidak Memenuhi Syarat</span>
         </div>
       </div>
 
@@ -161,14 +153,14 @@ export default function DashboardOverview() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         
         {/* Trend Area Chart (Col span 2) */}
-        <div className="lg:col-span-2 bg-[#161f2e]/70 border border-white/5 rounded-3xl p-6 backdrop-blur-md flex flex-col justify-between">
+        <div className="lg:col-span-2 bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800/60 rounded-3xl p-6 shadow-[0_2px_12px_rgba(0,0,0,0.02)] flex flex-col justify-between transition-colors duration-300">
           <div className="mb-6 flex justify-between items-center">
             <div>
-              <h3 className="text-sm font-extrabold text-white tracking-wide uppercase">Tren Registrasi Harian</h3>
-              <p className="text-[11px] text-slate-400 font-medium">Statistik grafik pendaftaran calon siswa 7 hari terakhir</p>
+              <h3 className="text-xs font-black text-slate-800 dark:text-white tracking-wider uppercase">Tren Registrasi Harian</h3>
+              <p className="text-[11px] text-slate-400 dark:text-slate-500 font-bold">Statistik grafik pendaftaran calon siswa 7 hari terakhir</p>
             </div>
-            <span className="text-[10px] bg-blue-500/10 border border-blue-500/20 text-blue-400 px-2.5 py-1 rounded-full font-bold uppercase tracking-wider">
-              7 Hari Terakhir
+            <span className="text-[9px] bg-blue-50 dark:bg-blue-950 border border-blue-200/50 dark:border-blue-900 text-blue-600 dark:text-blue-400 px-3 py-1 rounded-full font-black uppercase tracking-wider">
+              <TrendingUp size={10} className="inline mr-1" /> 7 Hari Terakhir
             </span>
           </div>
 
@@ -185,7 +177,8 @@ export default function DashboardOverview() {
                     y1={yVal}
                     x2={width - padding}
                     y2={yVal}
-                    stroke="rgba(255,255,255,0.03)"
+                    stroke="currentColor"
+                    className="text-slate-100 dark:text-slate-800/50"
                     strokeWidth="1.5"
                     strokeDasharray="4 4"
                   />
@@ -195,7 +188,7 @@ export default function DashboardOverview() {
               {/* Area Gradient */}
               <defs>
                 <linearGradient id="chartGlow" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="#2563eb" stopOpacity="0.3" />
+                  <stop offset="0%" stopColor="#2563eb" stopOpacity="0.25" />
                   <stop offset="100%" stopColor="#2563eb" stopOpacity="0.0" />
                 </linearGradient>
               </defs>
@@ -208,7 +201,7 @@ export default function DashboardOverview() {
                 <path
                   d={linePath}
                   fill="none"
-                  stroke="#3b82f6"
+                  stroke="#2563eb"
                   strokeWidth="3.5"
                   strokeLinecap="round"
                   strokeLinejoin="round"
@@ -222,10 +215,10 @@ export default function DashboardOverview() {
                     cx={p.x}
                     cy={p.y}
                     r="5"
-                    fill="#3b82f6"
-                    stroke="#161f2e"
+                    fill="#2563eb"
+                    stroke="currentColor"
+                    className="text-white dark:text-slate-900 transition-all duration-300 group-hover/dot:r-7 group-hover/dot:fill-white"
                     strokeWidth="2.5"
-                    className="transition-all duration-300 group-hover/dot:r-7 group-hover/dot:fill-white"
                   />
                   {/* Tooltip Overlay */}
                   <rect
@@ -234,17 +227,17 @@ export default function DashboardOverview() {
                     width="36"
                     height="20"
                     rx="6"
-                    fill="#1f2937"
+                    fill="currentColor"
+                    className="text-slate-900 dark:text-slate-800 shadow-md opacity-0 group-hover/dot:opacity-100 transition-opacity duration-200"
                     stroke="rgba(255,255,255,0.15)"
                     strokeWidth="1"
-                    className="opacity-0 group-hover/dot:opacity-100 transition-opacity duration-200"
                   />
                   <text
                     x={p.x}
-                    y={p.y - 16}
+                    y={p.y - 17}
                     fill="#ffffff"
-                    fontSize="9.5"
-                    fontWeight="bold"
+                    fontSize="9"
+                    fontWeight="black"
                     textAnchor="middle"
                     className="opacity-0 group-hover/dot:opacity-100 transition-opacity duration-200"
                   >
@@ -259,8 +252,9 @@ export default function DashboardOverview() {
                   key={idx}
                   x={p.x}
                   y={height - 4}
-                  fill="rgba(255,255,255,0.3)"
-                  fontSize="9.5"
+                  fill="currentColor"
+                  className="text-slate-400 dark:text-slate-600"
+                  fontSize="9"
                   fontWeight="bold"
                   textAnchor="middle"
                 >
@@ -272,15 +266,15 @@ export default function DashboardOverview() {
         </div>
 
         {/* Major Distribution Donut Chart */}
-        <div className="bg-[#161f2e]/70 border border-white/5 rounded-3xl p-6 backdrop-blur-md flex flex-col justify-between">
+        <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800/60 rounded-3xl p-6 shadow-[0_2px_12px_rgba(0,0,0,0.02)] flex flex-col justify-between transition-colors duration-300">
           <div>
-            <h3 className="text-sm font-extrabold text-white tracking-wide uppercase">Sebaran Pilihan Jurusan</h3>
-            <p className="text-[11px] text-slate-400 font-medium">Perbandingan minat program keahlian pendaftar utama</p>
+            <h3 className="text-xs font-black text-slate-800 dark:text-white tracking-wider uppercase">Sebaran Jurusan</h3>
+            <p className="text-[11px] text-slate-400 dark:text-slate-500 font-bold">Perbandingan minat pilihan program keahlian utama</p>
           </div>
 
           <div className="flex items-center justify-center my-6 relative">
-            <svg width="150" height="150" viewBox="0 0 42 42" className="transform -rotate-90">
-              <circle cx="21" cy="21" r="15.915" fill="transparent" stroke="rgba(255,255,255,0.03)" strokeWidth="4" />
+            <svg width="140" height="140" viewBox="0 0 42 42" className="transform -rotate-90">
+              <circle cx="21" cy="21" r="15.915" fill="transparent" stroke="currentColor" className="text-slate-50 dark:text-slate-800/40" strokeWidth="4" />
               {donutData.map((d, idx) => {
                 if (d.percent === 0) return null;
                 const strokeDashValue = `${d.percent} ${100 - d.percent}`;
@@ -293,7 +287,7 @@ export default function DashboardOverview() {
                     r="15.915"
                     fill="transparent"
                     stroke={d.color}
-                    strokeWidth={hoveredSegment === idx ? "5.5" : "4"}
+                    strokeWidth={hoveredSegment === idx ? "5" : "4"}
                     strokeDasharray={strokeDashValue}
                     strokeDashoffset={strokeDashOffset}
                     className="transition-all duration-300 cursor-pointer"
@@ -305,25 +299,25 @@ export default function DashboardOverview() {
             </svg>
             {/* Centered Total Overlay */}
             <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-              <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Total</span>
-              <span className="text-2xl font-black text-white leading-none mt-0.5">{totalCount}</span>
+              <span className="text-[9px] text-slate-400 dark:text-slate-500 font-bold uppercase tracking-wider">Total</span>
+              <span className="text-2xl font-black text-slate-800 dark:text-white leading-none mt-0.5">{totalCount}</span>
             </div>
           </div>
 
           {/* Color Legend list */}
-          <div className="grid grid-cols-2 gap-2 text-xs font-semibold">
+          <div className="grid grid-cols-2 gap-1 text-xs font-bold">
             {donutData.map((d, idx) => (
               <div
                 key={idx}
-                className={`flex items-center gap-2 p-1.5 rounded-xl border border-transparent transition-all ${
-                  hoveredSegment === idx ? "bg-white/5 border-white/5" : ""
+                className={`flex items-center gap-2 p-1 rounded-xl border border-transparent transition-all ${
+                  hoveredSegment === idx ? "bg-slate-50 dark:bg-white/5" : ""
                 }`}
                 onMouseEnter={() => setHoveredSegment(idx)}
                 onMouseLeave={() => setHoveredSegment(null)}
               >
-                <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: d.color }} />
-                <span className="text-slate-300 text-[10px] truncate flex-1">{d.name}</span>
-                <span className="text-white text-[10px] font-extrabold pr-1">{d.percent}%</span>
+                <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: d.color }} />
+                <span className="text-slate-500 dark:text-slate-400 text-[10px] truncate flex-1 font-semibold">{d.name}</span>
+                <span className="text-slate-800 dark:text-white text-[10px] font-extrabold pr-1">{d.percent}%</span>
               </div>
             ))}
           </div>
@@ -335,40 +329,40 @@ export default function DashboardOverview() {
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
 
         {/* Recent Applicants list (Col span 3) */}
-        <div className="lg:col-span-3 bg-[#161f2e]/70 border border-white/5 rounded-3xl p-6 backdrop-blur-md flex flex-col justify-between">
+        <div className="lg:col-span-3 bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800/60 rounded-3xl p-6 shadow-[0_2px_12px_rgba(0,0,0,0.02)] flex flex-col justify-between transition-colors duration-300">
           <div className="mb-4">
-            <h3 className="text-sm font-extrabold text-white tracking-wide uppercase">Pendaftaran Terakhir</h3>
-            <p className="text-[11px] text-slate-400 font-medium">Calon siswa yang baru saja menyerahkan formulir pendaftaran</p>
+            <h3 className="text-xs font-black text-slate-800 dark:text-white tracking-wider uppercase">Pendaftaran Terakhir</h3>
+            <p className="text-[11px] text-slate-400 dark:text-slate-500 font-bold">Calon siswa yang baru menyerahkan formulir pendaftaran</p>
           </div>
 
           <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs font-medium text-slate-300">
+            <table className="w-full text-left text-xs font-bold text-slate-650 dark:text-slate-350">
               <thead>
-                <tr className="border-b border-white/5 text-slate-400 font-bold text-[10px] uppercase tracking-wider">
-                  <th className="pb-3 pl-2">Nama Lengkap</th>
-                  <th className="pb-3">Asal Sekolah</th>
-                  <th className="pb-3">Jurusan Utama</th>
-                  <th className="pb-3 text-center">Status</th>
+                <tr className="border-b border-slate-100 dark:border-white/5 text-slate-400 dark:text-slate-500 font-extrabold text-[9px] uppercase tracking-widest bg-slate-50/50 dark:bg-slate-950/15">
+                  <th className="pb-3 pt-2 pl-3">Nama Lengkap</th>
+                  <th className="pb-3 pt-2">Asal Sekolah</th>
+                  <th className="pb-3 pt-2">Jurusan Pilihan</th>
+                  <th className="pb-3 pt-2 text-center">Status</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-white/5">
+              <tbody className="divide-y divide-slate-100 dark:divide-white/5">
                 {applicants.slice(0, 5).map((a, idx) => (
-                  <tr key={a.id || idx} className="hover:bg-white/5 transition-all rounded-xl">
-                    <td className="py-3.5 pl-2 font-bold text-white max-w-[140px] truncate">{a.nama}</td>
-                    <td className="py-3.5 truncate max-w-[120px]">{a.sekolah_asal || a.sekolahAsal}</td>
-                    <td className="py-3.5">
-                      <span className="px-2.5 py-1 rounded-full bg-blue-500/10 text-blue-400 border border-blue-500/15 font-semibold text-[10px]">
-                        {majorsList.find((m) => m.dbName === a.jurusan_1 || m.dbName === a.jurusan1)?.name || a.jurusan_1 || a.jurusan1 || "PPLG"}
+                  <tr key={a.id || idx} className="hover:bg-slate-50/70 dark:hover:bg-white/5 transition-all rounded-xl">
+                    <td className="py-3 pl-3 font-extrabold text-slate-850 dark:text-white max-w-[140px] truncate">{a.nama}</td>
+                    <td className="py-3 truncate max-w-[120px] font-semibold text-slate-500 dark:text-slate-400">{a.sekolah_asal || a.sekolahAsal}</td>
+                    <td className="py-3">
+                      <span className="px-2 py-0.5 rounded-full bg-blue-50 dark:bg-blue-950 text-blue-600 dark:text-blue-400 border border-blue-100 dark:border-blue-900/50 font-extrabold text-[9px] uppercase tracking-wide">
+                        {majorsList.find((m) => m.dbName === a.jurusan_1 || m.dbName === a.jurusan1)?.name.split(" / ")[0] || a.jurusan_1 || a.jurusan1 || "PPLG"}
                       </span>
                     </td>
-                    <td className="py-3.5 text-center">
+                    <td className="py-3 text-center">
                       <span
-                        className={`inline-flex px-2.5 py-1 rounded-full text-[9px] font-bold border ${
+                        className={`inline-flex px-2 py-0.5 rounded-full text-[9px] font-extrabold border uppercase tracking-wider ${
                           a.status === "Approved"
-                            ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-400"
+                            ? "bg-emerald-50 dark:bg-emerald-950/60 border-emerald-250 dark:border-emerald-900 text-emerald-600 dark:text-emerald-400"
                             : a.status === "Rejected"
-                            ? "bg-rose-500/10 border-rose-500/20 text-rose-400"
-                            : "bg-amber-500/10 border-amber-500/20 text-amber-400"
+                            ? "bg-rose-50 dark:bg-rose-950/60 border-rose-250 dark:border-rose-900 text-rose-600 dark:text-rose-400"
+                            : "bg-amber-50 dark:bg-amber-950/60 border-amber-250 dark:border-amber-900 text-amber-600 dark:text-amber-400"
                         }`}
                       >
                         {a.status === "Approved" ? "Terverifikasi" : a.status === "Rejected" ? "Ditolak" : "Pending"}
@@ -379,7 +373,7 @@ export default function DashboardOverview() {
 
                 {applicants.length === 0 && (
                   <tr>
-                    <td colSpan="4" className="text-center py-8 text-slate-500 font-semibold">
+                    <td colSpan="4" className="text-center py-8 text-slate-400 font-bold uppercase tracking-wider">
                       Belum ada calon siswa terdaftar.
                     </td>
                   </tr>
@@ -392,22 +386,25 @@ export default function DashboardOverview() {
         {/* WebSocket Terminal Stream Logs (Col span 2) */}
         <div className="lg:col-span-2 bg-[#090d16] border border-white/10 rounded-3xl p-6 shadow-2xl flex flex-col justify-between">
           <div className="mb-4 flex items-center justify-between border-b border-white/5 pb-3">
-            <div>
-              <h3 className="text-xs font-extrabold text-emerald-400 tracking-wider uppercase font-mono">WS_CONSOLE_DEBUGGER</h3>
-              <p className="text-[10px] text-slate-400 font-medium font-mono">Stream monitor lalu lintas WebSocket Hono.js</p>
+            <div className="flex items-center gap-2">
+              <Terminal size={14} className="text-emerald-400" />
+              <div>
+                <h3 className="text-[10px] font-black text-emerald-400 tracking-widest uppercase font-mono">WS_CONSOLE_DEBUGGER</h3>
+                <p className="text-[9px] text-slate-500 font-bold font-mono">Lalu Lintas Saluran WebSocket Live</p>
+              </div>
             </div>
-            <div className="flex gap-1.5">
-              <span className="w-2.5 h-2.5 rounded-full bg-rose-500/40" />
-              <span className="w-2.5 h-2.5 rounded-full bg-amber-500/40" />
-              <span className="w-2.5 h-2.5 rounded-full bg-emerald-500/40 animate-pulse" />
+            <div className="flex gap-1">
+              <span className="w-2 h-2 rounded-full bg-rose-500/40" />
+              <span className="w-2 h-2 rounded-full bg-amber-500/40" />
+              <span className="w-2 h-2 rounded-full bg-emerald-500/40 animate-pulse" />
             </div>
           </div>
 
           {/* Terminal stream log viewport */}
-          <div className="flex-1 min-h-[160px] max-h-[180px] bg-black/50 rounded-2xl p-4 overflow-y-auto font-mono text-[10px] space-y-2 border border-white/5 custom-scrollbar text-left scroll-smooth">
+          <div className="flex-1 min-h-[160px] max-h-[180px] bg-black/60 rounded-2xl p-4 overflow-y-auto font-mono text-[9px] space-y-2 border border-white/5 custom-scrollbar text-left scroll-smooth">
             {wsLogs.map((log) => (
               <div key={log.id} className="leading-relaxed border-l-2 pl-2 border-emerald-500/30">
-                <span className="text-slate-500">[{log.timestamp}]</span>{" "}
+                <span className="text-slate-650">[{log.timestamp}]</span>{" "}
                 <span
                   className={
                     log.direction === "INCOMING"
@@ -420,7 +417,7 @@ export default function DashboardOverview() {
                   {log.direction === "INCOMING" ? "← RX" : "⚡ SYS"}
                 </span>{" "}
                 <span className="text-emerald-400 font-bold">{log.event}</span>
-                <div className="text-[9px] text-slate-400 pl-4 truncate max-w-full">
+                <div className="text-[8.5px] text-slate-450 pl-3 truncate max-w-full">
                   {typeof log.payload === "object" ? JSON.stringify(log.payload) : log.payload}
                 </div>
               </div>
@@ -433,7 +430,7 @@ export default function DashboardOverview() {
             )}
           </div>
 
-          <div className="mt-4 flex items-center justify-between text-[9px] font-mono text-slate-500">
+          <div className="mt-4 flex items-center justify-between text-[8px] font-mono text-slate-500">
             <span>BAUD_RATE: 9600bps</span>
             <span>PORT: 5000/WS</span>
           </div>
