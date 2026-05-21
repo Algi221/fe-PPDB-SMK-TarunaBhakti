@@ -1,5 +1,6 @@
 import { Plus_Jakarta_Sans } from "next/font/google";
 import "./globals.css";
+import { PPDBProvider } from "@/context/PPDBContext";
 
 const plusJakarta = Plus_Jakarta_Sans({
   variable: "--font-plus-jakarta",
@@ -18,7 +19,9 @@ export default function RootLayout({ children }) {
   return (
     <html lang="id" className={`${plusJakarta.variable} h-full antialiased`}>
       <body suppressHydrationWarning className="min-h-full flex flex-col bg-slate-50 text-slate-900">
-        {children}
+        <PPDBProvider>
+          {children}
+        </PPDBProvider>
       </body>
     </html>
   );

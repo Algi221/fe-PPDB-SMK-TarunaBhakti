@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { ArrowLeft, Search, Filter, Eye, X, CheckCircle, Clock, XCircle, Moon, Sun, User, MapPin, Phone, Mail, FileText, ChevronLeft, ChevronRight, ArrowRight } from "lucide-react";
+import { usePPDB } from "@/context/PPDBContext";
 
 // Mock Data untuk Pendaftar
 const mockData = [
@@ -22,13 +23,14 @@ const mockData = [
 
 // Status Badge Component
 const StatusBadge = ({ status }) => {
-  if (status === "Terverifikasi") return <span className="inline-flex items-center gap-1.5 px-3 py-1 text-xs font-semibold rounded-full bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800"><CheckCircle size={12}/> Terverifikasi</span>;
-  if (status === "Menunggu Verifikasi") return <span className="inline-flex items-center gap-1.5 px-3 py-1 text-xs font-semibold rounded-full bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400 border border-amber-200 dark:border-amber-800"><Clock size={12}/> Menunggu</span>;
-  if (status === "Ditolak") return <span className="inline-flex items-center gap-1.5 px-3 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400 border border-red-200 dark:border-red-800"><XCircle size={12}/> Ditolak</span>;
+  if (status === "Terverifikasi" || status === "Approved") return <span className="inline-flex items-center gap-1.5 px-3 py-1 text-xs font-semibold rounded-full bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800"><CheckCircle size={12}/> Terverifikasi</span>;
+  if (status === "Menunggu Verifikasi" || status === "Pending") return <span className="inline-flex items-center gap-1.5 px-3 py-1 text-xs font-semibold rounded-full bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400 border border-amber-200 dark:border-amber-800"><Clock size={12}/> Menunggu</span>;
+  if (status === "Ditolak" || status === "Rejected") return <span className="inline-flex items-center gap-1.5 px-3 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400 border border-red-200 dark:border-red-800"><XCircle size={12}/> Ditolak</span>;
   return null;
 };
 
 export default function DataPendaftarPage() {
+  const { publicApplicants } = usePPDB();
   const [isDark, setIsDark] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [filterJurusan, setFilterJurusan] = useState("Semua");
@@ -60,15 +62,23 @@ export default function DataPendaftarPage() {
   };
 
   // Filter Data
-  const filteredData = mockData.filter(item => {
-    const matchName = item.nama.toLowerCase().includes(searchTerm.toLowerCase()) || item.nisn.includes(searchTerm);
-    const matchJurusan = filterJurusan === "Semua" || item.jurusan1.includes(filterJurusan);
-    const matchStatus = filterStatus === "Semua" || item.status === filterStatus;
+  const filteredData = publicApplicants.filter(item => {
+    const matchName = (item.nama || "").toLowerCase().includes(searchTerm.toLowerCase()) || (item.nisn || "").includes(searchTerm);
+    const matchJurusan = filterJurusan === "Semua" || (item.jurusan_1 || item.jurusan1 || "").includes(filterJurusan);
+    
+    const getNormalizedStatus = (status) => {
+      if (status === "Approved" || status === "Terverifikasi") return "Terverifikasi";
+      if (status === "Pending" || status === "Menunggu Verifikasi") return "Menunggu Verifikasi";
+      if (status === "Rejected" || status === "Ditolak") return "Ditolak";
+      return status;
+    };
+    const matchStatus = filterStatus === "Semua" || getNormalizedStatus(item.status) === getNormalizedStatus(filterStatus);
+    
     return matchName && matchJurusan && matchStatus;
   });
 
   // Pagination Logic
-  const totalPages = Math.ceil(filteredData.length / itemsPerPage);
+  const totalPages = Math.ceil(filteredData.length / itemsPerPage) || 1;
   const startIndex = (currentPage - 1) * itemsPerPage;
   const currentData = filteredData.slice(startIndex, startIndex + itemsPerPage);
 
@@ -117,7 +127,7 @@ export default function DataPendaftarPage() {
             <User size={20} className="text-blue-500" />
             <div>
               <div className="text-xs font-semibold opacity-75">Total Pendaftar</div>
-              <div className="text-xl font-black">{mockData.length} Siswa</div>
+              <div className="text-xl font-black">{publicApplicants.length} Siswa</div>
             </div>
           </div>
         </div>
@@ -198,10 +208,10 @@ export default function DataPendaftarPage() {
                         <div className="text-xs font-medium text-slate-500 dark:text-slate-400 opacity-80">{item.nisn}</div>
                       </td>
                       <td className="px-6 py-4">
-                        <div className="text-sm font-semibold text-slate-700 dark:text-slate-300">{item.asalSekolah}</div>
+                        <div className="text-sm font-semibold text-slate-700 dark:text-slate-300">{item.sekolah_asal || item.asalSekolah}</div>
                       </td>
                       <td className="px-6 py-4">
-                        <div className="text-sm font-semibold text-slate-700 dark:text-slate-300">{item.jurusan1}</div>
+                        <div className="text-sm font-semibold text-slate-700 dark:text-slate-300">{item.jurusan_1 || item.jurusan1}</div>
                       </td>
                       <td className="px-6 py-4">
                         <StatusBadge status={item.status} />
@@ -290,7 +300,7 @@ export default function DataPendaftarPage() {
                   <h3 className="text-2xl font-extrabold text-slate-900 dark:text-white mb-1">{selectedStudent.nama}</h3>
                   <div className="flex flex-wrap gap-4 text-sm font-semibold text-slate-500 dark:text-slate-400 mb-4">
                     <span className="flex items-center gap-1.5"><FileText size={16}/> NISN: {selectedStudent.nisn}</span>
-                    <span className="flex items-center gap-1.5"><MapPin size={16}/> {selectedStudent.asalSekolah}</span>
+                    <span className="flex items-center gap-1.5"><MapPin size={16}/> {selectedStudent.sekolah_asal || selectedStudent.asalSekolah}</span>
                   </div>
                   <div className="inline-flex">
                     <StatusBadge status={selectedStudent.status} />
@@ -308,15 +318,15 @@ export default function DataPendaftarPage() {
                   <div className="space-y-3">
                     <div>
                       <div className="text-xs font-semibold text-slate-400">Jenis Kelamin</div>
-                      <div className="text-sm font-bold text-slate-700 dark:text-slate-300">{selectedStudent.kelamin}</div>
+                      <div className="text-sm font-bold text-slate-700 dark:text-slate-300">{selectedStudent.kelamin || (selectedStudent.jenis_kelamin === 'L' ? 'Laki-laki' : selectedStudent.jenis_kelamin === 'P' ? 'Perempuan' : 'Laki-laki')}</div>
                     </div>
                     <div>
                       <div className="text-xs font-semibold text-slate-400">Alamat Lengkap</div>
-                      <div className="text-sm font-bold text-slate-700 dark:text-slate-300 leading-relaxed">{selectedStudent.alamat}</div>
+                      <div className="text-sm font-bold text-slate-700 dark:text-slate-300 leading-relaxed">{selectedStudent.alamat || "Alamat Disembunyikan (Privasi)"}</div>
                     </div>
                     <div>
                       <div className="text-xs font-semibold text-slate-400">Tanggal Daftar</div>
-                      <div className="text-sm font-bold text-slate-700 dark:text-slate-300">{selectedStudent.tglDaftar}</div>
+                      <div className="text-sm font-bold text-slate-700 dark:text-slate-300">{selectedStudent.tglDaftar || (selectedStudent.tgl_daftar ? new Date(selectedStudent.tgl_daftar).toLocaleDateString('id-ID', {day: 'numeric', month: 'long', year: 'numeric'}) : "-")}</div>
                     </div>
                   </div>
                 </div>
@@ -329,11 +339,11 @@ export default function DataPendaftarPage() {
                   <div className="space-y-3">
                     <div>
                       <div className="text-xs font-semibold text-slate-400">Pilihan 1 (Utama)</div>
-                      <div className="text-sm font-bold text-slate-700 dark:text-slate-300 text-blue-600 dark:text-blue-400">{selectedStudent.jurusan1}</div>
+                      <div className="text-sm font-bold text-slate-700 dark:text-slate-300 text-blue-600 dark:text-blue-400">{selectedStudent.jurusan_1 || selectedStudent.jurusan1}</div>
                     </div>
                     <div>
                       <div className="text-xs font-semibold text-slate-400">Pilihan 2 (Alternatif)</div>
-                      <div className="text-sm font-bold text-slate-700 dark:text-slate-300">{selectedStudent.jurusan2}</div>
+                      <div className="text-sm font-bold text-slate-700 dark:text-slate-300">{selectedStudent.jurusan_2 || selectedStudent.jurusan2 || "-"}</div>
                     </div>
                   </div>
                 </div>
@@ -346,11 +356,11 @@ export default function DataPendaftarPage() {
                   <div className="space-y-3">
                     <div>
                       <div className="text-xs font-semibold text-slate-400">Nama Ayah</div>
-                      <div className="text-sm font-bold text-slate-700 dark:text-slate-300">{selectedStudent.ayah}</div>
+                      <div className="text-sm font-bold text-slate-700 dark:text-slate-300">{selectedStudent.ayah || selectedStudent.nama_ayah || "Disembunyikan (Privasi)"}</div>
                     </div>
                     <div>
                       <div className="text-xs font-semibold text-slate-400">Nama Ibu</div>
-                      <div className="text-sm font-bold text-slate-700 dark:text-slate-300">{selectedStudent.ibu}</div>
+                      <div className="text-sm font-bold text-slate-700 dark:text-slate-300">{selectedStudent.ibu || selectedStudent.nama_ibu || "Disembunyikan (Privasi)"}</div>
                     </div>
                   </div>
                 </div>
@@ -363,11 +373,11 @@ export default function DataPendaftarPage() {
                   <div className="space-y-3">
                     <div>
                       <div className="text-xs font-semibold text-slate-400">No. HP / WhatsApp</div>
-                      <div className="text-sm font-bold text-slate-700 dark:text-slate-300">{selectedStudent.noHp}</div>
+                      <div className="text-sm font-bold text-slate-700 dark:text-slate-300">{selectedStudent.noHp || selectedStudent.whatsapp || "Disembunyikan (Privasi)"}</div>
                     </div>
                     <div>
                       <div className="text-xs font-semibold text-slate-400">Email</div>
-                      <div className="text-sm font-bold text-slate-700 dark:text-slate-300">{selectedStudent.email}</div>
+                      <div className="text-sm font-bold text-slate-700 dark:text-slate-300">{selectedStudent.email || "Disembunyikan (Privasi)"}</div>
                     </div>
                   </div>
                 </div>

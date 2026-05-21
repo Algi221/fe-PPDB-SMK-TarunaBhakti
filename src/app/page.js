@@ -19,6 +19,7 @@ import {
   ArrowLeft, 
   HelpCircle,
   CreditCard,
+  ShieldCheck,
   ChevronRight,
   BookOpen,
   Cpu,
@@ -40,7 +41,6 @@ export default function Home() {
   
   // Modals
   const [activeModal, setActiveModal] = useState(null); // 'syarat' | 'alur' | 'beasiswa'
-  const [selectedMajorDetail, setSelectedMajorDetail] = useState(null); // PPLG | TKJ | DKV | BC | TE
   
   // Video Background Logic
   const [currentVideo, setCurrentVideo] = useState(0);
@@ -244,50 +244,50 @@ export default function Home() {
         <section className="hero">
         
         {/* Floating elements representing major names as requested */}
-        <div className="floating-badge badge-aset" onClick={() => { setSelectedMajorDetail(majors[0]); }}>
+        <Link href="/jurusan/rpl" className="floating-badge badge-aset">
           <div className="badge-icon overflow-hidden" style={{background: 'transparent'}}>
             <img src="/jurusan/pplg.jpeg" alt="RPL" className="w-full h-full object-cover rounded-full" onError={(e) => { e.target.style.display='none'; }} />
           </div>
           <div className="badge-info">
             <span>PPLG</span>
           </div>
-        </div>
+        </Link>
 
-        <div className="floating-badge badge-peminjaman" onClick={() => { setSelectedMajorDetail(majors[1]); }}>
+        <Link href="/jurusan/tjkt" className="floating-badge badge-peminjaman">
           <div className="badge-icon overflow-hidden" style={{background: 'transparent'}}>
             <img src="/jurusan/tjkt.jpeg" alt="TJKT" className="w-full h-full object-cover rounded-full" onError={(e) => { e.target.style.display='none'; }} />
           </div>
           <div className="badge-info">
             <span>TJKT</span>
           </div>
-        </div>
+        </Link>
 
-        <div className="floating-badge badge-laporan" onClick={() => { setSelectedMajorDetail(majors[2]); }}>
+        <Link href="/jurusan/dkv" className="floating-badge badge-laporan">
           <div className="badge-icon overflow-hidden" style={{background: 'transparent'}}>
             <img src="/jurusan/dkv.jpeg" alt="DKV" className="w-full h-full object-cover rounded-full" onError={(e) => { e.target.style.display='none'; }} />
           </div>
           <div className="badge-info">
             <span>DKV</span>
           </div>
-        </div>
+        </Link>
 
-        <div className="floating-badge badge-animasi" onClick={() => { setSelectedMajorDetail(majors[4]); }}>
+        <Link href="/jurusan/an" className="floating-badge badge-animasi">
           <div className="badge-icon overflow-hidden" style={{background: 'transparent'}}>
             <img src="/jurusan/animasijpeg.jpeg" alt="Animasi" className="w-full h-full object-cover rounded-full" onError={(e) => { e.target.style.display='none'; }} />
           </div>
           <div className="badge-info">
             <span>Animasi</span>
           </div>
-        </div>
+        </Link>
 
-        <div className="floating-badge badge-kelas" onClick={() => { setSelectedMajorDetail(majors[3]); }}>
+        <Link href="/jurusan/bc" className="floating-badge badge-kelas">
           <div className="badge-icon overflow-hidden" style={{background: 'transparent'}}>
             <img src="/jurusan/bc.jpeg" alt="Broadcasting" className="w-full h-full object-cover rounded-full" onError={(e) => { e.target.style.display='none'; }} />
           </div>
           <div className="badge-info">
             <span>Broadcasting</span>
           </div>
-        </div>
+        </Link>
 
         {/* Hero Copy */}
         <div className="badge-wrapper relative z-10">
@@ -336,83 +336,119 @@ export default function Home() {
       </section>
       </div>
 
-      {/* ALUR PENDAFTARAN */}
-      <section id="alur" className="py-24 bg-white/40 backdrop-blur-md relative z-10 border-y border-slate-200/50">
-        <div className="max-w-6xl mx-auto px-6">
-          <div className="text-center mb-16">
-            <span className="text-blue-600 font-bold text-xs uppercase tracking-wider bg-blue-50 px-3 py-1.5 rounded-full">Proses Mudah &amp; Transparan · TP. 2025/2026</span>
-            <h2 className="text-3xl md:text-4xl font-extrabold text-slate-800 mt-4 mb-4">Alur Pendaftaran PPDB</h2>
-            <p className="text-slate-500 max-w-xl mx-auto text-sm md:text-base leading-relaxed">
+      {/* ALUR PENDAFTARAN (Vertical Redesign) */}
+      <section id="alur" className="py-24 bg-slate-50 dark:bg-slate-900/60 relative z-10 border-y border-slate-200/50 dark:border-slate-800">
+        <div className="max-w-5xl mx-auto px-6">
+          <div className="text-center mb-20">
+            <span className="text-blue-600 dark:text-blue-400 font-bold text-xs uppercase tracking-wider bg-blue-50 dark:bg-blue-950/50 border border-blue-100/50 dark:border-blue-900/30 px-3.5 py-1.5 rounded-full">Proses Mudah &amp; Transparan · TP. 2026/2027</span>
+            <h2 className="text-3xl md:text-5xl font-black text-slate-800 dark:text-white mt-4 mb-4 drop-shadow-sm">Alur Pendaftaran PPDB</h2>
+            <p className="text-slate-500 dark:text-slate-400 max-w-xl mx-auto text-sm md:text-base leading-relaxed font-medium">
               Ikuti 6 langkah sederhana berikut untuk menjadi bagian dari SMK Taruna Bhakti Depok.
             </p>
           </div>
 
           <div className="relative">
-            {/* Connecting Line Row 1 (Desktop) */}
-            <div className="hidden md:block absolute top-[108px] left-0 w-full h-0.5 bg-gradient-to-r from-blue-100 via-blue-400 to-blue-100 z-0 opacity-40 rounded-full"></div>
-            {/* Connecting Line Row 2 (Desktop) */}
-            <div className="hidden md:block absolute top-[calc(50%+54px)] left-0 w-full h-0.5 bg-gradient-to-r from-blue-100 via-blue-400 to-blue-100 z-0 opacity-40 rounded-full"></div>
+            {/* Central Vertical Connector Line (Desktop) */}
+            <div className="absolute left-[29px] md:left-1/2 top-0 bottom-0 w-1 bg-gradient-to-b from-blue-500 via-sky-400 to-indigo-500 transform -translate-x-1/2 z-0 rounded-full opacity-70"></div>
+            {/* Dashed overlay line for cool tech look */}
+            <div className="absolute left-[29px] md:left-1/2 top-0 bottom-0 w-1 border-l-2 border-dashed border-white/40 dark:border-slate-950/40 transform -translate-x-1/2 z-0"></div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 relative z-10">
+            <div className="space-y-12 relative z-10">
 
-              {/* Step 1 */}
-              <div className="bg-white rounded-3xl p-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 text-center group hover:-translate-y-2 transition-transform duration-300">
-                <div className="w-16 h-16 mx-auto bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center mb-4 shadow-inner group-hover:bg-blue-600 group-hover:text-white transition-colors duration-300">
-                  <FileText size={28} />
+              {/* Step 1: Left */}
+              <div className="flex flex-col md:flex-row items-start md:items-center md:justify-between group">
+                <div className="w-full md:w-[45%] order-2 md:order-1 text-left md:text-right pr-0 md:pr-10">
+                  <div className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border border-white/60 dark:border-slate-800 p-6 rounded-3xl shadow-xl hover:shadow-2xl hover:border-blue-500/20 hover:-translate-y-1 transition-all duration-300">
+                    <span className="inline-block px-3 py-1 bg-blue-50 dark:bg-blue-950/60 text-blue-500 dark:text-blue-400 rounded-full text-[10px] font-extrabold uppercase tracking-wider mb-3">Tahap 01</span>
+                    <h3 className="text-lg font-black text-slate-800 dark:text-white mb-2">Pendaftaran Online</h3>
+                    <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed font-medium">Calon peserta didik mendaftar secara online melalui portal wizard PPDB dan mengisi data lengkap.</p>
+                  </div>
                 </div>
-                <div className="inline-block px-3 py-1 bg-blue-50 text-blue-500 rounded-full text-xs font-bold mb-3">Tahap 01</div>
-                <h3 className="text-lg font-bold text-slate-800 mb-2">Pendaftaran</h3>
-                <p className="text-sm text-slate-500">Calon peserta didik mendaftar secara online melalui portal PPDB.</p>
+                {/* Glowing Marker */}
+                <div className="w-16 h-16 rounded-full bg-blue-600 border-4 border-white dark:border-slate-900 text-white flex items-center justify-center font-black text-lg z-10 shadow-[0_0_20px_rgba(37,99,235,0.4)] order-1 md:order-2 shrink-0 self-start md:self-center">
+                  <FileText size={22} />
+                </div>
+                <div className="w-full md:w-[45%] order-3 hidden md:block"></div>
               </div>
 
-              {/* Step 2 */}
-              <div className="bg-white rounded-3xl p-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 text-center group hover:-translate-y-2 transition-transform duration-300">
-                <div className="w-16 h-16 mx-auto bg-orange-50 text-orange-500 rounded-2xl flex items-center justify-center mb-4 shadow-inner group-hover:bg-orange-500 group-hover:text-white transition-colors duration-300">
-                  <Phone size={28} />
+              {/* Step 2: Right */}
+              <div className="flex flex-col md:flex-row items-start md:items-center md:justify-between group">
+                <div className="w-full md:w-[45%] order-3 hidden md:block"></div>
+                {/* Glowing Marker */}
+                <div className="w-16 h-16 rounded-full bg-amber-500 border-4 border-white dark:border-slate-900 text-white flex items-center justify-center font-black text-lg z-10 shadow-[0_0_20px_rgba(245,158,11,0.4)] order-1 md:order-2 shrink-0 self-start md:self-center">
+                  <CreditCard size={22} />
                 </div>
-                <div className="inline-block px-3 py-1 bg-orange-50 text-orange-500 rounded-full text-xs font-bold mb-3">Tahap 02</div>
-                <h3 className="text-lg font-bold text-slate-800 mb-2">Konfirmasi Pendaftaran</h3>
-                <p className="text-sm text-slate-500">Konfirmasi pendaftaran melalui nomor <span className="font-semibold text-orange-500">08119892324</span>.</p>
+                <div className="w-full md:w-[45%] order-2 text-left pl-0 md:pl-10">
+                  <div className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border border-white/60 dark:border-slate-800 p-6 rounded-3xl shadow-xl hover:shadow-2xl hover:border-amber-500/20 hover:-translate-y-1 transition-all duration-300">
+                    <span className="inline-block px-3 py-1 bg-amber-50 dark:bg-amber-950/60 text-amber-500 dark:text-amber-400 rounded-full text-[10px] font-extrabold uppercase tracking-wider mb-3">Tahap 02</span>
+                    <h3 className="text-lg font-black text-slate-800 dark:text-white mb-2">Simulasi / Gateway Pembayaran</h3>
+                    <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed font-medium">Melakukan pembayaran administrasi pendaftaran sebesar Rp 150.000 melalui payment gateway Xendit sandbox terintegrasi.</p>
+                  </div>
+                </div>
               </div>
 
-              {/* Step 3 */}
-              <div className="bg-white rounded-3xl p-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 text-center group hover:-translate-y-2 transition-transform duration-300">
-                <div className="w-16 h-16 mx-auto bg-teal-50 text-teal-600 rounded-2xl flex items-center justify-center mb-4 shadow-inner group-hover:bg-teal-600 group-hover:text-white transition-colors duration-300">
-                  <MapPin size={28} />
+              {/* Step 3: Left */}
+              <div className="flex flex-col md:flex-row items-start md:items-center md:justify-between group">
+                <div className="w-full md:w-[45%] order-2 md:order-1 text-left md:text-right pr-0 md:pr-10">
+                  <div className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border border-white/60 dark:border-slate-800 p-6 rounded-3xl shadow-xl hover:shadow-2xl hover:border-teal-550/20 hover:-translate-y-1 transition-all duration-300">
+                    <span className="inline-block px-3 py-1 bg-teal-50 dark:bg-teal-950/60 text-teal-500 dark:text-teal-400 rounded-full text-[10px] font-extrabold uppercase tracking-wider mb-3">Tahap 03</span>
+                    <h3 className="text-lg font-black text-slate-800 dark:text-white mb-2">Verifikasi & Konfirmasi</h3>
+                    <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed font-medium">Konfirmasi data pendaftaran otomatis secara real-time via WhatsApp di <span className="font-extrabold text-teal-600 dark:text-teal-400">08119892324</span>.</p>
+                  </div>
                 </div>
-                <div className="inline-block px-3 py-1 bg-teal-50 text-teal-600 rounded-full text-xs font-bold mb-3">Tahap 03</div>
-                <h3 className="text-lg font-bold text-slate-800 mb-2">Verifikasi Data</h3>
-                <p className="text-sm text-slate-500">Datang ke sekolah membawa bukti pembayaran dan berkas PPDB.</p>
+                {/* Glowing Marker */}
+                <div className="w-16 h-16 rounded-full bg-teal-500 border-4 border-white dark:border-slate-900 text-white flex items-center justify-center font-black text-lg z-10 shadow-[0_0_20px_rgba(20,184,166,0.4)] order-1 md:order-2 shrink-0 self-start md:self-center">
+                  <Phone size={22} />
+                </div>
+                <div className="w-full md:w-[45%] order-3 hidden md:block"></div>
               </div>
 
-              {/* Step 4 */}
-              <div className="bg-white rounded-3xl p-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 text-center group hover:-translate-y-2 transition-transform duration-300">
-                <div className="w-16 h-16 mx-auto bg-pink-50 text-pink-500 rounded-2xl flex items-center justify-center mb-4 shadow-inner group-hover:bg-pink-500 group-hover:text-white transition-colors duration-300">
-                  <Users size={28} />
+              {/* Step 4: Right */}
+              <div className="flex flex-col md:flex-row items-start md:items-center md:justify-between group">
+                <div className="w-full md:w-[45%] order-3 hidden md:block"></div>
+                {/* Glowing Marker */}
+                <div className="w-16 h-16 rounded-full bg-rose-500 border-4 border-white dark:border-slate-900 text-white flex items-center justify-center font-black text-lg z-10 shadow-[0_0_20px_rgba(244,63,94,0.4)] order-1 md:order-2 shrink-0 self-start md:self-center">
+                  <Users size={22} />
                 </div>
-                <div className="inline-block px-3 py-1 bg-pink-50 text-pink-500 rounded-full text-xs font-bold mb-3">Tahap 04</div>
-                <h3 className="text-lg font-bold text-slate-800 mb-2">Mengukur Seragam</h3>
-                <p className="text-sm text-slate-500">Calon peserta didik datang ke penjahit yang ditentukan untuk mengukur seragam.</p>
+                <div className="w-full md:w-[45%] order-2 text-left pl-0 md:pl-10">
+                  <div className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border border-white/60 dark:border-slate-800 p-6 rounded-3xl shadow-xl hover:shadow-2xl hover:border-rose-500/20 hover:-translate-y-1 transition-all duration-300">
+                    <span className="inline-block px-3 py-1 bg-rose-50 dark:bg-rose-950/60 text-rose-500 dark:text-rose-400 rounded-full text-[10px] font-extrabold uppercase tracking-wider mb-3">Tahap 04</span>
+                    <h3 className="text-lg font-black text-slate-800 dark:text-white mb-2">Pemberkasan & Seragam</h3>
+                    <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed font-medium">Datang langsung ke sekolah untuk memverifikasi dokumen fisik asli serta melakukan pengukuran baju seragam siswa.</p>
+                  </div>
+                </div>
               </div>
 
-              {/* Step 5 */}
-              <div className="bg-white rounded-3xl p-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 text-center group hover:-translate-y-2 transition-transform duration-300">
-                <div className="w-16 h-16 mx-auto bg-violet-50 text-violet-600 rounded-2xl flex items-center justify-center mb-4 shadow-inner group-hover:bg-violet-600 group-hover:text-white transition-colors duration-300">
-                  <FileText size={28} />
+              {/* Step 5: Left */}
+              <div className="flex flex-col md:flex-row items-start md:items-center md:justify-between group">
+                <div className="w-full md:w-[45%] order-2 md:order-1 text-left md:text-right pr-0 md:pr-10">
+                  <div className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border border-white/60 dark:border-slate-800 p-6 rounded-3xl shadow-xl hover:shadow-2xl hover:border-indigo-500/20 hover:-translate-y-1 transition-all duration-300">
+                    <span className="inline-block px-3 py-1 bg-indigo-50 dark:bg-indigo-950/60 text-indigo-500 dark:text-indigo-400 rounded-full text-[10px] font-extrabold uppercase tracking-wider mb-3">Tahap 05</span>
+                    <h3 className="text-lg font-black text-slate-800 dark:text-white mb-2">Uji Kelayakan (Tes Seleksi)</h3>
+                    <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed font-medium">Mengikuti serangkaian tes bakat minat, wawancara kepribadian, serta tes kesehatan/fisik dasar calon siswa.</p>
+                  </div>
                 </div>
-                <div className="inline-block px-3 py-1 bg-violet-50 text-violet-600 rounded-full text-xs font-bold mb-3">Tahap 05</div>
-                <h3 className="text-lg font-bold text-slate-800 mb-2">Tes PPDB</h3>
-                <p className="text-sm text-slate-500">Melakukan tes wawancara, fisik, dan pemberkasan akhir.</p>
+                {/* Glowing Marker */}
+                <div className="w-16 h-16 rounded-full bg-indigo-600 border-4 border-white dark:border-slate-900 text-white flex items-center justify-center font-black text-lg z-10 shadow-[0_0_20px_rgba(79,70,229,0.4)] order-1 md:order-2 shrink-0 self-start md:self-center">
+                  <Award size={22} />
+                </div>
+                <div className="w-full md:w-[45%] order-3 hidden md:block"></div>
               </div>
 
-              {/* Step 6 */}
-              <div className="bg-white rounded-3xl p-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 text-center group hover:-translate-y-2 transition-transform duration-300">
-                <div className="w-16 h-16 mx-auto bg-green-50 text-green-600 rounded-2xl flex items-center justify-center mb-4 shadow-inner group-hover:bg-green-600 group-hover:text-white transition-colors duration-300">
-                  <Award size={28} />
+              {/* Step 6: Right */}
+              <div className="flex flex-col md:flex-row items-start md:items-center md:justify-between group">
+                <div className="w-full md:w-[45%] order-3 hidden md:block"></div>
+                {/* Glowing Marker */}
+                <div className="w-16 h-16 rounded-full bg-emerald-500 border-4 border-white dark:border-slate-900 text-white flex items-center justify-center font-black text-lg z-10 shadow-[0_0_20px_rgba(16,185,129,0.4)] order-1 md:order-2 shrink-0 self-start md:self-center">
+                  <ShieldCheck size={22} />
                 </div>
-                <div className="inline-block px-3 py-1 bg-green-50 text-green-600 rounded-full text-xs font-bold mb-3">Tahap 06</div>
-                <h3 className="text-lg font-bold text-slate-800 mb-2">Pengumuman Hasil PPDB</h3>
-                <p className="text-sm text-slate-500">Pengumuman hasil PPDB melalui Web <span className="font-semibold text-green-600">smktarunabhakti.net</span>.</p>
+                <div className="w-full md:w-[45%] order-2 text-left pl-0 md:pl-10">
+                  <div className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border border-white/60 dark:border-slate-800 p-6 rounded-3xl shadow-xl hover:shadow-2xl hover:border-emerald-500/20 hover:-translate-y-1 transition-all duration-300">
+                    <span className="inline-block px-3 py-1 bg-emerald-50 dark:bg-emerald-950/60 text-emerald-500 dark:text-emerald-400 rounded-full text-[10px] font-extrabold uppercase tracking-wider mb-3">Tahap 06</span>
+                    <h3 className="text-lg font-black text-slate-800 dark:text-white mb-2">Pengumuman & Kelulusan</h3>
+                    <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed font-medium">Pengumuman kelulusan resmi dan status penerimaan calon peserta didik baru melalui web <span className="font-extrabold text-emerald-600 dark:text-emerald-400">smktarunabhakti.net</span>.</p>
+                  </div>
+                </div>
               </div>
 
             </div>
@@ -431,11 +467,11 @@ export default function Home() {
           {majors.map((major, index) => {
             const IconComp = major.icon;
             return (
-              <div 
+              <Link 
+                href={`/jurusan/${major.code.toLowerCase()}`}
                 key={major.code} 
-                className={`bg-white/80 backdrop-blur-xl border border-white/50 rounded-3xl p-8 shadow-md hover:shadow-xl hover:-translate-y-2 hover:border-blue-500/30 transition-all duration-700 cursor-pointer flex flex-col justify-between relative overflow-hidden group transform ${isMajorsVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-12"}`}
+                className={`bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border border-white/50 dark:border-slate-800 rounded-3xl p-8 shadow-md hover:shadow-xl hover:-translate-y-2 hover:border-blue-500/30 transition-all duration-700 cursor-pointer flex flex-col justify-between relative overflow-hidden group transform ${isMajorsVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-12"}`}
                 style={{ transitionDelay: `${index * 150}ms` }}
-                onClick={() => setSelectedMajorDetail(major)}
               >
                 {/* Expanding radial spotlight glow on hover */}
                 <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(0,102,255,0.08)_0%,transparent_60%)] opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none z-0"></div>
@@ -456,15 +492,15 @@ export default function Home() {
                       }}
                     />
                   </div>
-                  <h3 className="text-lg font-extrabold text-slate-800 mb-3">
+                  <h3 className="text-lg font-extrabold text-slate-800 dark:text-white mb-3">
                     {major.code === "AN" ? major.title : `${major.title} (${major.code})`}
                   </h3>
-                  <p className="text-sm text-slate-500 leading-relaxed mb-6">{major.desc.substring(0, 105)}...</p>
+                  <p className="text-sm text-slate-500 dark:text-slate-400 leading-relaxed mb-6">{major.desc.substring(0, 105)}...</p>
                 </div>
-                <span className="flex items-center gap-2 text-blue-600 text-sm font-bold group-hover:text-blue-700 transition-colors relative z-10">
+                <span className="flex items-center gap-2 text-blue-600 dark:text-blue-400 text-sm font-bold group-hover:text-blue-700 dark:group-hover:text-blue-300 transition-colors relative z-10">
                   Lihat Selengkapnya <ChevronRight size={14} className="transform group-hover:translate-x-1.5 transition-transform duration-300" />
                 </span>
-              </div>
+              </Link>
             );
           })}
         </div>
@@ -507,44 +543,6 @@ export default function Home() {
         </div>
       </footer>
 
-
-      {/* ================= MODAL DIALOGS ================= */}
-
-      {/* 3. JURUSAN DETAIL MODAL */}
-      <div className={`modal-overlay ${selectedMajorDetail ? "active" : ""}`} onClick={() => setSelectedMajorDetail(null)}>
-        {selectedMajorDetail && (
-          <div className="modal-container text-left" onClick={(e) => e.stopPropagation()}>
-            <button className="modal-close" onClick={() => setSelectedMajorDetail(null)}>
-              <X size={18} />
-            </button>
-            <div className="detail-modal-header">
-              <div className="w-14 h-14 rounded-2xl flex items-center justify-center text-white" style={{ backgroundColor: selectedMajorDetail.color }}>
-                {React.createElement(selectedMajorDetail.icon, { size: 28 })}
-              </div>
-              <div className="detail-modal-title">
-                <h3>{selectedMajorDetail.title}</h3>
-                {selectedMajorDetail.code !== "AN" && <p>{selectedMajorDetail.code}</p>}
-              </div>
-            </div>
-
-            <div className="detail-content">
-              <p className="mb-6">{selectedMajorDetail.desc}</p>
-              
-              <div className="detail-features">
-                <div className="feature-item">
-                  <h4>Prospek Karir Utama</h4>
-                  <p>{selectedMajorDetail.careers}</p>
-                </div>
-                <div className="feature-item">
-                  <h4>Fasilitas Praktik Khusus</h4>
-                  <p>{selectedMajorDetail.facilities}</p>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-      </div>
-
     </div>
   );
-}
+};

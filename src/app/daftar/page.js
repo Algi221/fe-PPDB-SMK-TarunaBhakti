@@ -2,11 +2,20 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import { ArrowRight, Check, Upload, ArrowLeft, Home, Monitor, Code, Palette, Film, Cpu, Sun, Moon } from "lucide-react";
+import { ArrowRight, Check, Upload, ArrowLeft, Home, Monitor, Code, Palette, Film, Cpu, Sun, Moon, CreditCard, ShieldCheck, Sparkles } from "lucide-react";
+import { usePPDB } from "@/context/PPDBContext";
 
 export default function DaftarPage() {
+  const { registerApplicant, checkPaymentStatus, fetchPublicApplicants } = usePPDB();
   const [wizardStep, setWizardStep] = useState(1);
   const [isSuccess, setIsSuccess] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Billing and Payment States
+  const [showPaymentGate, setShowPaymentGate] = useState(false);
+  const [submittedCandidate, setSubmittedCandidate] = useState(null);
+  const [paymentPolling, setPaymentPolling] = useState(false);
+  const [paymentError, setPaymentError] = useState(null);
 
   // Dark Mode
   const [isDark, setIsDark] = useState(false);
@@ -19,6 +28,52 @@ export default function DaftarPage() {
       setIsDark(true);
     }
   }, []);
+
+  // Read URL query params for payment success/failure redirects
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      const payment = params.get("payment");
+      const nisn = params.get("nisn");
+      if (payment === "success" && nisn) {
+        const checkStatus = async () => {
+          try {
+            const res = await checkPaymentStatus(nisn);
+            if (res && res.success && res.payment_status === "Paid") {
+              setFormData(prev => ({ ...prev, nisn: nisn }));
+              setIsSuccess(true);
+            }
+          } catch (err) {
+            console.log("Error checking redirected payment status:", err);
+          }
+        };
+        checkStatus();
+      }
+    }
+  }, [checkPaymentStatus]);
+
+  // Polling check payment status every 4 seconds
+  useEffect(() => {
+    let intervalId;
+    if (paymentPolling && submittedCandidate?.nisn) {
+      intervalId = setInterval(async () => {
+        try {
+          const res = await checkPaymentStatus(submittedCandidate.nisn);
+          if (res && res.success && res.payment_status === "Paid") {
+            setPaymentPolling(false);
+            setShowPaymentGate(false);
+            setIsSuccess(true);
+            fetchPublicApplicants?.();
+          }
+        } catch (err) {
+          console.log("Polling payment status error:", err);
+        }
+      }, 4000);
+    }
+    return () => {
+      if (intervalId) clearInterval(intervalId);
+    };
+  }, [paymentPolling, submittedCandidate, checkPaymentStatus, fetchPublicApplicants]);
 
   const toggleDark = () => {
     const next = !isDark;
@@ -218,11 +273,26 @@ export default function DaftarPage() {
     });
   };
 
-  const nextStep = () => {
+  const nextStep = async () => {
     if (wizardStep < 13) {
       setWizardStep(prev => prev + 1);
     } else {
-      setIsSuccess(true);
+      setIsSubmitting(true);
+      try {
+        const res = await registerApplicant(formData);
+        if (res && res.success) {
+          setSubmittedCandidate(res.data);
+          setShowPaymentGate(true);
+          setPaymentPolling(true);
+        } else {
+          alert(res?.message || "Gagal mengirimkan formulir pendaftaran. Silakan coba lagi.");
+        }
+      } catch (err) {
+        console.error("Submit error:", err);
+        alert("Terjadi kesalahan koneksi. Silakan coba lagi.");
+      } finally {
+        setIsSubmitting(false);
+      }
     }
   };
 
@@ -272,6 +342,103 @@ export default function DaftarPage() {
           <Link href="/" className="btn-primary-pill w-full flex justify-center">
             Kembali ke Beranda
           </Link>
+        </div>
+      </div>
+    );
+  }
+
+  if (showPaymentGate && submittedCandidate) {
+    const invoiceUrl = submittedCandidate.xendit_invoice_url || `http://localhost:5000/api/payment/mock-checkout?nisn=${submittedCandidate.nisn}`;
+    return (
+      <div className="relative min-h-screen flex items-center justify-center p-6 overflow-hidden">
+        {/* Background Glowing Blobs */}
+        <div className="bg-glow-container">
+          <div className="bg-glow bg-glow-1"></div>
+          <div className="bg-glow bg-glow-2"></div>
+          <div className="bg-glow bg-glow-3"></div>
+        </div>
+
+        <div className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-2xl border border-white/50 dark:border-slate-800 shadow-2xl rounded-3xl p-8 max-w-md w-full text-center relative z-10 animate-in fade-in zoom-in duration-300">
+          <div className="absolute -top-12 -right-12 w-28 h-28 bg-blue-500/10 dark:bg-blue-500/5 rounded-full blur-2xl"></div>
+          <div className="absolute -bottom-12 -left-12 w-28 h-28 bg-emerald-500/10 dark:bg-emerald-500/5 rounded-full blur-2xl"></div>
+
+          <div className="w-16 h-16 bg-blue-50 dark:bg-blue-950/50 text-blue-600 dark:text-blue-400 rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg shadow-blue-500/10 ring-4 ring-blue-500/5 dark:ring-blue-500/10">
+            <CreditCard size={28} className="animate-pulse" />
+          </div>
+
+          <span className="text-[10px] font-extrabold uppercase tracking-widest text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/60 border border-blue-100/50 dark:border-blue-900 px-3.5 py-1.5 rounded-full">
+            Invoice Registrasi
+          </span>
+
+          <h2 className="text-2xl font-black text-slate-800 dark:text-white mt-4 mb-2">Selesaikan Pembayaran</h2>
+          <p className="text-slate-500 dark:text-slate-400 text-sm mb-6 leading-relaxed">
+            Untuk merampungkan registrasi PPDB, silakan selesaikan pembayaran biaya administrasi pendaftaran Anda.
+          </p>
+
+          {/* Pricing Box */}
+          <div className="bg-slate-50/50 dark:bg-slate-950/30 border border-slate-100 dark:border-slate-800 rounded-2xl p-5 mb-6 text-left relative overflow-hidden">
+            <div className="absolute right-4 top-4 opacity-5 dark:opacity-10 pointer-events-none">
+              <Sparkles size={64} className="text-blue-600 animate-pulse" />
+            </div>
+            
+            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 block mb-1">
+              Jumlah yang Harus Dibayar
+            </span>
+            <span className="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600 dark:from-sky-400 dark:to-indigo-400 block mb-4">
+              Rp 150.000
+            </span>
+
+            <div className="border-t border-slate-100 dark:border-slate-800/80 pt-4 text-xs text-slate-600 dark:text-slate-350 space-y-2.5">
+              <div className="flex justify-between">
+                <span className="text-slate-400 dark:text-slate-500">Nama Lengkap:</span>
+                <span className="font-extrabold text-slate-855 dark:text-white">{submittedCandidate.nama}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-slate-400 dark:text-slate-500">NISN Pendaftar:</span>
+                <span className="font-semibold text-slate-800 dark:text-slate-200">{submittedCandidate.nisn}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-slate-400 dark:text-slate-500">Jurusan Terpilih:</span>
+                <span className="font-semibold text-blue-600 dark:text-sky-400">{submittedCandidate.jurusan_1 || submittedCandidate.jurusan1}</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Polling / Waiting Indicator */}
+          <div className="flex items-center justify-center gap-2 mb-6 text-xs font-semibold text-slate-500 dark:text-slate-400">
+            <span className="animate-spin rounded-full h-3.5 w-3.5 border-2 border-blue-500 border-t-transparent"></span>
+            <span>Menunggu konfirmasi pembayaran otomatis...</span>
+          </div>
+
+          {/* Action Buttons */}
+          <div className="space-y-3">
+            <a 
+              href={invoiceUrl} 
+              target="_blank" 
+              rel="noopener noreferrer" 
+              className="w-full flex justify-center items-center gap-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold py-3.5 px-6 rounded-2xl shadow-lg shadow-blue-500/20 dark:shadow-blue-500/10 transition duration-300 transform hover:scale-[1.01] active:scale-[0.99]"
+            >
+              Bayar Sekarang via Xendit
+              <ArrowRight size={16} />
+            </a>
+
+            {/* Offline Simulation / Bypass Button */}
+            <button
+              onClick={() => {
+                setPaymentPolling(false);
+                setShowPaymentGate(false);
+                setIsSuccess(true);
+              }}
+              className="w-full bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-semibold py-3 px-6 rounded-xl border border-slate-200 dark:border-slate-700 text-xs transition duration-300"
+            >
+              Simulasi Bayar Sukses (Bypass Luring)
+            </button>
+          </div>
+
+          <div className="flex items-center justify-center gap-1.5 mt-6 text-[10px] text-slate-400 dark:text-slate-500">
+            <ShieldCheck size={12} className="text-emerald-500" />
+            <span>Terintegrasi secara aman dengan Xendit Sandbox API</span>
+          </div>
         </div>
       </div>
     );
@@ -1557,11 +1724,22 @@ export default function DaftarPage() {
               className="btn-primary-pill px-8 py-3.5 disabled:opacity-50 disabled:cursor-not-allowed"
               onClick={nextStep}
               disabled={
+                isSubmitting ||
                 (wizardStep === 1 && (!formData.nama || !formData.nisn)) ||
                 (wizardStep === 13 && !formData.deklarasi)
               }
             >
-              {wizardStep === 13 ? "Kirim Pendaftaran" : "Selanjutnya"} <ArrowRight size={16} />
+              {isSubmitting ? (
+                <span className="flex items-center gap-2">
+                  <span className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></span>
+                  Mengirim...
+                </span>
+              ) : wizardStep === 13 ? (
+                "Kirim Pendaftaran"
+              ) : (
+                "Selanjutnya"
+              )}
+              {!isSubmitting && <ArrowRight size={16} />}
             </button>
           </div>
         </div>
