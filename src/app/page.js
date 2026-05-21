@@ -348,106 +348,106 @@ export default function Home() {
           </div>
 
           <div className="relative">
-            {/* Central Vertical Connector Line (Desktop) */}
-            <div className="absolute left-[29px] md:left-1/2 top-0 bottom-0 w-1 bg-gradient-to-b from-blue-500 via-sky-400 to-indigo-500 transform -translate-x-1/2 z-0 rounded-full opacity-70"></div>
+            {/* Central Vertical Connector Line */}
+            <div className="absolute left-[32px] md:left-1/2 top-0 bottom-0 w-1 bg-gradient-to-b from-blue-500 via-sky-400 to-indigo-500 transform -translate-x-1/2 z-0 rounded-full opacity-70"></div>
             {/* Dashed overlay line for cool tech look */}
-            <div className="absolute left-[29px] md:left-1/2 top-0 bottom-0 w-1 border-l-2 border-dashed border-white/40 dark:border-slate-950/40 transform -translate-x-1/2 z-0"></div>
+            <div className="absolute left-[32px] md:left-1/2 top-0 bottom-0 w-1 border-l-2 border-dashed border-white/40 dark:border-slate-950/40 transform -translate-x-1/2 z-0"></div>
 
-            <div className="space-y-12 relative z-10">
+            <div className="space-y-16 relative z-10">
 
-              {/* Step 1: Left */}
-              <div className="flex flex-col md:flex-row items-start md:items-center md:justify-between group">
-                <div className="w-full md:w-[45%] order-2 md:order-1 text-left md:text-right pr-0 md:pr-10">
+              {/* Step 1: Left Card */}
+              <div className="relative grid grid-cols-1 md:grid-cols-2 md:gap-20 items-center">
+                <div className="pl-20 md:pl-0 md:pr-12 md:text-right">
                   <div className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border border-white/60 dark:border-slate-800 p-6 rounded-3xl shadow-xl hover:shadow-2xl hover:border-blue-500/20 hover:-translate-y-1 transition-all duration-300">
                     <span className="inline-block px-3 py-1 bg-blue-50 dark:bg-blue-950/60 text-blue-500 dark:text-blue-400 rounded-full text-[10px] font-extrabold uppercase tracking-wider mb-3">Tahap 01</span>
                     <h3 className="text-lg font-black text-slate-800 dark:text-white mb-2">Pendaftaran Online</h3>
                     <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed font-medium">Calon peserta didik mendaftar secara online melalui portal wizard PPDB dan mengisi data lengkap.</p>
                   </div>
                 </div>
-                {/* Glowing Marker */}
-                <div className="w-16 h-16 rounded-full bg-blue-600 border-4 border-white dark:border-slate-900 text-white flex items-center justify-center font-black text-lg z-10 shadow-[0_0_20px_rgba(37,99,235,0.4)] order-1 md:order-2 shrink-0 self-start md:self-center">
+                <div className="hidden md:block"></div>
+                {/* Center Glowing Marker */}
+                <div className="absolute left-0 md:left-1/2 md:-translate-x-1/2 top-1/2 -translate-y-1/2 w-16 h-16 rounded-full bg-blue-600 border-4 border-white dark:border-slate-900 text-white flex items-center justify-center font-black text-lg z-10 shadow-[0_0_20px_rgba(37,99,235,0.4)] transition-all duration-300">
                   <FileText size={22} />
                 </div>
-                <div className="w-full md:w-[45%] order-3 hidden md:block"></div>
               </div>
 
-              {/* Step 2: Right */}
-              <div className="flex flex-col md:flex-row items-start md:items-center md:justify-between group">
-                <div className="w-full md:w-[45%] order-3 hidden md:block"></div>
-                {/* Glowing Marker */}
-                <div className="w-16 h-16 rounded-full bg-amber-500 border-4 border-white dark:border-slate-900 text-white flex items-center justify-center font-black text-lg z-10 shadow-[0_0_20px_rgba(245,158,11,0.4)] order-1 md:order-2 shrink-0 self-start md:self-center">
-                  <CreditCard size={22} />
-                </div>
-                <div className="w-full md:w-[45%] order-2 text-left pl-0 md:pl-10">
+              {/* Step 2: Right Card */}
+              <div className="relative grid grid-cols-1 md:grid-cols-2 md:gap-20 items-center">
+                <div className="hidden md:block"></div>
+                <div className="pl-20 md:pl-12 md:text-left">
                   <div className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border border-white/60 dark:border-slate-800 p-6 rounded-3xl shadow-xl hover:shadow-2xl hover:border-amber-500/20 hover:-translate-y-1 transition-all duration-300">
                     <span className="inline-block px-3 py-1 bg-amber-50 dark:bg-amber-950/60 text-amber-500 dark:text-amber-400 rounded-full text-[10px] font-extrabold uppercase tracking-wider mb-3">Tahap 02</span>
                     <h3 className="text-lg font-black text-slate-800 dark:text-white mb-2">Simulasi / Gateway Pembayaran</h3>
                     <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed font-medium">Melakukan pembayaran administrasi pendaftaran sebesar Rp 150.000 melalui payment gateway Xendit sandbox terintegrasi.</p>
                   </div>
                 </div>
+                {/* Center Glowing Marker */}
+                <div className="absolute left-0 md:left-1/2 md:-translate-x-1/2 top-1/2 -translate-y-1/2 w-16 h-16 rounded-full bg-amber-500 border-4 border-white dark:border-slate-900 text-white flex items-center justify-center font-black text-lg z-10 shadow-[0_0_20px_rgba(245,158,11,0.4)] transition-all duration-300">
+                  <CreditCard size={22} />
+                </div>
               </div>
 
-              {/* Step 3: Left */}
-              <div className="flex flex-col md:flex-row items-start md:items-center md:justify-between group">
-                <div className="w-full md:w-[45%] order-2 md:order-1 text-left md:text-right pr-0 md:pr-10">
-                  <div className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border border-white/60 dark:border-slate-800 p-6 rounded-3xl shadow-xl hover:shadow-2xl hover:border-teal-550/20 hover:-translate-y-1 transition-all duration-300">
+              {/* Step 3: Left Card */}
+              <div className="relative grid grid-cols-1 md:grid-cols-2 md:gap-20 items-center">
+                <div className="pl-20 md:pl-0 md:pr-12 md:text-right">
+                  <div className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border border-white/60 dark:border-slate-800 p-6 rounded-3xl shadow-xl hover:shadow-2xl hover:border-teal-500/20 hover:-translate-y-1 transition-all duration-300">
                     <span className="inline-block px-3 py-1 bg-teal-50 dark:bg-teal-950/60 text-teal-500 dark:text-teal-400 rounded-full text-[10px] font-extrabold uppercase tracking-wider mb-3">Tahap 03</span>
                     <h3 className="text-lg font-black text-slate-800 dark:text-white mb-2">Verifikasi & Konfirmasi</h3>
                     <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed font-medium">Konfirmasi data pendaftaran otomatis secara real-time via WhatsApp di <span className="font-extrabold text-teal-600 dark:text-teal-400">08119892324</span>.</p>
                   </div>
                 </div>
-                {/* Glowing Marker */}
-                <div className="w-16 h-16 rounded-full bg-teal-500 border-4 border-white dark:border-slate-900 text-white flex items-center justify-center font-black text-lg z-10 shadow-[0_0_20px_rgba(20,184,166,0.4)] order-1 md:order-2 shrink-0 self-start md:self-center">
+                <div className="hidden md:block"></div>
+                {/* Center Glowing Marker */}
+                <div className="absolute left-0 md:left-1/2 md:-translate-x-1/2 top-1/2 -translate-y-1/2 w-16 h-16 rounded-full bg-teal-500 border-4 border-white dark:border-slate-900 text-white flex items-center justify-center font-black text-lg z-10 shadow-[0_0_20px_rgba(20,184,166,0.4)] transition-all duration-300">
                   <Phone size={22} />
                 </div>
-                <div className="w-full md:w-[45%] order-3 hidden md:block"></div>
               </div>
 
-              {/* Step 4: Right */}
-              <div className="flex flex-col md:flex-row items-start md:items-center md:justify-between group">
-                <div className="w-full md:w-[45%] order-3 hidden md:block"></div>
-                {/* Glowing Marker */}
-                <div className="w-16 h-16 rounded-full bg-rose-500 border-4 border-white dark:border-slate-900 text-white flex items-center justify-center font-black text-lg z-10 shadow-[0_0_20px_rgba(244,63,94,0.4)] order-1 md:order-2 shrink-0 self-start md:self-center">
-                  <Users size={22} />
-                </div>
-                <div className="w-full md:w-[45%] order-2 text-left pl-0 md:pl-10">
+              {/* Step 4: Right Card */}
+              <div className="relative grid grid-cols-1 md:grid-cols-2 md:gap-20 items-center">
+                <div className="hidden md:block"></div>
+                <div className="pl-20 md:pl-12 md:text-left">
                   <div className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border border-white/60 dark:border-slate-800 p-6 rounded-3xl shadow-xl hover:shadow-2xl hover:border-rose-500/20 hover:-translate-y-1 transition-all duration-300">
                     <span className="inline-block px-3 py-1 bg-rose-50 dark:bg-rose-950/60 text-rose-500 dark:text-rose-400 rounded-full text-[10px] font-extrabold uppercase tracking-wider mb-3">Tahap 04</span>
                     <h3 className="text-lg font-black text-slate-800 dark:text-white mb-2">Pemberkasan & Seragam</h3>
                     <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed font-medium">Datang langsung ke sekolah untuk memverifikasi dokumen fisik asli serta melakukan pengukuran baju seragam siswa.</p>
                   </div>
                 </div>
+                {/* Center Glowing Marker */}
+                <div className="absolute left-0 md:left-1/2 md:-translate-x-1/2 top-1/2 -translate-y-1/2 w-16 h-16 rounded-full bg-rose-500 border-4 border-white dark:border-slate-900 text-white flex items-center justify-center font-black text-lg z-10 shadow-[0_0_20px_rgba(244,63,94,0.4)] transition-all duration-300">
+                  <Users size={22} />
+                </div>
               </div>
 
-              {/* Step 5: Left */}
-              <div className="flex flex-col md:flex-row items-start md:items-center md:justify-between group">
-                <div className="w-full md:w-[45%] order-2 md:order-1 text-left md:text-right pr-0 md:pr-10">
+              {/* Step 5: Left Card */}
+              <div className="relative grid grid-cols-1 md:grid-cols-2 md:gap-20 items-center">
+                <div className="pl-20 md:pl-0 md:pr-12 md:text-right">
                   <div className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border border-white/60 dark:border-slate-800 p-6 rounded-3xl shadow-xl hover:shadow-2xl hover:border-indigo-500/20 hover:-translate-y-1 transition-all duration-300">
                     <span className="inline-block px-3 py-1 bg-indigo-50 dark:bg-indigo-950/60 text-indigo-500 dark:text-indigo-400 rounded-full text-[10px] font-extrabold uppercase tracking-wider mb-3">Tahap 05</span>
                     <h3 className="text-lg font-black text-slate-800 dark:text-white mb-2">Uji Kelayakan (Tes Seleksi)</h3>
                     <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed font-medium">Mengikuti serangkaian tes bakat minat, wawancara kepribadian, serta tes kesehatan/fisik dasar calon siswa.</p>
                   </div>
                 </div>
-                {/* Glowing Marker */}
-                <div className="w-16 h-16 rounded-full bg-indigo-600 border-4 border-white dark:border-slate-900 text-white flex items-center justify-center font-black text-lg z-10 shadow-[0_0_20px_rgba(79,70,229,0.4)] order-1 md:order-2 shrink-0 self-start md:self-center">
+                <div className="hidden md:block"></div>
+                {/* Center Glowing Marker */}
+                <div className="absolute left-0 md:left-1/2 md:-translate-x-1/2 top-1/2 -translate-y-1/2 w-16 h-16 rounded-full bg-indigo-600 border-4 border-white dark:border-slate-900 text-white flex items-center justify-center font-black text-lg z-10 shadow-[0_0_20px_rgba(79,70,229,0.4)] transition-all duration-300">
                   <Award size={22} />
                 </div>
-                <div className="w-full md:w-[45%] order-3 hidden md:block"></div>
               </div>
 
-              {/* Step 6: Right */}
-              <div className="flex flex-col md:flex-row items-start md:items-center md:justify-between group">
-                <div className="w-full md:w-[45%] order-3 hidden md:block"></div>
-                {/* Glowing Marker */}
-                <div className="w-16 h-16 rounded-full bg-emerald-500 border-4 border-white dark:border-slate-900 text-white flex items-center justify-center font-black text-lg z-10 shadow-[0_0_20px_rgba(16,185,129,0.4)] order-1 md:order-2 shrink-0 self-start md:self-center">
-                  <ShieldCheck size={22} />
-                </div>
-                <div className="w-full md:w-[45%] order-2 text-left pl-0 md:pl-10">
+              {/* Step 6: Right Card */}
+              <div className="relative grid grid-cols-1 md:grid-cols-2 md:gap-20 items-center">
+                <div className="hidden md:block"></div>
+                <div className="pl-20 md:pl-12 md:text-left">
                   <div className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border border-white/60 dark:border-slate-800 p-6 rounded-3xl shadow-xl hover:shadow-2xl hover:border-emerald-500/20 hover:-translate-y-1 transition-all duration-300">
                     <span className="inline-block px-3 py-1 bg-emerald-50 dark:bg-emerald-950/60 text-emerald-500 dark:text-emerald-400 rounded-full text-[10px] font-extrabold uppercase tracking-wider mb-3">Tahap 06</span>
                     <h3 className="text-lg font-black text-slate-800 dark:text-white mb-2">Pengumuman & Kelulusan</h3>
                     <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed font-medium">Pengumuman kelulusan resmi dan status penerimaan calon peserta didik baru melalui web <span className="font-extrabold text-emerald-600 dark:text-emerald-400">smktarunabhakti.net</span>.</p>
                   </div>
+                </div>
+                {/* Center Glowing Marker */}
+                <div className="absolute left-0 md:left-1/2 md:-translate-x-1/2 top-1/2 -translate-y-1/2 w-16 h-16 rounded-full bg-emerald-500 border-4 border-white dark:border-slate-900 text-white flex items-center justify-center font-black text-lg z-10 shadow-[0_0_20px_rgba(16,185,129,0.4)] transition-all duration-300">
+                  <ShieldCheck size={22} />
                 </div>
               </div>
 
@@ -528,17 +528,80 @@ export default function Home() {
       </section>
 
       {/* FOOTER */}
-      <footer>
-        <div className="max-w-4xl mx-auto flex flex-col md:flex-row justify-between items-center gap-6 text-slate-500">
-          <div className="text-left flex items-start gap-4">
-            <img src="/logo_smktb.png" alt="Logo SMK TB" className="w-12 h-12 object-contain mt-1 shrink-0" />
-            <div>
-              <span className="logo-text font-bold text-slate-700 block mb-1">PPDB SMK Taruna Bhakti Depok</span>
-              <p className="max-w-xs text-xs leading-relaxed">Jalan Pekapuran Kel. Curug, Kec. Cimanggis, Kota Depok, Jawa Barat 16453</p>
+      <footer className="bg-slate-100 dark:bg-slate-950 border-t border-slate-200/50 dark:border-slate-900 py-16 transition-colors duration-300 relative z-10 mt-auto">
+        <div className="max-w-6xl mx-auto px-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 text-slate-500 dark:text-slate-400">
+            {/* Col 1: Brand & Socials */}
+            <div className="space-y-4">
+              <div className="flex items-center gap-3">
+                <img src="/logo_smktb.png" alt="Logo SMK TB" className="w-12 h-12 object-contain shrink-0" />
+                <div>
+                  <span className="logo-text font-black text-slate-800 dark:text-white text-lg">PPDB <span className="text-blue-600 dark:text-sky-400">SMK TB</span></span>
+                  <span className="block text-[10px] font-bold tracking-widest text-slate-400 dark:text-slate-500 uppercase mt-0.5">SMK Taruna Bhakti</span>
+                </div>
+              </div>
+              <p className="text-xs leading-relaxed font-medium">
+                Pionir pendidikan kejuruan teknologi informasi dan industri kreatif. Membina talenta unggul berkarakter mulia dan berdaya saing global sejak 1987.
+              </p>
+              <div className="flex items-center gap-3 pt-2">
+                <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" className="w-8 h-8 rounded-full bg-slate-200 dark:bg-slate-800 flex items-center justify-center text-slate-600 dark:text-slate-300 hover:bg-blue-600 hover:text-white dark:hover:bg-sky-500 dark:hover:text-slate-950 transition-all duration-300 hover:-translate-y-0.5">
+                  <span className="text-xs font-bold">IG</span>
+                </a>
+                <a href="https://youtube.com" target="_blank" rel="noopener noreferrer" className="w-8 h-8 rounded-full bg-slate-200 dark:bg-slate-800 flex items-center justify-center text-slate-600 dark:text-slate-300 hover:bg-blue-600 hover:text-white dark:hover:bg-sky-500 dark:hover:text-slate-950 transition-all duration-300 hover:-translate-y-0.5">
+                  <span className="text-xs font-bold">YT</span>
+                </a>
+                <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" className="w-8 h-8 rounded-full bg-slate-200 dark:bg-slate-800 flex items-center justify-center text-slate-600 dark:text-slate-300 hover:bg-blue-600 hover:text-white dark:hover:bg-sky-500 dark:hover:text-slate-950 transition-all duration-300 hover:-translate-y-0.5">
+                  <span className="text-xs font-bold">FB</span>
+                </a>
+              </div>
+            </div>
+
+            {/* Col 2: Kompetensi Keahlian */}
+            <div className="space-y-4">
+              <h4 className="text-xs font-black uppercase tracking-wider text-slate-800 dark:text-white">Program Keahlian</h4>
+              <ul className="space-y-2 text-xs font-semibold">
+                <li><Link href="/jurusan/rpl" className="hover:text-blue-600 dark:hover:text-sky-400 transition-colors">Rekayasa Perangkat Lunak (PPLG)</Link></li>
+                <li><Link href="/jurusan/tjkt" className="hover:text-blue-600 dark:hover:text-sky-400 transition-colors">Teknik Jaringan Komputer &amp; Telkom (TJKT)</Link></li>
+                <li><Link href="/jurusan/dkv" className="hover:text-blue-600 dark:hover:text-sky-400 transition-colors">Desain Komunikasi Visual (DKV)</Link></li>
+                <li><Link href="/jurusan/bc" className="hover:text-blue-600 dark:hover:text-sky-400 transition-colors">Broadcasting &amp; Perfilman (BC)</Link></li>
+                <li><Link href="/jurusan/an" className="hover:text-blue-600 dark:hover:text-sky-400 transition-colors">Animasi (AN)</Link></li>
+                <li><Link href="/jurusan/te" className="hover:text-blue-600 dark:hover:text-sky-400 transition-colors">Teknik Elektronika (TE)</Link></li>
+              </ul>
+            </div>
+
+            {/* Col 3: Portal Informasi */}
+            <div className="space-y-4">
+              <h4 className="text-xs font-black uppercase tracking-wider text-slate-800 dark:text-white">Portal PPDB</h4>
+              <ul className="space-y-2 text-xs font-semibold">
+                <li><Link href="/daftar" className="hover:text-blue-600 dark:hover:text-sky-400 transition-colors">Pendaftaran Online</Link></li>
+                <li><a href="#alur" className="hover:text-blue-600 dark:hover:text-sky-400 transition-colors">Alur &amp; Prosedur</a></li>
+                <li><a href="#majors" className="hover:text-blue-600 dark:hover:text-sky-400 transition-colors">Syarat Kompetensi</a></li>
+                <li><a href="#kemitraan" className="hover:text-blue-600 dark:hover:text-sky-400 transition-colors">Kerjasama Industri</a></li>
+                <li><Link href="/dashboard" className="hover:text-blue-600 dark:hover:text-sky-400 transition-colors">Dashboard Seleksi Admin</Link></li>
+              </ul>
+            </div>
+
+            {/* Col 4: Hubungi Kami */}
+            <div className="space-y-4">
+              <h4 className="text-xs font-black uppercase tracking-wider text-slate-800 dark:text-white">Hubungi Kami</h4>
+              <p className="text-xs leading-relaxed font-semibold">
+                Jalan Pekapuran Kel. Curug, Kec. Cimanggis, Kota Depok, Jawa Barat 16453
+              </p>
+              <div className="space-y-1.5 text-xs font-semibold text-slate-500 dark:text-slate-400">
+                <p>Telp: <span className="text-slate-700 dark:text-slate-350">+62 21 874 4810</span></p>
+                <p>WhatsApp: <span className="text-slate-700 dark:text-slate-350">08119892324</span></p>
+                <p>Email: <span className="text-slate-700 dark:text-slate-350">info@smktarunabhakti.sch.id</span></p>
+              </div>
             </div>
           </div>
-          <div className="text-xs">
-            &copy; {new Date().getFullYear()} SMK Taruna Bhakti Depok. Made with 💙 for futuristic education.
+
+          <div className="border-t border-slate-200/50 dark:border-slate-900 mt-12 pt-8 flex flex-col md:flex-row justify-between items-center gap-4 text-center md:text-left text-xs font-semibold text-slate-400 dark:text-slate-500">
+            <div>
+              &copy; {new Date().getFullYear()} SMK Taruna Bhakti Depok. All rights reserved.
+            </div>
+            <div className="flex items-center gap-1.5">
+              <span>Made with 💙 for futuristic education</span>
+            </div>
           </div>
         </div>
       </footer>

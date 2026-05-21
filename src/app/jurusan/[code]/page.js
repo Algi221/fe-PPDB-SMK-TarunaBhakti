@@ -283,6 +283,11 @@ export default function MajorPage() {
   const code = params?.code ? params.code.toString().toLowerCase() : "";
   const major = majorsData[code];
 
+  const majorKeys = ["rpl", "tjkt", "dkv", "bc", "an", "te"];
+  const currentIndex = majorKeys.indexOf(code);
+  const nextCode = currentIndex !== -1 ? majorKeys[(currentIndex + 1) % majorKeys.length] : "rpl";
+  const nextMajor = majorsData[nextCode];
+
   const [isDark, setIsDark] = useState(false);
 
   useEffect(() => {
@@ -343,37 +348,25 @@ export default function MajorPage() {
         <div className="bg-glow bg-glow-3"></div>
       </div>
 
-      {/* FIXED GLASS NAVIGATION */}
-      <div className="navbar-wrapper">
-        <nav className="navbar scrolled">
-          <div className="nav-left">
-            <Link href="/" className="logo-container">
-              <img src="/logo_smktb.png" alt="Logo SMK TB" className="w-9 h-9 object-contain" />
-              <span className="logo-text font-extrabold">PPDB <span>SMK TB</span></span>
-            </Link>
-          </div>
+      {/* Floating Action Buttons */}
+      <div className="fixed top-6 left-6 z-50">
+        <Link 
+          href="/" 
+          className="flex items-center gap-2 px-4 py-2.5 rounded-full bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-200 font-bold text-xs shadow-lg shadow-slate-200/20 dark:shadow-none hover:bg-slate-50 dark:hover:bg-slate-800 hover:border-slate-350 dark:hover:border-slate-700 transition-all group"
+        >
+          <ArrowLeft size={14} className="transform group-hover:-translate-x-0.5 transition-transform" />
+          <span>Kembali</span>
+        </Link>
+      </div>
 
-          <div className="hidden md:flex items-center gap-1">
-            <Link href="/" className="btn-nav-link text-xs">Beranda</Link>
-            <span className="text-slate-300 dark:text-slate-700">/</span>
-            <span className={`text-xs font-bold px-3 py-1 rounded-full ${major.bgAccent} ${major.textAccent}`}>
-              {major.alias}
-            </span>
-          </div>
-
-          <div className="flex items-center gap-3">
-            <button 
-              onClick={toggleDark} 
-              className="flex items-center justify-center w-10 h-10 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors border border-slate-200 dark:border-slate-700" 
-              title={isDark ? "Mode Terang" : "Mode Gelap"}
-            >
-              {isDark ? <Sun size={18} /> : <Moon size={18} />}
-            </button>
-            <Link href="/daftar" className="btn-primary-pill">
-              Daftar Sekarang
-            </Link>
-          </div>
-        </nav>
+      <div className="fixed top-6 right-6 z-50">
+        <button 
+          onClick={toggleDark} 
+          className="flex items-center justify-center w-10 h-10 rounded-full bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-200 shadow-lg shadow-slate-200/20 dark:shadow-none hover:bg-slate-50 dark:hover:bg-slate-800 hover:border-slate-350 dark:hover:border-slate-700 transition-all" 
+          title={isDark ? 'Mode Terang' : 'Mode Gelap'}
+        >
+          {isDark ? <Sun size={18} className="text-amber-500" /> : <Moon size={18} className="text-slate-750" />}
+        </button>
       </div>
 
       {/* HERO SECTION - Premium Branding */}
@@ -658,36 +651,115 @@ export default function MajorPage() {
         </div>
       </section>
 
+      {/* EXPLORE NEXT MAJOR CTA */}
+      <section className="py-16 max-w-6xl mx-auto px-6 w-full relative z-10">
+        <div className="bg-white/40 dark:bg-slate-900/40 backdrop-blur-xl border border-slate-200/50 dark:border-slate-800 rounded-[3rem] p-8 md:p-12 shadow-xl relative overflow-hidden flex flex-col md:flex-row items-center justify-between gap-8 group">
+          {/* Subtle colored accent bubble */}
+          <div className={`absolute -right-24 -bottom-24 w-80 h-80 rounded-full bg-gradient-to-r ${nextMajor.color} opacity-10 dark:opacity-20 blur-3xl pointer-events-none group-hover:scale-110 transition duration-700`}></div>
+          
+          <div className="space-y-4 max-w-2xl text-left relative z-10">
+            <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider ${nextMajor.bgAccent} ${nextMajor.textAccent}`}>
+              <Sparkles size={12} className="animate-pulse" />
+              Eksplor Jurusan Lain
+            </span>
+            <h2 className="text-2xl md:text-3xl font-extrabold text-slate-800 dark:text-white">
+              Tertarik Melihat Jurusan <span className={`bg-gradient-to-r ${nextMajor.color} bg-clip-text text-transparent`}>{nextMajor.title} ({nextMajor.alias})</span>?
+            </h2>
+            <p className="text-sm text-slate-500 dark:text-slate-400 leading-relaxed font-medium">
+              {nextMajor.desc.length > 180 ? nextMajor.desc.slice(0, 180) + "..." : nextMajor.desc}
+            </p>
+          </div>
+
+          <div className="shrink-0 relative z-10 w-full md:w-auto">
+            <Link 
+              href={`/jurusan/${nextCode}`}
+              className={`flex items-center justify-center gap-2 bg-gradient-to-r ${nextMajor.color} hover:opacity-90 text-white font-extrabold px-6 py-3.5 rounded-2xl shadow-lg shadow-slate-950/5 hover:scale-[1.02] active:scale-[0.98] transition-all w-full md:w-auto group/btn`}
+            >
+              <span>Lihat Detail {nextMajor.alias}</span>
+              <ArrowRight size={16} className="transform group-hover/btn:translate-x-1 transition-transform" />
+            </Link>
+          </div>
+        </div>
+      </section>
+
       {/* FOOTER */}
-      <footer className="mt-auto py-8 border-t border-slate-200 dark:border-slate-900 bg-white dark:bg-slate-950 transition-colors duration-300">
-        <div className="max-w-4xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-6 text-slate-500">
-          <div className="text-left flex items-start gap-4">
-            <img src="/logo_smktb.png" alt="Logo SMK TB" className="w-12 h-12 object-contain mt-1 shrink-0" />
-            <div>
-              <span className="logo-text font-bold text-slate-700 dark:text-slate-300 block mb-1">
-                PPDB SMK Taruna Bhakti Depok
-              </span>
-              <p className="max-w-xs text-xs leading-relaxed dark:text-slate-400">
+      <footer className="bg-slate-100 dark:bg-slate-950 border-t border-slate-200/50 dark:border-slate-900 py-16 transition-colors duration-300 relative z-10 mt-auto">
+        <div className="max-w-6xl mx-auto px-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 text-slate-500 dark:text-slate-400">
+            {/* Col 1: Brand & Socials */}
+            <div className="space-y-4">
+              <div className="flex items-center gap-3">
+                <img src="/logo_smktb.png" alt="Logo SMK TB" className="w-12 h-12 object-contain shrink-0" />
+                <div>
+                  <span className="logo-text font-black text-slate-800 dark:text-white text-lg">PPDB <span className="text-blue-600 dark:text-sky-400">SMK TB</span></span>
+                  <span className="block text-[10px] font-bold tracking-widest text-slate-400 dark:text-slate-500 uppercase mt-0.5">SMK Taruna Bhakti</span>
+                </div>
+              </div>
+              <p className="text-xs leading-relaxed font-medium">
+                Pionir pendidikan kejuruan teknologi informasi dan industri kreatif. Membina talenta unggul berkarakter mulia dan berdaya saing global sejak 1987.
+              </p>
+              <div className="flex items-center gap-3 pt-2">
+                <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" className="w-8 h-8 rounded-full bg-slate-200 dark:bg-slate-800 flex items-center justify-center text-slate-600 dark:text-slate-300 hover:bg-blue-600 hover:text-white dark:hover:bg-sky-500 dark:hover:text-slate-950 transition-all duration-300 hover:-translate-y-0.5">
+                  <span className="text-xs font-bold">IG</span>
+                </a>
+                <a href="https://youtube.com" target="_blank" rel="noopener noreferrer" className="w-8 h-8 rounded-full bg-slate-200 dark:bg-slate-800 flex items-center justify-center text-slate-600 dark:text-slate-300 hover:bg-blue-600 hover:text-white dark:hover:bg-sky-500 dark:hover:text-slate-950 transition-all duration-300 hover:-translate-y-0.5">
+                  <span className="text-xs font-bold">YT</span>
+                </a>
+                <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" className="w-8 h-8 rounded-full bg-slate-200 dark:bg-slate-800 flex items-center justify-center text-slate-600 dark:text-slate-300 hover:bg-blue-600 hover:text-white dark:hover:bg-sky-500 dark:hover:text-slate-950 transition-all duration-300 hover:-translate-y-0.5">
+                  <span className="text-xs font-bold">FB</span>
+                </a>
+              </div>
+            </div>
+
+            {/* Col 2: Kompetensi Keahlian */}
+            <div className="space-y-4">
+              <h4 className="text-xs font-black uppercase tracking-wider text-slate-800 dark:text-white">Program Keahlian</h4>
+              <ul className="space-y-2 text-xs font-semibold">
+                <li><Link href="/jurusan/rpl" className="hover:text-blue-600 dark:hover:text-sky-400 transition-colors">Rekayasa Perangkat Lunak (PPLG)</Link></li>
+                <li><Link href="/jurusan/tjkt" className="hover:text-blue-600 dark:hover:text-sky-400 transition-colors">Teknik Jaringan Komputer &amp; Telkom (TJKT)</Link></li>
+                <li><Link href="/jurusan/dkv" className="hover:text-blue-600 dark:hover:text-sky-400 transition-colors">Desain Komunikasi Visual (DKV)</Link></li>
+                <li><Link href="/jurusan/bc" className="hover:text-blue-600 dark:hover:text-sky-400 transition-colors">Broadcasting &amp; Perfilman (BC)</Link></li>
+                <li><Link href="/jurusan/an" className="hover:text-blue-600 dark:hover:text-sky-400 transition-colors">Animasi (AN)</Link></li>
+                <li><Link href="/jurusan/te" className="hover:text-blue-600 dark:hover:text-sky-400 transition-colors">Teknik Elektronika (TE)</Link></li>
+              </ul>
+            </div>
+
+            {/* Col 3: Portal Informasi */}
+            <div className="space-y-4">
+              <h4 className="text-xs font-black uppercase tracking-wider text-slate-800 dark:text-white">Portal PPDB</h4>
+              <ul className="space-y-2 text-xs font-semibold">
+                <li><Link href="/daftar" className="hover:text-blue-600 dark:hover:text-sky-400 transition-colors">Pendaftaran Online</Link></li>
+                <li><Link href="/#alur" className="hover:text-blue-600 dark:hover:text-sky-400 transition-colors">Alur &amp; Prosedur</Link></li>
+                <li><Link href="/#majors" className="hover:text-blue-600 dark:hover:text-sky-400 transition-colors">Syarat Kompetensi</Link></li>
+                <li><Link href="/#kemitraan" className="hover:text-blue-600 dark:hover:text-sky-400 transition-colors">Kerjasama Industri</Link></li>
+                <li><Link href="/dashboard" className="hover:text-blue-600 dark:hover:text-sky-400 transition-colors">Dashboard Seleksi Admin</Link></li>
+              </ul>
+            </div>
+
+            {/* Col 4: Hubungi Kami */}
+            <div className="space-y-4">
+              <h4 className="text-xs font-black uppercase tracking-wider text-slate-800 dark:text-white">Hubungi Kami</h4>
+              <p className="text-xs leading-relaxed font-semibold">
                 Jalan Pekapuran Kel. Curug, Kec. Cimanggis, Kota Depok, Jawa Barat 16453
               </p>
+              <div className="space-y-1.5 text-xs font-semibold text-slate-500 dark:text-slate-400">
+                <p>Telp: <span className="text-slate-700 dark:text-slate-350">+62 21 874 4810</span></p>
+                <p>WhatsApp: <span className="text-slate-700 dark:text-slate-350">08119892324</span></p>
+                <p>Email: <span className="text-slate-700 dark:text-slate-350">info@smktarunabhakti.sch.id</span></p>
+              </div>
             </div>
           </div>
-          <div className="text-xs dark:text-slate-400">
-            &copy; {new Date().getFullYear()} SMK Taruna Bhakti Depok. Made with 💙 for futuristic education.
+
+          <div className="border-t border-slate-200/50 dark:border-slate-900 mt-12 pt-8 flex flex-col md:flex-row justify-between items-center gap-4 text-center md:text-left text-xs font-semibold text-slate-400 dark:text-slate-500">
+            <div>
+              &copy; {new Date().getFullYear()} SMK Taruna Bhakti Depok. All rights reserved.
+            </div>
+            <div className="flex items-center gap-1.5">
+              <span>Made with 💙 for futuristic education</span>
+            </div>
           </div>
         </div>
       </footer>
-
-      {/* FLOATING RETRACTABLE BACK BUTTON */}
-      <div className="fixed bottom-6 right-6 z-50">
-        <Link 
-          href="/" 
-          className="flex items-center gap-2 px-5 py-3 rounded-full bg-slate-900/90 dark:bg-white/90 text-white dark:text-slate-950 font-bold text-xs shadow-[0_10px_30px_rgba(0,0,0,0.15)] hover:shadow-[0_15px_35px_rgba(0,0,0,0.25)] hover:scale-105 transition-all duration-300 border border-white/10 dark:border-black/5 backdrop-blur-md"
-        >
-          <ArrowLeft size={14} className="stroke-[2.5]" />
-          <span>Kembali</span>
-        </Link>
-      </div>
 
     </div>
   );
