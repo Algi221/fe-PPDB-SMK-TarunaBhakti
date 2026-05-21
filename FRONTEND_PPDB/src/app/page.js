@@ -42,6 +42,20 @@ export default function Home() {
   const [activeModal, setActiveModal] = useState(null); // 'syarat' | 'alur' | 'beasiswa'
   const [selectedMajorDetail, setSelectedMajorDetail] = useState(null); // PPLG | TKJ | DKV | BC | TE
   
+  // Video Background Logic
+  const [currentVideo, setCurrentVideo] = useState(0);
+  const videos = ["/videos/vid1.mp4", "/videos/vid2.mp4"];
+  const videoRef = React.useRef(null);
+
+  const handleVideoEnded = () => {
+    setCurrentVideo((prev) => (prev + 1) % videos.length);
+  };
+
+  useEffect(() => {
+    if (videoRef.current) {
+      videoRef.current.play().catch(e => console.log(e));
+    }
+  }, [currentVideo]);
 
 
   // Dark Mode
@@ -116,7 +130,7 @@ export default function Home() {
       code: "RPL",
       title: "Rekayasa Perangkat Lunak",
       icon: Cpu,
-      logo: "/jurusan/logo-rpl.png",
+      logo: "/jurusan/pplg.jpeg",
       desc: "Belajar pemrograman web, aplikasi mobile, game development, cloud computing, serta kecerdasan buatan (AI) dengan teknologi mutakhir.",
       color: "#0066ff",
       careers: "Software Engineer, Web Developer, Mobile Developer, Game Designer, AI Specialist",
@@ -126,7 +140,7 @@ export default function Home() {
       code: "TJKT",
       title: "Teknik Jaringan Komputer & Telekomunikasi",
       icon: Layers,
-      logo: "/jurusan/logo-tjkt.png",
+      logo: "/jurusan/tjkt.jpeg",
       desc: "Fokus pada perancangan jaringan, administrasi server Linux & Windows, keamanan cyber, infrastruktur cloud, dan sertifikasi CISCO.",
       color: "#0ea5e9",
       careers: "Network Engineer, Cloud Administrator, Cybersecurity Analyst, System Administrator",
@@ -136,7 +150,7 @@ export default function Home() {
       code: "DKV",
       title: "Desain Komunikasi Visual",
       icon: BookOpen,
-      logo: "/jurusan/logo-dkv.png",
+      logo: "/jurusan/dkv.jpeg",
       desc: "Ekspresikan kreativitas lewat UI/UX design, desain grafis, ilustrasi digital, videografi, fotografi komersil, serta branding korporat.",
       color: "#6366f1",
       careers: "UI/UX Designer, Graphic Designer, Illustrator, Creative Director, Brand Specialist",
@@ -146,7 +160,7 @@ export default function Home() {
       code: "BC",
       title: "Broadcasting & Perfilman",
       icon: Video,
-      logo: "/jurusan/logo-bc.png",
+      logo: "/jurusan/bc.jpeg",
       desc: "Pelajari dunia penyiaran televisi, podcasting, penulisan naskah, penyutradaraan film, tata kamera, serta editing video profesional.",
       color: "#f59e0b",
       careers: "Video Editor, Cameraman, Director, Scriptwriter, Podcast Producer, Content Creator",
@@ -156,7 +170,7 @@ export default function Home() {
       code: "AN",
       title: "Animasi",
       icon: Palette,
-      logo: "/jurusan/logo-animasi.png",
+      logo: "/jurusan/animasijpeg.jpeg",
       desc: "Kuasai seni pemodelan 2D/3D, karakter rigging, rendering, digital sculpting, storyboard, serta visual effects (VFX) standar industri perfilman.",
       color: "#ec4899",
       careers: "3D Animator, 2D Animator, 3D Modeler, Storyboard Artist, VFX Compositor, Character Designer",
@@ -166,7 +180,7 @@ export default function Home() {
       code: "TE",
       title: "Teknik Elektronika",
       icon: Cpu,
-      logo: "/jurusan/logo-te.png",
+      logo: "/jurusan/te.jpeg",
       desc: "Pelajari teknologi mikroprosesor, Internet of Things (IoT), robotika cerdas, automasi industri, dan smart home system.",
       color: "#10b981",
       careers: "IoT Engineer, Robotics Technician, Automation Programmer, Hardware Specialist",
@@ -177,12 +191,6 @@ export default function Home() {
   return (
     <div className="relative min-h-screen flex flex-col overflow-x-hidden">
       
-      {/* Background Glowing Blobs */}
-      <div className="bg-glow-container">
-        <div className="bg-glow bg-glow-1"></div>
-        <div className="bg-glow bg-glow-2"></div>
-        <div className="bg-glow bg-glow-3"></div>
-      </div>
 
       {/* FLOATING NAVBAR */}
       <div className="navbar-wrapper">
@@ -215,13 +223,30 @@ export default function Home() {
         </nav>
       </div>
 
-      {/* HERO SECTION */}
-      <section className="hero">
+      {/* HERO SECTION WRAPPER */}
+      <div className="relative w-full overflow-hidden">
+        {/* Video Background - Full Width */}
+        <div className="absolute inset-0 w-full h-full z-0 overflow-hidden bg-slate-100">
+          <video
+            ref={videoRef}
+            src={videos[currentVideo]}
+            autoPlay
+            muted
+            playsInline
+            onEnded={handleVideoEnded}
+            className="w-full h-full object-cover transition-opacity duration-1000"
+          />
+          {/* Overlay agar teks tetap bisa dibaca */}
+          <div className="absolute inset-0 bg-white/50 dark:bg-slate-950/60 backdrop-blur-sm"></div>
+        </div>
+
+        {/* HERO SECTION */}
+        <section className="hero">
         
         {/* Floating elements representing major names as requested */}
         <div className="floating-badge badge-aset" onClick={() => { setSelectedMajorDetail(majors[0]); }}>
           <div className="badge-icon overflow-hidden" style={{background: 'transparent'}}>
-            <img src="/jurusan/logo-rpl.png" alt="RPL" className="w-full h-full object-contain" onError={(e) => { e.target.style.display='none'; }} />
+            <img src="/jurusan/pplg.jpeg" alt="RPL" className="w-full h-full object-cover rounded-full" onError={(e) => { e.target.style.display='none'; }} />
           </div>
           <div className="badge-info">
             <span>PPLG</span>
@@ -230,7 +255,7 @@ export default function Home() {
 
         <div className="floating-badge badge-peminjaman" onClick={() => { setSelectedMajorDetail(majors[1]); }}>
           <div className="badge-icon overflow-hidden" style={{background: 'transparent'}}>
-            <img src="/jurusan/logo-tjkt.png" alt="TJKT" className="w-full h-full object-contain" onError={(e) => { e.target.style.display='none'; }} />
+            <img src="/jurusan/tjkt.jpeg" alt="TJKT" className="w-full h-full object-cover rounded-full" onError={(e) => { e.target.style.display='none'; }} />
           </div>
           <div className="badge-info">
             <span>TJKT</span>
@@ -239,7 +264,7 @@ export default function Home() {
 
         <div className="floating-badge badge-laporan" onClick={() => { setSelectedMajorDetail(majors[2]); }}>
           <div className="badge-icon overflow-hidden" style={{background: 'transparent'}}>
-            <img src="/jurusan/logo-dkv.png" alt="DKV" className="w-full h-full object-contain" onError={(e) => { e.target.style.display='none'; }} />
+            <img src="/jurusan/dkv.jpeg" alt="DKV" className="w-full h-full object-cover rounded-full" onError={(e) => { e.target.style.display='none'; }} />
           </div>
           <div className="badge-info">
             <span>DKV</span>
@@ -248,7 +273,7 @@ export default function Home() {
 
         <div className="floating-badge badge-animasi" onClick={() => { setSelectedMajorDetail(majors[4]); }}>
           <div className="badge-icon overflow-hidden" style={{background: 'transparent'}}>
-            <img src="/jurusan/logo-animasi.png" alt="Animasi" className="w-full h-full object-contain" onError={(e) => { e.target.style.display='none'; }} />
+            <img src="/jurusan/animasijpeg.jpeg" alt="Animasi" className="w-full h-full object-cover rounded-full" onError={(e) => { e.target.style.display='none'; }} />
           </div>
           <div className="badge-info">
             <span>Animasi</span>
@@ -257,7 +282,7 @@ export default function Home() {
 
         <div className="floating-badge badge-kelas" onClick={() => { setSelectedMajorDetail(majors[3]); }}>
           <div className="badge-icon overflow-hidden" style={{background: 'transparent'}}>
-            <img src="/jurusan/logo-bc.png" alt="Broadcasting" className="w-full h-full object-contain" onError={(e) => { e.target.style.display='none'; }} />
+            <img src="/jurusan/bc.jpeg" alt="Broadcasting" className="w-full h-full object-cover rounded-full" onError={(e) => { e.target.style.display='none'; }} />
           </div>
           <div className="badge-info">
             <span>Broadcasting</span>
@@ -265,16 +290,16 @@ export default function Home() {
         </div>
 
         {/* Hero Copy */}
-        <div className="badge-wrapper">
+        <div className="badge-wrapper relative z-10">
           <span className="badge-pill">SMK TARUNA BHAKTI DEPOK</span>
         </div>
 
-        <h1 className="hero-title">
+        <h1 className="hero-title relative z-10">
           Penerimaan Siswa Baru <br />
           <span>Portal PPDB SMK Taruna Bhakti</span>
         </h1>
 
-        <p className="hero-subtitle">
+        <p className="hero-subtitle relative z-10">
           Mulai langkah awal wujudkan masa depan cemerlang di bidang teknologi informasi. 
           Proses pendaftaran online yang mudah, transparan, dan terintegrasi penuh.
         </p>
@@ -286,7 +311,7 @@ export default function Home() {
         </div>
 
         {/* APP MOCKUP WRAPPER */}
-        <div className="mockup-container">
+        <div className="mockup-container relative z-10">
           <div className="app-mockup">
             
             {/* Mockup Browser Top bar */}
@@ -309,6 +334,7 @@ export default function Home() {
         </div>
 
       </section>
+      </div>
 
       {/* ALUR PENDAFTARAN */}
       <section id="alur" className="py-24 bg-white/40 backdrop-blur-md relative z-10 border-y border-slate-200/50">

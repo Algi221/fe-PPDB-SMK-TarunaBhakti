@@ -20,6 +20,14 @@ const mockData = [
   { id: 12, nama: "Kartika Putri", nisn: "0093344334", kelamin: "Perempuan", asalSekolah: "SMPN 2 Cibinong", jurusan1: "Animasi", jurusan2: "Desain Komunikasi Visual", status: "Terverifikasi", tglDaftar: "18 Mei 2026", noHp: "083345678901", email: "kartika@email.com", alamat: "Bojonggede, Bogor", ayah: "Agus", ibu: "Rini" }
 ];
 
+// Status Badge Component
+const StatusBadge = ({ status }) => {
+  if (status === "Terverifikasi") return <span className="inline-flex items-center gap-1.5 px-3 py-1 text-xs font-semibold rounded-full bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800"><CheckCircle size={12}/> Terverifikasi</span>;
+  if (status === "Menunggu Verifikasi") return <span className="inline-flex items-center gap-1.5 px-3 py-1 text-xs font-semibold rounded-full bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400 border border-amber-200 dark:border-amber-800"><Clock size={12}/> Menunggu</span>;
+  if (status === "Ditolak") return <span className="inline-flex items-center gap-1.5 px-3 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400 border border-red-200 dark:border-red-800"><XCircle size={12}/> Ditolak</span>;
+  return null;
+};
+
 export default function DataPendaftarPage() {
   const [isDark, setIsDark] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
@@ -64,13 +72,6 @@ export default function DataPendaftarPage() {
   const startIndex = (currentPage - 1) * itemsPerPage;
   const currentData = filteredData.slice(startIndex, startIndex + itemsPerPage);
 
-  // Status Badge Component
-  const StatusBadge = ({ status }) => {
-    if (status === "Terverifikasi") return <span className="inline-flex items-center gap-1.5 px-3 py-1 text-xs font-semibold rounded-full bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800"><CheckCircle size={12}/> Terverifikasi</span>;
-    if (status === "Menunggu Verifikasi") return <span className="inline-flex items-center gap-1.5 px-3 py-1 text-xs font-semibold rounded-full bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400 border border-amber-200 dark:border-amber-800"><Clock size={12}/> Menunggu</span>;
-    if (status === "Ditolak") return <span className="inline-flex items-center gap-1.5 px-3 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400 border border-red-200 dark:border-red-800"><XCircle size={12}/> Ditolak</span>;
-    return null;
-  };
 
   return (
     <div className="relative min-h-screen bg-slate-50 dark:bg-slate-900 transition-colors duration-300">

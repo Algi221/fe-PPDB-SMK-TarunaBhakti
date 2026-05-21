@@ -74,6 +74,9 @@ export default function DataPendaftarTable() {
             <option value="Rekayasa Perangkat Lunak">RPL</option>
             <option value="Teknik Jaringan Komputer & Telekomunikasi">TJKT</option>
             <option value="Desain Komunikasi Visual">DKV</option>
+            <option value="Broadcasting & Perfilman">BC</option>
+            <option value="Animasi">Animasi</option>
+            <option value="Teknik Elektronika">TE</option>
           </select>
 
         </div>
@@ -109,7 +112,7 @@ export default function DataPendaftarTable() {
                     <td className="px-4 py-3">
                       <button
                         onClick={(e) => { e.stopPropagation(); setSelectedStudent(item); }}
-                        className="inline-flex items-center gap-1 text-[10px] font-bold text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 transition-colors opacity-0 group-hover:opacity-100 bg-blue-50/50 dark:bg-blue-900/20 px-2 py-1.5 rounded-md"
+                        className="inline-flex items-center gap-1 text-[10px] font-bold text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 transition-colors bg-blue-50/50 dark:bg-blue-900/20 px-2 py-1.5 rounded-md"
                       >
                         Detail <ArrowRight size={12} />
                       </button>
