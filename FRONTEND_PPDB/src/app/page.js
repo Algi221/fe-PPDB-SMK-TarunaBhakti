@@ -28,7 +28,8 @@ import {
   Palette,
   Sun,
   Moon,
-  Users
+  Users,
+  Phone
 } from "lucide-react";
 
 import DataPendaftarTable from "../components/DataPendaftarTable";
@@ -115,6 +116,7 @@ export default function Home() {
       code: "RPL",
       title: "Rekayasa Perangkat Lunak",
       icon: Cpu,
+      logo: "/jurusan/logo-rpl.png",
       desc: "Belajar pemrograman web, aplikasi mobile, game development, cloud computing, serta kecerdasan buatan (AI) dengan teknologi mutakhir.",
       color: "#0066ff",
       careers: "Software Engineer, Web Developer, Mobile Developer, Game Designer, AI Specialist",
@@ -124,6 +126,7 @@ export default function Home() {
       code: "TJKT",
       title: "Teknik Jaringan Komputer & Telekomunikasi",
       icon: Layers,
+      logo: "/jurusan/logo-tjkt.png",
       desc: "Fokus pada perancangan jaringan, administrasi server Linux & Windows, keamanan cyber, infrastruktur cloud, dan sertifikasi CISCO.",
       color: "#0ea5e9",
       careers: "Network Engineer, Cloud Administrator, Cybersecurity Analyst, System Administrator",
@@ -133,6 +136,7 @@ export default function Home() {
       code: "DKV",
       title: "Desain Komunikasi Visual",
       icon: BookOpen,
+      logo: "/jurusan/logo-dkv.png",
       desc: "Ekspresikan kreativitas lewat UI/UX design, desain grafis, ilustrasi digital, videografi, fotografi komersil, serta branding korporat.",
       color: "#6366f1",
       careers: "UI/UX Designer, Graphic Designer, Illustrator, Creative Director, Brand Specialist",
@@ -142,6 +146,7 @@ export default function Home() {
       code: "BC",
       title: "Broadcasting & Perfilman",
       icon: Video,
+      logo: "/jurusan/logo-bc.png",
       desc: "Pelajari dunia penyiaran televisi, podcasting, penulisan naskah, penyutradaraan film, tata kamera, serta editing video profesional.",
       color: "#f59e0b",
       careers: "Video Editor, Cameraman, Director, Scriptwriter, Podcast Producer, Content Creator",
@@ -151,6 +156,7 @@ export default function Home() {
       code: "AN",
       title: "Animasi",
       icon: Palette,
+      logo: "/jurusan/logo-animasi.png",
       desc: "Kuasai seni pemodelan 2D/3D, karakter rigging, rendering, digital sculpting, storyboard, serta visual effects (VFX) standar industri perfilman.",
       color: "#ec4899",
       careers: "3D Animator, 2D Animator, 3D Modeler, Storyboard Artist, VFX Compositor, Character Designer",
@@ -160,6 +166,7 @@ export default function Home() {
       code: "TE",
       title: "Teknik Elektronika",
       icon: Cpu,
+      logo: "/jurusan/logo-te.png",
       desc: "Pelajari teknologi mikroprosesor, Internet of Things (IoT), robotika cerdas, automasi industri, dan smart home system.",
       color: "#10b981",
       careers: "IoT Engineer, Robotics Technician, Automation Programmer, Hardware Specialist",
@@ -213,17 +220,17 @@ export default function Home() {
         
         {/* Floating elements representing major names as requested */}
         <div className="floating-badge badge-aset" onClick={() => { setSelectedMajorDetail(majors[0]); }}>
-          <div className="badge-icon">
-            <Cpu size={18} />
+          <div className="badge-icon overflow-hidden" style={{background: 'transparent'}}>
+            <img src="/jurusan/logo-rpl.png" alt="RPL" className="w-full h-full object-contain" onError={(e) => { e.target.style.display='none'; }} />
           </div>
           <div className="badge-info">
-            <span>RPL</span>
+            <span>PPLG</span>
           </div>
         </div>
 
         <div className="floating-badge badge-peminjaman" onClick={() => { setSelectedMajorDetail(majors[1]); }}>
-          <div className="badge-icon">
-            <Layers size={18} />
+          <div className="badge-icon overflow-hidden" style={{background: 'transparent'}}>
+            <img src="/jurusan/logo-tjkt.png" alt="TJKT" className="w-full h-full object-contain" onError={(e) => { e.target.style.display='none'; }} />
           </div>
           <div className="badge-info">
             <span>TJKT</span>
@@ -231,8 +238,8 @@ export default function Home() {
         </div>
 
         <div className="floating-badge badge-laporan" onClick={() => { setSelectedMajorDetail(majors[2]); }}>
-          <div className="badge-icon">
-            <BookOpen size={18} />
+          <div className="badge-icon overflow-hidden" style={{background: 'transparent'}}>
+            <img src="/jurusan/logo-dkv.png" alt="DKV" className="w-full h-full object-contain" onError={(e) => { e.target.style.display='none'; }} />
           </div>
           <div className="badge-info">
             <span>DKV</span>
@@ -240,8 +247,8 @@ export default function Home() {
         </div>
 
         <div className="floating-badge badge-animasi" onClick={() => { setSelectedMajorDetail(majors[4]); }}>
-          <div className="badge-icon">
-            <Palette size={18} />
+          <div className="badge-icon overflow-hidden" style={{background: 'transparent'}}>
+            <img src="/jurusan/logo-animasi.png" alt="Animasi" className="w-full h-full object-contain" onError={(e) => { e.target.style.display='none'; }} />
           </div>
           <div className="badge-info">
             <span>Animasi</span>
@@ -249,8 +256,8 @@ export default function Home() {
         </div>
 
         <div className="floating-badge badge-kelas" onClick={() => { setSelectedMajorDetail(majors[3]); }}>
-          <div className="badge-icon">
-            <Video size={18} />
+          <div className="badge-icon overflow-hidden" style={{background: 'transparent'}}>
+            <img src="/jurusan/logo-bc.png" alt="Broadcasting" className="w-full h-full object-contain" onError={(e) => { e.target.style.display='none'; }} />
           </div>
           <div className="badge-info">
             <span>Broadcasting</span>
@@ -307,47 +314,79 @@ export default function Home() {
       <section id="alur" className="py-24 bg-white/40 backdrop-blur-md relative z-10 border-y border-slate-200/50">
         <div className="max-w-6xl mx-auto px-6">
           <div className="text-center mb-16">
-            <span className="text-blue-600 font-bold text-xs uppercase tracking-wider bg-blue-50 px-3 py-1.5 rounded-full">Proses Mudah & Transparan</span>
+            <span className="text-blue-600 font-bold text-xs uppercase tracking-wider bg-blue-50 px-3 py-1.5 rounded-full">Proses Mudah &amp; Transparan · TP. 2025/2026</span>
             <h2 className="text-3xl md:text-4xl font-extrabold text-slate-800 mt-4 mb-4">Alur Pendaftaran PPDB</h2>
             <p className="text-slate-500 max-w-xl mx-auto text-sm md:text-base leading-relaxed">
-              Ikuti langkah-langkah sederhana berikut untuk menjadi bagian dari Taruna Bhakti.
+              Ikuti 6 langkah sederhana berikut untuk menjadi bagian dari SMK Taruna Bhakti Depok.
             </p>
           </div>
 
           <div className="relative">
-            {/* Connecting Line (Desktop) */}
-            <div className="hidden md:block absolute top-1/2 left-0 w-full h-1 bg-gradient-to-r from-blue-100 via-blue-400 to-blue-100 -translate-y-1/2 z-0 opacity-50 rounded-full"></div>
-            
+            {/* Connecting Line Row 1 (Desktop) */}
+            <div className="hidden md:block absolute top-[108px] left-0 w-full h-0.5 bg-gradient-to-r from-blue-100 via-blue-400 to-blue-100 z-0 opacity-40 rounded-full"></div>
+            {/* Connecting Line Row 2 (Desktop) */}
+            <div className="hidden md:block absolute top-[calc(50%+54px)] left-0 w-full h-0.5 bg-gradient-to-r from-blue-100 via-blue-400 to-blue-100 z-0 opacity-40 rounded-full"></div>
+
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8 relative z-10">
-              
+
               {/* Step 1 */}
               <div className="bg-white rounded-3xl p-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 text-center group hover:-translate-y-2 transition-transform duration-300">
                 <div className="w-16 h-16 mx-auto bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center mb-4 shadow-inner group-hover:bg-blue-600 group-hover:text-white transition-colors duration-300">
                   <FileText size={28} />
                 </div>
-                <div className="inline-block px-3 py-1 bg-slate-100 text-slate-500 rounded-full text-xs font-bold mb-3">Tahap 1</div>
-                <h3 className="text-lg font-bold text-slate-800 mb-2">Pendaftaran Online</h3>
-                <p className="text-sm text-slate-500">Mengisi formulir pendaftaran dan memilih kompetensi keahlian.</p>
+                <div className="inline-block px-3 py-1 bg-blue-50 text-blue-500 rounded-full text-xs font-bold mb-3">Tahap 01</div>
+                <h3 className="text-lg font-bold text-slate-800 mb-2">Pendaftaran</h3>
+                <p className="text-sm text-slate-500">Calon peserta didik mendaftar secara online melalui portal PPDB.</p>
               </div>
 
               {/* Step 2 */}
               <div className="bg-white rounded-3xl p-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 text-center group hover:-translate-y-2 transition-transform duration-300">
-                <div className="w-16 h-16 mx-auto bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center mb-4 shadow-inner group-hover:bg-blue-600 group-hover:text-white transition-colors duration-300">
-                  <Upload size={28} />
+                <div className="w-16 h-16 mx-auto bg-orange-50 text-orange-500 rounded-2xl flex items-center justify-center mb-4 shadow-inner group-hover:bg-orange-500 group-hover:text-white transition-colors duration-300">
+                  <Phone size={28} />
                 </div>
-                <div className="inline-block px-3 py-1 bg-slate-100 text-slate-500 rounded-full text-xs font-bold mb-3">Tahap 2</div>
-                <h3 className="text-lg font-bold text-slate-800 mb-2">Upload Berkas</h3>
-                <p className="text-sm text-slate-500">Melengkapi dokumen persyaratan seperti rapor dan KK.</p>
+                <div className="inline-block px-3 py-1 bg-orange-50 text-orange-500 rounded-full text-xs font-bold mb-3">Tahap 02</div>
+                <h3 className="text-lg font-bold text-slate-800 mb-2">Konfirmasi Pendaftaran</h3>
+                <p className="text-sm text-slate-500">Konfirmasi pendaftaran melalui nomor <span className="font-semibold text-orange-500">08119892324</span>.</p>
               </div>
 
               {/* Step 3 */}
               <div className="bg-white rounded-3xl p-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 text-center group hover:-translate-y-2 transition-transform duration-300">
-                <div className="w-16 h-16 mx-auto bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center mb-4 shadow-inner group-hover:bg-blue-600 group-hover:text-white transition-colors duration-300">
-                  <User size={28} />
+                <div className="w-16 h-16 mx-auto bg-teal-50 text-teal-600 rounded-2xl flex items-center justify-center mb-4 shadow-inner group-hover:bg-teal-600 group-hover:text-white transition-colors duration-300">
+                  <MapPin size={28} />
                 </div>
-                <div className="inline-block px-3 py-1 bg-slate-100 text-slate-500 rounded-full text-xs font-bold mb-3">Tahap 3</div>
-                <h3 className="text-lg font-bold text-slate-800 mb-2">Tes Wawancara</h3>
-                <p className="text-sm text-slate-500">Sesi wawancara calon peserta didik dan orang tua/wali.</p>
+                <div className="inline-block px-3 py-1 bg-teal-50 text-teal-600 rounded-full text-xs font-bold mb-3">Tahap 03</div>
+                <h3 className="text-lg font-bold text-slate-800 mb-2">Verifikasi Data</h3>
+                <p className="text-sm text-slate-500">Datang ke sekolah membawa bukti pembayaran dan berkas PPDB.</p>
+              </div>
+
+              {/* Step 4 */}
+              <div className="bg-white rounded-3xl p-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 text-center group hover:-translate-y-2 transition-transform duration-300">
+                <div className="w-16 h-16 mx-auto bg-pink-50 text-pink-500 rounded-2xl flex items-center justify-center mb-4 shadow-inner group-hover:bg-pink-500 group-hover:text-white transition-colors duration-300">
+                  <Users size={28} />
+                </div>
+                <div className="inline-block px-3 py-1 bg-pink-50 text-pink-500 rounded-full text-xs font-bold mb-3">Tahap 04</div>
+                <h3 className="text-lg font-bold text-slate-800 mb-2">Mengukur Seragam</h3>
+                <p className="text-sm text-slate-500">Calon peserta didik datang ke penjahit yang ditentukan untuk mengukur seragam.</p>
+              </div>
+
+              {/* Step 5 */}
+              <div className="bg-white rounded-3xl p-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 text-center group hover:-translate-y-2 transition-transform duration-300">
+                <div className="w-16 h-16 mx-auto bg-violet-50 text-violet-600 rounded-2xl flex items-center justify-center mb-4 shadow-inner group-hover:bg-violet-600 group-hover:text-white transition-colors duration-300">
+                  <FileText size={28} />
+                </div>
+                <div className="inline-block px-3 py-1 bg-violet-50 text-violet-600 rounded-full text-xs font-bold mb-3">Tahap 05</div>
+                <h3 className="text-lg font-bold text-slate-800 mb-2">Tes PPDB</h3>
+                <p className="text-sm text-slate-500">Melakukan tes wawancara, fisik, dan pemberkasan akhir.</p>
+              </div>
+
+              {/* Step 6 */}
+              <div className="bg-white rounded-3xl p-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 text-center group hover:-translate-y-2 transition-transform duration-300">
+                <div className="w-16 h-16 mx-auto bg-green-50 text-green-600 rounded-2xl flex items-center justify-center mb-4 shadow-inner group-hover:bg-green-600 group-hover:text-white transition-colors duration-300">
+                  <Award size={28} />
+                </div>
+                <div className="inline-block px-3 py-1 bg-green-50 text-green-600 rounded-full text-xs font-bold mb-3">Tahap 06</div>
+                <h3 className="text-lg font-bold text-slate-800 mb-2">Pengumuman Hasil PPDB</h3>
+                <p className="text-sm text-slate-500">Pengumuman hasil PPDB melalui Web <span className="font-semibold text-green-600">smktarunabhakti.net</span>.</p>
               </div>
 
             </div>
@@ -379,8 +418,17 @@ export default function Home() {
                 <div className="absolute top-0 left-0 w-full h-[4px] bg-gradient-to-r from-blue-600 to-sky-400 opacity-0 scale-x-0 group-hover:opacity-100 group-hover:scale-x-100 origin-left transition-all duration-500 z-10"></div>
                 
                 <div className="relative z-10">
-                  <div className="w-12 h-12 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center mb-6 group-hover:bg-blue-600 group-hover:text-white group-hover:scale-115 group-hover:rotate-6 group-hover:shadow-lg group-hover:shadow-blue-500/30 transition-all duration-500">
-                    <IconComp size={24} />
+                  <div className="w-16 h-16 rounded-2xl overflow-hidden mb-6 flex items-center justify-center group-hover:scale-110 group-hover:rotate-3 transition-all duration-500 bg-white border border-slate-100 shadow-md group-hover:shadow-xl group-hover:shadow-blue-500/20">
+                    <img 
+                      src={major.logo} 
+                      alt={`Logo ${major.code}`} 
+                      className="w-14 h-14 object-contain drop-shadow-sm"
+                      onError={(e) => { 
+                        e.target.style.display = 'none'; 
+                        e.target.parentElement.classList.add('bg-blue-50'); 
+                        e.target.parentElement.innerHTML = `<div style="color:#0066ff;display:flex;align-items:center;justify-content:center;width:100%;height:100%;font-weight:800;font-size:11px">${major.code}</div>`; 
+                      }}
+                    />
                   </div>
                   <h3 className="text-lg font-extrabold text-slate-800 mb-3">
                     {major.code === "AN" ? major.title : `${major.title} (${major.code})`}
