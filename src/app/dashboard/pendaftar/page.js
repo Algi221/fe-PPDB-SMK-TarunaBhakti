@@ -238,8 +238,8 @@ export default function ApplicantsDirectory() {
               syncStatus === "SUCCESS"
                 ? "from-emerald-500 to-teal-500 text-white border-emerald-600 shadow-[0_4px_12px_rgba(16,185,129,0.2)]"
                 : syncStatus === "SYNCING"
-                ? "from-blue-600 to-sky-500 text-white opacity-80 cursor-wait border-blue-700"
-                : "from-blue-50/50 to-blue-50 dark:from-slate-950 dark:to-slate-950 text-blue-600 dark:text-blue-400 hover:bg-blue-600/10 border-blue-500/20 dark:border-white/5"
+                ? "from-blue-500 to-sky-400 text-white opacity-80 cursor-wait border-blue-600"
+                : "from-blue-50/50 to-blue-50 dark:from-slate-950 dark:to-slate-950 text-blue-500 dark:text-blue-400 hover:bg-blue-500/10 border-blue-500/10 dark:border-white/5"
             }`}
           >
             <CloudLightning size={14} className={syncStatus === "SYNCING" ? "animate-bounce" : ""} />
@@ -300,7 +300,7 @@ export default function ApplicantsDirectory() {
                     </td>
                     <td className="py-4 px-6 text-slate-600 dark:text-slate-400 font-semibold">{a.sekolah_asal || a.sekolahAsal}</td>
                     <td className="py-4 px-6">
-                      <span className="px-2.5 py-1 rounded-full bg-blue-50 dark:bg-blue-950 text-blue-600 dark:text-blue-400 border border-blue-100 dark:border-blue-900/50 font-extrabold text-[9px] uppercase tracking-wide">
+                      <span className="px-2.5 py-1 rounded-full bg-blue-50/70 dark:bg-blue-950/40 text-blue-550 dark:text-blue-400 border border-blue-100/80 dark:border-blue-900/40 font-extrabold text-[9px] uppercase tracking-wide">
                         {a.jurusan_1 || a.jurusan1}
                       </span>
                     </td>

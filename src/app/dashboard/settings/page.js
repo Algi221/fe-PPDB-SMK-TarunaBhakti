@@ -110,7 +110,7 @@ export default function SimulationSettings() {
     return (
       <div className="flex items-center justify-center min-h-[300px]">
         <div className="flex flex-col items-center gap-3">
-          <RefreshCw className="animate-spin text-blue-600 dark:text-blue-500" size={32} />
+          <RefreshCw className="animate-spin text-blue-500 dark:text-blue-400" size={32} />
           <span className="text-sm font-semibold text-slate-500 dark:text-slate-400">Memuat konfigurasi...</span>
         </div>
       </div>
@@ -123,7 +123,7 @@ export default function SimulationSettings() {
       {/* Title Header */}
       <div>
         <h1 className="text-2xl font-black text-slate-800 dark:text-white tracking-tight flex items-center gap-2.5">
-          <Settings className="text-blue-600 dark:text-blue-500" size={24} />
+          <Settings className="text-blue-500 dark:text-blue-400" size={24} />
           <span>Pengaturan Sistem & Integrasi</span>
         </h1>
         <p className="text-sm font-medium text-slate-500 dark:text-slate-450 mt-1">
@@ -284,7 +284,7 @@ export default function SimulationSettings() {
 
             <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-5 mb-6 gap-4">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-2xl bg-blue-50 dark:bg-blue-950/40 border border-blue-100 dark:border-blue-900/35 flex items-center justify-center text-blue-600 dark:text-blue-450 shrink-0">
+                <div className="w-10 h-10 rounded-2xl bg-blue-50/70 dark:bg-blue-950/40 border border-blue-100 dark:border-blue-900/35 flex items-center justify-center text-blue-500 dark:text-blue-450 shrink-0">
                   <Wifi size={20} />
                 </div>
                 <div>
@@ -313,7 +313,7 @@ export default function SimulationSettings() {
                 </div>
                 <button
                   onClick={handleSimulate}
-                  className="px-6 py-3 bg-gradient-to-r from-blue-600 to-sky-500 text-white rounded-2xl text-xs font-bold tracking-wider uppercase transition-all shadow-[0_4px_15px_rgba(0,102,255,0.15)] hover:shadow-[0_4px_20px_rgba(0,102,255,0.25)] hover:brightness-110 active:scale-[0.98] shrink-0"
+                  className="px-6 py-3 bg-gradient-to-r from-blue-500 to-sky-400 text-white rounded-2xl text-xs font-bold tracking-wider uppercase transition-all shadow-[0_4px_15px_rgba(59,130,246,0.15)] hover:shadow-[0_4px_20px_rgba(59,130,246,0.25)] hover:brightness-110 active:scale-[0.98] shrink-0"
                 >
                   Simulasikan Siswa Baru
                 </button>
@@ -333,7 +333,7 @@ export default function SimulationSettings() {
                       onChange={(e) => setSimulationActive(e.target.checked)}
                       className="sr-only peer"
                     />
-                    <div className="w-12 h-6 bg-slate-200 dark:bg-slate-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[4px] after:left-[4px] after:bg-slate-400 after:border-slate-350 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-blue-600 peer-checked:after:bg-white"></div>
+                    <div className="w-12 h-6 bg-slate-200 dark:bg-slate-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[4px] after:left-[4px] after:bg-slate-400 after:border-slate-350 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-blue-500 peer-checked:after:bg-white"></div>
                     <span className="ml-3 text-xs font-black tracking-wide uppercase text-slate-655 dark:text-slate-300">
                       {simulationActive ? "AKTIF" : "TIDAK AKTIF"}
                     </span>
@@ -376,7 +376,7 @@ export default function SimulationSettings() {
               
               <div className="relative pl-6 border-l-2 border-slate-200 dark:border-slate-800 space-y-4">
                 <div className="relative">
-                  <span className="absolute -left-[31px] top-0 w-4 h-4 rounded-full bg-blue-600 text-[10px] font-black text-white flex items-center justify-center shadow-md">
+                  <span className="absolute -left-[31px] top-0 w-4 h-4 rounded-full bg-blue-500 text-[10px] font-black text-white flex items-center justify-center shadow-md">
                     1
                   </span>
                   <p className="font-extrabold text-slate-800 dark:text-white">Buat Google Sheet Baru</p>
@@ -384,7 +384,7 @@ export default function SimulationSettings() {
                 </div>
                 
                 <div className="relative">
-                  <span className="absolute -left-[31px] top-0 w-4 h-4 rounded-full bg-blue-600 text-[10px] font-black text-white flex items-center justify-center shadow-md">
+                  <span className="absolute -left-[31px] top-0 w-4 h-4 rounded-full bg-blue-500 text-[10px] font-black text-white flex items-center justify-center shadow-md">
                     2
                   </span>
                   <p className="font-extrabold text-slate-800 dark:text-white">Buat Apps Script Webhook</p>
@@ -392,7 +392,7 @@ export default function SimulationSettings() {
                 </div>
                 
                 <div className="relative">
-                  <span className="absolute -left-[31px] top-0 w-4 h-4 rounded-full bg-blue-600 text-[10px] font-black text-white flex items-center justify-center shadow-md">
+                  <span className="absolute -left-[31px] top-0 w-4 h-4 rounded-full bg-blue-500 text-[10px] font-black text-white flex items-center justify-center shadow-md">
                     3
                   </span>
                   <p className="font-extrabold text-slate-800 dark:text-white">Terapkan sebagai Web App</p>

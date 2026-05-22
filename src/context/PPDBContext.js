@@ -483,12 +483,42 @@ export function PPDBProvider({ children }) {
     };
   }, [fetchPublicApplicants, connectWs]);
 
-  // Reload admin data when token changes
+  // Handle idle logout (1 hour of inactivity)
   useEffect(() => {
-    if (adminToken) {
-      fetchAdminApplicants();
-    }
-  }, [adminToken, fetchAdminApplicants]);
+    if (!adminToken) return;
+
+    let timeoutId;
+
+    const resetTimer = () => {
+      if (timeoutId) clearTimeout(timeoutId);
+      timeoutId = setTimeout(() => {
+        logoutAdmin();
+        addToast(
+          "Sesi Berakhir",
+          "Sesi Anda telah berakhir karena tidak ada aktivitas selama 1 jam.",
+          "warning"
+        );
+      }, 3600000); // 1 hour in milliseconds
+    };
+
+    // Track user activities
+    const events = ["mousemove", "keydown", "click", "scroll", "touchstart"];
+    const handleActivity = () => resetTimer();
+
+    events.forEach(event => {
+      window.addEventListener(event, handleActivity);
+    });
+
+    // Initialize timer
+    resetTimer();
+
+    return () => {
+      if (timeoutId) clearTimeout(timeoutId);
+      events.forEach(event => {
+        window.removeEventListener(event, handleActivity);
+      });
+    };
+  }, [adminToken, logoutAdmin, addToast]);
 
   return (
     <PPDBContext.Provider

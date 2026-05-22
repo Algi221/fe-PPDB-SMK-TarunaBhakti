@@ -17,7 +17,7 @@ export default function DashboardOverview() {
 
   // Major distribution statistics
   const majorsList = [
-    { name: "PPLG / RPL", dbName: "Rekayasa Perangkat Lunak", color: "#2563eb" },
+    { name: "PPLG / RPL", dbName: "Rekayasa Perangkat Lunak", color: "#3b82f6" },
     { name: "TJKT", dbName: "Teknik Jaringan Komputer & Telekomunikasi", color: "#0ea5e9" },
     { name: "DKV", dbName: "Desain Komunikasi Visual", color: "#6366f1" },
     { name: "Broadcasting", dbName: "Broadcasting & Perfilman", color: "#f59e0b" },
@@ -97,11 +97,11 @@ export default function DashboardOverview() {
       {/* 4 Metric Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
         {/* Card 1: Total */}
-        <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800/60 rounded-3xl p-6 relative overflow-hidden shadow-[0_2px_12px_rgba(0,0,0,0.02)] hover:shadow-[0_8px_20px_rgba(0,0,0,0.04)] hover:border-blue-500/30 transition-all duration-300 group">
+        <div className="bg-white dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800/40 rounded-3xl p-6 relative overflow-hidden shadow-[0_2px_12px_rgba(0,0,0,0.02)] hover:shadow-[0_8px_20px_rgba(0,0,0,0.04)] hover:border-blue-500/20 transition-all duration-300 group">
           <div className="absolute top-0 right-0 w-24 h-24 rounded-full bg-blue-500/5 blur-2xl group-hover:bg-blue-500/10 transition-all"></div>
           <div className="flex items-center justify-between mb-4">
-            <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400 dark:text-slate-500">Total Pendaftar</span>
-            <div className="w-10 h-10 rounded-2xl bg-blue-50 dark:bg-blue-950/50 text-blue-600 dark:text-blue-400 flex items-center justify-center">
+            <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400 dark:text-slate-550">Total Pendaftar</span>
+            <div className="w-10 h-10 rounded-2xl bg-blue-50/70 dark:bg-blue-950/40 text-blue-500 dark:text-blue-400 flex items-center justify-center">
               <Users size={20} />
             </div>
           </div>
@@ -153,13 +153,13 @@ export default function DashboardOverview() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         
         {/* Trend Area Chart (Col span 2) */}
-        <div className="lg:col-span-2 bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800/60 rounded-3xl p-6 shadow-[0_2px_12px_rgba(0,0,0,0.02)] flex flex-col justify-between transition-colors duration-300">
+        <div className="lg:col-span-2 bg-white dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800/40 rounded-3xl p-6 shadow-[0_2px_12px_rgba(0,0,0,0.02)] flex flex-col justify-between transition-colors duration-300">
           <div className="mb-6 flex justify-between items-center">
             <div>
               <h3 className="text-xs font-black text-slate-800 dark:text-white tracking-wider uppercase">Tren Registrasi Harian</h3>
               <p className="text-[11px] text-slate-400 dark:text-slate-500 font-bold">Statistik grafik pendaftaran calon siswa 7 hari terakhir</p>
             </div>
-            <span className="text-[9px] bg-blue-50 dark:bg-blue-950 border border-blue-200/50 dark:border-blue-900 text-blue-600 dark:text-blue-400 px-3 py-1 rounded-full font-black uppercase tracking-wider">
+            <span className="text-[9px] bg-blue-50/70 dark:bg-blue-950/30 border border-blue-100 dark:border-blue-900/40 text-blue-500 dark:text-blue-400 px-3 py-1 rounded-full font-black uppercase tracking-wider">
               <TrendingUp size={10} className="inline mr-1" /> 7 Hari Terakhir
             </span>
           </div>
@@ -188,8 +188,8 @@ export default function DashboardOverview() {
               {/* Area Gradient */}
               <defs>
                 <linearGradient id="chartGlow" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="#2563eb" stopOpacity="0.25" />
-                  <stop offset="100%" stopColor="#2563eb" stopOpacity="0.0" />
+                  <stop offset="0%" stopColor="#3b82f6" stopOpacity="0.2" />
+                  <stop offset="100%" stopColor="#3b82f6" stopOpacity="0.0" />
                 </linearGradient>
               </defs>
 
@@ -201,8 +201,8 @@ export default function DashboardOverview() {
                 <path
                   d={linePath}
                   fill="none"
-                  stroke="#2563eb"
-                  strokeWidth="3.5"
+                  stroke="#3b82f6"
+                  strokeWidth="3"
                   strokeLinecap="round"
                   strokeLinejoin="round"
                 />
@@ -215,7 +215,7 @@ export default function DashboardOverview() {
                     cx={p.x}
                     cy={p.y}
                     r="5"
-                    fill="#2563eb"
+                    fill="#3b82f6"
                     stroke="currentColor"
                     className="text-white dark:text-slate-900 transition-all duration-300 group-hover/dot:r-7 group-hover/dot:fill-white"
                     strokeWidth="2.5"
@@ -266,7 +266,7 @@ export default function DashboardOverview() {
         </div>
 
         {/* Major Distribution Donut Chart */}
-        <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800/60 rounded-3xl p-6 shadow-[0_2px_12px_rgba(0,0,0,0.02)] flex flex-col justify-between transition-colors duration-300">
+        <div className="bg-white dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800/40 rounded-3xl p-6 shadow-[0_2px_12px_rgba(0,0,0,0.02)] flex flex-col justify-between transition-colors duration-300">
           <div>
             <h3 className="text-xs font-black text-slate-800 dark:text-white tracking-wider uppercase">Sebaran Jurusan</h3>
             <p className="text-[11px] text-slate-400 dark:text-slate-500 font-bold">Perbandingan minat pilihan program keahlian utama</p>
@@ -329,7 +329,7 @@ export default function DashboardOverview() {
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
 
         {/* Recent Applicants list (Col span 3) */}
-        <div className="lg:col-span-3 bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800/60 rounded-3xl p-6 shadow-[0_2px_12px_rgba(0,0,0,0.02)] flex flex-col justify-between transition-colors duration-300">
+        <div className="lg:col-span-3 bg-white dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800/40 rounded-3xl p-6 shadow-[0_2px_12px_rgba(0,0,0,0.02)] flex flex-col justify-between transition-colors duration-300">
           <div className="mb-4">
             <h3 className="text-xs font-black text-slate-800 dark:text-white tracking-wider uppercase">Pendaftaran Terakhir</h3>
             <p className="text-[11px] text-slate-400 dark:text-slate-500 font-bold">Calon siswa yang baru menyerahkan formulir pendaftaran</p>
@@ -351,7 +351,7 @@ export default function DashboardOverview() {
                     <td className="py-3 pl-3 font-extrabold text-slate-850 dark:text-white max-w-[140px] truncate">{a.nama}</td>
                     <td className="py-3 truncate max-w-[120px] font-semibold text-slate-500 dark:text-slate-400">{a.sekolah_asal || a.sekolahAsal}</td>
                     <td className="py-3">
-                      <span className="px-2 py-0.5 rounded-full bg-blue-50 dark:bg-blue-950 text-blue-600 dark:text-blue-400 border border-blue-100 dark:border-blue-900/50 font-extrabold text-[9px] uppercase tracking-wide">
+                      <span className="px-2 py-0.5 rounded-full bg-blue-50/70 dark:bg-blue-950/40 text-blue-550 dark:text-blue-400 border border-blue-100/80 dark:border-blue-900/40 font-extrabold text-[9px] uppercase tracking-wide">
                         {majorsList.find((m) => m.dbName === a.jurusan_1 || m.dbName === a.jurusan1)?.name.split(" / ")[0] || a.jurusan_1 || a.jurusan1 || "PPLG"}
                       </span>
                     </td>

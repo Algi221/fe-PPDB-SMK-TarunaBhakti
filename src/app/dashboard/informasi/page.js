@@ -304,7 +304,7 @@ export default function KelolaInformasi() {
           <div className="relative z-10 pt-4 flex flex-wrap gap-4">
             <button
               onClick={handleOpenCreateModal}
-              className="px-6 py-3.5 bg-blue-600 hover:bg-blue-500 text-white rounded-2xl text-xs font-black uppercase tracking-wider shadow-[0_4px_20px_rgba(37,99,235,0.4)] hover:shadow-[0_4px_25px_rgba(37,99,235,0.55)] active:scale-[0.98] transition-all flex items-center gap-2 border border-blue-500"
+              className="px-6 py-3.5 bg-blue-500 hover:bg-blue-400 text-white rounded-2xl text-xs font-black uppercase tracking-wider shadow-[0_4px_16px_rgba(59,130,246,0.25)] hover:shadow-[0_4px_20px_rgba(59,130,246,0.35)] active:scale-[0.98] transition-all flex items-center gap-2 border border-blue-400/30"
             >
               <Plus size={16} />
               <span>Buat Informasi Baru</span>
@@ -323,7 +323,7 @@ export default function KelolaInformasi() {
           <div className="space-y-4">
             <div className="flex items-center justify-between">
               <span className="text-slate-400 dark:text-slate-500 font-extrabold text-[10px] uppercase tracking-widest block">Ringkasan Publikasi</span>
-              <div className="w-9 h-9 rounded-2xl bg-blue-100 dark:bg-blue-950 flex items-center justify-center text-blue-600 dark:text-blue-400">
+              <div className="w-9 h-9 rounded-2xl bg-blue-50/70 dark:bg-blue-950/40 flex items-center justify-center text-blue-500 dark:text-blue-400">
                 <Megaphone size={16} />
               </div>
             </div>
@@ -349,8 +349,8 @@ export default function KelolaInformasi() {
 
       {/* Main Grid View */}
       {loading ? (
-        <div className="py-24 bg-white dark:bg-slate-900 rounded-3xl border border-slate-200/80 dark:border-slate-800/60 shadow-[0_2px_12px_rgba(0,0,0,0.01)] flex flex-col items-center justify-center gap-4 text-slate-500 transition-colors duration-300">
-          <Loader2 size={32} className="animate-spin text-blue-600 dark:text-blue-500" />
+        <div className="py-24 bg-white dark:bg-slate-900 rounded-3xl border border-slate-200/60 dark:border-slate-800/40 shadow-[0_2px_12px_rgba(0,0,0,0.01)] flex flex-col items-center justify-center gap-4 text-slate-500 transition-colors duration-300">
+          <Loader2 size={32} className="animate-spin text-blue-500 dark:text-blue-400" />
           <span className="text-xs font-extrabold uppercase tracking-widest text-slate-400">Sedang memuat data informasi...</span>
         </div>
       ) : informasiList.length === 0 ? (
@@ -364,7 +364,7 @@ export default function KelolaInformasi() {
           </p>
           <button
             onClick={handleOpenCreateModal}
-            className="mt-6 px-4 py-2.5 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-xs font-black uppercase tracking-wider active:scale-[0.98] transition-all flex items-center gap-1.5"
+            className="mt-6 px-4 py-2.5 bg-blue-500 hover:bg-blue-400 text-white rounded-xl text-xs font-black uppercase tracking-wider active:scale-[0.98] transition-all flex items-center gap-1.5"
           >
             <Plus size={14} />
             <span>Buat Sekarang</span>
@@ -418,7 +418,7 @@ export default function KelolaInformasi() {
               <div className="px-6 py-4 bg-slate-50/50 dark:bg-slate-950/20 border-t border-slate-100 dark:border-white/5 flex items-center justify-between relative z-20" onClick={(e) => e.stopPropagation()}>
                 <button
                   onClick={() => setPreviewItem(item)}
-                  className="text-[11px] font-extrabold uppercase tracking-wide text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 flex items-center gap-1 active:scale-[0.98] transition-all"
+                  className="text-[11px] font-extrabold uppercase tracking-wide text-blue-550 dark:text-blue-400 hover:text-blue-600 dark:hover:text-blue-300 flex items-center gap-1 active:scale-[0.98] transition-all"
                 >
                   <span>Pratinjau</span>
                   <ArrowRight size={12} className="group-hover:translate-x-1 transition-transform" />
@@ -427,7 +427,7 @@ export default function KelolaInformasi() {
                 <div className="flex items-center gap-1.5">
                   <button
                     onClick={() => handleOpenEditModal(item)}
-                    className="p-2 bg-slate-100 hover:bg-blue-600/10 dark:bg-white/5 dark:hover:bg-blue-500/10 text-slate-500 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-300 rounded-xl transition-all border border-slate-200/50 dark:border-white/5 hover:border-blue-500/20"
+                    className="p-2 bg-slate-100 hover:bg-blue-500/10 dark:bg-white/5 dark:hover:bg-blue-500/10 text-slate-500 dark:text-slate-400 hover:text-blue-500 dark:hover:text-blue-300 rounded-xl transition-all border border-slate-200/50 dark:border-white/5 hover:border-blue-500/20"
                     title="Edit Informasi"
                   >
                     <Edit3 size={13} />
@@ -583,7 +583,7 @@ export default function KelolaInformasi() {
                 <button
                   type="submit"
                   disabled={submitting}
-                  className="px-6 py-3 bg-blue-600 hover:bg-blue-500 text-white rounded-2xl text-xs font-black uppercase tracking-wider shadow-[0_4px_16px_rgba(37,99,235,0.35)] active:scale-[0.98] transition-all flex items-center gap-1.5 disabled:opacity-50 disabled:pointer-events-none"
+                  className="px-6 py-3 bg-blue-500 hover:bg-blue-400 text-white rounded-2xl text-xs font-black uppercase tracking-wider shadow-[0_4px_16px_rgba(59,130,246,0.25)] active:scale-[0.98] transition-all flex items-center gap-1.5 disabled:opacity-50 disabled:pointer-events-none"
                 >
                   {submitting ? (
                     <>
@@ -663,14 +663,14 @@ export default function KelolaInformasi() {
                     setPreviewItem(null);
                     handleOpenEditModal(item);
                   }}
-                  className="px-4 py-2.5 bg-slate-100 hover:bg-blue-600/10 dark:bg-white/5 dark:hover:bg-blue-500/10 text-slate-650 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-300 rounded-xl text-xs font-black uppercase tracking-wider border border-slate-200 dark:border-white/5 transition-all flex items-center gap-1.5"
+                  className="px-4 py-2.5 bg-slate-100 hover:bg-blue-500/10 dark:bg-white/5 dark:hover:bg-blue-500/10 text-slate-655 dark:text-slate-400 hover:text-blue-500 dark:hover:text-blue-300 rounded-xl text-xs font-black uppercase tracking-wider border border-slate-200 dark:border-white/5 transition-all flex items-center gap-1.5"
                 >
                   <Edit3 size={13} />
                   <span>Ubah Data</span>
                 </button>
                 <button
                   onClick={() => setPreviewItem(null)}
-                  className="px-5 py-2.5 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-xs font-black uppercase tracking-wider shadow-sm transition-all active:scale-[0.98]"
+                  className="px-5 py-2.5 bg-blue-500 hover:bg-blue-400 text-white rounded-xl text-xs font-black uppercase tracking-wider shadow-sm transition-all active:scale-[0.98]"
                 >
                   Tutup Pratinjau
                 </button>
