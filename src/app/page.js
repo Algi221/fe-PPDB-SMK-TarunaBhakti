@@ -2,21 +2,21 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import { 
-  Menu, 
-  ArrowRight, 
-  X, 
-  GraduationCap, 
-  FileText, 
-  Award, 
-  Milestone, 
-  Check, 
-  Upload, 
-  User, 
-  MapPin, 
-  Calendar, 
-  Bell, 
-  ArrowLeft, 
+import {
+  Menu,
+  ArrowRight,
+  X,
+  GraduationCap,
+  FileText,
+  Award,
+  Milestone,
+  Check,
+  Upload,
+  User,
+  MapPin,
+  Calendar,
+  Bell,
+  ArrowLeft,
   HelpCircle,
   CreditCard,
   ShieldCheck,
@@ -30,7 +30,9 @@ import {
   Sun,
   Moon,
   Users,
-  Phone
+  Phone,
+  Megaphone,
+  Clock
 } from "lucide-react";
 
 import DataPendaftarTable from "../components/DataPendaftarTable";
@@ -38,10 +40,58 @@ import DataPendaftarTable from "../components/DataPendaftarTable";
 export default function Home() {
   // Navigation & UI States
   const [isNavbarScrolled, setIsNavbarScrolled] = useState(false);
-  
+
   // Modals
   const [activeModal, setActiveModal] = useState(null); // 'syarat' | 'alur' | 'beasiswa'
-  
+
+  // Dynamic Announcements/Informasi State
+  const [informasi, setInformasi] = useState([]);
+  const [loadingInformasi, setLoadingInformasi] = useState(true);
+  const [selectedNews, setSelectedNews] = useState(null);
+
+  const formatDate = (dateString) => {
+    if (!dateString) return "";
+    try {
+      const options = { day: 'numeric', month: 'long', year: 'numeric' };
+      return new Date(dateString).toLocaleDateString('id-ID', options);
+    } catch (e) {
+      return dateString;
+    }
+  };
+
+  useEffect(() => {
+    const fetchInformasi = async () => {
+      try {
+        const res = await fetch("http://localhost:5000/api/informasi");
+        const data = await res.json();
+        if (data.success) {
+          setInformasi(data.data);
+        }
+      } catch (e) {
+        console.log("Failed to fetch public informasi:", e);
+        setInformasi([
+          {
+            id: 101,
+            judul: "Pendaftaran Peserta Didik Baru (PPDB) SMK Taruna Bhakti 2026/2027 Resmi Dibuka!",
+            konten: "SMK Taruna Bhakti Depok resmi membuka pendaftaran bagi calon peserta didik baru untuk tahun ajaran 2026/2027. Tersedia 6 Program Keahlian unggulan yaitu Rekayasa Perangkat Lunak, Teknik Jaringan Komputer, Desain Komunikasi Visual, Broadcasting & Perfilman, Teknik Elektronika, dan Animasi. Segera lakukan registrasi online dan unggah berkas Anda sebelum kuota penuh!",
+            tanggal: "2026-05-15",
+            foto_url: ""
+          },
+          {
+            id: 102,
+            judul: "Sosialisasi Jurusan Baru: Teknik Elektronika (TE) dengan Fokus Robotika Industri",
+            konten: "Menjawab tantangan revolusi industri 4.0, SMK Taruna Bhakti menghadirkan inovasi di jurusan Teknik Elektronika. Kurikulum diperkuat dengan pemelajaran mikrokontroler, IoT, PLC, dan Robotika Industri modern. Lulusan TE siap diserap oleh industri manufaktur dan teknologi terkemuka.",
+            tanggal: "2026-05-20",
+            foto_url: ""
+          }
+        ]);
+      } finally {
+        setLoadingInformasi(false);
+      }
+    };
+    fetchInformasi();
+  }, []);
+
   // Video Background Logic
   const [currentVideo, setCurrentVideo] = useState(0);
   const videos = ["/videos/vid1.mp4", "/videos/vid2.mp4"];
@@ -190,7 +240,7 @@ export default function Home() {
 
   return (
     <div className="relative min-h-screen flex flex-col overflow-x-hidden">
-      
+
 
       {/* FLOATING NAVBAR */}
       <div className="navbar-wrapper">
@@ -205,13 +255,14 @@ export default function Home() {
           <div className="hidden md:flex items-center gap-2">
             <a href="#alur" className="btn-nav-link">Alur Pendaftaran</a>
             <a href="#majors" className="btn-nav-link">Jurusan</a>
+            <Link href="/forum" className="btn-nav-link">Forum Informasi</Link>
             <a href="#kemitraan" className="btn-nav-link">Mitra Industri</a>
           </div>
 
           <div className="flex items-center gap-3">
-            <button 
-              onClick={toggleDark} 
-              className="flex items-center justify-center w-10 h-10 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors border border-slate-200 dark:border-slate-700" 
+            <button
+              onClick={toggleDark}
+              className="flex items-center justify-center w-10 h-10 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors border border-slate-200 dark:border-slate-700"
               title={isDark ? 'Mode Terang' : 'Mode Gelap'}
             >
               {isDark ? <Sun size={18} /> : <Moon size={18} />}
@@ -242,98 +293,107 @@ export default function Home() {
 
         {/* HERO SECTION */}
         <section className="hero">
-        
-        {/* Floating elements representing major names as requested */}
-        <Link href="/jurusan/rpl" className="floating-badge badge-aset">
-          <div className="badge-icon overflow-hidden" style={{background: 'transparent'}}>
-            <img src="/jurusan/pplg.jpeg" alt="RPL" className="w-full h-full object-cover rounded-full" onError={(e) => { e.target.style.display='none'; }} />
-          </div>
-          <div className="badge-info">
-            <span>PPLG</span>
-          </div>
-        </Link>
 
-        <Link href="/jurusan/tjkt" className="floating-badge badge-peminjaman">
-          <div className="badge-icon overflow-hidden" style={{background: 'transparent'}}>
-            <img src="/jurusan/tjkt.jpeg" alt="TJKT" className="w-full h-full object-cover rounded-full" onError={(e) => { e.target.style.display='none'; }} />
-          </div>
-          <div className="badge-info">
-            <span>TJKT</span>
-          </div>
-        </Link>
-
-        <Link href="/jurusan/dkv" className="floating-badge badge-laporan">
-          <div className="badge-icon overflow-hidden" style={{background: 'transparent'}}>
-            <img src="/jurusan/dkv.jpeg" alt="DKV" className="w-full h-full object-cover rounded-full" onError={(e) => { e.target.style.display='none'; }} />
-          </div>
-          <div className="badge-info">
-            <span>DKV</span>
-          </div>
-        </Link>
-
-        <Link href="/jurusan/an" className="floating-badge badge-animasi">
-          <div className="badge-icon overflow-hidden" style={{background: 'transparent'}}>
-            <img src="/jurusan/animasijpeg.jpeg" alt="Animasi" className="w-full h-full object-cover rounded-full" onError={(e) => { e.target.style.display='none'; }} />
-          </div>
-          <div className="badge-info">
-            <span>Animasi</span>
-          </div>
-        </Link>
-
-        <Link href="/jurusan/bc" className="floating-badge badge-kelas">
-          <div className="badge-icon overflow-hidden" style={{background: 'transparent'}}>
-            <img src="/jurusan/bc.jpeg" alt="Broadcasting" className="w-full h-full object-cover rounded-full" onError={(e) => { e.target.style.display='none'; }} />
-          </div>
-          <div className="badge-info">
-            <span>Broadcasting</span>
-          </div>
-        </Link>
-
-        {/* Hero Copy */}
-        <div className="badge-wrapper relative z-10">
-          <span className="badge-pill">SMK TARUNA BHAKTI DEPOK</span>
-        </div>
-
-        <h1 className="hero-title relative z-10">
-          Penerimaan Siswa Baru <br />
-          <span>Portal PPDB SMK Taruna Bhakti</span>
-        </h1>
-
-        <p className="hero-subtitle relative z-10">
-          Mulai langkah awal wujudkan masa depan cemerlang di bidang teknologi informasi. 
-          Proses pendaftaran online yang mudah, transparan, dan terintegrasi penuh.
-        </p>
-
-        <div className="hero-action">
-          <Link href="/daftar" className="btn-hero-action">
-            Daftar Sekarang <ArrowRight size={18} />
+          {/* Floating elements representing major names as requested */}
+          <Link href="/jurusan/rpl" className="floating-badge badge-aset">
+            <div className="badge-icon overflow-hidden" style={{ background: 'transparent' }}>
+              <img src="/jurusan/pplg.jpeg" alt="RPL" className="w-full h-full object-cover rounded-full" onError={(e) => { e.target.style.display = 'none'; }} />
+            </div>
+            <div className="badge-info">
+              <span>PPLG</span>
+            </div>
           </Link>
-        </div>
 
-        {/* APP MOCKUP WRAPPER */}
-        <div className="mockup-container relative z-10">
-          <div className="app-mockup">
-            
-            {/* Mockup Browser Top bar */}
-            <div className="mockup-browser-bar">
-              <div className="browser-dots">
-                <span className="dot-red"></span>
-                <span className="dot-yellow"></span>
-                <span className="dot-green"></span>
-              </div>
-              <div className="browser-address">ppdb.smktarunabhakti.sch.id/dashboard</div>
-              <div className="w-4"></div>
+          <Link href="/jurusan/tjkt" className="floating-badge badge-peminjaman">
+            <div className="badge-icon overflow-hidden" style={{ background: 'transparent' }}>
+              <img src="/jurusan/tjkt.jpeg" alt="TJKT" className="w-full h-full object-cover rounded-full" onError={(e) => { e.target.style.display = 'none'; }} />
             </div>
-
-            {/* Data Pendaftar Table View */}
-            <div className="dashboard-view block w-full p-6 h-[600px] bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xl relative z-10 rounded-2xl transition-colors duration-300">
-              <DataPendaftarTable />
+            <div className="badge-info">
+              <span>TJKT</span>
             </div>
+          </Link>
 
+          <Link href="/jurusan/te" className="floating-badge badge-te">
+            <div className="badge-icon overflow-hidden" style={{ background: 'transparent' }}>
+              <img src="/jurusan/te.jpeg" alt="TE" className="w-full h-full object-cover rounded-full" onError={(e) => { e.target.style.display = 'none'; }} />
+            </div>
+            <div className="badge-info">
+              <span>ET</span>
+            </div>
+          </Link>
+
+          <Link href="/jurusan/dkv" className="floating-badge badge-laporan">
+            <div className="badge-icon overflow-hidden" style={{ background: 'transparent' }}>
+              <img src="/jurusan/dkv.jpeg" alt="DKV" className="w-full h-full object-cover rounded-full" onError={(e) => { e.target.style.display = 'none'; }} />
+            </div>
+            <div className="badge-info">
+              <span>DKV</span>
+            </div>
+          </Link>
+
+          <Link href="/jurusan/an" className="floating-badge badge-animasi">
+            <div className="badge-icon overflow-hidden" style={{ background: 'transparent' }}>
+              <img src="/jurusan/animasijpeg.jpeg" alt="Animasi" className="w-full h-full object-cover rounded-full" onError={(e) => { e.target.style.display = 'none'; }} />
+            </div>
+            <div className="badge-info">
+              <span>Animasi</span>
+            </div>
+          </Link>
+
+          <Link href="/jurusan/bc" className="floating-badge badge-kelas">
+            <div className="badge-icon overflow-hidden" style={{ background: 'transparent' }}>
+              <img src="/jurusan/bc.jpeg" alt="Broadcasting" className="w-full h-full object-cover rounded-full" onError={(e) => { e.target.style.display = 'none'; }} />
+            </div>
+            <div className="badge-info">
+              <span>Broadcasting</span>
+            </div>
+          </Link>
+
+          {/* Hero Copy */}
+          <div className="badge-wrapper relative z-10">
+            <span className="badge-pill">SMK TARUNA BHAKTI DEPOK</span>
           </div>
-        </div>
 
-      </section>
+          <h1 className="hero-title relative z-10">
+            Penerimaan Siswa Baru <br />
+            <span>Portal PPDB SMK Taruna Bhakti</span>
+          </h1>
+
+          <p className="hero-subtitle relative z-10">
+            Mulai langkah awal wujudkan masa depan cemerlang di bidang teknologi informasi.
+            Proses pendaftaran online yang mudah, transparan, dan terintegrasi penuh.
+          </p>
+
+          <div className="hero-action">
+            <Link href="/daftar" className="btn-hero-action">
+              Daftar Sekarang <ArrowRight size={18} />
+            </Link>
+          </div>
+
+          {/* APP MOCKUP WRAPPER */}
+          <div className="mockup-container relative z-10">
+            <div className="app-mockup">
+
+              {/* Mockup Browser Top bar */}
+              <div className="mockup-browser-bar">
+                <div className="browser-dots">
+                  <span className="dot-red"></span>
+                  <span className="dot-yellow"></span>
+                  <span className="dot-green"></span>
+                </div>
+                <div className="browser-address">ppdb.smktarunabhakti.sch.id/dashboard</div>
+                <div className="w-4"></div>
+              </div>
+
+              {/* Data Pendaftar Table View */}
+              <div className="dashboard-view block w-full p-6 h-[600px] bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xl relative z-10 rounded-2xl transition-colors duration-300">
+                <DataPendaftarTable />
+              </div>
+
+            </div>
+          </div>
+
+        </section>
       </div>
 
       {/* ALUR PENDAFTARAN (Vertical Redesign) */}
@@ -467,28 +527,28 @@ export default function Home() {
           {majors.map((major, index) => {
             const IconComp = major.icon;
             return (
-              <Link 
+              <Link
                 href={`/jurusan/${major.code.toLowerCase()}`}
-                key={major.code} 
+                key={major.code}
                 className={`bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border border-white/50 dark:border-slate-800 rounded-3xl p-8 shadow-md hover:shadow-xl hover:-translate-y-2 hover:border-blue-500/30 transition-all duration-700 cursor-pointer flex flex-col justify-between relative overflow-hidden group transform ${isMajorsVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-12"}`}
                 style={{ transitionDelay: `${index * 150}ms` }}
               >
                 {/* Expanding radial spotlight glow on hover */}
                 <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(0,102,255,0.08)_0%,transparent_60%)] opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none z-0"></div>
-                
+
                 {/* Glowing Top Accent Line on hover */}
                 <div className="absolute top-0 left-0 w-full h-[4px] bg-gradient-to-r from-blue-600 to-sky-400 opacity-0 scale-x-0 group-hover:opacity-100 group-hover:scale-x-100 origin-left transition-all duration-500 z-10"></div>
-                
+
                 <div className="relative z-10">
                   <div className="w-16 h-16 rounded-2xl overflow-hidden mb-6 flex items-center justify-center group-hover:scale-110 group-hover:rotate-3 transition-all duration-500 bg-white border border-slate-100 shadow-md group-hover:shadow-xl group-hover:shadow-blue-500/20">
-                    <img 
-                      src={major.logo} 
-                      alt={`Logo ${major.code}`} 
+                    <img
+                      src={major.logo}
+                      alt={`Logo ${major.code}`}
                       className="w-14 h-14 object-contain drop-shadow-sm"
-                      onError={(e) => { 
-                        e.target.style.display = 'none'; 
-                        e.target.parentElement.classList.add('bg-blue-50'); 
-                        e.target.parentElement.innerHTML = `<div style="color:#0066ff;display:flex;align-items:center;justify-content:center;width:100%;height:100%;font-weight:800;font-size:11px">${major.code}</div>`; 
+                      onError={(e) => {
+                        e.target.style.display = 'none';
+                        e.target.parentElement.classList.add('bg-blue-50');
+                        e.target.parentElement.innerHTML = `<div style="color:#0066ff;display:flex;align-items:center;justify-content:center;width:100%;height:100%;font-weight:800;font-size:11px">${major.code}</div>`;
                       }}
                     />
                   </div>
@@ -506,6 +566,8 @@ export default function Home() {
         </div>
       </section>
 
+
+
       {/* KEMITRAAN INDUSTRI */}
       <section id="kemitraan" className="py-24 max-w-6xl mx-auto px-6 relative z-10 border-t border-slate-200/30">
         <div className="text-center mb-16">
@@ -516,12 +578,62 @@ export default function Home() {
           </p>
         </div>
 
-        {/* Tech Partnerships Badges */}
-        <div className="bg-white/50 backdrop-blur-md border border-slate-100 rounded-3xl p-8 mb-12 shadow-sm">
-          <p className="text-center text-xs font-bold text-slate-400 uppercase tracking-widest mb-6">Partner Industri Utama & Sertifikasi Internasional</p>
-          <div className="flex justify-center items-center">
-            <img src="/partners.png" alt="Mitra Industri SMK Taruna Bhakti" className="max-w-full h-auto object-contain max-h-[300px]" />
+        {/* Tech Partnerships Badges - Individual Clickable Logos Mimicking Collage Layout */}
+        <div className="bg-white/50 dark:bg-slate-900/40 backdrop-blur-md border border-slate-100 dark:border-slate-800/60 rounded-3xl p-8 mb-12 shadow-sm">
+          <p className="text-center text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-8">
+            Partner Industri Utama &amp; Sertifikasi Internasional &middot; Klik logo untuk kunjungi
+          </p>
+          <div className="flex flex-wrap justify-center items-center gap-x-8 gap-y-10 max-w-5xl mx-auto">
+            {(() => {
+              const remotePartners = [
+                { name: "Dinas Pendidikan Propinsi Jabar", logo: "https://smktarunabhakti.sch.id/wp-content/uploads/2019/02/logojabarprov.png", url: "http://disdik.jabarprov.go.id/", h: "h-20" },
+                { name: "SMK Bisa Hebat", logo: "https://smktarunabhakti.sch.id/wp-content/uploads/2019/02/logosmk.png", url: "https://smk.kemendikdasmen.go.id/", h: "h-16" },
+                { name: "SMK PK", logo: "https://smktarunabhakti.sch.id/wp-content/uploads/2023/11/Logo-SMK-Bisa.jpg", url: "https://smk.kemendikdasmen.go.id/", h: "h-16" },
+                { name: "Icon+", logo: "https://smktarunabhakti.sch.id/wp-content/uploads/2023/11/56e83c6db8cd5587e87161281dfba75b.webp", url: "https://iconnet.id/", h: "h-14" },
+                { name: "Biznet", logo: "https://smktarunabhakti.sch.id/wp-content/uploads/2023/11/biznet_vertical_logo.png", url: "https://www.biznetnetworks.com/", h: "h-20" },
+                { name: "Prasimax", logo: "https://smktarunabhakti.sch.id/wp-content/uploads/2023/11/Prasimax_Logo.png", url: "https://prasimax.com/", h: "h-10" },
+                { name: "Agate", logo: "https://smktarunabhakti.sch.id/wp-content/uploads/2023/11/Logo-Agate-Color.png", url: "https://agate.id/", h: "h-10" },
+                { name: "Panasonic", logo: "https://smktarunabhakti.sch.id/wp-content/uploads/2023/11/8225.png", url: "https://www.panasonic.com/id/", h: "h-8" },
+
+                { name: "Citra Film School", logo: "https://smktarunabhakti.sch.id/wp-content/uploads/2023/11/cropped-Logo-baru-citra.png", url: "https://citrafilmschool.net/", h: "h-20" },
+                { name: "Samsung Tech Institute", logo: "https://smktarunabhakti.sch.id/wp-content/uploads/2019/02/STI-logo-1.png", url: "https://www.samsung.com/", h: "h-8" },
+                { name: "MD Animation", logo: "https://smktarunabhakti.sch.id/wp-content/uploads/2023/11/Logo_md_animation.png", url: "https://mdentertainment.com/id/md-animations/", h: "h-8" },
+                { name: "Daun Biru Engineering", logo: "https://smktarunabhakti.sch.id/wp-content/uploads/2023/11/E-Learning-5.png", url: "https://www.daunbiru.co.id/", h: "h-12" },
+                { name: "Assemblr", logo: "https://smktarunabhakti.sch.id/wp-content/uploads/2023/11/6156e76e275fa19ed9a33fa3_Group-33959.png", url: "https://www.assemblrworld.co.id/id", h: "h-20" },
+                { name: "TOA", logo: "https://smktarunabhakti.sch.id/wp-content/uploads/2023/11/PT-TOA.png", url: "https://toa.co.id/", h: "h-8" },
+                { name: "Infection Studio", logo: "https://smktarunabhakti.sch.id/wp-content/uploads/2023/11/Alpha-InfectionTagline_Square-FullColor-cut.png", url: "https://infectionstudio.com/", h: "h-8" },
+
+                { name: "Beyond Education", logo: "https://smktarunabhakti.sch.id/wp-content/uploads/2023/11/1661238758520.jpg", url: "https://beyondeducation.id/", h: "h-12" },
+                { name: "Animakini", logo: "https://smktarunabhakti.sch.id/wp-content/uploads/2023/11/logo-animakini-2022_.png", url: "https://animakini.id/", h: "h-12" },
+                { name: "IMP Studio", logo: "https://smktarunabhakti.sch.id/wp-content/uploads/2023/11/vgphayksj5yyqkq5zze5.png", url: "https://impstudio.id/", h: "h-12" },
+                { name: "Mikrotik Academy", logo: "https://smktarunabhakti.sch.id/wp-content/uploads/2025/07/mikrotikacademy.jpg", url: "https://mikrotik.com/training/academy/asia/indonesia", h: "h-10" },
+                { name: "Cisco Networking Academy", logo: "https://smktarunabhakti.sch.id/wp-content/uploads/2025/07/netacad.webp", url: "https://www.netacad.com/", h: "h-12" },
+                { name: "AWS Academy", logo: "https://smktarunabhakti.sch.id/wp-content/uploads/2025/07/awsacademy.jpeg", url: "https://aws.amazon.com/training/awsacademy/", h: "h-12" },
+                { name: "Red Hat Academy", logo: "https://smktarunabhakti.sch.id/wp-content/uploads/2025/07/redhatacademy.webp", url: "https://www.redhat.com/en/services/training/red-hat-academy", h: "h-10" },
+                { name: "Oracle Academy", logo: "https://smktarunabhakti.sch.id/wp-content/uploads/2025/07/oracleacademy.webp", url: "https://academy.oracle.com/en/oa-web-overview.html", h: "h-10" },
+              ];
+
+              return remotePartners.map((partner, idx) => (
+                <a
+                  key={idx}
+                  href={partner.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="group inline-flex items-center justify-center p-2 transition-transform duration-300 hover:scale-110 hover:-translate-y-1"
+                  title={partner.name}
+                >
+                  <img
+                    src={partner.logo}
+                    alt={partner.name}
+                    className={`w-auto object-contain ${partner.h} max-w-[150px] transition-all duration-300 drop-shadow-sm`}
+                  />
+                </a>
+              ));
+            })()}
           </div>
+          <p className="text-center text-[10px] text-slate-400 dark:text-slate-600 font-semibold mt-8">
+            ↗ Klik logo untuk mengunjungi website mitra
+          </p>
         </div>
 
 
@@ -605,6 +717,70 @@ export default function Home() {
           </div>
         </div>
       </footer>
+
+      {/* DETAILED NEWS PREVIEW MODAL */}
+      {selectedNews && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-md overflow-y-auto animate-in fade-in duration-300">
+          <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-white/10 rounded-3xl w-full max-w-2xl shadow-[0_30px_70px_rgba(0,0,0,0.2)] dark:shadow-[0_30px_70px_rgba(0,0,0,0.6)] overflow-hidden animate-in zoom-in-95 my-8 transition-colors duration-300">
+
+            {/* Poster Header */}
+            {selectedNews.foto_url ? (
+              <div className="h-64 relative border-b border-slate-150 dark:border-white/5">
+                <img src={selectedNews.foto_url} alt={selectedNews.judul} className="w-full h-full object-cover" />
+                <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-transparent to-transparent" />
+
+                {/* Floating Date Over Image */}
+                <div className="absolute bottom-6 left-6 z-10 px-3 py-1.5 bg-blue-600 text-white text-[10px] font-black uppercase tracking-widest rounded-xl flex items-center gap-1.5 shadow-md border border-blue-500">
+                  <Calendar size={11} />
+                  <span>{formatDate(selectedNews.tanggal)}</span>
+                </div>
+
+                <button
+                  onClick={() => setSelectedNews(null)}
+                  className="absolute top-4 right-4 w-8 h-8 rounded-full bg-slate-950/60 backdrop-blur-md border border-white/10 text-white hover:bg-slate-950 flex items-center justify-center transition-all font-bold"
+                >
+                  ✕
+                </button>
+              </div>
+            ) : (
+              <div className="p-6 border-b border-slate-150 dark:border-white/5 flex items-center justify-between bg-slate-50/50 dark:bg-slate-950/15">
+                <div className="px-3 py-1.5 bg-blue-50 dark:bg-blue-950/60 border border-blue-100 dark:border-blue-900 text-blue-600 dark:text-blue-400 text-[10px] font-black uppercase tracking-widest rounded-xl flex items-center gap-1.5 shadow-sm">
+                  <Calendar size={11} />
+                  <span>{formatDate(selectedNews.tanggal)}</span>
+                </div>
+                <button
+                  onClick={() => setSelectedNews(null)}
+                  className="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 dark:bg-white/5 dark:hover:bg-white/10 border border-slate-200/50 dark:border-white/5 text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white flex items-center justify-center transition-all font-bold"
+                >
+                  ✕
+                </button>
+              </div>
+            )}
+
+            {/* Content Details */}
+            <div className="p-8 space-y-6">
+              <h2 className="text-xl font-black text-slate-850 dark:text-white uppercase leading-snug tracking-tight text-left">
+                {selectedNews.judul}
+              </h2>
+
+              <p className="text-sm text-slate-650 dark:text-slate-350 leading-relaxed font-semibold whitespace-pre-line text-left">
+                {selectedNews.konten}
+              </p>
+            </div>
+
+            {/* Detail Actions Footer */}
+            <div className="p-6 bg-slate-50/50 dark:bg-slate-950/15 border-t border-slate-150 dark:border-white/5 flex items-center justify-end">
+              <button
+                onClick={() => setSelectedNews(null)}
+                className="px-6 py-2.5 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-xs font-black uppercase tracking-wider shadow-sm transition-all active:scale-[0.98]"
+              >
+                Tutup Informasi
+              </button>
+            </div>
+
+          </div>
+        </div>
+      )}
 
     </div>
   );

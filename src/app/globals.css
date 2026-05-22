@@ -615,6 +615,12 @@ body {
   animation: float2 8s infinite alternate ease-in-out -2s;
 }
 
+.badge-te {
+  top: 250px;
+  left: 8%;
+  animation: float4 7s infinite alternate ease-in-out -1s;
+}
+
 .badge-laporan {
   top: 130px;
   right: 6%;

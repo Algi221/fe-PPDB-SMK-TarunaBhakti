@@ -4,8 +4,8 @@ import React, { createContext, useContext, useState, useEffect, useCallback, use
 
 const PPDBContext = createContext(null);
 
-const BACKEND_URL = "http://localhost:5000";
-const WS_URL = "ws://localhost:5000/ws";
+const BACKEND_URL = typeof window !== 'undefined' ? `http://${window.location.hostname}:5000` : "http://localhost:5000";
+const WS_URL = typeof window !== 'undefined' ? `ws://${window.location.hostname}:5000/ws` : "ws://localhost:5000/ws";
 
 export function PPDBProvider({ children }) {
   const [applicants, setApplicants] = useState([]);
@@ -354,6 +354,13 @@ export function PPDBProvider({ children }) {
           setApplicants((prev) => prev.filter(a => a.id !== id));
           setPublicApplicants((prev) => prev.filter(a => a.id !== id));
           addToast("Pendaftar Dihapus", `Data pendaftar #${id} dihapus dari sistem.`, "danger");
+        }
+        
+        else if (parsed.event === 'REFRESH_INFORMASI') {
+          // Trigger a global event to let independent pages know they should re-fetch
+          if (typeof window !== 'undefined') {
+            window.dispatchEvent(new CustomEvent('ws_refresh_informasi'));
+          }
         }
 
       } catch (err) {

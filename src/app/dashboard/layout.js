@@ -4,7 +4,7 @@ import React, { useEffect, useState } from "react";
 import { usePPDB } from "@/context/PPDBContext";
 import { useRouter, usePathname } from "next/navigation";
 import Link from "next/link";
-import { Sun, Moon, LogOut, LayoutDashboard, Users, Settings, Globe } from "lucide-react";
+import { Sun, Moon, LogOut, LayoutDashboard, Users, Settings, Globe, Megaphone } from "lucide-react";
 
 export default function DashboardLayout({ children }) {
   const { adminToken, adminUser, logoutAdmin, wsStatus } = usePPDB();
@@ -77,11 +77,11 @@ export default function DashboardLayout({ children }) {
         {/* Brand Header */}
         <div className="p-6 border-b border-slate-200/80 dark:border-slate-800/60">
           <Link href="/dashboard" className="flex items-center gap-3 group">
-            <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-blue-600 to-sky-400 flex items-center justify-center shadow-[0_4px_14px_rgba(37,99,235,0.25)]">
-              <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-              </svg>
-            </div>
+            <img 
+              src="/logo_smktb.png" 
+              alt="Logo SMK Taruna Bhakti" 
+              className="w-10 h-10 object-contain shrink-0 transition-transform duration-300 group-hover:scale-105" 
+            />
             <div>
               <h2 className="text-sm font-black tracking-wider leading-none text-slate-800 dark:text-white uppercase">SMK TB</h2>
               <span className="text-[10px] text-blue-600 dark:text-blue-400 font-bold uppercase tracking-widest mt-1 block">PPDB Admin Portal</span>
@@ -113,6 +113,18 @@ export default function DashboardLayout({ children }) {
           >
             <Users size={18} className="shrink-0" />
             Data Calon Siswa
+          </Link>
+
+          <Link
+            href="/dashboard/informasi"
+            className={`flex items-center gap-3 px-4 py-3 rounded-2xl text-xs font-extrabold uppercase tracking-wider transition-all ${
+              pathname === "/dashboard/informasi"
+                ? "bg-blue-600 text-white shadow-[0_4px_16px_rgba(37,99,235,0.3)]"
+                : "text-slate-500 dark:text-slate-400 hover:text-blue-600 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800"
+            }`}
+          >
+            <Megaphone size={18} className="shrink-0" />
+            Kelola Informasi
           </Link>
 
           <Link
@@ -154,7 +166,13 @@ export default function DashboardLayout({ children }) {
         {/* Top Header Panel */}
         <header className="h-16 border-b border-slate-200/80 dark:border-slate-800/60 bg-white/70 dark:bg-slate-900/60 backdrop-blur-xl flex items-center justify-between px-8 shrink-0 z-40 sticky top-0 transition-colors duration-300">
           <h1 className="text-sm font-black text-slate-800 dark:text-white leading-none uppercase tracking-wider">
-            {pathname === "/dashboard" ? "Ringkasan Eksekutif" : pathname === "/dashboard/pendaftar" ? "Direktori Calon Siswa" : "Konfigurasi & Simulasi"}
+            {pathname === "/dashboard" 
+              ? "Ringkasan Eksekutif" 
+              : pathname === "/dashboard/pendaftar" 
+              ? "Direktori Calon Siswa" 
+              : pathname === "/dashboard/informasi"
+              ? "Kelola Informasi & Pengumuman"
+              : "Konfigurasi & Simulasi"}
           </h1>
 
           <div className="flex items-center gap-3">

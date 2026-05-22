@@ -53,8 +53,12 @@ export default function AdminLogin() {
       <div className="w-full max-w-md relative z-10">
         {/* Brand Header */}
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-tr from-blue-600 to-sky-400 shadow-[0_8px_30px_rgba(37,99,235,0.3)] mb-4">
-            <Lock className="w-8 h-8 text-white" />
+          <div className="inline-flex items-center justify-center mb-4">
+            <img 
+              src="/logo_smktb.png" 
+              alt="Logo SMK Taruna Bhakti" 
+              className="w-16 h-16 object-contain drop-shadow-[0_8px_16px_rgba(37,99,235,0.25)]" 
+            />
           </div>
           <h1 className="text-2xl font-black tracking-tight text-slate-850 dark:text-white uppercase tracking-wider">
             PPDB SMK Taruna Bhakti
