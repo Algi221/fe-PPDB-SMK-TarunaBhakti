@@ -14,7 +14,7 @@ import {
   X, 
   Trash2, 
   Eye, 
-  ArrowRight,
+  Pencil,
   Info,
   Calendar,
   Layers,
@@ -26,13 +26,18 @@ import {
 } from "lucide-react";
 
 export default function ApplicantsDirectory() {
-  const { applicants, verifyApplicant, rejectApplicant, deleteApplicant } = usePPDB();
+  const { applicants, verifyApplicant, rejectApplicant, deleteApplicant, updateApplicant } = usePPDB();
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("ALL");
   const [majorFilter, setMajorFilter] = useState("ALL");
   const [selectedApplicant, setSelectedApplicant] = useState(null);
   const [activeTab, setActiveTab] = useState("biodata");
-  
+
+  // Edit Modal States
+  const [editApplicant, setEditApplicant] = useState(null);
+  const [editForm, setEditForm] = useState({});
+  const [isSaving, setIsSaving] = useState(false);
+
   // New Interactive Spreadsheet Mode State
   const [isSpreadsheetMode, setIsSpreadsheetMode] = useState(false);
   const [activeCell, setActiveCell] = useState(null); // { row, col }
@@ -40,6 +45,56 @@ export default function ApplicantsDirectory() {
   // Simulated Google Sheets Webhook Sync States
   const [syncStatus, setSyncStatus] = useState("IDLE"); // 'IDLE' | 'SYNCING' | 'SUCCESS'
   const [syncProgress, setSyncProgress] = useState(0);
+
+  const openEdit = (a) => {
+    setEditApplicant(a);
+    setEditForm({
+      nama: a.nama || "",
+      nisn: a.nisn || "",
+      nik: a.nik || "",
+      tempat_lahir: a.tempat_lahir || a.tempatLahir || "",
+      tgl_lahir: a.tgl_lahir || a.tglLahir || "",
+      jenis_kelamin: a.jenis_kelamin || a.jenisKelamin || "",
+      agama: a.agama || "",
+      alamat: a.alamat || "",
+      rt_rw: a.rt_rw || a.rtRw || "",
+      kelurahan: a.kelurahan || "",
+      kecamatan: a.kecamatan || "",
+      kode_pos: a.kode_pos || a.kodePos || "",
+      whatsapp: a.whatsapp || "",
+      email: a.email || "",
+      tinggal_dengan: a.tinggal_dengan || a.tinggalDengan || "",
+      transportasi: a.transportasi || "",
+      tinggi_badan: a.tinggi_badan || a.tinggiBadan || "",
+      berat_badan: a.berat_badan || a.beratBadan || "",
+      golongan_darah: a.golongan_darah || a.golonganDarah || "",
+      sekolah_asal: a.sekolah_asal || a.sekolahAsal || "",
+      tgl_lulus: a.tgl_lulus || a.tglLulus || "",
+      jurusan_1: a.jurusan_1 || a.jurusan1 || "",
+      jurusan_2: a.jurusan_2 || a.jurusan2 || "",
+      nama_ayah: a.nama_ayah || a.namaAyah || "",
+      pekerjaan_ayah: a.pekerjaan_ayah || a.pekerjaanAyah || "",
+      penghasilan_ayah: a.penghasilan_ayah || a.penghasilanAyah || "",
+      nama_ibu: a.nama_ibu || a.namaIbu || "",
+      pekerjaan_ibu: a.pekerjaan_ibu || a.pekerjaanIbu || "",
+      penghasilan_ibu: a.penghasilan_ibu || a.penghasilanIbu || "",
+      telepon_ortu: a.telepon_ortu || a.teleponOrtu || "",
+      cita_cita: a.cita_cita || a.citaCita || "",
+      alasan_memilih: a.alasan_memilih || a.alasanMemilih || "",
+    });
+  };
+
+  const handleEditSave = async () => {
+    if (!editApplicant) return;
+    setIsSaving(true);
+    const res = await updateApplicant(editApplicant.id, editForm);
+    setIsSaving(false);
+    if (res?.success) {
+      setEditApplicant(null);
+    } else {
+      alert(res?.message || "Gagal menyimpan perubahan.");
+    }
+  };
 
   const majorsList = [
     "Rekayasa Perangkat Lunak",
@@ -325,6 +380,14 @@ export default function ApplicantsDirectory() {
                           title="Lihat Detail Form"
                         >
                           <Eye size={13} />
+                        </button>
+
+                        <button
+                          onClick={() => openEdit(a)}
+                          className="p-2 bg-blue-50 hover:bg-blue-100 dark:bg-blue-500/10 dark:hover:bg-blue-500/20 text-blue-600 dark:text-blue-400 rounded-xl transition-all border border-blue-200/50 dark:border-blue-500/20"
+                          title="Edit Data Pendaftar"
+                        >
+                          <Pencil size={13} />
                         </button>
 
                         {a.status !== "Approved" && (
@@ -783,6 +846,120 @@ export default function ApplicantsDirectory() {
                   </button>
                 )}
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ===== EDIT MODAL ===== */}
+      {editApplicant && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/70 backdrop-blur-md animate-in fade-in duration-200">
+          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 rounded-3xl w-full max-w-3xl max-h-[90vh] flex flex-col shadow-2xl overflow-hidden">
+            {/* Header */}
+            <div className="p-5 border-b border-slate-100 dark:border-white/5 flex items-center justify-between bg-blue-50/50 dark:bg-blue-950/10 shrink-0">
+              <div>
+                <h3 className="text-sm font-black text-slate-800 dark:text-white uppercase tracking-wide flex items-center gap-2">
+                  <Pencil size={14} className="text-blue-500" />
+                  Edit Data — {editApplicant.nama}
+                </h3>
+                <p className="text-[10px] text-slate-400 font-bold mt-0.5">NISN: {editApplicant.nisn} · ID: #{editApplicant.id}</p>
+              </div>
+              <button onClick={() => setEditApplicant(null)} className="w-8 h-8 rounded-full bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-slate-500 hover:text-rose-500 flex items-center justify-center transition-all">
+                <X size={14} />
+              </button>
+            </div>
+
+            {/* Body — scrollable form */}
+            <div className="flex-1 overflow-y-auto p-6 space-y-5">
+              {/* Row helper */}
+              {[
+                { section: "Identitas Diri", fields: [
+                  { label: "Nama Lengkap", key: "nama" },
+                  { label: "NISN", key: "nisn" },
+                  { label: "NIK", key: "nik" },
+                  { label: "Tempat Lahir", key: "tempat_lahir" },
+                  { label: "Tanggal Lahir", key: "tgl_lahir", type: "date" },
+                  { label: "Jenis Kelamin", key: "jenis_kelamin", type: "select", options: ["L","P","Laki-laki","Perempuan"] },
+                  { label: "Agama", key: "agama", type: "select", options: ["Islam","Kristen","Katolik","Hindu","Buddha","Konghucu"] },
+                  { label: "Golongan Darah", key: "golongan_darah", type: "select", options: ["A","B","AB","O","-"] },
+                ]},
+                { section: "Alamat & Kontak", fields: [
+                  { label: "Alamat", key: "alamat" },
+                  { label: "RT/RW", key: "rt_rw" },
+                  { label: "Kelurahan", key: "kelurahan" },
+                  { label: "Kecamatan", key: "kecamatan" },
+                  { label: "Kode Pos", key: "kode_pos" },
+                  { label: "WhatsApp", key: "whatsapp" },
+                  { label: "Email", key: "email" },
+                  { label: "Tinggal Dengan", key: "tinggal_dengan" },
+                  { label: "Transportasi", key: "transportasi" },
+                ]},
+                { section: "Data Fisik", fields: [
+                  { label: "Tinggi Badan (cm)", key: "tinggi_badan", type: "number" },
+                  { label: "Berat Badan (kg)", key: "berat_badan", type: "number" },
+                ]},
+                { section: "Akademik & Jurusan", fields: [
+                  { label: "Sekolah Asal", key: "sekolah_asal" },
+                  { label: "Tanggal Lulus", key: "tgl_lulus", type: "date" },
+                  { label: "Jurusan Pilihan 1", key: "jurusan_1", type: "select", options: ["Rekayasa Perangkat Lunak","Teknik Jaringan Komputer & Telekomunikasi","Desain Komunikasi Visual","Broadcasting & Perfilman","Teknik Elektronika","Animasi"] },
+                  { label: "Jurusan Pilihan 2", key: "jurusan_2", type: "select", options: ["Rekayasa Perangkat Lunak","Teknik Jaringan Komputer & Telekomunikasi","Desain Komunikasi Visual","Broadcasting & Perfilman","Teknik Elektronika","Animasi"] },
+                  { label: "Alasan Memilih", key: "alasan_memilih" },
+                  { label: "Cita-cita", key: "cita_cita" },
+                ]},
+                { section: "Data Orang Tua", fields: [
+                  { label: "Nama Ayah", key: "nama_ayah" },
+                  { label: "Pekerjaan Ayah", key: "pekerjaan_ayah" },
+                  { label: "Penghasilan Ayah", key: "penghasilan_ayah" },
+                  { label: "Nama Ibu", key: "nama_ibu" },
+                  { label: "Pekerjaan Ibu", key: "pekerjaan_ibu" },
+                  { label: "Penghasilan Ibu", key: "penghasilan_ibu" },
+                  { label: "Telepon Orang Tua", key: "telepon_ortu" },
+                ]},
+              ].map((section) => (
+                <div key={section.section}>
+                  <h4 className="text-[9px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500 mb-3 border-b border-slate-100 dark:border-white/5 pb-1.5">{section.section}</h4>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    {section.fields.map((f) => (
+                      <div key={f.key}>
+                        <label className="block text-[9px] font-black uppercase tracking-wider text-slate-400 dark:text-slate-500 mb-1">{f.label}</label>
+                        {f.type === "select" ? (
+                          <select
+                            value={editForm[f.key] || ""}
+                            onChange={e => setEditForm(prev => ({ ...prev, [f.key]: e.target.value }))}
+                            className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-white/10 rounded-xl px-3 py-2 text-xs font-semibold text-slate-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
+                          >
+                            {f.options.map(o => <option key={o} value={o}>{o}</option>)}
+                          </select>
+                        ) : (
+                          <input
+                            type={f.type || "text"}
+                            value={editForm[f.key] || ""}
+                            onChange={e => setEditForm(prev => ({ ...prev, [f.key]: e.target.value }))}
+                            className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-white/10 rounded-xl px-3 py-2 text-xs font-semibold text-slate-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
+                          />
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Footer */}
+            <div className="p-5 border-t border-slate-100 dark:border-white/5 bg-slate-50/50 dark:bg-slate-950/10 flex items-center justify-end gap-3 shrink-0">
+              <button
+                onClick={() => setEditApplicant(null)}
+                className="px-5 py-2.5 bg-slate-100 hover:bg-slate-200 dark:bg-white/5 dark:hover:bg-white/10 text-slate-600 dark:text-slate-300 rounded-xl text-xs font-black uppercase tracking-wider transition-all border border-slate-200 dark:border-white/5"
+              >
+                Batal
+              </button>
+              <button
+                onClick={handleEditSave}
+                disabled={isSaving}
+                className="px-6 py-2.5 bg-blue-600 hover:bg-blue-500 disabled:opacity-60 disabled:cursor-wait text-white rounded-xl text-xs font-black uppercase tracking-wider transition-all shadow-[0_4px_12px_rgba(59,130,246,0.3)] flex items-center gap-2"
+              >
+                {isSaving ? "Menyimpan..." : "Simpan Perubahan"}
+              </button>
             </div>
           </div>
         </div>

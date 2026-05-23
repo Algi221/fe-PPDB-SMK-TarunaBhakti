@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import { ArrowRight, Check, Upload, ArrowLeft, Home, Monitor, Code, Palette, Film, Cpu, Sun, Moon, CreditCard, ShieldCheck, Sparkles } from "lucide-react";
+import { ArrowRight, Check, Upload, ArrowLeft, Home, Monitor, Code, Palette, Film, Cpu, Sun, Moon, CreditCard, ShieldCheck, Sparkles, X } from "lucide-react";
 import { usePPDB } from "@/context/PPDBContext";
 
 export default function DaftarPage() {
@@ -10,82 +10,6 @@ export default function DaftarPage() {
   const [wizardStep, setWizardStep] = useState(1);
   const [isSuccess, setIsSuccess] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-
-  // Billing and Payment States
-  const [showPaymentGate, setShowPaymentGate] = useState(false);
-  const [submittedCandidate, setSubmittedCandidate] = useState(null);
-  const [paymentPolling, setPaymentPolling] = useState(false);
-  const [paymentError, setPaymentError] = useState(null);
-
-  // Dark Mode
-  const [isDark, setIsDark] = useState(false);
-
-  useEffect(() => {
-    const saved = localStorage.getItem('ppdb-theme');
-    if (saved === 'dark') {
-      document.documentElement.classList.add('dark');
-      // eslint-disable-next-line
-      setIsDark(true);
-    }
-  }, []);
-
-  // Read URL query params for payment success/failure redirects
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      const params = new URLSearchParams(window.location.search);
-      const payment = params.get("payment");
-      const nisn = params.get("nisn");
-      if (payment === "success" && nisn) {
-        const checkStatus = async () => {
-          try {
-            const res = await checkPaymentStatus(nisn);
-            if (res && res.success && res.payment_status === "Paid") {
-              setFormData(prev => ({ ...prev, nisn: nisn }));
-              setIsSuccess(true);
-            }
-          } catch (err) {
-            console.log("Error checking redirected payment status:", err);
-          }
-        };
-        checkStatus();
-      }
-    }
-  }, [checkPaymentStatus]);
-
-  // Polling check payment status every 4 seconds
-  useEffect(() => {
-    let intervalId;
-    if (paymentPolling && submittedCandidate?.nisn) {
-      intervalId = setInterval(async () => {
-        try {
-          const res = await checkPaymentStatus(submittedCandidate.nisn);
-          if (res && res.success && res.payment_status === "Paid") {
-            setPaymentPolling(false);
-            setShowPaymentGate(false);
-            setIsSuccess(true);
-            fetchPublicApplicants?.();
-          }
-        } catch (err) {
-          console.log("Polling payment status error:", err);
-        }
-      }, 4000);
-    }
-    return () => {
-      if (intervalId) clearInterval(intervalId);
-    };
-  }, [paymentPolling, submittedCandidate, checkPaymentStatus, fetchPublicApplicants]);
-
-  const toggleDark = () => {
-    const next = !isDark;
-    setIsDark(next);
-    if (next) {
-      document.documentElement.classList.add('dark');
-      localStorage.setItem('ppdb-theme', 'dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-      localStorage.setItem('ppdb-theme', 'light');
-    }
-  };
 
   const [formData, setFormData] = useState({
     nama: "",
@@ -193,7 +117,6 @@ export default function DaftarPage() {
     noKIP: "",
     alasanDisenangi: "",
     kesulitanBelajar: "",
-    kesulitanBelajar: "",
     perkelahian: "",
     ketPerkelahian: "",
     narkoba: "",
@@ -205,13 +128,99 @@ export default function DaftarPage() {
     janjiAkrab: "",
     janjiBelajar: "",
     janjiNamaBaik: "",
-    punyaKPS: "",
-    noKPS: "",
-    punyaKIP: "",
-    noKIP: "",
     deklarasi: false,
-    berkasOk: false
+    berkasKKOk: false,
+    berkasKKFile: null,
+    berkasKKName: "",
+    berkasKTPOk: false,
+    berkasKTPFile: null,
+    berkasKTPName: "",
+    berkasAktaOk: false,
+    berkasAktaFile: null,
+    berkasAktaName: "",
+    berkasIjazahOk: false,
+    berkasIjazahFile: null,
+    berkasIjazahName: "",
+    berkasFotoOk: false,
+    berkasFotoFile: null,
+    berkasFotoName: ""
   });
+
+  // Billing and Payment States
+  const [showPaymentGate, setShowPaymentGate] = useState(false);
+  const [submittedCandidate, setSubmittedCandidate] = useState(null);
+  const [paymentPolling, setPaymentPolling] = useState(false);
+  const [paymentError, setPaymentError] = useState(null);
+
+  // Dark Mode
+  const [isDark, setIsDark] = useState(false);
+
+  useEffect(() => {
+    const saved = localStorage.getItem('ppdb-theme');
+    if (saved === 'dark') {
+      document.documentElement.classList.add('dark');
+      // eslint-disable-next-line
+      setIsDark(true);
+    }
+  }, []);
+
+  // Read URL query params for payment success/failure redirects
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      const payment = params.get("payment");
+      const nisn = params.get("nisn");
+      if (payment === "success" && nisn) {
+        const checkStatus = async () => {
+          try {
+            const res = await checkPaymentStatus(nisn);
+            if (res && res.success && res.payment_status === "Paid") {
+              setFormData(prev => ({ ...prev, nisn: nisn }));
+              setIsSuccess(true);
+            }
+          } catch (err) {
+            console.log("Error checking redirected payment status:", err);
+          }
+        };
+        checkStatus();
+      }
+    }
+  }, [checkPaymentStatus]);
+
+  // Polling check payment status every 4 seconds
+  useEffect(() => {
+    let intervalId;
+    if (paymentPolling && submittedCandidate?.nisn) {
+      intervalId = setInterval(async () => {
+        try {
+          const res = await checkPaymentStatus(submittedCandidate.nisn);
+          if (res && res.success && res.payment_status === "Paid") {
+            setPaymentPolling(false);
+            setShowPaymentGate(false);
+            setIsSuccess(true);
+            fetchPublicApplicants?.();
+          }
+        } catch (err) {
+          console.log("Polling payment status error:", err);
+        }
+      }, 4000);
+    }
+    return () => {
+      if (intervalId) clearInterval(intervalId);
+    };
+  }, [paymentPolling, submittedCandidate, checkPaymentStatus, fetchPublicApplicants]);
+
+  const toggleDark = () => {
+    const next = !isDark;
+    setIsDark(next);
+    if (next) {
+      document.documentElement.classList.add('dark');
+      localStorage.setItem('ppdb-theme', 'dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+      localStorage.setItem('ppdb-theme', 'light');
+    }
+  };
 
   const majors = [
     { code: "RPL", title: "Rekayasa Perangkat Lunak" },
@@ -499,13 +508,12 @@ export default function DaftarPage() {
             return (
               <div
                 key={step}
-                onClick={() => goToStep(step)}
-                title={`Ke Tahap ${step}`}
-                className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm z-10 transition-all duration-300 cursor-pointer select-none ${isCurrent
+                title={`Tahap ${step}`}
+                className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm z-10 transition-all duration-300 select-none ${isCurrent
                   ? "bg-blue-600 dark:bg-blue-500 text-white shadow-lg shadow-blue-500/30 scale-110"
                   : isCompleted
-                    ? "bg-blue-600 dark:bg-blue-500 text-white hover:bg-blue-750 dark:hover:bg-blue-455 hover:scale-105 ring-2 ring-blue-300 dark:ring-blue-900 ring-offset-2 dark:ring-offset-slate-900"
-                    : "bg-white dark:bg-slate-900 text-slate-400 dark:text-slate-500 border-2 border-slate-200 dark:border-slate-800 hover:border-blue-400 dark:hover:border-blue-500 hover:text-blue-500 dark:hover:text-blue-400 hover:scale-105"
+                    ? "bg-blue-600 dark:bg-blue-500 text-white ring-2 ring-blue-300 dark:ring-blue-900 ring-offset-2 dark:ring-offset-slate-900"
+                    : "bg-white dark:bg-slate-900 text-slate-400 dark:text-slate-500 border-2 border-slate-200 dark:border-slate-800"
                   }`}
               >
                 {isCompleted ? <Check size={16} /> : step}
@@ -1655,45 +1663,98 @@ export default function DaftarPage() {
             <h3 className="text-xl font-extrabold text-slate-800 mb-1">Tahap 13: Berkas & Konfirmasi</h3>
             <p className="text-sm text-slate-500 mb-6 border-b border-slate-100 pb-4">Lengkapi dokumen terakhir dan nyatakan kebenaran data.</p>
 
-            <div className="form-group mb-6">
-              <label className="block text-xs font-bold text-slate-600 mb-1.5">Unggah Rapor / KK (Format PDF/JPG max 5MB)</label>
-              <div
-                className={`border-2 border-dashed rounded-2xl p-6 text-center cursor-pointer transition-colors ${formData.berkasOk ? "border-emerald-500 bg-emerald-50/20" : "border-slate-200 bg-slate-50 hover:bg-slate-100 hover:border-slate-300"}`}
-                onClick={() => setFormData(prev => ({ ...prev, berkasOk: !prev.berkasOk }))}
-              >
-                <div className="mb-3">
-                  {formData.berkasOk ? (
-                    <Check className="text-emerald-500 mx-auto" size={32} />
-                  ) : (
-                    <Upload className="text-slate-400 mx-auto" size={32} />
-                  )}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+              {[
+                { id: 'berkasKK', label: 'Kartu Keluarga (KK)', desc: 'Wajib | PDF/JPG max 5MB' },
+                { id: 'berkasKTP', label: 'KTP Ortu / Wali', desc: 'Wajib | PDF/JPG max 5MB' },
+                { id: 'berkasAkta', label: 'Akta Kelahiran', desc: 'Wajib | PDF/JPG max 5MB' },
+                { id: 'berkasIjazah', label: 'SKL / Ijazah (Opsional)', desc: 'Boleh dikosongi jika belum ada' },
+                { id: 'berkasFoto', label: 'Pas Foto (3x4)', desc: 'Wajib | JPG/PNG max 5MB' }
+              ].map((field) => (
+                <div key={field.id} className="form-group">
+                  <label className="block text-xs font-bold text-slate-600 mb-1.5">{field.label}</label>
+                  <div className="relative">
+                    <input 
+                      type="file" 
+                      id={field.id}
+                      className="hidden" 
+                      accept=".pdf,image/*"
+                      onChange={(e) => {
+                        const file = e.target.files[0];
+                        if (file) {
+                          setFormData(prev => ({ 
+                            ...prev, 
+                            [`${field.id}Ok`]: true, 
+                            [`${field.id}File`]: file, 
+                            [`${field.id}Name`]: file.name 
+                          }));
+                        }
+                      }}
+                    />
+                    <label
+                      htmlFor={field.id}
+                      className={`block border-2 border-dashed rounded-xl p-4 text-center cursor-pointer transition-colors ${formData[`${field.id}Ok`] ? "border-emerald-500 bg-emerald-50/20" : "border-slate-200 bg-slate-50 hover:bg-slate-100 hover:border-slate-300"}`}
+                    >
+                      <div className="mb-2">
+                        {formData[`${field.id}Ok`] ? (
+                          <Check className="text-emerald-500 mx-auto" size={24} />
+                        ) : (
+                          <Upload className="text-slate-400 mx-auto" size={24} />
+                        )}
+                      </div>
+                      {formData[`${field.id}Ok`] ? (
+                        <div>
+                          <p className="text-emerald-700 font-bold text-xs mb-0.5 truncate px-2">{formData[`${field.id}Name`]}</p>
+                          <span className="text-[10px] text-slate-400">Klik untuk mengganti</span>
+                        </div>
+                      ) : (
+                        <div>
+                          <p className="font-bold text-slate-700 text-xs mb-0.5">Pilih Berkas</p>
+                          <span className="text-[10px] text-slate-400">{field.desc}</span>
+                        </div>
+                      )}
+                    </label>
+                    {formData[`${field.id}Ok`] && (
+                      <button 
+                        type="button"
+                        className="absolute top-2 right-2 bg-red-100 text-red-600 hover:bg-red-200 p-1 rounded-full transition-colors z-10"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          setFormData(prev => ({
+                            ...prev,
+                            [`${field.id}Ok`]: false,
+                            [`${field.id}File`]: null,
+                            [`${field.id}Name`]: ""
+                          }));
+                          const inputElement = document.getElementById(field.id);
+                          if(inputElement) inputElement.value = "";
+                        }}
+                      >
+                        <X size={14} />
+                      </button>
+                    )}
+                  </div>
                 </div>
-                {formData.berkasOk ? (
-                  <div>
-                    <p className="text-emerald-700 font-bold text-sm mb-1">Berkas_Pendaftaran_PPDB.pdf</p>
-                    <span className="text-xs text-slate-400">Klik lagi untuk membatalkan unggahan</span>
-                  </div>
-                ) : (
-                  <div>
-                    <p className="font-bold text-slate-700 text-sm mb-1">Klik untuk simulasi upload berkas</p>
-                    <span className="text-xs text-slate-400">Dokumen pendukung untuk proses verifikasi</span>
-                  </div>
-                )}
-              </div>
+              ))}
             </div>
 
             <div className="form-group">
-              <label className="flex items-start gap-3 cursor-pointer p-4 rounded-xl bg-slate-50 border border-slate-100">
+              <label className="flex items-start gap-3 cursor-pointer p-4 rounded-xl bg-slate-50 border border-slate-100 transition-all hover:bg-slate-100">
                 <input
                   type="checkbox"
-                  className="mt-1 w-5 h-5 accent-blue-600 rounded border-slate-300 shrink-0"
+                  className="mt-1 w-5 h-5 accent-blue-600 rounded border-slate-300 shrink-0 cursor-pointer"
                   checked={formData.deklarasi}
                   onChange={(e) => setFormData(prev => ({ ...prev, deklarasi: e.target.checked }))}
                 />
-                <span className="text-sm text-slate-600 leading-relaxed">
+                <span className="text-sm text-slate-600 leading-relaxed cursor-pointer">
                   <strong>Pernyataan:</strong> Saya menyatakan bahwa data yang saya isikan di formulir ini adalah benar. Apabila di kemudian hari terbukti palsu, saya bersedia menerima sanksi yang berlaku.
                 </span>
               </label>
+              {(!formData.deklarasi || !formData.berkasKKOk || !formData.berkasKTPOk || !formData.berkasAktaOk || !formData.berkasFotoOk) && (
+                <p className="text-red-500 text-xs mt-2 ml-1 font-semibold animate-pulse">
+                  * Wajib melengkapi semua berkas (kecuali opsional) & mencentang pernyataan.
+                </p>
+              )}
             </div>
           </div>
         )}
@@ -1725,7 +1786,7 @@ export default function DaftarPage() {
               disabled={
                 isSubmitting ||
                 (wizardStep === 1 && (!formData.nama || !formData.nisn)) ||
-                (wizardStep === 13 && !formData.deklarasi)
+                (wizardStep === 13 && (!formData.deklarasi || !formData.berkasKKOk || !formData.berkasKTPOk || !formData.berkasAktaOk || !formData.berkasFotoOk))
               }
             >
               {isSubmitting ? (
