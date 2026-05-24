@@ -129,21 +129,27 @@ export default function DaftarPage() {
     janjiBelajar: "",
     janjiNamaBaik: "",
     deklarasi: false,
+    periode: "2026-2027",
     berkasKKOk: false,
     berkasKKFile: null,
     berkasKKName: "",
+    berkasKKBase64: "",
     berkasKTPOk: false,
     berkasKTPFile: null,
     berkasKTPName: "",
+    berkasKTPBase64: "",
     berkasAktaOk: false,
     berkasAktaFile: null,
     berkasAktaName: "",
+    berkasAktaBase64: "",
     berkasIjazahOk: false,
     berkasIjazahFile: null,
     berkasIjazahName: "",
+    berkasIjazahBase64: "",
     berkasFotoOk: false,
     berkasFotoFile: null,
-    berkasFotoName: ""
+    berkasFotoName: "",
+    berkasFotoBase64: ""
   });
 
   // Billing and Payment States
@@ -594,7 +600,7 @@ export default function DaftarPage() {
 
             <div className="form-group mb-4">
               <label className="block text-xs font-bold text-slate-600 mb-1.5">Alamat Rumah (Jalan, No. Rumah)</label>
-              <textarea name="alamat" className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all" rows="2" placeholder="Contoh: Jl. Pekapuran No. 10" value={formData.alamat} onChange={handleInputChange}></textarea>
+              <textarea name="alamat" className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all" rows={2} placeholder="Contoh: Jl. Pekapuran No. 10" value={formData.alamat} onChange={handleInputChange}></textarea>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
@@ -1680,14 +1686,19 @@ export default function DaftarPage() {
                       className="hidden" 
                       accept=".pdf,image/*"
                       onChange={(e) => {
-                        const file = e.target.files[0];
+                        const file = e.target.files?.[0];
                         if (file) {
-                          setFormData(prev => ({ 
-                            ...prev, 
-                            [`${field.id}Ok`]: true, 
-                            [`${field.id}File`]: file, 
-                            [`${field.id}Name`]: file.name 
-                          }));
+                          const reader = new FileReader();
+                          reader.onloadend = () => {
+                            setFormData(prev => ({ 
+                              ...prev, 
+                              [`${field.id}Ok`]: true, 
+                              [`${field.id}File`]: file, 
+                              [`${field.id}Name`]: file.name,
+                              [`${field.id}Base64`]: reader.result as string
+                            }));
+                          };
+                          reader.readAsDataURL(file);
                         }
                       }}
                     />
@@ -1724,10 +1735,11 @@ export default function DaftarPage() {
                             ...prev,
                             [`${field.id}Ok`]: false,
                             [`${field.id}File`]: null,
-                            [`${field.id}Name`]: ""
+                            [`${field.id}Name`]: "",
+                            [`${field.id}Base64`]: ""
                           }));
-                          const inputElement = document.getElementById(field.id);
-                          if(inputElement) inputElement.value = "";
+                          const inputElement = document.getElementById(field.id) as HTMLInputElement;
+                          if (inputElement) inputElement.value = "";
                         }}
                       >
                         <X size={14} />

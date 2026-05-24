@@ -5,24 +5,8 @@ import Link from "next/link";
 import { ArrowLeft, Search, Filter, Eye, X, CheckCircle, Clock, XCircle, Moon, Sun, User, MapPin, Phone, Mail, FileText, ChevronLeft, ChevronRight, ArrowRight } from "lucide-react";
 import { usePPDB } from "@/context/PPDBContext";
 
-// Mock Data untuk Pendaftar
-const mockData = [
-  { id: 1, nama: "Ahmad Bintang Pratama", nisn: "0081234567", kelamin: "Laki-laki", asalSekolah: "SMPN 1 Depok", jurusan1: "Rekayasa Perangkat Lunak", jurusan2: "Teknik Komputer dan Jaringan", status: "Terverifikasi", tglDaftar: "12 Mei 2026", noHp: "081234567890", email: "bintang@email.com", alamat: "Jl. Margonda Raya No. 1, Depok", ayah: "Budi Santoso", ibu: "Siti Aminah" },
-  { id: 2, nama: "Putri Ayu Lestari", nisn: "0087654321", kelamin: "Perempuan", asalSekolah: "SMPN 2 Depok", jurusan1: "Desain Komunikasi Visual", jurusan2: "Animasi", status: "Menunggu Verifikasi", tglDaftar: "13 Mei 2026", noHp: "082345678901", email: "putri@email.com", alamat: "Jl. Raya Bogor KM 30, Depok", ayah: "Ahmad Yani", ibu: "Nurhayati" },
-  { id: 3, nama: "Bima Arya", nisn: "0091122334", kelamin: "Laki-laki", asalSekolah: "SMPN 3 Depok", jurusan1: "Teknik Elektronika", jurusan2: "Rekayasa Perangkat Lunak", status: "Terverifikasi", tglDaftar: "13 Mei 2026", noHp: "083456789012", email: "bima@email.com", alamat: "Jl. Nusantara Raya, Depok", ayah: "Hendro", ibu: "Sulastri" },
-  { id: 4, nama: "Rina Maharani", nisn: "0094455667", kelamin: "Perempuan", asalSekolah: "SMP IT Al-Hikmah", jurusan1: "Broadcasting & Perfilman", jurusan2: "Desain Komunikasi Visual", status: "Ditolak", tglDaftar: "14 Mei 2026", noHp: "084567890123", email: "rina@email.com", alamat: "Perumahan Pesona Khayangan, Depok", ayah: "Wahyudi", ibu: "Endang" },
-  { id: 5, nama: "Kevin Wijaya", nisn: "0089988776", kelamin: "Laki-laki", asalSekolah: "SMP Mardi Yuana", jurusan1: "Teknik Jaringan Komputer & Telekomunikasi", jurusan2: "Teknik Elektronika", status: "Menunggu Verifikasi", tglDaftar: "14 Mei 2026", noHp: "085678901234", email: "kevin@email.com", alamat: "Jl. Siliwangi, Depok", ayah: "Hendra Wijaya", ibu: "Linda" },
-  { id: 6, nama: "Siti Nurhaliza", nisn: "0092233445", kelamin: "Perempuan", asalSekolah: "MTsN 1 Depok", jurusan1: "Animasi", jurusan2: "Rekayasa Perangkat Lunak", status: "Terverifikasi", tglDaftar: "15 Mei 2026", noHp: "086789012345", email: "siti@email.com", alamat: "Jl. Sawangan, Depok", ayah: "Umar", ibu: "Khadijah" },
-  { id: 7, nama: "Fajar Siddiq", nisn: "0083344556", kelamin: "Laki-laki", asalSekolah: "SMPN 4 Depok", jurusan1: "Rekayasa Perangkat Lunak", jurusan2: "Desain Komunikasi Visual", status: "Terverifikasi", tglDaftar: "15 Mei 2026", noHp: "087890123456", email: "fajar@email.com", alamat: "Cimanggis, Depok", ayah: "Rahman", ibu: "Dewi" },
-  { id: 8, nama: "Dian Sastro", nisn: "0095566778", kelamin: "Perempuan", asalSekolah: "SMP Budi Kharisma", jurusan1: "Broadcasting & Perfilman", jurusan2: "Animasi", status: "Menunggu Verifikasi", tglDaftar: "16 Mei 2026", noHp: "088901234567", email: "dian@email.com", alamat: "Beji, Depok", ayah: "Tono", ibu: "Yanti" },
-  { id: 9, nama: "Rizky Firmansyah", nisn: "0087788990", kelamin: "Laki-laki", asalSekolah: "SMPN 5 Depok", jurusan1: "Teknik Elektronika", jurusan2: "Teknik Jaringan Komputer & Telekomunikasi", status: "Ditolak", tglDaftar: "16 Mei 2026", noHp: "089012345678", email: "rizky@email.com", alamat: "Pancoran Mas, Depok", ayah: "Sholeh", ibu: "Sri" },
-  { id: 10, nama: "Maya Sari", nisn: "0091122112", kelamin: "Perempuan", asalSekolah: "SMP Tugu Ibu", jurusan1: "Desain Komunikasi Visual", jurusan2: "Broadcasting & Perfilman", status: "Terverifikasi", tglDaftar: "17 Mei 2026", noHp: "081123456789", email: "maya@email.com", alamat: "Sukmajaya, Depok", ayah: "Bambang", ibu: "Ratna" },
-  { id: 11, nama: "Hendra Gunawan", nisn: "0082233223", kelamin: "Laki-laki", asalSekolah: "SMPN 1 Cibinong", jurusan1: "Teknik Jaringan Komputer & Telekomunikasi", jurusan2: "Rekayasa Perangkat Lunak", status: "Menunggu Verifikasi", tglDaftar: "17 Mei 2026", noHp: "082234567890", email: "hendra@email.com", alamat: "Cibinong, Bogor", ayah: "Gunawan", ibu: "Susi" },
-  { id: 12, nama: "Kartika Putri", nisn: "0093344334", kelamin: "Perempuan", asalSekolah: "SMPN 2 Cibinong", jurusan1: "Animasi", jurusan2: "Desain Komunikasi Visual", status: "Terverifikasi", tglDaftar: "18 Mei 2026", noHp: "083345678901", email: "kartika@email.com", alamat: "Bojonggede, Bogor", ayah: "Agus", ibu: "Rini" }
-];
-
 // Status Badge Component
-const StatusBadge = ({ status }) => {
+const StatusBadge = ({ status }: { status: string }) => {
   if (status === "Terverifikasi" || status === "Approved") return <span className="inline-flex items-center gap-1.5 px-3 py-1 text-xs font-semibold rounded-full bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800"><CheckCircle size={12}/> Terverifikasi</span>;
   if (status === "Menunggu Verifikasi" || status === "Pending") return <span className="inline-flex items-center gap-1.5 px-3 py-1 text-xs font-semibold rounded-full bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400 border border-amber-200 dark:border-amber-800"><Clock size={12}/> Menunggu</span>;
   if (status === "Ditolak" || status === "Rejected") return <span className="inline-flex items-center gap-1.5 px-3 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400 border border-red-200 dark:border-red-800"><XCircle size={12}/> Ditolak</span>;
@@ -35,7 +19,7 @@ export default function DataPendaftarPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [filterJurusan, setFilterJurusan] = useState("Semua");
   const [filterStatus, setFilterStatus] = useState("Semua");
-  const [selectedStudent, setSelectedStudent] = useState(null);
+  const [selectedStudent, setSelectedStudent] = useState<any | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 8;
 
@@ -44,7 +28,6 @@ export default function DataPendaftarPage() {
     const saved = localStorage.getItem('ppdb-theme');
     if (saved === 'dark') {
       document.documentElement.classList.add('dark');
-      // eslint-disable-next-line
       setIsDark(true);
     }
   }, []);
@@ -66,7 +49,7 @@ export default function DataPendaftarPage() {
     const matchName = (item.nama || "").toLowerCase().includes(searchTerm.toLowerCase()) || (item.nisn || "").includes(searchTerm);
     const matchJurusan = filterJurusan === "Semua" || (item.jurusan_1 || item.jurusan1 || "").includes(filterJurusan);
     
-    const getNormalizedStatus = (status) => {
+    const getNormalizedStatus = (status: string) => {
       if (status === "Approved" || status === "Terverifikasi") return "Terverifikasi";
       if (status === "Pending" || status === "Menunggu Verifikasi") return "Menunggu Verifikasi";
       if (status === "Rejected" || status === "Ditolak") return "Ditolak";
@@ -81,7 +64,6 @@ export default function DataPendaftarPage() {
   const totalPages = Math.ceil(filteredData.length / itemsPerPage) || 1;
   const startIndex = (currentPage - 1) * itemsPerPage;
   const currentData = filteredData.slice(startIndex, startIndex + itemsPerPage);
-
 
   return (
     <div className="relative min-h-screen bg-slate-50 dark:bg-slate-900 transition-colors duration-300">
@@ -179,7 +161,6 @@ export default function DataPendaftarPage() {
 
         {/* Data Table */}
         <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden">
-          {/* Header Gradient */}
           <div className="bg-gradient-to-r from-blue-600 to-indigo-600 px-6 py-4">
             <h3 className="text-white font-bold text-lg flex items-center gap-2">
               <User size={18} /> Daftar Calon Taruna Baru
@@ -228,7 +209,7 @@ export default function DataPendaftarPage() {
                   ))
                 ) : (
                   <tr>
-                    <td colSpan="6" className="px-6 py-12 text-center text-slate-500 dark:text-slate-400">
+                    <td colSpan={6} className="px-6 py-12 text-center text-slate-500 dark:text-slate-400">
                       <div className="flex flex-col items-center justify-center">
                         <Search size={40} className="text-slate-300 dark:text-slate-600 mb-3" />
                         <p className="text-sm font-medium">Tidak ada data pendaftar yang cocok dengan filter Anda.</p>

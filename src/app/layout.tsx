@@ -1,3 +1,4 @@
+import React from "react";
 import { Plus_Jakarta_Sans } from "next/font/google";
 import "./globals.css";
 import { PPDBProvider } from "@/context/PPDBContext";
@@ -15,7 +16,7 @@ export const metadata = {
   authors: [{ name: "SMK Taruna Bhakti Depok" }],
 };
 
-export default function RootLayout({ children }) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="id" className={`${plusJakarta.variable} h-full antialiased`}>
       <body suppressHydrationWarning className="min-h-full flex flex-col bg-slate-50 text-slate-900">

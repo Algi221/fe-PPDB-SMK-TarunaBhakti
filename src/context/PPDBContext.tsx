@@ -2,39 +2,78 @@
 
 import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from "react";
 
-const PPDBContext = createContext(null);
+interface Toast {
+  id: string;
+  title: string;
+  message: string;
+  type: string;
+}
+
+interface WsLog {
+  id: string;
+  timestamp: string;
+  direction: string;
+  event: string;
+  payload: any;
+}
+
+interface PPDBContextType {
+  applicants: any[];
+  publicApplicants: any[];
+  adminToken: string | null;
+  adminUser: any | null;
+  wsStatus: string;
+  toasts: Toast[];
+  wsLogs: WsLog[];
+  simulationActive: boolean;
+  setSimulationActive: React.Dispatch<React.SetStateAction<boolean>>;
+  registerApplicant: (formData: any) => Promise<{ success: boolean; data?: any; message?: string }>;
+  verifyApplicant: (id: number) => Promise<void>;
+  rejectApplicant: (id: number) => Promise<void>;
+  deleteApplicant: (id: number) => Promise<void>;
+  updateApplicant: (id: number, updatedData: any) => Promise<{ success: boolean; data?: any; message?: string }>;
+  loginAdmin: (username: string, password: string) => Promise<{ success: boolean; message?: string }>;
+  logoutAdmin: () => void;
+  fetchPublicApplicants: () => Promise<void>;
+  fetchAdminApplicants: () => Promise<void>;
+  simulateRegistration: () => Promise<void>;
+  addToast: (title: string, message: string, type?: string) => void;
+  checkPaymentStatus: (nisn: string) => Promise<any>;
+}
+
+const PPDBContext = createContext<PPDBContextType | null>(null);
 
 const BACKEND_URL = typeof window !== 'undefined' ? `http://${window.location.hostname}:5000` : "http://localhost:5000";
 const WS_URL = typeof window !== 'undefined' ? `ws://${window.location.hostname}:5000/ws` : "ws://localhost:5000/ws";
 
-export function PPDBProvider({ children }) {
-  const [applicants, setApplicants] = useState([]);
-  const [publicApplicants, setPublicApplicants] = useState([]);
-  const [adminToken, setAdminToken] = useState(() => {
+export function PPDBProvider({ children }: { children: React.ReactNode }) {
+  const [applicants, setApplicants] = useState<any[]>([]);
+  const [publicApplicants, setPublicApplicants] = useState<any[]>([]);
+  const [adminToken, setAdminToken] = useState<string | null>(() => {
     if (typeof window !== 'undefined') return localStorage.getItem("ppdb_admin_token") || null;
     return null;
   });
-  const [adminUser, setAdminUser] = useState(() => {
+  const [adminUser, setAdminUser] = useState<any | null>(() => {
     if (typeof window !== 'undefined') {
       const saved = localStorage.getItem("ppdb_admin_user");
       try { return saved ? JSON.parse(saved) : null; } catch (_) { return null; }
     }
     return null;
   });
-  const [wsStatus, setWsStatus] = useState("DISCONNECTED");
-  const [toasts, setToasts] = useState([]);
-  const [wsLogs, setWsLogs] = useState([]);
-  const [simulationActive, setSimulationActive] = useState(false);
+  const [wsStatus, setWsStatus] = useState<string>("DISCONNECTED");
+  const [toasts, setToasts] = useState<Toast[]>([]);
+  const [wsLogs, setWsLogs] = useState<WsLog[]>([]);
+  const [simulationActive, setSimulationActive] = useState<boolean>(false);
 
-  const wsRef = useRef(null);
-  const reconnectTimeoutRef = useRef(null);
+  const wsRef = useRef<WebSocket | null>(null);
+  const reconnectTimeoutRef = useRef<any>(null);
   // Stable ref so onclose can call connectWs without circular dependency
-  const connectWsRef = useRef(null);
+  const connectWsRef = useRef<(() => void) | null>(null);
 
   // Play subtle chime sound for live updates
   const playNotificationSound = useCallback(() => {
     try {
-      const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      const audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
       const osc1 = audioCtx.createOscillator();
       const osc2 = audioCtx.createOscillator();
       const gainNode = audioCtx.createGain();
@@ -53,13 +92,13 @@ export function PPDBProvider({ children }) {
       osc1.start(); osc2.start();
       osc1.stop(audioCtx.currentTime + 0.5);
       osc2.stop(audioCtx.currentTime + 0.5);
-    } catch (e) {
+    } catch (e: any) {
       console.log('AudioContext blocked or unsupported:', e.message);
     }
   }, []);
 
   // Add toast notification
-  const addToast = useCallback((title, message, type = "info") => {
+  const addToast = useCallback((title: string, message: string, type = "info") => {
     const id = Date.now() + Math.random().toString(36).substr(2, 9);
     setToasts((prev) => [...prev, { id, title, message, type }]);
     setTimeout(() => {
@@ -69,7 +108,7 @@ export function PPDBProvider({ children }) {
   }, [playNotificationSound]);
 
   // Log WebSocket activity
-  const addWsLog = useCallback((direction, event, payload) => {
+  const addWsLog = useCallback((direction: string, event: string, payload: any) => {
     setWsLogs((prev) => [
       {
         id: Date.now() + Math.random().toString(36).substr(2, 9),
@@ -88,7 +127,7 @@ export function PPDBProvider({ children }) {
       const res = await fetch(`${BACKEND_URL}/api/applicants/public`);
       const data = await res.json();
       if (data.success) setPublicApplicants(data.data);
-    } catch (err) {
+    } catch (err: any) {
       console.warn("Public API fetch error, using local fallback seed:", err.message);
       const localSeed = [
         { id: 1, nama: "Ahmad Bintang Pratama", nisn: "0081234567", sekolah_asal: "SMPN 1 Depok", jurusan_1: "Rekayasa Perangkat Lunak", status: "Approved", tgl_daftar: new Date().toISOString() },
@@ -108,13 +147,13 @@ export function PPDBProvider({ children }) {
       });
       const data = await res.json();
       if (data.success) setApplicants(data.data);
-    } catch (err) {
+    } catch (err: any) {
       console.warn("Admin API fetch error:", err.message);
     }
   }, [adminToken]);
 
   // Submit registration form
-  const registerApplicant = useCallback(async (formData) => {
+  const registerApplicant = useCallback(async (formData: any) => {
     try {
       const res = await fetch(`${BACKEND_URL}/api/applicants`, {
         method: "POST",
@@ -128,7 +167,7 @@ export function PPDBProvider({ children }) {
       } else {
         return { success: false, message: data.message };
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error("API registration error, adding to memory fallback:", err.message);
       const newId = Date.now();
       const mockSaved = {
@@ -148,7 +187,7 @@ export function PPDBProvider({ children }) {
   }, [fetchPublicApplicants, addToast]);
 
   // Admin: Approve
-  const verifyApplicant = useCallback(async (id) => {
+  const verifyApplicant = useCallback(async (id: number) => {
     const token = adminToken || localStorage.getItem("ppdb_admin_token");
     if (!token) return;
     try {
@@ -163,7 +202,7 @@ export function PPDBProvider({ children }) {
         await fetchAdminApplicants();
         await fetchPublicApplicants();
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error("API status update error:", err.message);
       setApplicants(prev => prev.map(a => a.id === id ? { ...a, status: "Approved" } : a));
       setPublicApplicants(prev => prev.map(a => a.id === id ? { ...a, status: "Approved" } : a));
@@ -172,7 +211,7 @@ export function PPDBProvider({ children }) {
   }, [adminToken, fetchAdminApplicants, fetchPublicApplicants, addToast]);
 
   // Admin: Reject
-  const rejectApplicant = useCallback(async (id) => {
+  const rejectApplicant = useCallback(async (id: number) => {
     const token = adminToken || localStorage.getItem("ppdb_admin_token");
     if (!token) return;
     try {
@@ -187,7 +226,7 @@ export function PPDBProvider({ children }) {
         await fetchAdminApplicants();
         await fetchPublicApplicants();
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error("API status update error:", err.message);
       setApplicants(prev => prev.map(a => a.id === id ? { ...a, status: "Rejected" } : a));
       setPublicApplicants(prev => prev.filter(a => a.id !== id));
@@ -196,7 +235,7 @@ export function PPDBProvider({ children }) {
   }, [adminToken, fetchAdminApplicants, fetchPublicApplicants, addToast]);
 
   // Admin: Delete
-  const deleteApplicant = useCallback(async (id) => {
+  const deleteApplicant = useCallback(async (id: number) => {
     const token = adminToken || localStorage.getItem("ppdb_admin_token");
     if (!token) return;
     try {
@@ -210,7 +249,7 @@ export function PPDBProvider({ children }) {
         await fetchAdminApplicants();
         await fetchPublicApplicants();
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error("API delete error:", err.message);
       setApplicants(prev => prev.filter(a => a.id !== id));
       setPublicApplicants(prev => prev.filter(a => a.id !== id));
@@ -219,7 +258,7 @@ export function PPDBProvider({ children }) {
   }, [adminToken, fetchAdminApplicants, fetchPublicApplicants, addToast]);
 
   // Admin: Update / Edit applicant data
-  const updateApplicant = useCallback(async (id, updatedData) => {
+  const updateApplicant = useCallback(async (id: number, updatedData: any) => {
     const token = adminToken || localStorage.getItem("ppdb_admin_token");
     if (!token) return { success: false, message: "Tidak terautentikasi." };
     try {
@@ -237,7 +276,7 @@ export function PPDBProvider({ children }) {
       } else {
         return { success: false, message: data.message };
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error("API update error:", err.message);
       // Offline fallback: update in memory
       setApplicants(prev => prev.map(a => a.id === id ? { ...a, ...updatedData } : a));
@@ -248,7 +287,7 @@ export function PPDBProvider({ children }) {
   }, [adminToken, fetchAdminApplicants, fetchPublicApplicants, addToast]);
 
   // Admin: Login
-  const loginAdmin = useCallback(async (username, password) => {
+  const loginAdmin = useCallback(async (username: string, password: string) => {
     try {
       const res = await fetch(`${BACKEND_URL}/api/auth/login`, {
         method: "POST",
@@ -265,7 +304,7 @@ export function PPDBProvider({ children }) {
       } else {
         return { success: false, message: data.message };
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error("Auth API error:", err.message);
       if (username === "admin_tb" && password === "AdminTarunaBhakti2026") {
         const token = "mock_jwt_token_for_taruna_bhakti_dev_purposes";
@@ -387,7 +426,7 @@ export function PPDBProvider({ children }) {
     const schools = ["SMPN 1 Depok", "SMPN 2 Depok", "SMPN 3 Depok", "SMP IT Al-Hikmah", "SMP Mardi Yuana", "MTsN 1 Depok", "SMP Budi Kharisma", "SMPN 4 Depok"];
     const majorsCodes = ["Rekayasa Perangkat Lunak", "Teknik Jaringan Komputer & Telekomunikasi", "Desain Komunikasi Visual", "Broadcasting & Perfilman", "Teknik Elektronika", "Animasi"];
 
-    const randomItem = (arr) => arr[Math.floor(Math.random() * arr.length)];
+    const randomItem = (arr: any[]) => arr[Math.floor(Math.random() * arr.length)];
     const randomNama = `${randomItem(firstNames)} ${randomItem(lastNames)}`;
     const randomMajor = randomItem(majorsCodes);
     const randomMajorAlt = majorsCodes.find(m => m !== randomMajor);
@@ -422,12 +461,12 @@ export function PPDBProvider({ children }) {
   }, [registerApplicant]);
 
   // Check candidate payment status by NISN
-  const checkPaymentStatus = useCallback(async (nisn) => {
+  const checkPaymentStatus = useCallback(async (nisn: string) => {
     try {
       const res = await fetch(`${BACKEND_URL}/api/applicants/check-payment/${nisn}`);
       const data = await res.json();
       return data;
-    } catch (err) {
+    } catch (err: any) {
       console.error("Check payment status failed:", err.message);
       return { success: false, message: err.message };
     }
@@ -465,7 +504,7 @@ export function PPDBProvider({ children }) {
   // Idle logout after 1 hour
   useEffect(() => {
     if (!adminToken) return;
-    let timeoutId;
+    let timeoutId: any;
     const resetTimer = () => {
       clearTimeout(timeoutId);
       timeoutId = setTimeout(() => {
@@ -474,11 +513,12 @@ export function PPDBProvider({ children }) {
       }, 3600000);
     };
     const events = ["mousemove", "keydown", "click", "scroll", "touchstart"];
-    events.forEach(ev => window.addEventListener(ev, resetTimer));
+    const handleEvent = () => resetTimer();
+    events.forEach(ev => window.addEventListener(ev, handleEvent));
     resetTimer();
     return () => {
       clearTimeout(timeoutId);
-      events.forEach(ev => window.removeEventListener(ev, resetTimer));
+      events.forEach(ev => window.removeEventListener(ev, handleEvent));
     };
   }, [adminToken, logoutAdmin, addToast]);
 

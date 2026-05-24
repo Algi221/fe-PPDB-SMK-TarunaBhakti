@@ -11,19 +11,52 @@ import {
   Briefcase, 
   Award, 
   Sparkles, 
-  Laptop, 
   Cpu, 
   Layers, 
   Video, 
   Palette, 
-  CheckCircle2, 
   ArrowRight,
-  ShieldCheck,
   Check
 } from "lucide-react";
 
+interface SyllabusItem {
+  subject: string;
+  desc: string;
+}
+
+interface CareerItem {
+  title: string;
+  desc: string;
+}
+
+interface GalleryItem {
+  url: string;
+  caption: string;
+}
+
+interface MajorDetail {
+  code: string;
+  title: string;
+  alias: string;
+  subtitle: string;
+  tagline: string;
+  desc: string;
+  color: string;
+  accentColor: string;
+  bgAccent: string;
+  textAccent: string;
+  glowColor: string;
+  logo: string;
+  banner: string;
+  syllabus: SyllabusItem[];
+  careers: CareerItem[];
+  facilities: string[];
+  gallery: GalleryItem[];
+  partners: string;
+}
+
 // Extensive details dataset for SMK Taruna Bhakti's majors
-const majorsData = {
+const majorsData: Record<string, MajorDetail> = {
   rpl: {
     code: "RPL",
     title: "Rekayasa Perangkat Lunak",
@@ -145,7 +178,7 @@ const majorsData = {
     gallery: [
       { url: "https://images.unsplash.com/photo-1541462608143-67571c6738dd?q=80&w=600&auto=format&fit=crop", caption: "Kolaborasi Pembuatan Wireframe di Figma" },
       { url: "https://images.unsplash.com/photo-1513542789411-b6a5d4f31634?q=80&w=600&auto=format&fit=crop", caption: "Praktik Menggambar Karakter dengan Wacom Tablet" },
-      { url: "https://images.unsplash.com/photo-1542744094-3a31f103e35f?q=80&w=600&auto=format&fit=crop", caption: "Sesi Pengambilan Gambar Produk Komersial" },
+      { url: "https://images.unsplash.com/photo-1542744094-3a31f103e35f?q=80&w=600&auto=format&fit=crop", caption: "Seni Pengambilan Gambar Produk Komersial" },
       { url: "https://images.unsplash.com/photo-1534972195531-d756b9bda9f2?q=80&w=600&auto=format&fit=crop", caption: "Penyuntingan Aset Visual & Layout Kreatif" }
     ],
     partners: "Adobe Certified Professional Partner, Dentsu Creative, Dicoding Academy UI/UX Partner"
@@ -266,7 +299,7 @@ const majorsData = {
       "IoT Smart-Home Integration Prototype Lab",
       "PLC Siemens & Omron Certified Lab",
       "Precision Soldering & Osciloscope Lab Station",
-      "Microcontroller sandbox sandbox environment"
+      "Microcontroller sandbox environment"
     ],
     gallery: [
       { url: "https://images.unsplash.com/photo-1485827404703-89b55fcc595e?q=80&w=600&auto=format&fit=crop", caption: "Kalibrasi Sensor Lengan Robotik Cerdas" },
@@ -380,7 +413,7 @@ export default function MajorPage() {
                 src={major.logo} 
                 alt={`Logo ${major.code}`} 
                 className="w-14 h-14 object-contain drop-shadow-sm"
-                onError={(e) => { 
+                onError={(e: any) => { 
                   e.target.style.display = "none"; 
                   e.target.parentElement.classList.add("bg-gradient-to-r", major.color); 
                   e.target.parentElement.innerHTML = `<div style="color:white;display:flex;align-items:center;justify-content:center;width:100%;height:100%;font-weight:800;font-size:16px">${major.alias}</div>`; 
@@ -420,9 +453,8 @@ export default function MajorPage() {
           </div>
         </div>
 
-        {/* Right Hero Visual Column (High-res Unsplash Hero) */}
+        {/* Right Hero Visual Column */}
         <div className="w-full lg:w-1/2 relative group">
-          {/* Decorative colored glow backdrop */}
           <div className={`absolute -inset-1.5 bg-gradient-to-r ${major.color} rounded-[36px] blur-lg opacity-40 group-hover:opacity-60 transition duration-700 pointer-events-none`}></div>
           
           <div className="relative bg-white dark:bg-slate-900 rounded-[32px] p-3 border border-slate-200/40 dark:border-slate-800/40 shadow-2xl overflow-hidden aspect-video flex items-center justify-center">
@@ -458,7 +490,6 @@ export default function MajorPage() {
                 key={idx} 
                 className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border border-white/50 dark:border-slate-800 rounded-3xl p-6 shadow-md hover:shadow-xl hover:-translate-y-1.5 hover:border-blue-500/20 transition-all duration-300 relative group overflow-hidden"
               >
-                {/* Accent glow on card hover */}
                 <div className={`absolute top-0 left-0 w-full h-[4px] bg-gradient-to-r ${major.color} opacity-0 scale-x-0 group-hover:opacity-100 group-hover:scale-x-100 origin-left transition-all duration-300`}></div>
                 
                 <div className={`w-10 h-10 rounded-xl flex items-center justify-center mb-4 ${major.bgAccent} ${major.textAccent}`}>
@@ -506,7 +537,6 @@ export default function MajorPage() {
                   alt={img.caption}
                   className="w-full h-full object-cover transform group-hover:scale-110 transition duration-700"
                 />
-                {/* Floating blur glass caption */}
                 <div className="absolute inset-x-2 bottom-2 bg-slate-950/70 dark:bg-slate-950/80 backdrop-blur-md border border-white/10 p-3 rounded-xl transition duration-500 translate-y-2 opacity-0 group-hover:translate-y-0 group-hover:opacity-100">
                   <p className="text-[10px] font-extrabold text-white uppercase tracking-wide">
                     Aktivitas {major.alias}
@@ -623,7 +653,6 @@ export default function MajorPage() {
       {/* FINAL CALL TO ACTION BANNER */}
       <section className="py-16 max-w-6xl mx-auto px-6 w-full relative z-10">
         <div className={`relative bg-gradient-to-r ${major.color} rounded-[40px] p-10 md:p-16 text-center text-white shadow-2xl overflow-hidden group`}>
-          {/* Dynamic glowing pattern */}
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(255,255,255,0.15)_0%,transparent_60%)] pointer-events-none"></div>
           
           <div className="relative z-10 max-w-xl mx-auto space-y-6">
@@ -654,7 +683,6 @@ export default function MajorPage() {
       {/* EXPLORE NEXT MAJOR CTA */}
       <section className="py-16 max-w-6xl mx-auto px-6 w-full relative z-10">
         <div className="bg-white/40 dark:bg-slate-900/40 backdrop-blur-xl border border-slate-200/50 dark:border-slate-800 rounded-[3rem] p-8 md:p-12 shadow-xl relative overflow-hidden flex flex-col md:flex-row items-center justify-between gap-8 group">
-          {/* Subtle colored accent bubble */}
           <div className={`absolute -right-24 -bottom-24 w-80 h-80 rounded-full bg-gradient-to-r ${nextMajor.color} opacity-10 dark:opacity-20 blur-3xl pointer-events-none group-hover:scale-110 transition duration-700`}></div>
           
           <div className="space-y-4 max-w-2xl text-left relative z-10">
@@ -686,13 +714,13 @@ export default function MajorPage() {
       <footer className="bg-slate-100 dark:bg-slate-950 border-t border-slate-200/50 dark:border-slate-900 py-16 transition-colors duration-300 relative z-10 mt-auto">
         <div className="max-w-6xl mx-auto px-6">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 text-slate-500 dark:text-slate-400">
-            {/* Col 1: Brand & Socials */}
+            {/* Col 1 */}
             <div className="space-y-4">
               <div className="flex items-center gap-3">
                 <img src="/logo_smktb.png" alt="Logo SMK TB" className="w-12 h-12 object-contain shrink-0" />
                 <div>
                   <span className="logo-text font-black text-slate-800 dark:text-white text-lg">PPDB <span className="text-blue-600 dark:text-sky-400">SMK TB</span></span>
-                  <span className="block text-[10px] font-bold tracking-widest text-slate-400 dark:text-slate-500 uppercase mt-0.5">SMK Taruna Bhakti</span>
+                  <span className="block text-[10px] font-bold tracking-widest text-slate-400 dark:text-slate-550 uppercase mt-0.5">SMK Taruna Bhakti</span>
                 </div>
               </div>
               <p className="text-xs leading-relaxed font-medium">
@@ -711,7 +739,7 @@ export default function MajorPage() {
               </div>
             </div>
 
-            {/* Col 2: Kompetensi Keahlian */}
+            {/* Col 2 */}
             <div className="space-y-4">
               <h4 className="text-xs font-black uppercase tracking-wider text-slate-800 dark:text-white">Program Keahlian</h4>
               <ul className="space-y-2 text-xs font-semibold">
@@ -724,7 +752,7 @@ export default function MajorPage() {
               </ul>
             </div>
 
-            {/* Col 3: Portal Informasi */}
+            {/* Col 3 */}
             <div className="space-y-4">
               <h4 className="text-xs font-black uppercase tracking-wider text-slate-800 dark:text-white">Portal PPDB</h4>
               <ul className="space-y-2 text-xs font-semibold">
@@ -736,7 +764,7 @@ export default function MajorPage() {
               </ul>
             </div>
 
-            {/* Col 4: Hubungi Kami */}
+            {/* Col 4 */}
             <div className="space-y-4">
               <h4 className="text-xs font-black uppercase tracking-wider text-slate-800 dark:text-white">Hubungi Kami</h4>
               <p className="text-xs leading-relaxed font-semibold">
@@ -750,7 +778,7 @@ export default function MajorPage() {
             </div>
           </div>
 
-          <div className="border-t border-slate-200/50 dark:border-slate-900 mt-12 pt-8 flex flex-col md:flex-row justify-between items-center gap-4 text-center md:text-left text-xs font-semibold text-slate-400 dark:text-slate-500">
+          <div className="border-t border-slate-200/50 dark:border-slate-900 mt-12 pt-8 flex flex-col md:flex-row justify-between items-center gap-4 text-center md:text-left text-xs font-semibold text-slate-400 dark:text-slate-550">
             <div>
               &copy; {new Date().getFullYear()} SMK Taruna Bhakti Depok. All rights reserved.
             </div>

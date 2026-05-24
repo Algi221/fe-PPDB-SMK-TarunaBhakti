@@ -7,18 +7,16 @@ import {
   CloudLightning, 
   Database, 
   Wifi, 
-  Globe, 
-  Play, 
   CheckCircle, 
-  AlertCircle, 
   HelpCircle, 
   HardDrive, 
   RefreshCw,
   Save,
   Link,
-  ChevronRight,
   Sparkles
 } from "lucide-react";
+
+type PingStatus = "IDLE" | "PENDING" | "SUCCESS" | "ERROR";
 
 export default function SimulationSettings() {
   const { 
@@ -31,15 +29,15 @@ export default function SimulationSettings() {
   } = usePPDB();
 
   // Hydration safety
-  const [mounted, setMounted] = useState(false);
+  const [mounted, setMounted] = useState<boolean>(false);
 
   // Webhook settings state
-  const [webhookUrl, setWebhookUrl] = useState("");
-  const [autoSync, setAutoSync] = useState(true);
-  const [sendEmail, setSendEmail] = useState(false);
-  const [isPinging, setIsPinging] = useState(false);
-  const [pingStatus, setPingStatus] = useState("IDLE"); // 'IDLE' | 'PENDING' | 'SUCCESS' | 'ERROR'
-  const [pingLatency, setPingLatency] = useState(null);
+  const [webhookUrl, setWebhookUrl] = useState<string>("");
+  const [autoSync, setAutoSync] = useState<boolean>(true);
+  const [sendEmail, setSendEmail] = useState<boolean>(false);
+  const [isPinging, setIsPinging] = useState<boolean>(false);
+  const [pingStatus, setPingStatus] = useState<PingStatus>("IDLE");
+  const [pingLatency, setPingLatency] = useState<number | null>(null);
 
   // Load preferences from localStorage on mount
   useEffect(() => {
@@ -111,7 +109,7 @@ export default function SimulationSettings() {
       <div className="flex items-center justify-center min-h-[300px]">
         <div className="flex flex-col items-center gap-3">
           <RefreshCw className="animate-spin text-blue-500 dark:text-blue-400" size={32} />
-          <span className="text-sm font-semibold text-slate-500 dark:text-slate-400">Memuat konfigurasi...</span>
+          <span className="text-sm font-semibold text-slate-500 dark:text-slate-450">Memuat konfigurasi...</span>
         </div>
       </div>
     );
@@ -188,7 +186,7 @@ export default function SimulationSettings() {
                 <div className="flex items-start justify-between p-4 bg-slate-50/50 dark:bg-slate-950/20 border border-slate-100 dark:border-slate-800/50 rounded-2xl gap-4">
                   <div className="space-y-0.5">
                     <h4 className="text-xs font-bold text-slate-800 dark:text-white leading-snug">Auto-Sync saat Verifikasi</h4>
-                    <p className="text-[10px] text-slate-450">Kirim data ke Spreadsheet secara otomatis ketika berkas calon siswa disetujui (Approved).</p>
+                    <p className="text-[10px] text-slate-455">Kirim data ke Spreadsheet secara otomatis ketika berkas calon siswa disetujui (Approved).</p>
                   </div>
                   <div className="flex items-center shrink-0">
                     <label className="relative inline-flex items-center cursor-pointer">
@@ -240,7 +238,7 @@ export default function SimulationSettings() {
                     <h5 className="font-extrabold uppercase text-[10px] tracking-wider">
                       {pingStatus === "PENDING" ? "Menguji Konektivitas..." : "Tes Koneksi Berhasil!"}
                     </h5>
-                    <p className="text-[10.5px] opacity-90 leading-normal">
+                    <div className="text-[10.5px] opacity-90 leading-normal">
                       {pingStatus === "PENDING" ? (
                         "Sedang mengirim paket ping handshake ke endpoint Google Apps Script..."
                       ) : (
@@ -250,7 +248,7 @@ export default function SimulationSettings() {
                           <strong className="text-slate-850 dark:text-white">PPDB Taruna Bhakti 2026 / 2027</strong>
                         </span>
                       )}
-                    </p>
+                    </div>
                   </div>
                 </div>
               )}
@@ -284,7 +282,7 @@ export default function SimulationSettings() {
 
             <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-5 mb-6 gap-4">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-2xl bg-blue-50/70 dark:bg-blue-950/40 border border-blue-100 dark:border-blue-900/35 flex items-center justify-center text-blue-500 dark:text-blue-450 shrink-0">
+                <div className="w-10 h-10 rounded-2xl bg-blue-50/70 dark:bg-blue-950/40 border border-blue-100 dark:border-blue-900/35 flex items-center justify-center text-blue-500 dark:text-blue-455 shrink-0">
                   <Wifi size={20} />
                 </div>
                 <div>
@@ -410,7 +408,7 @@ export default function SimulationSettings() {
 
           {/* Info Card Statistics & Data Storage */}
           <div className="bg-white dark:bg-slate-900 border border-slate-200/85 dark:border-slate-800/60 rounded-3xl p-6 shadow-[0_4px_20px_rgba(0,0,0,0.02)] transition-colors duration-300">
-            <h4 className="text-xs font-black uppercase tracking-wider text-slate-450 border-b border-slate-100 dark:border-slate-800 pb-3 mb-4 flex items-center gap-1.5">
+            <h4 className="text-xs font-black uppercase tracking-wider text-slate-455 border-b border-slate-100 dark:border-slate-800 pb-3 mb-4 flex items-center gap-1.5">
               <HardDrive size={14} className="text-blue-500" />
               Status Penyimpanan Data
             </h4>
@@ -425,17 +423,17 @@ export default function SimulationSettings() {
               
               <div className="p-4 bg-slate-50 dark:bg-slate-950/20 border border-slate-150/60 dark:border-slate-800/80 rounded-2xl">
                 <span className="text-slate-400 dark:text-slate-500 block text-[10px] font-extrabold uppercase tracking-wide">Penyimpanan Terpasang</span>
-                <span className="text-blue-600 dark:text-blue-400 font-extrabold text-xs uppercase tracking-wider mt-1.5 block flex items-center gap-1.5">
+                <div className="text-blue-600 dark:text-blue-400 font-extrabold text-xs uppercase tracking-wider mt-1.5 flex items-center gap-1.5">
                   <Database size={12} />
                   Dual-Buffer IndexedDB API
-                </span>
+                </div>
               </div>
 
               <div className="p-4 bg-slate-50 dark:bg-slate-950/20 border border-slate-150/60 dark:border-slate-800/80 rounded-2xl">
                 <span className="text-slate-400 dark:text-slate-500 block text-[10px] font-extrabold uppercase tracking-wide">Sinkronisasi Google Drive</span>
-                <span className="text-emerald-600 dark:text-emerald-450 font-extrabold text-[10px] uppercase tracking-wider mt-1.5 block flex items-center gap-1">
+                <div className="text-emerald-600 dark:text-emerald-455 font-extrabold text-[10px] uppercase tracking-wider mt-1.5 flex items-center gap-1">
                   <CheckCircle size={12} /> Terhubung via Webhook
-                </span>
+                </div>
               </div>
             </div>
           </div>

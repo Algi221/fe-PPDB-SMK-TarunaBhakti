@@ -4,30 +4,48 @@ import React, { useState, useEffect, useRef } from "react";
 import { Search, Eye, X, CheckCircle, Clock, XCircle, User, MapPin, Phone, Mail, FileText, ChevronLeft, ChevronRight, ArrowRight } from "lucide-react";
 import { usePPDB } from "@/context/PPDBContext";
 
+interface Student {
+  id: number;
+  nama: string;
+  nisn: string;
+  sekolah_asal?: string;
+  sekolahAsal?: string;
+  jurusan_1?: string;
+  jurusan1?: string;
+  jurusan_2?: string;
+  jurusan2?: string;
+  status: string;
+  whatsapp?: string;
+  email?: string;
+  alamat?: string;
+  isNew?: boolean;
+  isFadingOut?: boolean;
+}
+
 export default function DataPendaftarTable() {
   const { publicApplicants } = usePPDB();
   const [searchTerm, setSearchTerm] = useState("");
   const [filterJurusan, setFilterJurusan] = useState("Semua");
-  const [selectedStudent, setSelectedStudent] = useState(null);
+  const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 5;
 
   // Local state for smooth fade-out / fade-in animations
-  const [activeRows, setActiveRows] = useState([]);
-  const prevApplicantsRef = useRef([]);
+  const [activeRows, setActiveRows] = useState<Student[]>([]);
+  const prevApplicantsRef = useRef<Student[]>([]);
 
   useEffect(() => {
     // Initialize if empty
     if (activeRows.length === 0 && publicApplicants.length > 0) {
-      setActiveRows(publicApplicants.map(a => ({ ...a, isNew: false, isFadingOut: false })));
+      setActiveRows(publicApplicants.map((a: any) => ({ ...a, isNew: false, isFadingOut: false })));
       prevApplicantsRef.current = publicApplicants;
       return;
     }
 
-    const currentIds = publicApplicants.map(a => a.id);
+    const currentIds = publicApplicants.map((a: any) => a.id);
 
     // Find what was removed (rejected)
-    const removedApplicants = prevApplicantsRef.current.filter(a => !currentIds.includes(a.id));
+    const removedApplicants = prevApplicantsRef.current.filter((a: any) => !currentIds.includes(a.id));
 
     let updatedRows = [...activeRows];
 
@@ -42,7 +60,7 @@ export default function DataPendaftarTable() {
     });
 
     // 2. Add or update currently active applicants
-    publicApplicants.forEach(newItem => {
+    publicApplicants.forEach((newItem: any) => {
       const idx = updatedRows.findIndex(r => r.id === newItem.id);
       if (idx > -1) {
         updatedRows[idx] = { 
@@ -187,7 +205,7 @@ export default function DataPendaftarTable() {
                 ))
               ) : (
                 <tr>
-                  <td colSpan="4" className="px-4 py-8 text-center text-slate-500 dark:text-slate-400">
+                  <td colSpan={4} className="px-4 py-8 text-center text-slate-500 dark:text-slate-400">
                     <p className="text-xs font-medium">Tidak ada data pendaftar yang cocok dengan filter Anda.</p>
                   </td>
                 </tr>

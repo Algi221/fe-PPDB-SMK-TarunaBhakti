@@ -11,46 +11,53 @@ import {
   Image as ImageIcon, 
   FileText, 
   Upload, 
-  X, 
   Loader2, 
   AlertCircle, 
-  Eye,
   Clock,
   Sparkles,
   ArrowRight
 } from "lucide-react";
 
+interface Informasi {
+  id: number;
+  judul: string;
+  konten: string;
+  tanggal: string;
+  foto_url?: string | null;
+  created_at?: string;
+}
+
 export default function KelolaInformasi() {
   const { adminToken, addToast } = usePPDB();
-  const [informasiList, setInformasiList] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [submitting, setSubmitting] = useState(false);
+  const [informasiList, setInformasiList] = useState<Informasi[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [submitting, setSubmitting] = useState<boolean>(false);
   
   // Modal States
-  const [isOpenModal, setIsOpenModal] = useState(false);
-  const [isEditMode, setIsEditMode] = useState(false);
-  const [selectedId, setSelectedId] = useState(null);
+  const [isOpenModal, setIsOpenModal] = useState<boolean>(false);
+  const [isEditMode, setIsEditMode] = useState<boolean>(false);
+  const [selectedId, setSelectedId] = useState<number | null>(null);
   
   // Form States
-  const [judul, setJudul] = useState("");
-  const [konten, setKonten] = useState("");
-  const [tanggal, setTanggal] = useState("");
-  const [fotoUrl, setFotoUrl] = useState(""); // Base64
-  const [dragActive, setDragActive] = useState(false);
+  const [judul, setJudul] = useState<string>("");
+  const [konten, setKonten] = useState<string>("");
+  const [tanggal, setTanggal] = useState<string>("");
+  const [fotoUrl, setFotoUrl] = useState<string>(""); // Base64
+  const [dragActive, setDragActive] = useState<boolean>(false);
 
   // Detail View State
-  const [previewItem, setPreviewItem] = useState(null);
+  const [previewItem, setPreviewItem] = useState<Informasi | null>(null);
   
   // Delete Confirm State
-  const [deleteConfirmId, setDeleteConfirmId] = useState(null);
+  const [deleteConfirmId, setDeleteConfirmId] = useState<number | null>(null);
 
   const BACKEND_URL = "http://localhost:5000";
 
   // Format date helper
-  const formatDate = (dateString) => {
+  const formatDate = (dateString: string) => {
     if (!dateString) return "";
     try {
-      const options = { day: 'numeric', month: 'long', year: 'numeric' };
+      const options: Intl.DateTimeFormatOptions = { day: 'numeric', month: 'long', year: 'numeric' };
       return new Date(dateString).toLocaleDateString('id-ID', options);
     } catch (e) {
       return dateString;
@@ -58,13 +65,13 @@ export default function KelolaInformasi() {
   };
 
   // Convert date format for input (YYYY-MM-DD)
-  const formatInputDate = (dateString) => {
+  const formatInputDate = (dateString: string) => {
     if (!dateString) return "";
     try {
       const date = new Date(dateString);
       const year = date.getFullYear();
-      let month = (1 + date.getMonth()).toString().padStart(2, '0');
-      let day = date.getDate().toString().padStart(2, '0');
+      const month = (1 + date.getMonth()).toString().padStart(2, '0');
+      const day = date.getDate().toString().padStart(2, '0');
       return `${year}-${month}-${day}`;
     } catch (e) {
       return "";
@@ -80,12 +87,14 @@ export default function KelolaInformasi() {
       if (data.success) {
         setInformasiList(data.data);
       } else {
-        addToast("Error", "Gagal memuat informasi dari server.", "danger");
+        if (typeof addToast === "function") {
+          addToast("Error", "Gagal memuat informasi dari server.", "danger");
+        }
       }
-    } catch (err) {
+    } catch (err: any) {
       console.warn("Backend offline, using fallback seeded data:", err.message);
       // Fallback seeded data to keep app functional offline
-      const fallbackData = [
+      const fallbackData: Informasi[] = [
         {
           id: 101,
           judul: "Pendaftaran Peserta Didik Baru (PPDB) SMK Taruna Bhakti 2026/2027 Resmi Dibuka!",
@@ -126,7 +135,7 @@ export default function KelolaInformasi() {
     setIsOpenModal(true);
   };
 
-  const handleOpenEditModal = (item) => {
+  const handleOpenEditModal = (item: Informasi) => {
     setIsEditMode(true);
     setSelectedId(item.id);
     setJudul(item.judul);
@@ -137,35 +146,43 @@ export default function KelolaInformasi() {
   };
 
   // Convert File to Base64
-  const processFile = (file) => {
+  const processFile = (file: File) => {
     if (!file) return;
     
     // Check size limit (limit to 3MB to avoid giant SQL payloads in development)
     if (file.size > 3 * 1024 * 1024) {
-      addToast("Ukuran File Terlalu Besar", "Harap pilih foto dengan ukuran di bawah 3 MB.", "warning");
+      if (typeof addToast === "function") {
+        addToast("Ukuran File Terlalu Besar", "Harap pilih foto dengan ukuran di bawah 3 MB.", "warning");
+      }
       return;
     }
 
     if (!file.type.startsWith("image/")) {
-      addToast("Format Tidak Valid", "Hanya berkas gambar/foto yang diperbolehkan.", "warning");
+      if (typeof addToast === "function") {
+        addToast("Format Tidak Valid", "Hanya berkas gambar/foto yang diperbolehkan.", "warning");
+      }
       return;
     }
 
     const reader = new FileReader();
     reader.onloadend = () => {
-      setFotoUrl(reader.result); // Base64 encoding
-      addToast("Foto Siap", "Foto berhasil diproses untuk diunggah.", "success");
+      if (typeof reader.result === "string") {
+        setFotoUrl(reader.result); // Base64 encoding
+        if (typeof addToast === "function") {
+          addToast("Foto Siap", "Foto berhasil diproses untuk diunggah.", "success");
+        }
+      }
     };
     reader.readAsDataURL(file);
   };
 
-  const handleFileChange = (e) => {
-    const file = e.target.files[0];
-    processFile(file);
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) processFile(file);
   };
 
   // Drag and drop event handlers
-  const handleDrag = (e) => {
+  const handleDrag = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
     e.stopPropagation();
     if (e.type === "dragenter" || e.type === "dragover") {
@@ -175,7 +192,7 @@ export default function KelolaInformasi() {
     }
   };
 
-  const handleDrop = (e) => {
+  const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
     e.stopPropagation();
     setDragActive(false);
@@ -186,10 +203,12 @@ export default function KelolaInformasi() {
   };
 
   // Create or Update
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!judul.trim() || !konten.trim() || !tanggal) {
-      addToast("Gagal", "Harap lengkapi semua kolom wajib (Judul, Konten, Tanggal).", "warning");
+      if (typeof addToast === "function") {
+        addToast("Gagal", "Harap lengkapi semua kolom wajib (Judul, Konten, Tanggal).", "warning");
+      }
       return;
     }
 
@@ -219,15 +238,19 @@ export default function KelolaInformasi() {
 
       const data = await res.json();
       if (data.success) {
-        addToast(
-          isEditMode ? "Berhasil Diperbarui" : "Berhasil Ditambahkan", 
-          isEditMode ? "Informasi berhasil diperbarui di sistem." : "Informasi baru berhasil dipublikasikan.", 
-          "success"
-        );
+        if (typeof addToast === "function") {
+          addToast(
+            isEditMode ? "Berhasil Diperbarui" : "Berhasil Ditambahkan", 
+            isEditMode ? "Informasi berhasil diperbarui di sistem." : "Informasi baru berhasil dipublikasikan.", 
+            "success"
+          );
+        }
         setIsOpenModal(false);
         fetchInformasi();
       } else {
-        addToast("Error", data.message || "Gagal memproses data.", "danger");
+        if (typeof addToast === "function") {
+          addToast("Error", data.message || "Gagal memproses data.", "danger");
+        }
       }
     } catch (err) {
       console.error("API error, executing offline fallback operations:", err);
@@ -235,15 +258,19 @@ export default function KelolaInformasi() {
       // Offline fallback processing
       if (isEditMode) {
         setInformasiList(prev => prev.map(item => item.id === selectedId ? { ...item, ...payload } : item));
-        addToast("Diperbarui (Offline)", "Perubahan disimpan secara lokal di memori.", "success");
+        if (typeof addToast === "function") {
+          addToast("Diperbarui (Offline)", "Perubahan disimpan secara lokal di memori.", "success");
+        }
       } else {
-        const mockNew = {
+        const mockNew: Informasi = {
           id: Date.now(),
           ...payload,
           created_at: new Date().toISOString()
         };
         setInformasiList(prev => [mockNew, ...prev]);
-        addToast("Ditambahkan (Offline)", "Informasi ditambahkan secara lokal di memori.", "success");
+        if (typeof addToast === "function") {
+          addToast("Ditambahkan (Offline)", "Informasi ditambahkan secara lokal di memori.", "success");
+        }
       }
       setIsOpenModal(false);
     } finally {
@@ -267,15 +294,21 @@ export default function KelolaInformasi() {
 
       const data = await res.json();
       if (data.success) {
-        addToast("Berhasil Dihapus", "Informasi telah dihapus secara permanen.", "success");
+        if (typeof addToast === "function") {
+          addToast("Berhasil Dihapus", "Informasi telah dihapus secara permanen.", "success");
+        }
         fetchInformasi();
       } else {
-        addToast("Error", data.message || "Gagal menghapus informasi.", "danger");
+        if (typeof addToast === "function") {
+          addToast("Error", data.message || "Gagal menghapus informasi.", "danger");
+        }
       }
     } catch (err) {
       console.error("Delete API error, removing from local state:", err);
       setInformasiList(prev => prev.filter(item => item.id !== id));
-      addToast("Dihapus (Offline)", "Informasi dihapus dari tampilan lokal.", "success");
+      if (typeof addToast === "function") {
+        addToast("Dihapus (Offline)", "Informasi dihapus dari tampilan lokal.", "success");
+      }
     }
   };
 
@@ -322,15 +355,15 @@ export default function KelolaInformasi() {
         <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800/60 rounded-3xl p-8 flex flex-col justify-between shadow-[0_4px_20px_rgba(0,0,0,0.01)] relative overflow-hidden transition-colors duration-300">
           <div className="space-y-4">
             <div className="flex items-center justify-between">
-              <span className="text-slate-400 dark:text-slate-500 font-extrabold text-[10px] uppercase tracking-widest block">Ringkasan Publikasi</span>
+              <span className="text-slate-400 dark:text-slate-550 font-extrabold text-[10px] uppercase tracking-widest block">Ringkasan Publikasi</span>
               <div className="w-9 h-9 rounded-2xl bg-blue-50/70 dark:bg-blue-950/40 flex items-center justify-center text-blue-500 dark:text-blue-400">
                 <Megaphone size={16} />
               </div>
             </div>
             <div>
-              <span className="text-5xl font-black tracking-tight text-slate-850 dark:text-white">
+              <div className="text-5xl font-black tracking-tight text-slate-850 dark:text-white">
                 {informasiList.length}
-              </span>
+              </div>
               <span className="text-xs text-slate-400 dark:text-slate-500 font-bold block mt-1.5 uppercase tracking-wide">Total Informasi Aktif</span>
             </div>
           </div>
@@ -359,7 +392,7 @@ export default function KelolaInformasi() {
             <Megaphone size={24} />
           </div>
           <h3 className="text-slate-850 dark:text-white font-black text-sm uppercase tracking-wide">Belum Ada Informasi</h3>
-          <p className="text-xs text-slate-400 dark:text-slate-500 font-medium max-w-xs mt-2 leading-relaxed">
+          <p className="text-xs text-slate-400 dark:text-slate-550 font-medium max-w-xs mt-2 leading-relaxed">
             Tidak ditemukan pengumuman informasi yang aktif di database saat ini. Buat pengumuman baru Anda sekarang!
           </p>
           <button
@@ -408,7 +441,7 @@ export default function KelolaInformasi() {
                   <h4 className="text-slate-850 dark:text-white font-extrabold text-base tracking-tight leading-snug line-clamp-2 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
                     {item.judul}
                   </h4>
-                  <p className="text-xs text-slate-500 dark:text-slate-400 font-medium leading-relaxed line-clamp-3">
+                  <p className="text-xs text-slate-500 dark:text-slate-405 font-medium leading-relaxed line-clamp-3">
                     {item.konten}
                   </p>
                 </div>
@@ -459,7 +492,7 @@ export default function KelolaInformasi() {
                   <Megaphone size={18} className="text-blue-600 dark:text-blue-400" />
                   <span>{isEditMode ? "Edit Publikasi Informasi" : "Publikasikan Informasi Baru"}</span>
                 </h3>
-                <p className="text-xs text-slate-400 dark:text-slate-550 font-bold uppercase tracking-wider mt-1">Lengkapi form isian di bawah ini dengan tepat</p>
+                <p className="text-xs text-slate-450 dark:text-slate-550 font-bold uppercase tracking-wider mt-1">Lengkapi form isian di bawah ini dengan tepat</p>
               </div>
               <button
                 onClick={() => setIsOpenModal(false)}
@@ -516,7 +549,7 @@ export default function KelolaInformasi() {
                     onChange={(e) => setKonten(e.target.value)}
                     placeholder="Tuliskan detail pengumuman informasi secara rinci di sini..."
                     required
-                    rows="6"
+                    rows={6}
                     className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-950/40 border border-slate-200 dark:border-white/5 rounded-2xl text-slate-850 dark:text-white placeholder-slate-400 dark:placeholder-slate-600 text-sm font-semibold leading-relaxed focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all resize-y"
                   />
                 </div>
@@ -576,7 +609,7 @@ export default function KelolaInformasi() {
                 <button
                   type="button"
                   onClick={() => setIsOpenModal(false)}
-                  className="px-5 py-3 bg-slate-100 hover:bg-slate-200 dark:bg-white/5 dark:hover:bg-white/10 text-slate-650 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white rounded-2xl text-xs font-extrabold uppercase tracking-wider border border-slate-200 dark:border-white/5 transition-all"
+                  className="px-5 py-3 bg-slate-100 hover:bg-slate-200 dark:bg-white/5 dark:hover:bg-white/10 text-slate-655 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white rounded-2xl text-xs font-extrabold uppercase tracking-wider border border-slate-200 dark:border-white/5 transition-all"
                 >
                   Batal
                 </button>
@@ -646,7 +679,7 @@ export default function KelolaInformasi() {
                 {previewItem.judul}
               </h2>
 
-              <p className="text-sm text-slate-600 dark:text-slate-350 leading-relaxed font-semibold whitespace-pre-line text-left">
+              <p className="text-sm text-slate-655 dark:text-slate-350 leading-relaxed font-semibold whitespace-pre-line text-left">
                 {previewItem.konten}
               </p>
             </div>
@@ -689,13 +722,13 @@ export default function KelolaInformasi() {
               <AlertCircle size={36} strokeWidth={1.5} />
             </div>
             <h3 className="text-xl font-black text-slate-850 dark:text-white uppercase tracking-tight mb-3">Hapus Informasi?</h3>
-            <p className="text-sm text-slate-500 dark:text-slate-400 font-medium leading-relaxed mb-8">
+            <p className="text-sm text-slate-550 dark:text-slate-400 font-medium leading-relaxed mb-8">
               Apakah Anda yakin ingin menghapus pengumuman informasi ini secara permanen? Tindakan ini tidak dapat dibatalkan.
             </p>
             <div className="flex flex-col sm:flex-row gap-3 justify-center">
               <button
                 onClick={() => setDeleteConfirmId(null)}
-                className="px-6 py-3 bg-slate-100 hover:bg-slate-200 dark:bg-white/5 dark:hover:bg-white/10 text-slate-650 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white rounded-2xl text-xs font-extrabold uppercase tracking-wider border border-slate-200 dark:border-white/5 transition-all w-full sm:w-auto"
+                className="px-6 py-3 bg-slate-100 hover:bg-slate-200 dark:bg-white/5 dark:hover:bg-white/10 text-slate-655 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white rounded-2xl text-xs font-extrabold uppercase tracking-wider border border-slate-200 dark:border-white/5 transition-all w-full sm:w-auto"
               >
                 Batal
               </button>

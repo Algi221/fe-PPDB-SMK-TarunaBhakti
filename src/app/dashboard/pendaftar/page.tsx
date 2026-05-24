@@ -6,7 +6,6 @@ import {
   Search, 
   Filter, 
   Download, 
-  Grid, 
   TableProperties, 
   CloudLightning, 
   FileSpreadsheet, 
@@ -22,31 +21,183 @@ import {
   HelpCircle,
   FileCheck,
   User,
-  Users
+  Users,
+  FileText,
+  FileImage,
+  FileWarning
 } from "lucide-react";
+
+interface Applicant {
+  id: number;
+  nama: string;
+  nisn: string;
+  nik?: string;
+  tempat_lahir?: string;
+  tempatLahir?: string;
+  tgl_lahir?: string;
+  tglLahir?: string;
+  jenis_kelamin?: string;
+  jenisKelamin?: string;
+  agama?: string;
+  alamat?: string;
+  rt_rw?: string;
+  rtRw?: string;
+  kelurahan?: string;
+  kecamatan?: string;
+  kode_pos?: string;
+  kodePos?: string;
+  whatsapp?: string;
+  email?: string;
+  tinggal_dengan?: string;
+  tinggalDengan?: string;
+  transportasi?: string;
+  tinggi_badan?: string | number;
+  tinggiBadan?: string | number;
+  berat_badan?: string | number;
+  beratBadan?: string | number;
+  golongan_darah?: string;
+  golonganDarah?: string;
+  sekolah_asal?: string;
+  sekolahAsal?: string;
+  tgl_lulus?: string;
+  tglLulus?: string;
+  jurusan_1?: string;
+  jurusan1?: string;
+  jurusan_2?: string;
+  jurusan2?: string;
+  nama_ayah?: string;
+  namaAyah?: string;
+  pekerjaan_ayah?: string;
+  pekerjaanAyah?: string;
+  penghasilan_ayah?: string;
+  penghasilanAyah?: string;
+  nama_ibu?: string;
+  namaIbu?: string;
+  pendidikan_ibu?: string;
+  pendidikanIbu?: string;
+  pekerjaan_ibu?: string;
+  pekerjaanIbu?: string;
+  penghasilan_ibu?: string;
+  penghasilanIbu?: string;
+  telepon_ortu?: string;
+  teleponOrtu?: string;
+  cita_cita?: string;
+  citaCita?: string;
+  alasan_memilih?: string;
+  alasanMemilih?: string;
+  status?: string;
+  tgl_daftar?: string;
+  createdAt?: string;
+  nama_wali?: string;
+  namaWali?: string;
+  no_ijazah?: string;
+  noIjazah?: string;
+  no_skhun?: string;
+  noSkhun?: string;
+  lama_belajar?: string | number;
+  lamaBelajar?: string | number;
+  jarak_sekolah?: string | number;
+  jarakSekolah?: string | number;
+  waktu_jam?: number;
+  waktuJam?: number;
+  waktu_menit?: number;
+  waktuMenit?: number;
+  jumlah_saudara?: number;
+  jumlahSaudara?: number;
+  penyakit_diderita?: string;
+  penyakitDiderita?: string;
+  kebutuhan_khusus?: string[];
+  punya_kps?: string;
+  punyaKps?: string;
+  no_kps?: string;
+  noKps?: string;
+  punya_kip?: string;
+  punyaKip?: string;
+  no_kip?: string;
+  noKip?: string;
+  uraian_prestasi?: string;
+  uraianPrestasi?: string;
+  uraian_beasiswa?: string;
+  uraianBeasiswa?: string;
+  perkelahian?: string;
+  narkoba?: string;
+  pelanggaran_lain?: string;
+  periode?: string;
+  berkas_kk?: string;
+  berkas_ktp?: string;
+  berkas_akta?: string;
+  berkas_ijazah?: string;
+  berkas_foto?: string;
+  [key: string]: any;
+}
+
+interface EditFormState {
+  nama: string;
+  nisn: string;
+  nik: string;
+  tempat_lahir: string;
+  tgl_lahir: string;
+  jenis_kelamin: string;
+  agama: string;
+  alamat: string;
+  rt_rw: string;
+  kelurahan: string;
+  kecamatan: string;
+  kode_pos: string;
+  whatsapp: string;
+  email: string;
+  tinggal_dengan: string;
+  transportasi: string;
+  tinggi_badan: string;
+  berat_badan: string;
+  golongan_darah: string;
+  sekolah_asal: string;
+  tgl_lulus: string;
+  jurusan_1: string;
+  jurusan_2: string;
+  nama_ayah: string;
+  pekerjaan_ayah: string;
+  penghasilan_ayah: string;
+  nama_ibu: string;
+  pekerjaan_ibu: string;
+  penghasilan_ibu: string;
+  telepon_ortu: string;
+  cita_cita: string;
+  alasan_memilih: string;
+  [key: string]: string;
+}
+
+type SyncStatus = "IDLE" | "SYNCING" | "SUCCESS";
 
 export default function ApplicantsDirectory() {
   const { applicants, verifyApplicant, rejectApplicant, deleteApplicant, updateApplicant } = usePPDB();
-  const [searchTerm, setSearchTerm] = useState("");
-  const [statusFilter, setStatusFilter] = useState("ALL");
-  const [majorFilter, setMajorFilter] = useState("ALL");
-  const [selectedApplicant, setSelectedApplicant] = useState(null);
-  const [activeTab, setActiveTab] = useState("biodata");
+  const [searchTerm, setSearchTerm] = useState<string>("");
+  const [statusFilter, setStatusFilter] = useState<string>("ALL");
+  const [majorFilter, setMajorFilter] = useState<string>("ALL");
+  const [selectedApplicant, setSelectedApplicant] = useState<Applicant | null>(null);
+  const [activeTab, setActiveTab] = useState<string>("biodata");
+  const [selectedDoc, setSelectedDoc] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!selectedApplicant) {
+      setSelectedDoc(null);
+    }
+  }, [selectedApplicant]);
 
   // Edit Modal States
-  const [editApplicant, setEditApplicant] = useState(null);
-  const [editForm, setEditForm] = useState({});
-  const [isSaving, setIsSaving] = useState(false);
+  const [editApplicant, setEditApplicant] = useState<Applicant | null>(null);
+  const [editForm, setEditForm] = useState<Partial<EditFormState>>({});
+  const [isSaving, setIsSaving] = useState<boolean>(false);
 
   // New Interactive Spreadsheet Mode State
-  const [isSpreadsheetMode, setIsSpreadsheetMode] = useState(false);
-  const [activeCell, setActiveCell] = useState(null); // { row, col }
+  const [isSpreadsheetMode, setIsSpreadsheetMode] = useState<boolean>(false);
+  const [activeCell, setActiveCell] = useState<{ row: number; col: number } | null>(null);
 
   // Simulated Google Sheets Webhook Sync States
-  const [syncStatus, setSyncStatus] = useState("IDLE"); // 'IDLE' | 'SYNCING' | 'SUCCESS'
-  const [syncProgress, setSyncProgress] = useState(0);
+  const [syncStatus, setSyncStatus] = useState<SyncStatus>("IDLE");
+  const [syncProgress, setSyncProgress] = useState<number>(0);
 
-  const openEdit = (a) => {
+  const openEdit = (a: Applicant) => {
     setEditApplicant(a);
     setEditForm({
       nama: a.nama || "",
@@ -65,8 +216,8 @@ export default function ApplicantsDirectory() {
       email: a.email || "",
       tinggal_dengan: a.tinggal_dengan || a.tinggalDengan || "",
       transportasi: a.transportasi || "",
-      tinggi_badan: a.tinggi_badan || a.tinggiBadan || "",
-      berat_badan: a.berat_badan || a.beratBadan || "",
+      tinggi_badan: String(a.tinggi_badan || a.tinggiBadan || ""),
+      berat_badan: String(a.berat_badan || a.beratBadan || ""),
       golongan_darah: a.golongan_darah || a.golonganDarah || "",
       sekolah_asal: a.sekolah_asal || a.sekolahAsal || "",
       tgl_lulus: a.tgl_lulus || a.tglLulus || "",
@@ -106,7 +257,7 @@ export default function ApplicantsDirectory() {
   ];
 
   // Filtering Logic
-  const filteredApplicants = applicants.filter((a) => {
+  const filteredApplicants = applicants.filter((a: Applicant) => {
     const matchesSearch =
       a.nama?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       a.nisn?.includes(searchTerm) ||
@@ -133,7 +284,7 @@ export default function ApplicantsDirectory() {
   };
 
   useEffect(() => {
-    let interval;
+    let interval: NodeJS.Timeout;
     if (syncStatus === "SYNCING") {
       interval = setInterval(() => {
         setSyncProgress((prev) => {
@@ -167,7 +318,7 @@ export default function ApplicantsDirectory() {
       "Tanggal Mendaftar"
     ];
 
-    const rows = filteredApplicants.map((a) => [
+    const rows = filteredApplicants.map((a: Applicant) => [
       `"${a.nama || ''}"`,
       `"${a.nisn || ''}"`,
       `"${a.nik || ''}"`,
@@ -180,28 +331,23 @@ export default function ApplicantsDirectory() {
       `"${a.tgl_daftar || a.createdAt || ''}"`
     ]);
 
-    const csvContent =
-      "data:text/csv;charset=utf-8," +
-      [headers.join(","), ...rows.map((e) => e.join(","))].join("\n");
-
-    const encodedUri = encodeURI(csvContent);
+    // Prepend UTF-8 BOM and sep=, so Excel opens it beautifully in separate columns
+    const csvHeaderLine = "sep=,\n";
+    const csvData = [headers.join(","), ...rows.map((e) => e.join(","))].join("\n");
+    const fullCSVString = csvHeaderLine + csvData;
+    
+    // Create blob with UTF-8 BOM bytes (EF BB BF)
+    const blob = new Blob([new Uint8Array([0xEF, 0xBB, 0xBF]), fullCSVString], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    
     const link = document.createElement("a");
-    link.setAttribute("href", encodedUri);
+    link.setAttribute("href", url);
     link.setAttribute("download", `ppdb_taruna_bhakti_spreadsheet_${Date.now()}.csv`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+    URL.revokeObjectURL(url);
   };
-
-  // spreadsheet columns description helper
-  const spreadsheetCols = [
-    { label: "NAMA LENGKAP", accessor: (a) => a.nama },
-    { label: "NISN", accessor: (a) => a.nisn, mono: true },
-    { label: "ASAL SEKOLAH", accessor: (a) => a.sekolah_asal || a.sekolahAsal },
-    { label: "JURUSAN UTAMA", accessor: (a) => a.jurusan_1 || a.jurusan1 },
-    { label: "NO. WHATSAPP", accessor: (a) => a.whatsapp, mono: true },
-    { label: "STATUS", accessor: (a) => a.status || "Pending" }
-  ];
 
   return (
     <div className="space-y-6 animate-in fade-in duration-500 text-left">
@@ -211,7 +357,7 @@ export default function ApplicantsDirectory() {
         
         {/* Search Field */}
         <div className="relative w-full xl:max-w-md">
-          <span className="absolute inset-y-0 left-0 pl-4 flex items-center text-slate-400 dark:text-slate-500">
+          <span className="absolute inset-y-0 left-0 pl-4 flex items-center text-slate-400 dark:text-slate-550">
             <Search size={16} />
           </span>
           <input
@@ -219,7 +365,7 @@ export default function ApplicantsDirectory() {
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             placeholder="Cari pendaftar, NISN, atau sekolah asal..."
-            className="w-full pl-11 pr-4 py-3 bg-slate-50 dark:bg-slate-950/40 border border-slate-200 dark:border-white/5 rounded-2xl text-slate-850 dark:text-white placeholder-slate-400 dark:placeholder-slate-600 text-sm focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 dark:focus:ring-blue-500/15 transition-all font-semibold"
+            className="w-full pl-11 pr-4 py-3 bg-slate-50 dark:bg-slate-950/40 border border-slate-200 dark:border-white/5 rounded-2xl text-slate-850 dark:text-white placeholder-slate-400 dark:placeholder-slate-655 text-sm focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 dark:focus:ring-blue-500/15 transition-all font-semibold"
           />
         </div>
 
@@ -257,7 +403,7 @@ export default function ApplicantsDirectory() {
             </select>
           </div>
 
-          {/* Togle View: Standard Table vs Excel Spreadsheet Grid */}
+          {/* Toggle View: Standard Table vs Excel Spreadsheet Grid */}
           <div className="flex items-center bg-slate-100 dark:bg-slate-950 p-1.5 rounded-2xl border border-slate-200/50 dark:border-white/5 shrink-0 shadow-inner">
             <button
               onClick={() => setIsSpreadsheetMode(false)}
@@ -337,7 +483,7 @@ export default function ApplicantsDirectory() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 dark:divide-white/5">
-                {filteredApplicants.map((a, idx) => (
+                {filteredApplicants.map((a: Applicant, idx: number) => (
                   <tr
                     key={a.id || idx}
                     className="hover:bg-slate-50/60 dark:hover:bg-white/5 transition-all group cursor-pointer"
@@ -376,7 +522,7 @@ export default function ApplicantsDirectory() {
                       <div className="flex items-center justify-end gap-1.5" onClick={(e) => e.stopPropagation()}>
                         <button
                           onClick={() => setSelectedApplicant(a)}
-                          className="p-2 bg-slate-100 hover:bg-slate-200 dark:bg-white/5 dark:hover:bg-white/10 text-slate-600 dark:text-slate-350 hover:text-slate-850 dark:hover:text-white rounded-xl transition-all border border-slate-200/50 dark:border-white/5"
+                          className="p-2 bg-slate-100 hover:bg-slate-200 dark:bg-white/5 dark:hover:bg-white/10 text-slate-600 dark:text-slate-355 hover:text-slate-850 dark:hover:text-white rounded-xl transition-all border border-slate-200/50 dark:border-white/5"
                           title="Lihat Detail Form"
                         >
                           <Eye size={13} />
@@ -416,7 +562,7 @@ export default function ApplicantsDirectory() {
                               deleteApplicant(a.id);
                             }
                           }}
-                          className="p-2 bg-slate-100 hover:bg-rose-500/10 dark:bg-slate-950/20 dark:hover:bg-rose-500/10 text-slate-400 hover:text-rose-600 dark:hover:text-rose-300 rounded-xl transition-all border border-slate-200/50 dark:border-white/5 hover:border-rose-500/25"
+                          className="p-2 bg-slate-100 hover:bg-rose-500/10 dark:bg-slate-955/20 dark:hover:bg-rose-500/10 text-slate-400 hover:text-rose-600 dark:hover:text-rose-300 rounded-xl transition-all border border-slate-200/50 dark:border-white/5 hover:border-rose-500/25"
                           title="Hapus Permanen"
                         >
                           <Trash2 size={13} />
@@ -428,7 +574,7 @@ export default function ApplicantsDirectory() {
 
                 {filteredApplicants.length === 0 && (
                   <tr>
-                    <td colSpan="6" className="text-center py-12 text-slate-400 font-bold uppercase tracking-wider">
+                    <td colSpan={6} className="text-center py-12 text-slate-400 font-bold uppercase tracking-wider">
                       Tidak ditemukan data calon siswa yang cocok.
                     </td>
                   </tr>
@@ -444,10 +590,10 @@ export default function ApplicantsDirectory() {
                 <FileSpreadsheet size={13} className="text-emerald-500" />
                 <span>SHEETS1 : PPDB_SMK_TARUNABHAKTI_2026.XLSX</span>
               </span>
-              <span className="text-slate-400 dark:text-slate-650">Buka baris dengan double-click untuk Verifikasi Dokumen</span>
+              <span className="text-slate-400 dark:text-slate-655">Buka baris dengan double-click untuk Verifikasi Dokumen</span>
             </div>
             
-            <table className="w-full text-left text-xs font-semibold text-slate-650 dark:text-slate-350 border-collapse table-fixed">
+            <table className="w-full text-left text-xs font-semibold text-slate-650 dark:text-slate-355 border-collapse table-fixed">
               <thead>
                 {/* Column Headers (Alphabetical A-G) */}
                 <tr className="border-b border-slate-200 dark:border-slate-800 bg-slate-100/80 dark:bg-slate-950/60 font-mono text-[10px] tracking-wide text-slate-500">
@@ -462,7 +608,7 @@ export default function ApplicantsDirectory() {
                 </tr>
               </thead>
               <tbody>
-                {filteredApplicants.map((a, rowIdx) => (
+                {filteredApplicants.map((a: Applicant, rowIdx: number) => (
                   <tr
                     key={a.id || rowIdx}
                     className="border-b border-slate-200 dark:border-slate-800 hover:bg-blue-50/30 dark:hover:bg-blue-900/10 cursor-pointer transition-colors duration-150"
@@ -495,7 +641,7 @@ export default function ApplicantsDirectory() {
                     {/* Column C: NISN */}
                     <td 
                       onClick={() => setActiveCell({ row: rowIdx, col: 2 })}
-                      className={`py-2.5 px-4 text-center border-r border-slate-200 dark:border-slate-800 font-mono text-slate-650 dark:text-slate-300 text-[11px] ${
+                      className={`py-2.5 px-4 text-center border-r border-slate-200 dark:border-slate-800 font-mono text-slate-655 dark:text-slate-300 text-[11px] ${
                         activeCell?.row === rowIdx && activeCell?.col === 2 ? "bg-blue-500/10 outline outline-2 outline-blue-500" : ""
                       }`}
                     >
@@ -525,7 +671,7 @@ export default function ApplicantsDirectory() {
                     {/* Column F: WA */}
                     <td 
                       onClick={() => setActiveCell({ row: rowIdx, col: 5 })}
-                      className={`py-2.5 px-4 text-center border-r border-slate-200 dark:border-slate-800 font-mono text-slate-650 dark:text-slate-300 text-[11px] ${
+                      className={`py-2.5 px-4 text-center border-r border-slate-200 dark:border-slate-800 font-mono text-slate-655 dark:text-slate-300 text-[11px] ${
                         activeCell?.row === rowIdx && activeCell?.col === 5 ? "bg-blue-500/10 outline outline-2 outline-blue-500" : ""
                       }`}
                     >
@@ -552,7 +698,7 @@ export default function ApplicantsDirectory() {
 
                 {filteredApplicants.length === 0 && (
                   <tr>
-                    <td colSpan="8" className="text-center py-12 font-mono text-slate-450 italic uppercase bg-slate-50/50 dark:bg-slate-950/20">
+                    <td colSpan={8} className="text-center py-12 font-mono text-slate-450 italic uppercase bg-slate-50/50 dark:bg-slate-950/20">
                       Zero lines of data found. Filter criteria matches nothing.
                     </td>
                   </tr>
@@ -617,7 +763,8 @@ export default function ApplicantsDirectory() {
                 { id: "bantuan", label: "Bantuan & Prestasi" },
                 { id: "orangtua", label: "Orang Tua / Wali" },
                 { id: "akademik", label: "Akademik & Jurusan" },
-                { id: "pernyataan", label: "Komitmen & Janji" }
+                { id: "pernyataan", label: "Komitmen & Janji" },
+                { id: "berkas", label: "Dokumen Terlampir" }
               ].map((t) => (
                 <button
                   key={t.id}
@@ -625,7 +772,7 @@ export default function ApplicantsDirectory() {
                   className={`px-4 py-3.5 text-xs font-black whitespace-nowrap transition-all border-b-2 uppercase tracking-wider ${
                     activeTab === t.id
                       ? "border-blue-500 text-blue-600 dark:text-white"
-                      : "border-transparent text-slate-450 dark:text-slate-450 hover:text-slate-800 dark:hover:text-white"
+                      : "border-transparent text-slate-455 dark:text-slate-450 hover:text-slate-800 dark:hover:text-white"
                   }`}
                 >
                   {t.label}
@@ -634,7 +781,7 @@ export default function ApplicantsDirectory() {
             </div>
 
             {/* Modal Tab Content Viewport */}
-            <div className="flex-1 overflow-y-auto p-8 text-xs leading-relaxed text-slate-650 dark:text-slate-350 font-bold max-h-[50vh] transition-colors duration-300">
+            <div className="flex-1 overflow-y-auto p-8 text-xs leading-relaxed text-slate-655 dark:text-slate-350 font-bold max-h-[50vh] transition-colors duration-300">
               {activeTab === "biodata" && (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                   <div>
@@ -642,10 +789,10 @@ export default function ApplicantsDirectory() {
                       <User size={12} className="text-blue-500" /> Identitas Diri
                     </h4>
                     <div className="space-y-4">
-                      <div><span className="text-slate-400 dark:text-slate-500 block mb-0.5 font-bold uppercase text-[9px] tracking-wider">Nama Lengkap</span> <span className="text-slate-850 dark:text-white text-sm font-extrabold">{selectedApplicant.nama}</span></div>
-                      <div><span className="text-slate-400 dark:text-slate-500 block mb-0.5 font-bold uppercase text-[9px] tracking-wider">NISN / NIK</span> <span className="text-slate-800 dark:text-white font-mono font-extrabold">{selectedApplicant.nisn} / {selectedApplicant.nik || "-"}</span></div>
-                      <div><span className="text-slate-400 dark:text-slate-500 block mb-0.5 font-bold uppercase text-[9px] tracking-wider">Tempat, Tanggal Lahir</span> <span className="text-slate-800 dark:text-white font-extrabold">{selectedApplicant.tempat_lahir || selectedApplicant.tempatLahir}, {selectedApplicant.tgl_lahir || selectedApplicant.tglLahir}</span></div>
-                      <div><span className="text-slate-400 dark:text-slate-500 block mb-0.5 font-bold uppercase text-[9px] tracking-wider">Jenis Kelamin / Agama</span> <span className="text-slate-800 dark:text-white font-extrabold">{selectedApplicant.jenis_kelamin || selectedApplicant.jenisKelamin} / {selectedApplicant.agama}</span></div>
+                      <div><span className="text-slate-400 dark:text-slate-550 block mb-0.5 font-bold uppercase text-[9px] tracking-wider">Nama Lengkap</span> <span className="text-slate-850 dark:text-white text-sm font-extrabold">{selectedApplicant.nama}</span></div>
+                      <div><span className="text-slate-400 dark:text-slate-550 block mb-0.5 font-bold uppercase text-[9px] tracking-wider">NISN / NIK</span> <span className="text-slate-800 dark:text-white font-mono font-extrabold">{selectedApplicant.nisn} / {selectedApplicant.nik || "-"}</span></div>
+                      <div><span className="text-slate-400 dark:text-slate-550 block mb-0.5 font-bold uppercase text-[9px] tracking-wider">Tempat, Tanggal Lahir</span> <span className="text-slate-800 dark:text-white font-extrabold">{selectedApplicant.tempat_lahir || selectedApplicant.tempatLahir}, {selectedApplicant.tgl_lahir || selectedApplicant.tglLahir}</span></div>
+                      <div><span className="text-slate-400 dark:text-slate-550 block mb-0.5 font-bold uppercase text-[9px] tracking-wider">Jenis Kelamin / Agama</span> <span className="text-slate-800 dark:text-white font-extrabold">{selectedApplicant.jenis_kelamin || selectedApplicant.jenisKelamin} / {selectedApplicant.agama}</span></div>
                     </div>
                   </div>
                   <div>
@@ -653,10 +800,10 @@ export default function ApplicantsDirectory() {
                       <Info size={12} className="text-blue-500" /> Alamat & Kontak
                     </h4>
                     <div className="space-y-4">
-                      <div><span className="text-slate-400 dark:text-slate-500 block mb-0.5 font-bold uppercase text-[9px] tracking-wider">WhatsApp / Email</span> <span className="text-blue-600 dark:text-blue-400 text-sm font-mono font-extrabold">{selectedApplicant.whatsapp} / {selectedApplicant.email}</span></div>
-                      <div><span className="text-slate-400 dark:text-slate-500 block mb-0.5 font-bold uppercase text-[9px] tracking-wider">Alamat Tempat Tinggal</span> <span className="text-slate-800 dark:text-white font-extrabold">{selectedApplicant.alamat} (RT/RW {selectedApplicant.rt_rw || selectedApplicant.rtRw})</span></div>
-                      <div><span className="text-slate-400 dark:text-slate-500 block mb-0.5 font-bold uppercase text-[9px] tracking-wider">Kelurahan / Kecamatan</span> <span className="text-slate-800 dark:text-white font-extrabold">{selectedApplicant.kelurahan} / {selectedApplicant.kecamatan}</span></div>
-                      <div><span className="text-slate-400 dark:text-slate-500 block mb-0.5 font-bold uppercase text-[9px] tracking-wider">Tinggal Dengan / Transportasi</span> <span className="text-slate-800 dark:text-white font-extrabold">{selectedApplicant.tinggal_dengan || selectedApplicant.tinggalDengan} / {selectedApplicant.transportasi}</span></div>
+                      <div><span className="text-slate-400 dark:text-slate-550 block mb-0.5 font-bold uppercase text-[9px] tracking-wider">WhatsApp / Email</span> <span className="text-blue-600 dark:text-blue-400 text-sm font-mono font-extrabold">{selectedApplicant.whatsapp} / {selectedApplicant.email}</span></div>
+                      <div><span className="text-slate-400 dark:text-slate-550 block mb-0.5 font-bold uppercase text-[9px] tracking-wider">Alamat Tempat Tinggal</span> <span className="text-slate-800 dark:text-white font-extrabold">{selectedApplicant.alamat} (RT/RW {selectedApplicant.rt_rw || selectedApplicant.rtRw})</span></div>
+                      <div><span className="text-slate-400 dark:text-slate-550 block mb-0.5 font-bold uppercase text-[9px] tracking-wider">Kelurahan / Kecamatan</span> <span className="text-slate-800 dark:text-white font-extrabold">{selectedApplicant.kelurahan} / {selectedApplicant.kecamatan}</span></div>
+                      <div><span className="text-slate-400 dark:text-slate-555 block mb-0.5 font-bold uppercase text-[9px] tracking-wider">Tinggal Dengan / Transportasi</span> <span className="text-slate-800 dark:text-white font-extrabold">{selectedApplicant.tinggal_dengan || selectedApplicant.tinggalDengan} / {selectedApplicant.transportasi}</span></div>
                     </div>
                   </div>
                 </div>
@@ -669,10 +816,10 @@ export default function ApplicantsDirectory() {
                       <Calendar size={12} className="text-blue-500" /> Data Fisik & Periodik
                     </h4>
                     <div className="space-y-4">
-                      <div><span className="text-slate-400 dark:text-slate-500 block mb-0.5 font-bold uppercase text-[9px] tracking-wider">Tinggi / Berat Badan</span> <span className="text-slate-800 dark:text-white font-extrabold">{selectedApplicant.tinggi_badan || selectedApplicant.tinggiBadan || "-"} cm / {selectedApplicant.berat_badan || selectedApplicant.beratBadan || "-"} kg</span></div>
-                      <div><span className="text-slate-400 dark:text-slate-500 block mb-0.5 font-bold uppercase text-[9px] tracking-wider">Jarak ke Sekolah</span> <span className="text-slate-800 dark:text-white font-extrabold">{selectedApplicant.jarak_sekolah || selectedApplicant.jarakSekolah || "-"} km</span></div>
-                      <div><span className="text-slate-400 dark:text-slate-500 block mb-0.5 font-bold uppercase text-[9px] tracking-wider">Waktu Tempuh Perjalanan</span> <span className="text-slate-800 dark:text-white font-extrabold">{selectedApplicant.waktu_jam || selectedApplicant.waktuJam || 0} Jam {selectedApplicant.waktu_menit || selectedApplicant.waktuMenit || 0} Menit</span></div>
-                      <div><span className="text-slate-400 dark:text-slate-500 block mb-0.5 font-bold uppercase text-[9px] tracking-wider">Jumlah Saudara Kandung</span> <span className="text-slate-800 dark:text-white font-extrabold">{selectedApplicant.jumlah_saudara || selectedApplicant.jumlahSaudara || 0} orang</span></div>
+                      <div><span className="text-slate-400 dark:text-slate-550 block mb-0.5 font-bold uppercase text-[9px] tracking-wider">Tinggi / Berat Badan</span> <span className="text-slate-800 dark:text-white font-extrabold">{selectedApplicant.tinggi_badan || selectedApplicant.tinggiBadan || "-"} cm / {selectedApplicant.berat_badan || selectedApplicant.beratBadan || "-"} kg</span></div>
+                      <div><span className="text-slate-400 dark:text-slate-550 block mb-0.5 font-bold uppercase text-[9px] tracking-wider">Jarak ke Sekolah</span> <span className="text-slate-800 dark:text-white font-extrabold">{selectedApplicant.jarak_sekolah || selectedApplicant.jarakSekolah || "-"} km</span></div>
+                      <div><span className="text-slate-400 dark:text-slate-555 block mb-0.5 font-bold uppercase text-[9px] tracking-wider">Waktu Tempuh Perjalanan</span> <span className="text-slate-800 dark:text-white font-extrabold">{selectedApplicant.waktu_jam || selectedApplicant.waktuJam || 0} Jam {selectedApplicant.waktu_menit || selectedApplicant.waktuMenit || 0} Menit</span></div>
+                      <div><span className="text-slate-400 dark:text-slate-555 block mb-0.5 font-bold uppercase text-[9px] tracking-wider">Jumlah Saudara Kandung</span> <span className="text-slate-800 dark:text-white font-extrabold">{selectedApplicant.jumlah_saudara || selectedApplicant.jumlahSaudara || 0} orang</span></div>
                     </div>
                   </div>
                   <div>
@@ -680,14 +827,14 @@ export default function ApplicantsDirectory() {
                       <Heart size={12} className="text-blue-500" /> Kondisi Kesehatan
                     </h4>
                     <div className="space-y-4">
-                      <div><span className="text-slate-400 dark:text-slate-500 block mb-0.5 font-bold uppercase text-[9px] tracking-wider">Golongan Darah</span> <span className="text-slate-800 dark:text-white font-extrabold uppercase">{selectedApplicant.golongan_darah || selectedApplicant.golonganDarah || "-"}</span></div>
-                      <div><span className="text-slate-400 dark:text-slate-500 block mb-0.5 font-bold uppercase text-[9px] tracking-wider">Riwayat Penyakit</span> <span className="text-slate-800 dark:text-white font-extrabold">{selectedApplicant.penyakit_diderita || selectedApplicant.penyakitDiderita || "Tidak Ada"}</span></div>
+                      <div><span className="text-slate-400 dark:text-slate-550 block mb-0.5 font-bold uppercase text-[9px] tracking-wider">Golongan Darah</span> <span className="text-slate-800 dark:text-white font-extrabold uppercase">{selectedApplicant.golongan_darah || selectedApplicant.golonganDarah || "-"}</span></div>
+                      <div><span className="text-slate-400 dark:text-slate-550 block mb-0.5 font-bold uppercase text-[9px] tracking-wider">Riwayat Penyakit</span> <span className="text-slate-800 dark:text-white font-extrabold">{selectedApplicant.penyakit_diderita || selectedApplicant.penyakitDiderita || "Tidak Ada"}</span></div>
                       <div>
-                        <span className="text-slate-400 dark:text-slate-500 block mb-1.5 font-bold uppercase text-[9px] tracking-wider">Kebutuhan Khusus</span>
+                        <span className="text-slate-400 dark:text-slate-550 block mb-1.5 font-bold uppercase text-[9px] tracking-wider">Kebutuhan Khusus</span>
                         <div className="flex flex-wrap gap-1.5">
                           {Array.isArray(selectedApplicant.kebutuhan_khusus) ? selectedApplicant.kebutuhan_khusus.map((k, idx) => (
                             <span key={idx} className="bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-350 border border-slate-200 dark:border-white/5 px-2.5 py-1 rounded-lg font-black text-[9px] uppercase">{k}</span>
-                          )) : <span className="text-slate-450 italic font-semibold">Tidak Ada</span>}
+                          )) : <span className="text-slate-455 italic font-semibold">Tidak Ada</span>}
                         </div>
                       </div>
                     </div>
@@ -702,17 +849,17 @@ export default function ApplicantsDirectory() {
                       <HelpCircle size={12} className="text-blue-500" /> Jaminan Sosial / Bantuan
                     </h4>
                     <div className="space-y-4">
-                      <div><span className="text-slate-400 dark:text-slate-500 block mb-0.5 font-bold uppercase text-[9px] tracking-wider">Penerima KPS</span> <span className="text-slate-800 dark:text-white font-extrabold">{selectedApplicant.punya_kps || selectedApplicant.punyaKps || "Tidak"} {selectedApplicant.no_kps || selectedApplicant.noKps ? `(No: ${selectedApplicant.no_kps || selectedApplicant.noKps})` : ""}</span></div>
-                      <div><span className="text-slate-400 dark:text-slate-500 block mb-0.5 font-bold uppercase text-[9px] tracking-wider">Penerima KIP</span> <span className="text-slate-800 dark:text-white font-extrabold">{selectedApplicant.punya_kip || selectedApplicant.punyaKip || "Tidak"} {selectedApplicant.no_kip || selectedApplicant.noKip ? `(No: ${selectedApplicant.no_kip || selectedApplicant.noKip})` : ""}</span></div>
+                      <div><span className="text-slate-400 dark:text-slate-550 block mb-0.5 font-bold uppercase text-[9px] tracking-wider">Penerima KPS</span> <span className="text-slate-800 dark:text-white font-extrabold">{selectedApplicant.punya_kps || selectedApplicant.punyaKps || "Tidak"} {selectedApplicant.no_kps || selectedApplicant.noKps ? `(No: ${selectedApplicant.no_kps || selectedApplicant.noKps})` : ""}</span></div>
+                      <div><span className="text-slate-400 dark:text-slate-550 block mb-0.5 font-bold uppercase text-[9px] tracking-wider">Penerima KIP</span> <span className="text-slate-800 dark:text-white font-extrabold">{selectedApplicant.punya_kip || selectedApplicant.punyaKip || "Tidak"} {selectedApplicant.no_kip || selectedApplicant.noKip ? `(No: ${selectedApplicant.no_kip || selectedApplicant.noKip})` : ""}</span></div>
                     </div>
                   </div>
                   <div>
                     <h4 className="text-slate-800 dark:text-white font-black uppercase tracking-widest mb-4 border-b border-slate-100 dark:border-white/5 pb-2 text-[10px] flex items-center gap-1.5">
-                      <Layers size={12} className="text-blue-500" /> Prestasi & Beasiswa
+                      <Layers size={12} className="text-blue-500" /> Beasiswa & Prestasi
                     </h4>
                     <div className="space-y-4">
-                      <div><span className="text-slate-400 dark:text-slate-500 block mb-0.5 font-bold uppercase text-[9px] tracking-wider">Uraian Prestasi</span> <span className="text-slate-800 dark:text-white font-extrabold">{selectedApplicant.uraian_prestasi || selectedApplicant.uraianPrestasi || "Tidak Ada"}</span></div>
-                      <div><span className="text-slate-400 dark:text-slate-500 block mb-0.5 font-bold uppercase text-[9px] tracking-wider">Uraian Beasiswa</span> <span className="text-slate-800 dark:text-white font-extrabold">{selectedApplicant.uraian_beasiswa || selectedApplicant.uraianBeasiswa || "Tidak Ada"}</span></div>
+                      <div><span className="text-slate-400 dark:text-slate-550 block mb-0.5 font-bold uppercase text-[9px] tracking-wider">Uraian Prestasi</span> <span className="text-slate-800 dark:text-white font-extrabold">{selectedApplicant.uraian_prestasi || selectedApplicant.uraianPrestasi || "Tidak Ada"}</span></div>
+                      <div><span className="text-slate-400 dark:text-slate-555 block mb-0.5 font-bold uppercase text-[9px] tracking-wider">Uraian Beasiswa</span> <span className="text-slate-800 dark:text-white font-extrabold">{selectedApplicant.uraian_beasiswa || selectedApplicant.uraianBeasiswa || "Tidak Ada"}</span></div>
                     </div>
                   </div>
                 </div>
@@ -725,9 +872,9 @@ export default function ApplicantsDirectory() {
                       <User size={12} className="text-blue-500" /> Ayah Kandung
                     </h4>
                     <div className="space-y-3.5">
-                      <div><span className="text-slate-400 dark:text-slate-500 block mb-0.5 font-bold uppercase text-[9px] tracking-wider">Nama Lengkap</span> <span className="text-slate-850 dark:text-white font-extrabold">{selectedApplicant.nama_ayah || selectedApplicant.namaAyah || "-"}</span></div>
-                      <div><span className="text-slate-400 dark:text-slate-500 block mb-0.5 font-bold uppercase text-[9px] tracking-wider">Pendidikan / Pekerjaan</span> <span className="text-slate-800 dark:text-white font-extrabold">{selectedApplicant.pendidikan_ayah || selectedApplicant.pendidikanAyah || "-"} / {selectedApplicant.pekerjaan_ayah || selectedApplicant.pekerjaanAyah || "-"}</span></div>
-                      <div><span className="text-slate-400 dark:text-slate-500 block mb-0.5 font-bold uppercase text-[9px] tracking-wider">Penghasilan Bulanan</span> <span className="text-slate-800 dark:text-white font-extrabold">{selectedApplicant.penghasilan_ayah || selectedApplicant.penghasilanAyah || "-"}</span></div>
+                      <div><span className="text-slate-400 dark:text-slate-550 block mb-0.5 font-bold uppercase text-[9px] tracking-wider">Nama Lengkap</span> <span className="text-slate-850 dark:text-white font-extrabold">{selectedApplicant.nama_ayah || selectedApplicant.namaAyah || "-"}</span></div>
+                      <div><span className="text-slate-400 dark:text-slate-550 block mb-0.5 font-bold uppercase text-[9px] tracking-wider">Pekerjaan Ayah</span> <span className="text-slate-800 dark:text-white font-extrabold">{selectedApplicant.pekerjaan_ayah || selectedApplicant.pekerjaanAyah || "-"}</span></div>
+                      <div><span className="text-slate-400 dark:text-slate-550 block mb-0.5 font-bold uppercase text-[9px] tracking-wider">Penghasilan Bulanan</span> <span className="text-slate-800 dark:text-white font-extrabold">{selectedApplicant.penghasilan_ayah || selectedApplicant.penghasilanAyah || "-"}</span></div>
                     </div>
                   </div>
                   <div>
@@ -735,9 +882,9 @@ export default function ApplicantsDirectory() {
                       <User size={12} className="text-blue-500" /> Ibu Kandung
                     </h4>
                     <div className="space-y-3.5">
-                      <div><span className="text-slate-400 dark:text-slate-500 block mb-0.5 font-bold uppercase text-[9px] tracking-wider">Nama Lengkap</span> <span className="text-slate-850 dark:text-white font-extrabold">{selectedApplicant.nama_ibu || selectedApplicant.namaIbu || "-"}</span></div>
-                      <div><span className="text-slate-400 dark:text-slate-500 block mb-0.5 font-bold uppercase text-[9px] tracking-wider">Pendidikan / Pekerjaan</span> <span className="text-slate-800 dark:text-white font-extrabold">{selectedApplicant.pendidikan_ibu || selectedApplicant.pendidikanIbu || "-"} / {selectedApplicant.pekerjaan_ibu || selectedApplicant.pekerjaanIbu || "-"}</span></div>
-                      <div><span className="text-slate-400 dark:text-slate-500 block mb-0.5 font-bold uppercase text-[9px] tracking-wider">Penghasilan Bulanan</span> <span className="text-slate-800 dark:text-white font-extrabold">{selectedApplicant.penghasilan_ibu || selectedApplicant.penghasilanIbu || "-"}</span></div>
+                      <div><span className="text-slate-400 dark:text-slate-550 block mb-0.5 font-bold uppercase text-[9px] tracking-wider">Nama Lengkap</span> <span className="text-slate-850 dark:text-white font-extrabold">{selectedApplicant.nama_ibu || selectedApplicant.namaIbu || "-"}</span></div>
+                      <div><span className="text-slate-400 dark:text-slate-550 block mb-0.5 font-bold uppercase text-[9px] tracking-wider">Pendidikan / Pekerjaan</span> <span className="text-slate-800 dark:text-white font-extrabold">{selectedApplicant.pendidikan_ibu || selectedApplicant.pendidikanIbu || "-"} / {selectedApplicant.pekerjaan_ibu || selectedApplicant.pekerjaanIbu || "-"}</span></div>
+                      <div><span className="text-slate-400 dark:text-slate-555 block mb-0.5 font-bold uppercase text-[9px] tracking-wider">Penghasilan Bulanan</span> <span className="text-slate-800 dark:text-white font-extrabold">{selectedApplicant.penghasilan_ibu || selectedApplicant.penghasilanIbu || "-"}</span></div>
                     </div>
                   </div>
                   <div>
@@ -745,8 +892,8 @@ export default function ApplicantsDirectory() {
                       <Users size={12} className="text-blue-500" /> Wali & Kontak Darurat
                     </h4>
                     <div className="space-y-3.5">
-                      <div><span className="text-slate-400 dark:text-slate-500 block mb-0.5 font-bold uppercase text-[9px] tracking-wider">Nama Wali</span> <span className="text-slate-850 dark:text-white font-extrabold">{selectedApplicant.nama_wali || selectedApplicant.namaWali || "Tidak Ada"}</span></div>
-                      <div><span className="text-slate-400 dark:text-slate-500 block mb-0.5 font-bold uppercase text-[9px] tracking-wider">No. Telepon Orang Tua</span> <span className="text-blue-600 dark:text-blue-450 font-mono text-sm font-extrabold">{selectedApplicant.telepon_ortu || selectedApplicant.teleponOrtu || "-"}</span></div>
+                      <div><span className="text-slate-400 dark:text-slate-550 block mb-0.5 font-bold uppercase text-[9px] tracking-wider">Nama Wali</span> <span className="text-slate-850 dark:text-white font-extrabold">{selectedApplicant.nama_wali || selectedApplicant.namaWali || "Tidak Ada"}</span></div>
+                      <div><span className="text-slate-400 dark:text-slate-550 block mb-0.5 font-bold uppercase text-[9px] tracking-wider">No. Telepon Orang Tua</span> <span className="text-blue-600 dark:text-blue-455 font-mono text-sm font-extrabold">{selectedApplicant.telepon_ortu || selectedApplicant.teleponOrtu || "-"}</span></div>
                     </div>
                   </div>
                 </div>
@@ -759,9 +906,9 @@ export default function ApplicantsDirectory() {
                       <Info size={12} className="text-blue-500" /> Pendidikan Asal
                     </h4>
                     <div className="space-y-4">
-                      <div><span className="text-slate-400 dark:text-slate-500 block mb-0.5 font-bold uppercase text-[9px] tracking-wider">Nama Sekolah Asal</span> <span className="text-slate-850 dark:text-white text-sm font-extrabold">{selectedApplicant.sekolah_asal || selectedApplicant.sekolahAsal}</span></div>
-                      <div><span className="text-slate-400 dark:text-slate-500 block mb-0.5 font-bold uppercase text-[9px] tracking-wider">No. Ijazah / SKHUN</span> <span className="text-slate-800 dark:text-white font-mono font-extrabold">{selectedApplicant.no_ijazah || selectedApplicant.noIjazah || "-"} / {selectedApplicant.no_skhun || selectedApplicant.noSkhun || "-"}</span></div>
-                      <div><span className="text-slate-400 dark:text-slate-500 block mb-0.5 font-bold uppercase text-[9px] tracking-wider">Tgl Lulus / Lama Belajar</span> <span className="text-slate-800 dark:text-white font-extrabold">{selectedApplicant.tgl_lulus || selectedApplicant.tglLulus || "-"} ({selectedApplicant.lama_belajar || selectedApplicant.lamaBelajar || 3} Tahun)</span></div>
+                      <div><span className="text-slate-400 dark:text-slate-550 block mb-0.5 font-bold uppercase text-[9px] tracking-wider">Nama Sekolah Asal</span> <span className="text-slate-850 dark:text-white text-sm font-extrabold">{selectedApplicant.sekolah_asal || selectedApplicant.sekolahAsal}</span></div>
+                      <div><span className="text-slate-400 dark:text-slate-550 block mb-0.5 font-bold uppercase text-[9px] tracking-wider">No. Ijazah / SKHUN</span> <span className="text-slate-800 dark:text-white font-mono font-extrabold">{selectedApplicant.no_ijazah || selectedApplicant.noIjazah || "-"} / {selectedApplicant.no_skhun || selectedApplicant.noSkhun || "-"}</span></div>
+                      <div><span className="text-slate-400 dark:text-slate-555 block mb-0.5 font-bold uppercase text-[9px] tracking-wider">Tgl Lulus / Lama Belajar</span> <span className="text-slate-800 dark:text-white font-extrabold">{selectedApplicant.tgl_lulus || selectedApplicant.tglLulus || "-"} ({selectedApplicant.lama_belajar || selectedApplicant.lamaBelajar || 3} Tahun)</span></div>
                     </div>
                   </div>
                   <div>
@@ -769,9 +916,9 @@ export default function ApplicantsDirectory() {
                       <Layers size={12} className="text-blue-500" /> Pilihan Minat Studi
                     </h4>
                     <div className="space-y-4">
-                      <div><span className="text-slate-400 dark:text-slate-500 block mb-0.5 font-bold uppercase text-[9px] tracking-wider">Program Studi Pilihan Utama</span> <span className="text-blue-600 dark:text-blue-400 text-sm font-extrabold uppercase">{selectedApplicant.jurusan_1 || selectedApplicant.jurusan1}</span></div>
-                      <div><span className="text-slate-400 dark:text-slate-500 block mb-0.5 font-bold uppercase text-[9px] tracking-wider">Program Studi Pilihan Cadangan</span> <span className="text-slate-500 dark:text-slate-400 text-sm font-extrabold uppercase">{selectedApplicant.jurusan_2 || selectedApplicant.jurusan2}</span></div>
-                      <div><span className="text-slate-400 dark:text-slate-500 block mb-0.5 font-bold uppercase text-[9px] tracking-wider">Alasan Memilih Jurusan</span> <span className="text-slate-800 dark:text-white font-extrabold">{selectedApplicant.alasan_memilih || selectedApplicant.alasanMemilih || "Ingin belajar IT"}</span></div>
+                      <div><span className="text-slate-400 dark:text-slate-550 block mb-0.5 font-bold uppercase text-[9px] tracking-wider">Program Studi Pilihan Utama</span> <span className="text-blue-600 dark:text-blue-400 text-sm font-extrabold uppercase">{selectedApplicant.jurusan_1 || selectedApplicant.jurusan1}</span></div>
+                      <div><span className="text-slate-400 dark:text-slate-555 block mb-0.5 font-bold uppercase text-[9px] tracking-wider">Program Studi Pilihan Cadangan</span> <span className="text-slate-500 dark:text-slate-400 text-sm font-extrabold uppercase">{selectedApplicant.jurusan_2 || selectedApplicant.jurusan2}</span></div>
+                      <div><span className="text-slate-400 dark:text-slate-555 block mb-0.5 font-bold uppercase text-[9px] tracking-wider">Alasan Memilih Jurusan</span> <span className="text-slate-800 dark:text-white font-extrabold">{selectedApplicant.alasan_memilih || selectedApplicant.alasanMemilih || "Ingin belajar IT"}</span></div>
                     </div>
                   </div>
                 </div>
@@ -784,22 +931,22 @@ export default function ApplicantsDirectory() {
                   </h4>
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div className="p-4 bg-slate-50 dark:bg-slate-950 border border-slate-200/50 dark:border-white/5 rounded-2xl">
-                      <span className="text-slate-400 dark:text-slate-500 block mb-1 font-bold uppercase text-[9px] tracking-wider">Tawuran / Perkelahian</span>
+                      <span className="text-slate-400 dark:text-slate-555 block mb-1 font-bold uppercase text-[9px] tracking-wider">Tawuran / Perkelahian</span>
                       <span className={`font-black px-2.5 py-0.5 rounded-lg text-[9px] uppercase tracking-wide border ${selectedApplicant.perkelahian === "Ya" ? "bg-rose-50 border-rose-200 text-rose-600 dark:bg-rose-500/10 dark:text-rose-400" : "bg-emerald-50 border-emerald-200 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400"}`}>{selectedApplicant.perkelahian || "Tidak"}</span>
                     </div>
                     <div className="p-4 bg-slate-50 dark:bg-slate-950 border border-slate-200/50 dark:border-white/5 rounded-2xl">
-                      <span className="text-slate-400 dark:text-slate-500 block mb-1 font-bold uppercase text-[9px] tracking-wider">Penyalahgunaan Narkoba</span>
+                      <span className="text-slate-400 dark:text-slate-555 block mb-1 font-bold uppercase text-[9px] tracking-wider">Penyalahgunaan Narkoba</span>
                       <span className={`font-black px-2.5 py-0.5 rounded-lg text-[9px] uppercase tracking-wide border ${selectedApplicant.narkoba === "Ya" ? "bg-rose-50 border-rose-200 text-rose-600 dark:bg-rose-500/10 dark:text-rose-400" : "bg-emerald-50 border-emerald-200 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400"}`}>{selectedApplicant.narkoba || "Tidak"}</span>
                     </div>
                     <div className="p-4 bg-slate-50 dark:bg-slate-950 border border-slate-200/50 dark:border-white/5 rounded-2xl">
-                      <span className="text-slate-400 dark:text-slate-500 block mb-1 font-bold uppercase text-[9px] tracking-wider">Pelanggaran Hukum Lain</span>
+                      <span className="text-slate-400 dark:text-slate-555 block mb-1 font-bold uppercase text-[9px] tracking-wider">Pelanggaran Hukum Lain</span>
                       <span className={`font-black px-2.5 py-0.5 rounded-lg text-[9px] uppercase tracking-wide border ${selectedApplicant.pelanggaran_lain === "Ya" ? "bg-rose-50 border-rose-200 text-rose-600 dark:bg-rose-500/10 dark:text-rose-400" : "bg-emerald-50 border-emerald-200 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400"}`}>{selectedApplicant.pelanggaran_lain || "Tidak"}</span>
                     </div>
                   </div>
 
                   <div className="p-5 bg-blue-50 dark:bg-blue-900/10 border border-blue-200/50 dark:border-blue-500/10 rounded-2xl space-y-3">
                     <span className="text-blue-600 dark:text-blue-400 font-black uppercase tracking-wider text-[9px] block">Pernyataan Kesanggupan Calon Taruna Baru:</span>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2.5 text-[10px] text-slate-650 dark:text-slate-350">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2.5 text-[10px] text-slate-655 dark:text-slate-350">
                       <div className="flex items-center gap-2"><span className="text-emerald-500 font-extrabold">✓</span> Patuh Aturan Sekolah</div>
                       <div className="flex items-center gap-2"><span className="text-emerald-500 font-extrabold">✓</span> Menerima Sanksi Sekolah</div>
                       <div className="flex items-center gap-2"><span className="text-emerald-500 font-extrabold">✓</span> Hubungan Akrab Taruna</div>
@@ -807,6 +954,139 @@ export default function ApplicantsDirectory() {
                       <div className="flex items-center gap-2"><span className="text-emerald-500 font-extrabold">✓</span> Menjaga Nama Baik Almamater</div>
                     </div>
                   </div>
+                </div>
+              )}
+
+              {activeTab === "berkas" && (
+                <div className="space-y-6">
+                  <h4 className="text-slate-800 dark:text-white font-black uppercase tracking-widest border-b border-slate-100 dark:border-white/5 pb-2 text-[10px] flex items-center gap-1.5">
+                    <FileText size={12} className="text-blue-500" /> Dokumen & Berkas Pendukung
+                  </h4>
+                  
+                  <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+                    {[
+                      { key: 'berkas_kk', label: 'Kartu Keluarga', name: 'KK' },
+                      { key: 'berkas_ktp', label: 'KTP Ortu / Wali', name: 'KTP' },
+                      { key: 'berkas_akta', label: 'Akta Kelahiran', name: 'Akta' },
+                      { key: 'berkas_ijazah', label: 'Ijazah / SKL', name: 'Ijazah' },
+                      { key: 'berkas_foto', label: 'Pas Foto (3x4)', name: 'Foto' }
+                    ].map((doc) => {
+                      const value = selectedApplicant[doc.key] || selectedApplicant[`${doc.key}Base64`] || '';
+                      const hasDoc = !!value;
+                      
+                      return (
+                        <button
+                          key={doc.key}
+                          type="button"
+                          onClick={() => {
+                            if (hasDoc) {
+                              setSelectedDoc(doc.key);
+                            }
+                          }}
+                          className={`p-4 rounded-2xl border transition-all flex flex-col items-center justify-center gap-2.5 text-center ${
+                            !hasDoc 
+                              ? "bg-slate-50/50 dark:bg-slate-900/40 border-slate-150 dark:border-slate-800 text-slate-400 dark:text-slate-650 cursor-not-allowed"
+                              : selectedDoc === doc.key
+                              ? "bg-blue-50/50 dark:bg-blue-950/30 border-blue-400 dark:border-blue-500/50 text-blue-600 dark:text-blue-400 shadow-sm"
+                              : "bg-white hover:bg-slate-50 dark:bg-slate-900 dark:hover:bg-slate-800/80 border-slate-200 dark:border-white/5 text-slate-700 dark:text-slate-300"
+                          }`}
+                          disabled={!hasDoc}
+                        >
+                          <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${
+                            !hasDoc 
+                              ? "bg-slate-100 dark:bg-slate-800/60" 
+                              : selectedDoc === doc.key
+                              ? "bg-blue-100/80 dark:bg-blue-900/50"
+                              : "bg-slate-50 dark:bg-slate-800"
+                          }`}>
+                            {doc.name === 'Foto' ? (
+                              <FileImage size={18} />
+                            ) : (
+                              <FileText size={18} />
+                            )}
+                          </div>
+                          <div>
+                            <p className="font-extrabold text-[10px] tracking-wide uppercase leading-tight">{doc.label}</p>
+                            <span className="text-[9px] font-bold text-slate-400 mt-1 block">
+                              {hasDoc ? "Tersedia (Klik)" : "Tidak Ada"}
+                            </span>
+                          </div>
+                        </button>
+                      );
+                    })}
+                  </div>
+
+                  {/* Inline Document Preview Box */}
+                  {selectedDoc && selectedApplicant[selectedDoc] ? (
+                    <div className="mt-6 border border-slate-200 dark:border-white/5 rounded-3xl overflow-hidden bg-slate-50 dark:bg-slate-950/40 p-4 transition-colors">
+                      <div className="flex items-center justify-between border-b border-slate-200/60 dark:border-white/5 pb-3 mb-4">
+                        <span className="text-slate-800 dark:text-white font-black uppercase text-[10px] tracking-widest flex items-center gap-2">
+                          <Eye size={12} className="text-blue-500" />
+                          Pratinjau: {
+                            selectedDoc === 'berkas_kk' ? 'Kartu Keluarga' :
+                            selectedDoc === 'berkas_ktp' ? 'KTP Orang Tua / Wali' :
+                            selectedDoc === 'berkas_akta' ? 'Akta Kelahiran' :
+                            selectedDoc === 'berkas_ijazah' ? 'Ijazah / SKL' : 'Pas Foto'
+                          }
+                        </span>
+                        
+                        <div className="flex items-center gap-2">
+                          <a 
+                            href={selectedApplicant[selectedDoc]}
+                            download={`berkas_${selectedDoc}_${selectedApplicant.nisn}.png`}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="px-3.5 py-1.5 bg-blue-600 hover:bg-blue-500 text-white rounded-xl font-bold uppercase tracking-wider text-[9px] transition-all flex items-center gap-1 shadow-sm"
+                          >
+                            <Download size={10} /> Unduh File
+                          </a>
+                          
+                          <button
+                            type="button"
+                            onClick={() => setSelectedDoc(null)}
+                            className="p-1.5 bg-slate-200 dark:bg-white/5 text-slate-600 dark:text-slate-400 hover:text-red-500 dark:hover:text-red-400 rounded-lg transition-all"
+                          >
+                            <X size={12} />
+                          </button>
+                        </div>
+                      </div>
+
+                      <div className="flex justify-center items-center bg-slate-100 dark:bg-slate-900/60 border border-slate-200/50 dark:border-white/5 rounded-2xl min-h-[300px] max-h-[500px] overflow-auto p-4">
+                        {selectedApplicant[selectedDoc].startsWith("data:application/pdf") ? (
+                          <iframe 
+                            src={selectedApplicant[selectedDoc]} 
+                            className="w-full h-[400px] rounded-xl border border-slate-200 dark:border-white/5"
+                            title="Pratinjau PDF"
+                          />
+                        ) : selectedApplicant[selectedDoc].startsWith("data:image/") || selectedApplicant[selectedDoc].startsWith("/") || selectedApplicant[selectedDoc].includes("base64") || selectedApplicant[selectedDoc].startsWith("http") ? (
+                          <img 
+                            src={selectedApplicant[selectedDoc].includes("Mock_Data_Base64") ? "/logo_smktb.png" : selectedApplicant[selectedDoc]} 
+                            alt="Pratinjau Dokumen" 
+                            className="max-w-full max-h-[400px] object-contain rounded-xl shadow-sm animate-in fade-in"
+                            onError={(e) => {
+                              // If mock base64 fails, fallback to general icon/logo
+                              e.currentTarget.src = "/logo_smktb.png";
+                            }}
+                          />
+                        ) : (
+                          <div className="text-center p-8 space-y-3">
+                            <div className="w-16 h-16 rounded-2xl bg-amber-50 dark:bg-amber-950/20 border border-amber-200/30 dark:border-amber-500/20 flex items-center justify-center text-amber-500 mx-auto">
+                              <FileWarning size={32} />
+                            </div>
+                            <div>
+                              <p className="font-extrabold text-slate-700 dark:text-slate-300 text-sm">Dokumen Tidak Dapat Dipratinjau</p>
+                              <p className="text-slate-400 dark:text-slate-500 text-[10px] mt-1">Dokumen disimpan dalam format text mentah atau link luar. Silakan klik tombol 'Unduh File' di atas.</p>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="mt-6 border border-dashed border-slate-200 dark:border-slate-800/60 rounded-3xl p-8 text-center text-slate-455 dark:text-slate-500 transition-colors">
+                      <p className="font-black uppercase text-[10px] tracking-widest text-slate-400 dark:text-slate-550 mb-1">Tidak ada dokumen yang dipilih</p>
+                      <p className="text-[10px] text-slate-400/80">Silakan klik salah satu tombol dokumen di atas untuk mempratinjau.</p>
+                    </div>
+                  )}
                 </div>
               )}
             </div>
@@ -817,7 +1097,7 @@ export default function ApplicantsDirectory() {
               <div className="flex items-center gap-2.5">
                 <button
                   onClick={() => setSelectedApplicant(null)}
-                  className="px-5 py-2.5 bg-slate-100 hover:bg-slate-200 dark:bg-white/5 dark:hover:bg-white/10 text-slate-600 dark:text-slate-350 hover:text-slate-850 dark:hover:text-white rounded-xl text-xs font-black uppercase tracking-wider transition-all border border-slate-200/50 dark:border-white/5"
+                  className="px-5 py-2.5 bg-slate-100 hover:bg-slate-200 dark:bg-white/5 dark:hover:bg-white/10 text-slate-600 dark:text-slate-355 hover:text-slate-850 dark:hover:text-white rounded-xl text-xs font-black uppercase tracking-wider transition-all border border-slate-200/50 dark:border-white/5"
                 >
                   Tutup
                 </button>
@@ -871,7 +1151,6 @@ export default function ApplicantsDirectory() {
 
             {/* Body — scrollable form */}
             <div className="flex-1 overflow-y-auto p-6 space-y-5">
-              {/* Row helper */}
               {[
                 { section: "Identitas Diri", fields: [
                   { label: "Nama Lengkap", key: "nama" },
@@ -924,16 +1203,16 @@ export default function ApplicantsDirectory() {
                         <label className="block text-[9px] font-black uppercase tracking-wider text-slate-400 dark:text-slate-500 mb-1">{f.label}</label>
                         {f.type === "select" ? (
                           <select
-                            value={editForm[f.key] || ""}
+                            value={(editForm as any)[f.key] || ""}
                             onChange={e => setEditForm(prev => ({ ...prev, [f.key]: e.target.value }))}
-                            className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-white/10 rounded-xl px-3 py-2 text-xs font-semibold text-slate-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
+                            className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-white/10 rounded-xl px-3 py-2 text-xs font-semibold text-slate-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all cursor-pointer"
                           >
-                            {f.options.map(o => <option key={o} value={o}>{o}</option>)}
+                            {(f.options || []).map(o => <option key={o} value={o}>{o}</option>)}
                           </select>
                         ) : (
                           <input
                             type={f.type || "text"}
-                            value={editForm[f.key] || ""}
+                            value={(editForm as any)[f.key] || ""}
                             onChange={e => setEditForm(prev => ({ ...prev, [f.key]: e.target.value }))}
                             className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-white/10 rounded-xl px-3 py-2 text-xs font-semibold text-slate-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
                           />

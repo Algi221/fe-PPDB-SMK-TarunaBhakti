@@ -18,25 +18,33 @@ import BlurText from '../../components/BlurText';
 
 const BACKEND_URL = "http://localhost:5000";
 
-const formatDate = (dateStr) => {
+interface InformasiItem {
+  id: number;
+  judul: string;
+  konten: string;
+  tanggal: string;
+  foto_url?: string | null;
+}
+
+const formatDate = (dateStr: string | null | undefined) => {
   if (!dateStr) return "-";
   const d = new Date(dateStr);
   const months = ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Ags','Sep','Okt','Nov','Des'];
   return `${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear()}`;
 };
 
-const formatDateShort = (dateStr) => {
+const formatDateShort = (dateStr: string | null | undefined) => {
   if (!dateStr) return { day: '-', month: '---' };
   const d = new Date(dateStr);
   const months = ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Ags','Sep','Okt','Nov','Des'];
   return { day: d.getDate(), month: months[d.getMonth()] };
 };
 
-const timeAgo = (dateStr) => {
+const timeAgo = (dateStr: string | null | undefined) => {
   if (!dateStr) return "";
   const now = new Date();
   const d = new Date(dateStr);
-  const diffMs = now - d;
+  const diffMs = now.getTime() - d.getTime();
   const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
   if (diffDays === 0) return "Hari ini";
   if (diffDays === 1) return "Kemarin";
@@ -47,9 +55,9 @@ export default function ForumPage() {
   const [isNavbarScrolled, setIsNavbarScrolled] = useState(false);
   const [isDark, setIsDark] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
-  const [informasi, setInformasi] = useState([]);
+  const [informasi, setInformasi] = useState<InformasiItem[]>([]);
   const [loading, setLoading] = useState(true);
-  const [selectedPost, setSelectedPost] = useState(null);
+  const [selectedPost, setSelectedPost] = useState<InformasiItem | null>(null);
 
   // Navbar scroll
   useEffect(() => {
@@ -174,7 +182,7 @@ export default function ForumPage() {
           ) : (
             <div className="space-y-4">
               {filtered.map((item, index) => {
-                const badge = getCategoryBadge(index);
+                const badge = getCategoryBadge();
                 return (
                   <motion.div
                     initial={{ opacity: 0, filter: 'blur(10px)', y: 20 }}

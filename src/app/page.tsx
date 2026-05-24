@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import {
   Menu,
@@ -37,23 +37,31 @@ import {
 
 import DataPendaftarTable from "../components/DataPendaftarTable";
 
+interface InformasiItem {
+  id: number;
+  judul: string;
+  konten: string;
+  tanggal: string;
+  foto_url?: string | null;
+}
+
 export default function Home() {
   // Navigation & UI States
   const [isNavbarScrolled, setIsNavbarScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   // Modals
-  const [activeModal, setActiveModal] = useState(null); // 'syarat' | 'alur' | 'beasiswa'
+  const [activeModal, setActiveModal] = useState<string | null>(null);
 
   // Dynamic Announcements/Informasi State
-  const [informasi, setInformasi] = useState([]);
+  const [informasi, setInformasi] = useState<InformasiItem[]>([]);
   const [loadingInformasi, setLoadingInformasi] = useState(true);
-  const [selectedNews, setSelectedNews] = useState(null);
+  const [selectedNews, setSelectedNews] = useState<InformasiItem | null>(null);
 
-  const formatDate = (dateString) => {
+  const formatDate = (dateString: string | null | undefined) => {
     if (!dateString) return "";
     try {
-      const options = { day: 'numeric', month: 'long', year: 'numeric' };
+      const options: Intl.DateTimeFormatOptions = { day: 'numeric', month: 'long', year: 'numeric' };
       return new Date(dateString).toLocaleDateString('id-ID', options);
     } catch (e) {
       return dateString;
@@ -96,7 +104,7 @@ export default function Home() {
   // Video Background Logic
   const [currentVideo, setCurrentVideo] = useState(0);
   const videos = ["/videos/vid1.mp4", "/videos/vid2.mp4"];
-  const videoRef = React.useRef(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
 
   const handleVideoEnded = () => {
     setCurrentVideo((prev) => (prev + 1) % videos.length);
@@ -108,7 +116,6 @@ export default function Home() {
     }
   }, [currentVideo]);
 
-
   // Dark Mode
   const [isDark, setIsDark] = useState(false);
 
@@ -116,7 +123,6 @@ export default function Home() {
     const saved = localStorage.getItem('ppdb-theme');
     if (saved === 'dark') {
       document.documentElement.classList.add('dark');
-      // eslint-disable-next-line
       setIsDark(true);
     }
   }, []);
@@ -164,16 +170,6 @@ export default function Home() {
       if (element) observer.unobserve(element);
     };
   }, []);
-
-
-
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
-  };
 
   // Majors list for SMK Taruna Bhakti
   const majors = [
@@ -241,7 +237,6 @@ export default function Home() {
 
   return (
     <div className="relative min-h-screen flex flex-col overflow-x-hidden">
-
 
       {/* FLOATING NAVBAR */}
       <div className="navbar-wrapper">
@@ -358,7 +353,6 @@ export default function Home() {
             onEnded={handleVideoEnded}
             className="w-full h-full object-cover transition-opacity duration-1000"
           />
-          {/* Overlay agar teks tetap bisa dibaca */}
           <div className="absolute inset-0 bg-white/50 dark:bg-slate-950/60 backdrop-blur-sm"></div>
         </div>
 
@@ -368,7 +362,7 @@ export default function Home() {
           {/* Floating elements representing major names as requested */}
           <Link href="/jurusan/rpl" className="floating-badge badge-aset">
             <div className="badge-icon overflow-hidden" style={{ background: 'transparent' }}>
-              <img src="/jurusan/pplg.jpeg" alt="RPL" className="w-full h-full object-cover rounded-full" onError={(e) => { e.target.style.display = 'none'; }} />
+              <img src="/jurusan/pplg.jpeg" alt="RPL" className="w-full h-full object-cover rounded-full" />
             </div>
             <div className="badge-info">
               <span>PPLG</span>
@@ -377,7 +371,7 @@ export default function Home() {
 
           <Link href="/jurusan/tjkt" className="floating-badge badge-peminjaman">
             <div className="badge-icon overflow-hidden" style={{ background: 'transparent' }}>
-              <img src="/jurusan/tjkt.jpeg" alt="TJKT" className="w-full h-full object-cover rounded-full" onError={(e) => { e.target.style.display = 'none'; }} />
+              <img src="/jurusan/tjkt.jpeg" alt="TJKT" className="w-full h-full object-cover rounded-full" />
             </div>
             <div className="badge-info">
               <span>TJKT</span>
@@ -386,7 +380,7 @@ export default function Home() {
 
           <Link href="/jurusan/te" className="floating-badge badge-te">
             <div className="badge-icon overflow-hidden" style={{ background: 'transparent' }}>
-              <img src="/jurusan/te.jpeg" alt="TE" className="w-full h-full object-cover rounded-full" onError={(e) => { e.target.style.display = 'none'; }} />
+              <img src="/jurusan/te.jpeg" alt="TE" className="w-full h-full object-cover rounded-full" />
             </div>
             <div className="badge-info">
               <span>TE</span>
@@ -395,7 +389,7 @@ export default function Home() {
 
           <Link href="/jurusan/dkv" className="floating-badge badge-laporan">
             <div className="badge-icon overflow-hidden" style={{ background: 'transparent' }}>
-              <img src="/jurusan/dkv.jpeg" alt="DKV" className="w-full h-full object-cover rounded-full" onError={(e) => { e.target.style.display = 'none'; }} />
+              <img src="/jurusan/dkv.jpeg" alt="DKV" className="w-full h-full object-cover rounded-full" />
             </div>
             <div className="badge-info">
               <span>DKV</span>
@@ -404,7 +398,7 @@ export default function Home() {
 
           <Link href="/jurusan/an" className="floating-badge badge-animasi">
             <div className="badge-icon overflow-hidden" style={{ background: 'transparent' }}>
-              <img src="/jurusan/animasijpeg.jpeg" alt="Animasi" className="w-full h-full object-cover rounded-full" onError={(e) => { e.target.style.display = 'none'; }} />
+              <img src="/jurusan/animasijpeg.jpeg" alt="Animasi" className="w-full h-full object-cover rounded-full" />
             </div>
             <div className="badge-info">
               <span>Animasi</span>
@@ -413,7 +407,7 @@ export default function Home() {
 
           <Link href="/jurusan/bc" className="floating-badge badge-kelas">
             <div className="badge-icon overflow-hidden" style={{ background: 'transparent' }}>
-              <img src="/jurusan/bc.jpeg" alt="Broadcasting" className="w-full h-full object-cover rounded-full" onError={(e) => { e.target.style.display = 'none'; }} />
+              <img src="/jurusan/bc.jpeg" alt="Broadcasting" className="w-full h-full object-cover rounded-full" />
             </div>
             <div className="badge-info">
               <span>Broadcasting</span>
@@ -467,7 +461,7 @@ export default function Home() {
         </section>
       </div>
 
-      {/* ALUR PENDAFTARAN (Vertical Redesign) */}
+      {/* ALUR PENDAFTARAN */}
       <section id="alur" className="py-24 bg-slate-50 dark:bg-slate-900/60 relative z-10 border-y border-slate-200/50 dark:border-slate-800">
         <div className="max-w-5xl mx-auto px-6">
           <div className="text-center mb-20">
@@ -479,9 +473,7 @@ export default function Home() {
           </div>
 
           <div className="relative">
-            {/* Central Vertical Connector Line */}
             <div className="absolute left-[32px] md:left-1/2 top-0 bottom-0 w-1 bg-gradient-to-b from-blue-500 via-sky-400 to-indigo-500 transform -translate-x-1/2 z-0 rounded-full opacity-70"></div>
-            {/* Dashed overlay line for cool tech look */}
             <div className="absolute left-[32px] md:left-1/2 top-0 bottom-0 w-1 border-l-2 border-dashed border-white/40 dark:border-slate-950/40 transform -translate-x-1/2 z-0"></div>
 
             <div className="space-y-16 relative z-10">
@@ -496,7 +488,6 @@ export default function Home() {
                   </div>
                 </div>
                 <div className="hidden md:block"></div>
-                {/* Center Glowing Marker */}
                 <div className="absolute left-0 md:left-1/2 md:-translate-x-1/2 top-1/2 -translate-y-1/2 w-16 h-16 rounded-full bg-blue-600 border-4 border-white dark:border-slate-900 text-white flex items-center justify-center font-black text-lg z-10 shadow-[0_0_20px_rgba(37,99,235,0.4)] transition-all duration-300">
                   <FileText size={22} />
                 </div>
@@ -512,7 +503,6 @@ export default function Home() {
                     <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed font-medium">Melakukan pembayaran administrasi pendaftaran sebesar Rp 150.000</p>
                   </div>
                 </div>
-                {/* Center Glowing Marker */}
                 <div className="absolute left-0 md:left-1/2 md:-translate-x-1/2 top-1/2 -translate-y-1/2 w-16 h-16 rounded-full bg-amber-500 border-4 border-white dark:border-slate-900 text-white flex items-center justify-center font-black text-lg z-10 shadow-[0_0_20px_rgba(245,158,11,0.4)] transition-all duration-300">
                   <CreditCard size={22} />
                 </div>
@@ -528,7 +518,6 @@ export default function Home() {
                   </div>
                 </div>
                 <div className="hidden md:block"></div>
-                {/* Center Glowing Marker */}
                 <div className="absolute left-0 md:left-1/2 md:-translate-x-1/2 top-1/2 -translate-y-1/2 w-16 h-16 rounded-full bg-teal-500 border-4 border-white dark:border-slate-900 text-white flex items-center justify-center font-black text-lg z-10 shadow-[0_0_20px_rgba(20,184,166,0.4)] transition-all duration-300">
                   <Phone size={22} />
                 </div>
@@ -541,10 +530,9 @@ export default function Home() {
                   <div className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border border-white/60 dark:border-slate-800 p-6 rounded-3xl shadow-xl hover:shadow-2xl hover:border-rose-500/20 hover:-translate-y-1 transition-all duration-300">
                     <span className="inline-block px-3 py-1 bg-rose-50 dark:bg-rose-950/60 text-rose-500 dark:text-rose-400 rounded-full text-[10px] font-extrabold uppercase tracking-wider mb-3">Tahap 04</span>
                     <h3 className="text-lg font-black text-slate-800 dark:text-white mb-2">Pemberkasan & Seragam</h3>
-                    <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed font-medium">Datang langsung ke sekolah untuk memverifikasi dokumen fisik asli serta melakukan pengukuran baju seragam siswa.</p>
+                    <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed font-medium">Datang langsung to school to verify physical original documents and measure new student uniforms.</p>
                   </div>
                 </div>
-                {/* Center Glowing Marker */}
                 <div className="absolute left-0 md:left-1/2 md:-translate-x-1/2 top-1/2 -translate-y-1/2 w-16 h-16 rounded-full bg-rose-500 border-4 border-white dark:border-slate-900 text-white flex items-center justify-center font-black text-lg z-10 shadow-[0_0_20px_rgba(244,63,94,0.4)] transition-all duration-300">
                   <Users size={22} />
                 </div>
@@ -560,7 +548,6 @@ export default function Home() {
                   </div>
                 </div>
                 <div className="hidden md:block"></div>
-                {/* Center Glowing Marker */}
                 <div className="absolute left-0 md:left-1/2 md:-translate-x-1/2 top-1/2 -translate-y-1/2 w-16 h-16 rounded-full bg-indigo-600 border-4 border-white dark:border-slate-900 text-white flex items-center justify-center font-black text-lg z-10 shadow-[0_0_20px_rgba(79,70,229,0.4)] transition-all duration-300">
                   <Award size={22} />
                 </div>
@@ -576,7 +563,6 @@ export default function Home() {
                     <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed font-medium">Pengumuman kelulusan resmi dan status penerimaan calon peserta didik baru melalui web <span className="font-extrabold text-emerald-600 dark:text-emerald-400">smktarunabhakti.net</span>.</p>
                   </div>
                 </div>
-                {/* Center Glowing Marker */}
                 <div className="absolute left-0 md:left-1/2 md:-translate-x-1/2 top-1/2 -translate-y-1/2 w-16 h-16 rounded-full bg-emerald-500 border-4 border-white dark:border-slate-900 text-white flex items-center justify-center font-black text-lg z-10 shadow-[0_0_20px_rgba(16,185,129,0.4)] transition-all duration-300">
                   <ShieldCheck size={22} />
                 </div>
@@ -596,7 +582,6 @@ export default function Home() {
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {majors.map((major, index) => {
-            const IconComp = major.icon;
             return (
               <Link
                 href={`/jurusan/${major.code.toLowerCase()}`}
@@ -604,10 +589,7 @@ export default function Home() {
                 className={`bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border border-white/50 dark:border-slate-800 rounded-3xl p-8 shadow-md hover:shadow-xl hover:-translate-y-2 hover:border-blue-500/30 transition-all duration-700 cursor-pointer flex flex-col justify-between relative overflow-hidden group transform ${isMajorsVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-12"}`}
                 style={{ transitionDelay: `${index * 150}ms` }}
               >
-                {/* Expanding radial spotlight glow on hover */}
                 <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(0,102,255,0.08)_0%,transparent_60%)] opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none z-0"></div>
-
-                {/* Glowing Top Accent Line on hover */}
                 <div className="absolute top-0 left-0 w-full h-[4px] bg-gradient-to-r from-blue-600 to-sky-400 opacity-0 scale-x-0 group-hover:opacity-100 group-hover:scale-x-100 origin-left transition-all duration-500 z-10"></div>
 
                 <div className="relative z-10">
@@ -616,7 +598,7 @@ export default function Home() {
                       src={major.logo}
                       alt={`Logo ${major.code}`}
                       className="w-14 h-14 object-contain drop-shadow-sm"
-                      onError={(e) => {
+                      onError={(e: any) => {
                         e.target.style.display = 'none';
                         e.target.parentElement.classList.add('bg-blue-50');
                         e.target.parentElement.innerHTML = `<div style="color:#0066ff;display:flex;align-items:center;justify-content:center;width:100%;height:100%;font-weight:800;font-size:11px">${major.code}</div>`;
@@ -637,8 +619,6 @@ export default function Home() {
         </div>
       </section>
 
-
-
       {/* KEMITRAAN INDUSTRI */}
       <section id="kemitraan" className="py-24 max-w-6xl mx-auto px-6 relative z-10 border-t border-slate-200/30">
         <div className="text-center mb-16">
@@ -649,10 +629,9 @@ export default function Home() {
           </p>
         </div>
 
-        {/* Tech Partnerships Badges - Individual Clickable Logos Mimicking Collage Layout */}
         <div className="bg-white/50 dark:bg-slate-900/40 backdrop-blur-md border border-slate-100 dark:border-slate-800/60 rounded-3xl p-8 mb-12 shadow-sm">
           <p className="text-center text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-8">
-            Partner Industri Utama &amp; Sertifikasi Internasional &middot; Klik logo untuk kunjungi
+            Partner Industri Utama &amp; Sertifikasi Internasional &middot;
           </p>
           <div className="flex flex-wrap justify-center items-center gap-x-8 gap-y-10 max-w-5xl mx-auto">
             {(() => {
@@ -665,7 +644,6 @@ export default function Home() {
                 { name: "Prasimax", logo: "https://smktarunabhakti.sch.id/wp-content/uploads/2023/11/Prasimax_Logo.png", url: "https://prasimax.com/", h: "h-10" },
                 { name: "Agate", logo: "https://smktarunabhakti.sch.id/wp-content/uploads/2023/11/Logo-Agate-Color.png", url: "https://agate.id/", h: "h-10" },
                 { name: "Panasonic", logo: "https://smktarunabhakti.sch.id/wp-content/uploads/2023/11/8225.png", url: "https://www.panasonic.com/id/", h: "h-8" },
-
                 { name: "Citra Film School", logo: "https://smktarunabhakti.sch.id/wp-content/uploads/2023/11/cropped-Logo-baru-citra.png", url: "https://citrafilmschool.net/", h: "h-20" },
                 { name: "Samsung Tech Institute", logo: "https://smktarunabhakti.sch.id/wp-content/uploads/2019/02/STI-logo-1.png", url: "https://www.samsung.com/", h: "h-8" },
                 { name: "MD Animation", logo: "https://smktarunabhakti.sch.id/wp-content/uploads/2023/11/Logo_md_animation.png", url: "https://mdentertainment.com/id/md-animations/", h: "h-8" },
@@ -673,7 +651,6 @@ export default function Home() {
                 { name: "Assemblr", logo: "https://smktarunabhakti.sch.id/wp-content/uploads/2023/11/6156e76e275fa19ed9a33fa3_Group-33959.png", url: "https://www.assemblrworld.co.id/id", h: "h-20" },
                 { name: "TOA", logo: "https://smktarunabhakti.sch.id/wp-content/uploads/2023/11/PT-TOA.png", url: "https://toa.co.id/", h: "h-8" },
                 { name: "Infection Studio", logo: "https://smktarunabhakti.sch.id/wp-content/uploads/2023/11/Alpha-InfectionTagline_Square-FullColor-cut.png", url: "https://infectionstudio.com/", h: "h-8" },
-
                 { name: "Beyond Education", logo: "https://smktarunabhakti.sch.id/wp-content/uploads/2023/11/1661238758520.jpg", url: "https://beyondeducation.id/", h: "h-12" },
                 { name: "Animakini", logo: "https://smktarunabhakti.sch.id/wp-content/uploads/2023/11/logo-animakini-2022_.png", url: "https://animakini.id/", h: "h-12" },
                 { name: "IMP Studio", logo: "https://smktarunabhakti.sch.id/wp-content/uploads/2023/11/vgphayksj5yyqkq5zze5.png", url: "https://impstudio.id/", h: "h-12" },
@@ -702,19 +679,14 @@ export default function Home() {
               ));
             })()}
           </div>
-          <p className="text-center text-[10px] text-slate-400 dark:text-slate-600 font-semibold mt-8">
-            ↗ Klik logo untuk mengunjungi website mitra
-          </p>
         </div>
-
-
       </section>
 
       {/* FOOTER */}
       <footer className="bg-slate-100 dark:bg-slate-950 border-t border-slate-200/50 dark:border-slate-900 py-16 transition-colors duration-300 relative z-10 mt-auto">
         <div className="max-w-6xl mx-auto px-6">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 text-slate-500 dark:text-slate-400">
-            {/* Col 1: Brand & Socials */}
+            {/* Col 1 */}
             <div className="space-y-4">
               <div className="flex items-center gap-3">
                 <img src="/logo_smktb.png" alt="Logo SMK TB" className="w-12 h-12 object-contain shrink-0" />
@@ -739,7 +711,7 @@ export default function Home() {
               </div>
             </div>
 
-            {/* Col 2: Kompetensi Keahlian */}
+            {/* Col 2 */}
             <div className="space-y-4">
               <h4 className="text-xs font-black uppercase tracking-wider text-slate-800 dark:text-white">Program Keahlian</h4>
               <ul className="space-y-2 text-xs font-semibold">
@@ -752,60 +724,58 @@ export default function Home() {
               </ul>
             </div>
 
-            {/* Col 3: Portal Informasi */}
+            {/* Col 3 */}
             <div className="space-y-4">
-              <h4 className="text-xs font-black uppercase tracking-wider text-slate-800 dark:text-white">Portal PPDB</h4>
+              <h4 className="text-xs font-black uppercase tracking-wider text-slate-800 dark:text-white">Link Terkait</h4>
               <ul className="space-y-2 text-xs font-semibold">
-                <li><Link href="/daftar" className="hover:text-blue-600 dark:hover:text-sky-400 transition-colors">Pendaftaran Online</Link></li>
-                <li><a href="#alur" className="hover:text-blue-600 dark:hover:text-sky-400 transition-colors">Alur &amp; Prosedur</a></li>
-                <li><a href="#majors" className="hover:text-blue-600 dark:hover:text-sky-400 transition-colors">Syarat Kompetensi</a></li>
-                <li><a href="#kemitraan" className="hover:text-blue-600 dark:hover:text-sky-400 transition-colors">Kerjasama Industri</a></li>
-                <li><Link href="/dashboard" className="hover:text-blue-600 dark:hover:text-sky-400 transition-colors">Dashboard Seleksi Admin</Link></li>
+                <li><a href="#" className="hover:text-blue-600 dark:hover:text-sky-400 transition-colors">Brosur PPDB 2026</a></li>
+                <li><a href="#" className="hover:text-blue-600 dark:hover:text-sky-400 transition-colors">Syarat Pendaftaran</a></li>
+                <li><a href="#" className="hover:text-blue-600 dark:hover:text-sky-400 transition-colors">Simulasi Mock Payment</a></li>
+                <li><a href="#" className="hover:text-blue-600 dark:hover:text-sky-400 transition-colors">Dasbor Admin Verifikator</a></li>
               </ul>
             </div>
 
-            {/* Col 4: Hubungi Kami */}
+            {/* Col 4 */}
             <div className="space-y-4">
-              <h4 className="text-xs font-black uppercase tracking-wider text-slate-800 dark:text-white">Hubungi Kami</h4>
+              <h4 className="text-xs font-black uppercase tracking-wider text-slate-800 dark:text-white">Sekretariat PPDB</h4>
               <p className="text-xs leading-relaxed font-semibold">
-                Jalan Pekapuran Kel. Curug, Kec. Cimanggis, Kota Depok, Jawa Barat 16453
+                Jl. Pekapuran Kel. Curug Kec. Cimanggis, Depok, Jawa Barat 16453
               </p>
-              <div className="space-y-1.5 text-xs font-semibold text-slate-500 dark:text-slate-400">
-                <p>Telp: <span className="text-slate-700 dark:text-slate-350">+62 21 874 4810</span></p>
-                <p>WhatsApp: <span className="text-slate-700 dark:text-slate-350">08119892324</span></p>
-                <p>Email: <span className="text-slate-700 dark:text-slate-350">info@smktarunabhakti.sch.id</span></p>
+              <div className="text-xs font-bold space-y-1">
+                <div>Telp: (021) 8740756</div>
+                <div>Email: info@smktarunabhakti.sch.id</div>
               </div>
             </div>
           </div>
 
-          <div className="border-t border-slate-200/50 dark:border-slate-900 mt-12 pt-8 flex flex-col md:flex-row justify-between items-center gap-4 text-center md:text-left text-xs font-semibold text-slate-400 dark:text-slate-500">
-            <div>
-              &copy; {new Date().getFullYear()} SMK Taruna Bhakti Depok. All rights reserved.
-            </div>
-            <div className="flex items-center gap-1.5">
-              <span></span>
+          <div className="border-t border-slate-200/50 dark:border-slate-900 mt-12 pt-8 flex flex-col md:flex-row items-center justify-between gap-4 text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">
+            <div>© {new Date().getFullYear()} SMK Taruna Bhakti Depok. All Rights Reserved.</div>
+            <div className="flex gap-4">
+              <a href="#" className="hover:text-slate-600 dark:hover:text-slate-400 transition-colors">Kebijakan Privasi</a>
+              <span>·</span>
+              <a href="#" className="hover:text-slate-600 dark:hover:text-slate-400 transition-colors">Syarat &amp; Ketentuan</a>
             </div>
           </div>
         </div>
       </footer>
 
-      {/* DETAILED NEWS PREVIEW MODAL */}
+      {/* MODAL BERITA / INFORMASI DETAIL */}
       {selectedNews && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-md overflow-y-auto animate-in fade-in duration-300">
-          <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-white/10 rounded-3xl w-full max-w-2xl shadow-[0_30px_70px_rgba(0,0,0,0.2)] dark:shadow-[0_30px_70px_rgba(0,0,0,0.6)] overflow-hidden animate-in zoom-in-95 my-8 transition-colors duration-300">
-
-            {/* Poster Header */}
+        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-slate-950/60 backdrop-blur-sm" onClick={() => setSelectedNews(null)}></div>
+          <div className="relative bg-white dark:bg-slate-900 w-full max-w-2xl rounded-3xl shadow-2xl overflow-hidden border border-slate-100 dark:border-slate-800 animate-in fade-in zoom-in-95 duration-200">
             {selectedNews.foto_url ? (
-              <div className="h-64 relative border-b border-slate-150 dark:border-white/5">
-                <img src={selectedNews.foto_url} alt={selectedNews.judul} className="w-full h-full object-cover" />
+              <div className="relative h-64 md:h-80 w-full overflow-hidden bg-slate-200 dark:bg-slate-850">
+                <img
+                  src={selectedNews.foto_url}
+                  alt={selectedNews.judul}
+                  className="w-full h-full object-cover"
+                />
                 <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-transparent to-transparent" />
-
-                {/* Floating Date Over Image */}
                 <div className="absolute bottom-6 left-6 z-10 px-3 py-1.5 bg-blue-600 text-white text-[10px] font-black uppercase tracking-widest rounded-xl flex items-center gap-1.5 shadow-md border border-blue-500">
                   <Calendar size={11} />
                   <span>{formatDate(selectedNews.tanggal)}</span>
                 </div>
-
                 <button
                   onClick={() => setSelectedNews(null)}
                   className="absolute top-4 right-4 w-8 h-8 rounded-full bg-slate-950/60 backdrop-blur-md border border-white/10 text-white hover:bg-slate-950 flex items-center justify-center transition-all font-bold"
@@ -828,18 +798,15 @@ export default function Home() {
               </div>
             )}
 
-            {/* Content Details */}
             <div className="p-8 space-y-6">
               <h2 className="text-xl font-black text-slate-850 dark:text-white uppercase leading-snug tracking-tight text-left">
                 {selectedNews.judul}
               </h2>
-
               <p className="text-sm text-slate-650 dark:text-slate-350 leading-relaxed font-semibold whitespace-pre-line text-left">
                 {selectedNews.konten}
               </p>
             </div>
 
-            {/* Detail Actions Footer */}
             <div className="p-6 bg-slate-50/50 dark:bg-slate-950/15 border-t border-slate-150 dark:border-white/5 flex items-center justify-end">
               <button
                 onClick={() => setSelectedNews(null)}
@@ -855,4 +822,4 @@ export default function Home() {
 
     </div>
   );
-};
+}
