@@ -389,6 +389,14 @@ export function PPDBProvider({ children }: { children: React.ReactNode }) {
           setApplicants((prev) => prev.filter(a => a.id !== id));
           setPublicApplicants((prev) => prev.filter(a => a.id !== id));
           addToast("Pendaftar Dihapus", `Data pendaftar #${id} dihapus dari sistem.`, "danger");
+        } else if (parsed.event === 'APPLICANT_UPDATED') {
+          const updatedStudent = parsed.data;
+          setApplicants((prev) =>
+            prev.map(a => a.id === updatedStudent.id ? { ...a, ...updatedStudent } : a)
+          );
+          setPublicApplicants((prev) =>
+            prev.map(a => a.id === updatedStudent.id ? { ...a, ...updatedStudent } : a)
+          );
         } else if (parsed.event === 'REFRESH_INFORMASI') {
           if (typeof window !== 'undefined') {
             window.dispatchEvent(new CustomEvent('ws_refresh_informasi'));

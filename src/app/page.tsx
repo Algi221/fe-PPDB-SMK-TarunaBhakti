@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useMemo } from "react";
 import Link from "next/link";
 import {
   Menu,
@@ -32,10 +32,13 @@ import {
   Users,
   Phone,
   Megaphone,
-  Clock
+  Clock,
+  Radio,
+  Search
 } from "lucide-react";
 
 import DataPendaftarTable from "../components/DataPendaftarTable";
+import { usePPDB } from "@/context/PPDBContext";
 
 interface InformasiItem {
   id: number;
@@ -46,6 +49,10 @@ interface InformasiItem {
 }
 
 export default function Home() {
+  const { publicApplicants, wsStatus } = usePPDB();
+  const [rosterSearch, setRosterSearch] = useState("");
+  const [selectedRosterClass, setSelectedRosterClass] = useState("Semua");
+
   // Navigation & UI States
   const [isNavbarScrolled, setIsNavbarScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -286,6 +293,32 @@ export default function Home() {
       if (element) observer.unobserve(element);
     };
   }, []);
+
+  // Memoized Roster filters & unique class list
+  const uniqueRosterClasses = useMemo(() => {
+    const classesSet = new Set<string>();
+    publicApplicants.forEach((a: any) => {
+      const cls = a.diterima_kelas || a.diterimaKelas;
+      if (cls) classesSet.add(cls);
+    });
+    return Array.from(classesSet).sort();
+  }, [publicApplicants]);
+
+  const filteredRosterStudents = useMemo(() => {
+    return publicApplicants.filter((a: any) => {
+      const hasClass = a.diterima_kelas || a.diterimaKelas;
+      const isApproved = a.status === "Approved";
+      if (!isApproved || !hasClass) return false;
+
+      const matchesSearch = (a.nama || "").toLowerCase().includes(rosterSearch.toLowerCase()) || 
+                            (a.nisn || "").includes(rosterSearch);
+      
+      if (selectedRosterClass === "Semua") return matchesSearch;
+      
+      const cls = a.diterima_kelas || a.diterimaKelas || "";
+      return matchesSearch && cls === selectedRosterClass;
+    });
+  }, [publicApplicants, rosterSearch, selectedRosterClass]);
 
   // majors is now a dynamic state variable loaded from localStorage on mount.
 
@@ -669,6 +702,123 @@ export default function Home() {
               </Link>
             );
           })}
+        </div>
+      </section>
+
+      {/* SEKSI DAFTAR ROMBEL SISWA RESMI (WEB SOCKET LIVE SYNC) */}
+      <section className="py-24 max-w-6xl mx-auto px-6 relative z-10 border-t border-slate-200/30">
+        <div className="text-center mb-12">
+          <div className="flex items-center justify-center gap-2 mb-4">
+            <span className="text-blue-600 dark:text-blue-400 font-bold text-[10px] uppercase tracking-widest bg-blue-50 dark:bg-blue-950/40 px-3 py-1.5 rounded-full flex items-center gap-2 border border-blue-100 dark:border-blue-900/30">
+              <span className={`w-2 h-2 rounded-full ${wsStatus === "CONNECTED" ? "bg-emerald-500 animate-pulse shadow-[0_0_8px_rgba(16,185,129,0.5)]" : "bg-rose-500 animate-pulse"}`} />
+              <span className="tracking-widest font-black uppercase">LIVE WS SYNC</span>
+            </span>
+          </div>
+          <h2 className="text-3xl md:text-4xl font-extrabold text-slate-800 dark:text-white mt-1 mb-4">
+            Rombongan Belajar Resmi Siswa Baru
+          </h2>
+          <p className="text-slate-500 dark:text-slate-400 max-w-2xl mx-auto text-sm md:text-base leading-relaxed">
+            Daftar resmi calon peserta didik baru SMK Taruna Bhakti periode {schoolPeriod} yang telah diverifikasi kelulusannya dan secara resmi dialokasikan ke dalam kelas rombel masing-masing.
+          </p>
+        </div>
+
+        {/* Toolbar & Search */}
+        <div className="bg-white/70 dark:bg-slate-900/60 backdrop-blur-xl border border-slate-200/60 dark:border-slate-800/60 rounded-3xl p-6 mb-8 shadow-sm flex flex-col md:flex-row gap-4 items-center justify-between">
+          {/* Search bar */}
+          <div className="relative w-full md:max-w-md">
+            <span className="absolute inset-y-0 left-0 pl-4 flex items-center text-slate-400">
+              <Search size={16} />
+            </span>
+            <input
+              type="text"
+              value={rosterSearch}
+              onChange={(e) => setRosterSearch(e.target.value)}
+              placeholder="Cari nama siswa atau NISN..."
+              className="w-full pl-11 pr-4 py-3 bg-slate-50 dark:bg-slate-950/40 border border-slate-200 dark:border-white/5 rounded-2xl text-slate-850 dark:text-white placeholder-slate-400 text-sm focus:outline-none focus:border-blue-500 transition-all font-semibold"
+            />
+          </div>
+
+          {/* Dynamic Class Tabs */}
+          <div className="flex flex-wrap gap-2 justify-center md:justify-end w-full md:w-auto overflow-x-auto py-1 scrollbar-none">
+            <button
+              onClick={() => setSelectedRosterClass("Semua")}
+              className={`px-4 py-2 rounded-xl text-xs font-black uppercase tracking-wider transition-all border ${
+                selectedRosterClass === "Semua"
+                  ? "bg-blue-650 border-blue-700 text-white shadow-md shadow-blue-500/20"
+                  : "bg-slate-100 border-slate-200/50 hover:bg-slate-200/60 dark:bg-slate-800 dark:border-slate-700 text-slate-655 dark:text-slate-350"
+              }`}
+            >
+              Semua Rombel
+            </button>
+            {uniqueRosterClasses.map((clsName) => (
+              <button
+                key={clsName}
+                onClick={() => setSelectedRosterClass(clsName)}
+                className={`px-4 py-2 rounded-xl text-xs font-black uppercase tracking-wider transition-all border ${
+                  selectedRosterClass === clsName
+                    ? "bg-blue-650 border-blue-700 text-white shadow-md shadow-blue-500/20"
+                    : "bg-slate-100 border-slate-200/50 hover:bg-slate-200/60 dark:bg-slate-800 dark:border-slate-700 text-slate-655 dark:text-slate-350"
+                }`}
+              >
+                {clsName}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Large Table Container */}
+        <div className="bg-white/70 dark:bg-slate-900/60 backdrop-blur-xl border border-slate-200/60 dark:border-slate-800/60 rounded-3xl overflow-hidden shadow-md">
+          <div className="max-h-[500px] overflow-y-auto scrollbar-none">
+            <table className="w-full text-left text-xs font-bold text-slate-655 dark:text-slate-350 border-collapse">
+              <thead>
+                <tr className="border-b border-slate-150 dark:border-white/5 text-slate-400 dark:text-slate-500 font-black text-[9px] uppercase tracking-widest bg-slate-50/50 dark:bg-slate-950/20 sticky top-0 backdrop-blur-xl z-20">
+                  <th className="py-4 px-6 text-left w-16">No</th>
+                  <th className="py-4 px-6">Nama Lengkap Siswa</th>
+                  <th className="py-4 px-6 text-center">NISN Resmi</th>
+                  <th className="py-4 px-6">Asal Sekolah SMP</th>
+                  <th className="py-4 px-6">Kompetensi Keahlian</th>
+                  <th className="py-4 px-6 text-center">Rombongan Belajar</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100 dark:divide-white/5">
+                {filteredRosterStudents.map((student: any, idx: number) => {
+                  const assignedClass = student.diterima_kelas || student.diterimaKelas;
+                  
+                  return (
+                    <tr 
+                      key={student.id} 
+                      className="hover:bg-slate-50/50 dark:hover:bg-slate-950/20 transition-all"
+                    >
+                      <td className="py-3.5 px-6 font-mono text-slate-400">{idx + 1}</td>
+                      <td className="py-3.5 px-6 font-extrabold text-slate-850 dark:text-white uppercase tracking-wider">{student.nama}</td>
+                      <td className="py-3.5 px-6 text-center font-mono tracking-wide">{student.nisn}</td>
+                      <td className="py-3.5 px-6 uppercase text-slate-550 dark:text-slate-400 font-semibold">{student.sekolah_asal || student.sekolahAsal || "-"}</td>
+                      <td className="py-3.5 px-6">
+                        <span className="text-blue-600 dark:text-blue-400 font-extrabold uppercase text-[10px]">
+                          {student.jurusan_1 || student.jurusan1}
+                        </span>
+                      </td>
+                      <td className="py-3.5 px-6 text-center">
+                        <span className="inline-flex px-3 py-1 rounded-full bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-250 dark:border-emerald-900/40 text-emerald-600 dark:text-emerald-400 text-[10px] font-black uppercase tracking-wider">
+                          {assignedClass}
+                        </span>
+                      </td>
+                    </tr>
+                  );
+                })}
+
+                {filteredRosterStudents.length === 0 && (
+                  <tr>
+                    <td colSpan={6} className="text-center py-16 text-slate-400 font-bold uppercase tracking-wider">
+                      {selectedRosterClass === "Semua" 
+                        ? "Belum ada data pendaftar resmi yang dibagi ke dalam kelas." 
+                        : `Belum ada siswa terdaftar di rombel kelas ${selectedRosterClass}.`}
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
         </div>
       </section>
 

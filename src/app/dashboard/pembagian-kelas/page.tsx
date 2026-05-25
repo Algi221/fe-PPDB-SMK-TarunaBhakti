@@ -23,7 +23,10 @@ import {
   ArrowRight,
   ShieldAlert,
   Sliders,
-  ChevronRight
+  ChevronRight,
+  Eye,
+  Download,
+  School
 } from "lucide-react";
 
 interface Applicant {
@@ -38,6 +41,7 @@ interface Applicant {
   diterimaKelas?: string | null;
   status?: string;
   periode?: string;
+  [key: string]: any;
 }
 
 interface ClassItem {
@@ -70,6 +74,10 @@ export default function ClassDivisionManagement() {
   const [newClassName, setNewClassName] = useState("");
   const [newClassCapacity, setNewClassCapacity] = useState(40);
   const [isAddingClass, setIsAddingClass] = useState(false);
+
+  // Class Detail Modal states
+  const [selectedClassDetail, setSelectedClassDetail] = useState<ClassItem | null>(null);
+  const [classSearchTerm, setClassSearchTerm] = useState("");
 
   // Predefined/Suggested Majors
   const majors = [
@@ -130,13 +138,13 @@ export default function ClassDivisionManagement() {
         id: `${m.code}-1`,
         name: `X ${m.code} 1`,
         majorCode: m.code,
-        maxCapacity: 40
+        maxCapacity: 100 // Set high, practically unlimited
       });
       defaultList.push({
         id: `${m.code}-2`,
         name: `X ${m.code} 2`,
         majorCode: m.code,
-        maxCapacity: 40
+        maxCapacity: 100
       });
     });
     return defaultList;
@@ -160,11 +168,8 @@ export default function ClassDivisionManagement() {
       const isApproved = a.status === "Approved";
       if (!isApproved) return false;
 
-      // Match major code
       const maj1 = (a.jurusan_1 || a.jurusan1 || "").toUpperCase();
       
-      // Look up major name mapping or check exact code matching
-      // e.g. RPL -> matches Rekayasa Perangkat Lunak
       const majorNameMap: Record<string, string> = {
         RPL: "REKAYASA PERANGKAT LUNAK",
         TJKT: "TEKNIK JARINGAN KOMPUTER & TELEKOMUNIKASI",
@@ -230,6 +235,25 @@ export default function ClassDivisionManagement() {
     return enrollmentCounts;
   }, [applicants, classesOfSelectedMajor]);
 
+  // Total summary of assigned classes in selected major
+  const totalClassesFilled = useMemo(() => {
+    return classesOfSelectedMajor.filter(c => (classEnrollments[c.name] || 0) > 0).length;
+  }, [classesOfSelectedMajor, classEnrollments]);
+
+  // Students in selected class detail
+  const enrolledStudentsInDetail = useMemo(() => {
+    if (!selectedClassDetail) return [];
+    return applicants.filter((a: Applicant) => {
+      const cls = a.diterima_kelas || a.diterimaKelas;
+      const isClassMatch = cls === selectedClassDetail.name;
+      if (!isClassMatch) return false;
+
+      const matchesSearch = (a.nama || "").toLowerCase().includes(classSearchTerm.toLowerCase()) || 
+                            (a.nisn || "").includes(classSearchTerm);
+      return matchesSearch;
+    });
+  }, [applicants, selectedClassDetail, classSearchTerm]);
+
   // Selection helpers
   const handleSelectAll = () => {
     if (selectedStudentIds.length === filteredStudents.length) {
@@ -285,7 +309,7 @@ export default function ClassDivisionManagement() {
     }
   };
 
-  // Smart Engine: Auto distribute unassigned students across major classes
+  // Smart Engine: Auto distribute unassigned students across major classes (UNLIMITED LIMITS)
   const handleAutoDistribute = async () => {
     const unassigned = approvedApplicantsOfMajor.filter((a: Applicant) => !(a.diterima_kelas || a.diterimaKelas));
     
@@ -299,7 +323,7 @@ export default function ClassDivisionManagement() {
       return;
     }
 
-    const message = `Sistem akan membagi ${unassigned.length} siswa secara merata ke dalam ${classesOfSelectedMajor.length} kelas aktif (${classesOfSelectedMajor.map(c=>c.name).join(", ")}). Batas maksimal per kelas diatur otomatis. Lanjutkan?`;
+    const message = `Sistem akan membagi ${unassigned.length} siswa secara merata ke dalam ${classesOfSelectedMajor.length} kelas aktif (${classesOfSelectedMajor.map(c=>c.name).join(", ")}). Kapasitas kelas tidak dibatasi. Lanjutkan?`;
     
     if (!confirm(message)) return;
 
@@ -309,28 +333,25 @@ export default function ClassDivisionManagement() {
     const totalStudents = unassigned.length;
     let distributedCount = 0;
 
-    // Distribute evenly
-    // For each student, assign them to the class that currently has the lowest enrollment relative to its max limit
-    // We update local tracker dynamically during loop
+    // Distribute evenly without any capacity limits block!
     const tempEnrollments = { ...classEnrollments };
 
     for (let i = 0; i < totalStudents; i++) {
       const student = unassigned[i];
       
-      // Find class of selected major with lowest current enrollment and below capacity
+      // Find class of selected major with lowest current enrollment count (completely unlimited capacity!)
       let bestClass: ClassItem | null = null;
       let lowestCount = Infinity;
 
       classesOfSelectedMajor.forEach(c => {
         const count = tempEnrollments[c.name] || 0;
-        if (count < c.maxCapacity && count < lowestCount) {
+        if (count < lowestCount) {
           lowestCount = count;
           bestClass = c;
         }
       });
 
       if (!bestClass) {
-        // Classes are full!
         break;
       }
 
@@ -354,10 +375,8 @@ export default function ClassDivisionManagement() {
     
     if (distributedCount === totalStudents) {
       showToast(`Sukses! Pembagian kelas otomatis berhasil mendistribusikan ${distributedCount} siswa secara merata.`);
-    } else if (distributedCount > 0) {
-      showToast(`Pembagian kelas otomatis berhasil mendistribusikan ${distributedCount} dari ${totalStudents} siswa. Sisa siswa tidak termuat karena kapasitas kelas penuh.`, "info");
     } else {
-      showToast("Kapasitas seluruh kelas sudah penuh! Harap tambahkan kelas baru atau naikkan batas kapasitas.", "error");
+      showToast(`Pembagian kelas otomatis berhasil mendistribusikan ${distributedCount} dari ${totalStudents} siswa.`, "info");
     }
   };
 
@@ -381,7 +400,7 @@ export default function ClassDivisionManagement() {
       id: `${selectedMajor}-${Date.now()}`,
       name: cleanName,
       majorCode: selectedMajor,
-      maxCapacity: Number(newClassCapacity) || 40
+      maxCapacity: Number(newClassCapacity) || 100
     };
 
     const updated = [...classes, newClass];
@@ -393,7 +412,6 @@ export default function ClassDivisionManagement() {
   };
 
   const handleDeleteClass = (id: string, name: string) => {
-    // Check if class has students enrolled
     const count = classEnrollments[name] || 0;
     if (count > 0) {
       showToast(`Gagal menghapus: Masih ada ${count} siswa terdaftar di dalam kelas ${name}.`, "error");
@@ -405,6 +423,57 @@ export default function ClassDivisionManagement() {
       saveClassesToStorage(updated);
       showToast(`Kelas ${name} berhasil dihapus.`);
     }
+  };
+
+  // Remove individual student from class detail modal
+  const handleRemoveStudentFromClassDetail = async (studentId: number, studentNama: string) => {
+    if (confirm(`Keluarkan ${studentNama} dari kelas ${selectedClassDetail?.name}?`)) {
+      const result = await updateApplicant(studentId, {
+        diterima_kelas: null,
+        diterima_tanggal: null
+      });
+
+      if (result?.success) {
+        showToast(`${studentNama} berhasil dikeluarkan dari kelas.`);
+      } else {
+        showToast("Gagal mengeluarkan siswa.", "error");
+      }
+    }
+  };
+
+  // Export Class Roster CSV
+  const handleExportClassCSV = (className: string) => {
+    const classStudents = applicants.filter((a: Applicant) => {
+      const cls = a.diterima_kelas || a.diterimaKelas;
+      return cls === className;
+    });
+
+    if (classStudents.length === 0) {
+      showToast("Kelas kosong, tidak ada data untuk diekspor.", "error");
+      return;
+    }
+
+    const headers = ["Nama Siswa", "NISN", "Asal Sekolah", "WhatsApp", "Email", "Tanggal Pembagian Kelas"];
+    const rows = classStudents.map((s: Applicant) => [
+      `"${s.nama || ''}"`,
+      `"${s.nisn || ''}"`,
+      `"${s.sekolah_asal || s.sekolahAsal || ''}"`,
+      `"${s.whatsapp || ''}"`,
+      `"${s.email || ''}"`,
+      `"${s.diterima_tanggal || s.diterimaTanggal || ''}"`
+    ]);
+
+    const csvData = [headers.join(","), ...rows.map(e => e.join(","))].join("\n");
+    const blob = new Blob([new Uint8Array([0xEF, 0xBB, 0xBF]), "sep=,\n" + csvData], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    
+    const link = document.createElement("a");
+    link.setAttribute("href", url);
+    link.setAttribute("download", `roster_${className.replace(/\s+/g, "_")}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
   };
 
   if (!mounted) return null;
@@ -445,9 +514,11 @@ export default function ClassDivisionManagement() {
         </div>
       )}
 
-      {/* Header Info Panel */}
-      <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800/60 rounded-3xl p-6 shadow-[0_2px_12px_rgba(0,0,0,0.02)] flex flex-col md:flex-row items-center justify-between gap-6 transition-colors duration-300">
-        <div className="flex items-center gap-4 text-left">
+      {/* Header Info & Metrics Panel */}
+      <div className="grid grid-cols-1 xl:grid-cols-4 gap-4">
+        
+        {/* Info Box */}
+        <div className="xl:col-span-2 bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800/60 rounded-3xl p-6 shadow-[0_2px_12px_rgba(0,0,0,0.02)] flex items-center gap-4 transition-colors duration-300">
           <div className="w-12 h-12 bg-indigo-50 dark:bg-indigo-950/40 rounded-2xl flex items-center justify-center text-indigo-500 border border-indigo-100 dark:border-indigo-900/40 shrink-0 shadow-sm">
             <GraduationCap size={22} />
           </div>
@@ -457,34 +528,47 @@ export default function ClassDivisionManagement() {
           </div>
         </div>
 
-        {/* Selected Major Selector Badges */}
-        <div className="flex flex-wrap gap-1.5 justify-center md:justify-end">
-          {activeMajors.map((m) => (
-            <button
-              key={m.code}
-              onClick={() => {
-                setSelectedMajor(m.code);
-                setSelectedStudentIds([]);
-                setAssignmentFilter("ALL");
-              }}
-              className={`px-3 py-2 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all border ${
-                selectedMajor === m.code
-                  ? "bg-blue-500 border-blue-600 text-white shadow-sm shadow-blue-500/10"
-                  : "bg-slate-50 border-slate-200 hover:bg-slate-100 dark:bg-slate-950/30 dark:border-white/5 dark:text-slate-400 dark:hover:text-white"
-              }`}
-            >
-              {m.code}
-            </button>
-          ))}
+        {/* Metric 1: Total Classes */}
+        <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800/60 rounded-3xl p-6 shadow-[0_2px_12px_rgba(0,0,0,0.02)] flex flex-col justify-center transition-colors duration-300 text-left">
+          <span className="text-[9px] text-slate-400 dark:text-slate-500 font-black uppercase tracking-widest">Rombel Terbentuk (X {selectedMajor})</span>
+          <span className="text-2xl font-black text-slate-800 dark:text-white mt-1">{classesOfSelectedMajor.length} <span className="text-xs text-slate-450 font-bold">Kelas</span></span>
         </div>
+
+        {/* Metric 2: Filled Classes */}
+        <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800/60 rounded-3xl p-6 shadow-[0_2px_12px_rgba(0,0,0,0.02)] flex flex-col justify-center transition-colors duration-300 text-left">
+          <span className="text-[9px] text-slate-400 dark:text-slate-550 font-black uppercase tracking-widest">Jumlah Kelas Terisi Siswa</span>
+          <span className="text-2xl font-black text-emerald-600 dark:text-emerald-400 mt-1">{totalClassesFilled} <span className="text-xs text-slate-450 font-bold">Terisi</span></span>
+        </div>
+
       </div>
 
-      {/* Classes Capacity Indicators Grid Panel */}
+      {/* Selected Major Selector Badges */}
+      <div className="flex flex-wrap gap-1.5 border-b border-slate-200/80 dark:border-slate-800/40 pb-4">
+        {activeMajors.map((m) => (
+          <button
+            key={m.code}
+            onClick={() => {
+              setSelectedMajor(m.code);
+              setSelectedStudentIds([]);
+              setAssignmentFilter("ALL");
+            }}
+            className={`px-4 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all border ${
+              selectedMajor === m.code
+                ? "bg-blue-500 border-blue-600 text-white shadow-sm shadow-blue-500/10"
+                : "bg-white border-slate-200 hover:bg-slate-50 dark:bg-slate-900 dark:border-slate-800 dark:text-slate-400 dark:hover:text-white shadow-sm"
+            }`}
+          >
+            {m.name} ({m.code})
+          </button>
+        ))}
+      </div>
+
+      {/* Classes capacity indicators and list */}
       <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800/60 rounded-3xl p-6 shadow-[0_2px_12px_rgba(0,0,0,0.02)] transition-colors duration-300">
         <div className="flex items-center justify-between border-b border-slate-100 dark:border-white/5 pb-4 mb-5">
           <div className="flex items-center gap-2">
             <Layers size={14} className="text-slate-400" />
-            <h3 className="text-xs font-black uppercase tracking-wider text-slate-800 dark:text-white">Rombongan Belajar Aktif: Kelas X {selectedMajor}</h3>
+            <h3 className="text-xs font-black uppercase tracking-wider text-slate-800 dark:text-white">Daftar Kelas Aktif (Jurusan {selectedMajor})</h3>
           </div>
 
           <button
@@ -500,25 +584,13 @@ export default function ClassDivisionManagement() {
         {isAddingClass && (
           <form onSubmit={handleCreateClass} className="bg-slate-50 dark:bg-slate-950 p-5 rounded-2xl border border-slate-200/60 dark:border-white/5 mb-6 flex flex-wrap gap-4 items-end animate-in zoom-in-95 duration-200">
             <div className="space-y-1.5 shrink-0 w-full sm:w-auto sm:flex-1">
-              <label className="text-[9px] uppercase font-bold text-slate-400 tracking-wider">Nama Kelas Baru</label>
+              <label className="text-[9px] uppercase font-bold text-slate-400 tracking-wider">Nama Rombel / Kelas Baru</label>
               <input
                 type="text"
                 value={newClassName}
                 onChange={(e) => setNewClassName(e.target.value)}
-                placeholder={`Misal: X ${selectedMajor} 3`}
+                placeholder={`Contoh: X ${selectedMajor} 3`}
                 className="w-full px-3 py-2 bg-white dark:bg-slate-900 border border-slate-250 dark:border-white/5 rounded-xl text-slate-850 dark:text-white font-bold text-xs focus:outline-none focus:border-blue-500 uppercase"
-              />
-            </div>
-
-            <div className="space-y-1.5 shrink-0 w-full sm:w-32">
-              <label className="text-[9px] uppercase font-bold text-slate-400 tracking-wider">Max Kapasitas</label>
-              <input
-                type="number"
-                value={newClassCapacity}
-                onChange={(e) => setNewClassCapacity(Number(e.target.value))}
-                min={1}
-                max={100}
-                className="w-full px-3 py-2 bg-white dark:bg-slate-900 border border-slate-250 dark:border-white/5 rounded-xl text-slate-850 dark:text-white font-bold text-xs focus:outline-none focus:border-blue-500"
               />
             </div>
 
@@ -535,62 +607,53 @@ export default function ClassDivisionManagement() {
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4">
           {classesOfSelectedMajor.map((c) => {
             const count = classEnrollments[c.name] || 0;
-            const percentage = Math.min((count / c.maxCapacity) * 100, 100);
             
-            // color mapping
-            const colorClass = percentage >= 100 
-              ? "bg-rose-500" 
-              : percentage >= 85 
-              ? "bg-amber-500" 
-              : "bg-blue-500";
-            
-            const borderAccent = percentage >= 100 
-              ? "border-rose-500/20 shadow-rose-500/5 dark:bg-rose-950/5" 
-              : percentage >= 85 
-              ? "border-amber-500/20 shadow-amber-500/5 dark:bg-amber-950/5" 
-              : "border-slate-200/60 dark:border-white/5";
-
             return (
               <div 
                 key={c.id}
-                className={`bg-slate-50 dark:bg-slate-950/40 p-4 border rounded-2xl flex flex-col justify-between transition-all ${borderAccent}`}
+                onClick={() => setSelectedClassDetail(c)}
+                className="bg-slate-50 dark:bg-slate-950/40 p-5 border border-slate-200/60 dark:border-white/5 rounded-3xl flex flex-col justify-between hover:border-blue-500/40 hover:shadow-md cursor-pointer transition-all relative group overflow-hidden"
               >
-                <div className="flex justify-between items-start gap-2 mb-2">
+                {/* Decorative border line */}
+                <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-500 to-indigo-500" />
+                
+                <div className="flex justify-between items-start gap-2 mb-4">
                   <div>
-                    <h4 className="font-extrabold text-slate-850 dark:text-white text-xs">{c.name}</h4>
-                    <span className="text-[9px] text-slate-400 font-bold uppercase tracking-wider block mt-0.5">Kapasitas: {c.maxCapacity}</span>
+                    <h4 className="font-extrabold text-slate-850 dark:text-white text-sm group-hover:text-blue-500 transition-colors">{c.name}</h4>
+                    <span className="text-[9px] text-slate-400 font-bold uppercase tracking-wider block mt-1">Terdaftar: {count} Siswa</span>
                   </div>
 
-                  {count === 0 && (
+                  <div className="flex items-center gap-1.5" onClick={(e) => e.stopPropagation()}>
                     <button
-                      onClick={() => handleDeleteClass(c.id, c.name)}
-                      className="p-1 text-slate-400 hover:text-rose-500 hover:bg-rose-500/10 rounded-lg transition-all"
-                      title="Hapus Kelas Kosong"
+                      onClick={() => setSelectedClassDetail(c)}
+                      className="p-1.5 text-slate-400 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-slate-900 rounded-lg transition-all"
+                      title="Lihat Detail Roster"
                     >
-                      <Trash2 size={12} />
+                      <Eye size={13} />
                     </button>
-                  )}
+                    {count === 0 && (
+                      <button
+                        onClick={() => handleDeleteClass(c.id, c.name)}
+                        className="p-1.5 text-slate-400 hover:text-rose-500 hover:bg-rose-500/10 rounded-lg transition-all"
+                        title="Hapus Kelas Kosong"
+                      >
+                        <Trash2 size={13} />
+                      </button>
+                    )}
+                  </div>
                 </div>
 
-                <div className="space-y-1.5 mt-2">
-                  <div className="flex justify-between items-center text-[9px] font-bold text-slate-500">
-                    <span className="uppercase">Keterisian</span>
-                    <span className={percentage >= 100 ? "text-rose-500" : percentage >= 85 ? "text-amber-500" : "text-blue-500"}>
-                      {count} / {c.maxCapacity} Siswa ({Math.round(percentage)}%)
-                    </span>
-                  </div>
-
-                  <div className="w-full bg-slate-200 dark:bg-slate-800 h-1.5 rounded-full overflow-hidden">
-                    <div className={`h-1.5 rounded-full transition-all duration-500 ${colorClass}`} style={{ width: `${percentage}%` }}></div>
-                  </div>
+                <div className="mt-3 flex justify-between items-center text-[10px] font-black uppercase tracking-wider text-blue-500">
+                  <span>Lihat Roster</span>
+                  <ChevronRight size={12} className="group-hover:translate-x-1 transition-transform" />
                 </div>
               </div>
             );
           })}
 
           {classesOfSelectedMajor.length === 0 && (
-            <div className="sm:col-span-2 md:col-span-3 xl:col-span-4 text-center py-6 border border-dashed border-slate-200 dark:border-slate-800 rounded-2xl text-slate-400 font-bold uppercase tracking-wider text-[10px]">
-              Tidak ada kelas terdaftar untuk jurusan {selectedMajor}. Silakan buat kelas baru.
+            <div className="sm:col-span-2 md:col-span-3 xl:col-span-4 text-center py-8 border-2 border-dashed border-slate-200 dark:border-slate-800 rounded-3xl text-slate-400 font-bold uppercase tracking-wider text-[10px]">
+              Belum ada rombel kelas yang terdaftar untuk jurusan {selectedMajor}. Klik "+ Buat Kelas Baru" untuk mendaftar.
             </div>
           )}
         </div>
@@ -612,7 +675,7 @@ export default function ClassDivisionManagement() {
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 placeholder="Cari nama / NISN..."
-                className="w-full pl-9 pr-4 py-2 bg-slate-50 dark:bg-slate-950/40 border border-slate-200 dark:border-white/5 rounded-xl text-slate-800 dark:text-white placeholder-slate-400 text-xs focus:outline-none focus:border-blue-500 font-semibold"
+                className="w-full pl-9 pr-4 py-2.5 bg-slate-50 dark:bg-slate-950/40 border border-slate-200 dark:border-white/5 rounded-xl text-slate-800 dark:text-white placeholder-slate-400 text-xs focus:outline-none focus:border-blue-500 font-semibold"
               />
             </div>
 
@@ -624,7 +687,7 @@ export default function ClassDivisionManagement() {
                 onChange={(e) => setAssignmentFilter(e.target.value as any)}
                 className="bg-transparent focus:outline-none cursor-pointer uppercase tracking-wider font-extrabold text-[9px]"
               >
-                <option value="ALL">Semua Kelas</option>
+                <option value="ALL">Semua Calon Kelas</option>
                 <option value="UNASSIGNED">Belum Dapat Kelas</option>
                 <option value="ASSIGNED">Sudah Ada Kelas</option>
               </select>
@@ -643,7 +706,7 @@ export default function ClassDivisionManagement() {
 
         {/* Student Table Checklist */}
         <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs font-bold text-slate-650 dark:text-slate-350">
+          <table className="w-full text-left text-xs font-bold text-slate-655 dark:text-slate-350">
             <thead>
               <tr className="border-b border-slate-100 dark:border-white/5 text-slate-400 dark:text-slate-500 font-black text-[9px] uppercase tracking-widest bg-slate-50/50 dark:bg-slate-950/15">
                 <th className="py-3.5 px-4 text-center w-12 pl-6">
@@ -659,11 +722,11 @@ export default function ClassDivisionManagement() {
                     )}
                   </button>
                 </th>
-                <th className="py-3.5 px-4">Nama Pendaftar</th>
+                <th className="py-3.5 px-4">Nama Lengkap Siswa</th>
                 <th className="py-3.5 px-4 text-center">NISN</th>
-                <th className="py-3.5 px-4">Asal Sekolah</th>
-                <th className="py-3.5 px-4 text-center">Rekomendasi Jurusan</th>
-                <th className="py-3.5 px-4 text-center">Status Rombel</th>
+                <th className="py-3.5 px-4">Asal Sekolah SMP</th>
+                <th className="py-3.5 px-4 text-center">Pilihan Keahlian</th>
+                <th className="py-3.5 px-4 text-center">Rombel Sekarang</th>
                 <th className="py-3.5 px-4 text-right pr-6">Tindakan</th>
               </tr>
             </thead>
@@ -691,14 +754,14 @@ export default function ClassDivisionManagement() {
 
                     <td className="py-3 px-4">
                       <div className="font-extrabold text-slate-850 dark:text-white text-sm">{student.nama}</div>
-                      <span className="text-[9px] text-slate-400 font-bold uppercase tracking-wider block mt-0.5">Status: Terverifikasi</span>
+                      <span className="text-[9px] text-slate-400 font-bold uppercase tracking-wider block mt-0.5">Status: Terverifikasi (Siswa Aktif)</span>
                     </td>
 
                     <td className="py-3 px-4 text-center font-mono text-[11px] text-slate-600 dark:text-slate-300">
                       {student.nisn}
                     </td>
 
-                    <td className="py-3 px-4 text-slate-550 dark:text-slate-400 font-semibold">
+                    <td className="py-3 px-4 text-slate-550 dark:text-slate-450 font-semibold uppercase">
                       {student.sekolah_asal || student.sekolahAsal}
                     </td>
 
@@ -710,7 +773,7 @@ export default function ClassDivisionManagement() {
 
                     <td className="py-3 px-4 text-center">
                       {assignedClass ? (
-                        <span className="inline-flex px-2 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-900/40 text-emerald-600 dark:text-emerald-400 text-[9px] font-black uppercase tracking-wider">
+                        <span className="inline-flex px-2 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-250 dark:border-emerald-900/40 text-emerald-600 dark:text-emerald-400 text-[9px] font-black uppercase tracking-wider">
                           {assignedClass}
                         </span>
                       ) : (
@@ -767,6 +830,109 @@ export default function ClassDivisionManagement() {
         </div>
 
       </div>
+
+      {/* Class Detail Modal Overlay */}
+      {selectedClassDetail && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md overflow-hidden animate-in fade-in duration-300">
+          <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-white/10 rounded-3xl w-full max-w-3xl max-h-[80vh] flex flex-col shadow-2xl overflow-hidden animate-in zoom-in-95 transition-colors duration-300">
+            
+            {/* Modal Header */}
+            <div className="p-6 border-b border-slate-100 dark:border-white/5 flex items-center justify-between shrink-0 bg-slate-50/50 dark:bg-slate-950/15">
+              <div>
+                <h3 className="text-base font-black text-slate-850 dark:text-white flex items-center gap-3 uppercase tracking-wide">
+                  <span>Roster Kelas: {selectedClassDetail.name}</span>
+                  <span className="px-2.5 py-0.5 rounded-full text-[9px] font-black border border-blue-200 dark:border-blue-900 bg-blue-50 dark:bg-blue-950 text-blue-600 dark:text-blue-400 uppercase tracking-widest">
+                    {enrolledStudentsInDetail.length} Siswa Terdaftar
+                  </span>
+                </h3>
+                <p className="text-[10px] text-slate-400 dark:text-slate-500 font-bold uppercase tracking-wider mt-1">Daftar nama siswa resmi yang telah dimasukkan ke kelas ini</p>
+              </div>
+              <button
+                onClick={() => { setSelectedClassDetail(null); setClassSearchTerm(""); }}
+                className="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 dark:bg-white/5 dark:hover:bg-white/10 border border-slate-200 dark:border-white/5 text-slate-500 dark:text-slate-400 hover:text-slate-850 dark:hover:text-white flex items-center justify-center transition-all font-bold"
+              >
+                ✕
+              </button>
+            </div>
+
+            {/* Modal Actions & Filter */}
+            <div className="p-6 border-b border-slate-100 dark:border-white/5 bg-slate-50/20 dark:bg-slate-950/5 flex flex-col sm:flex-row gap-4 items-center justify-between shrink-0">
+              <div className="relative w-full sm:max-w-xs">
+                <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-400">
+                  <Search size={13} />
+                </span>
+                <input
+                  type="text"
+                  value={classSearchTerm}
+                  onChange={(e) => setClassSearchTerm(e.target.value)}
+                  placeholder="Cari siswa di kelas..."
+                  className="w-full pl-9 pr-4 py-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/5 rounded-xl text-slate-850 dark:text-white placeholder-slate-400 text-xs focus:outline-none focus:border-blue-500 font-semibold"
+                />
+              </div>
+
+              <button
+                onClick={() => handleExportClassCSV(selectedClassDetail.name)}
+                className="w-full sm:w-auto px-4 py-2 bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-950/40 border border-emerald-250 dark:border-emerald-900/40 hover:bg-emerald-600/10 text-emerald-600 dark:text-emerald-400 rounded-xl text-xs font-black uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 shrink-0"
+              >
+                <Download size={14} />
+                <span>Cetak Roster (XLS)</span>
+              </button>
+            </div>
+
+            {/* Modal Student Table */}
+            <div className="flex-1 overflow-y-auto p-6 max-h-[45vh]">
+              <table className="w-full text-left text-xs font-bold text-slate-655 dark:text-slate-350">
+                <thead>
+                  <tr className="border-b border-slate-100 dark:border-white/5 text-slate-400 dark:text-slate-500 font-black text-[9px] uppercase tracking-widest">
+                    <th className="py-2.5 px-3 text-left w-12">No</th>
+                    <th className="py-2.5 px-4">Nama Lengkap</th>
+                    <th className="py-2.5 px-4 text-center">NISN</th>
+                    <th className="py-2.5 px-4">Asal Sekolah</th>
+                    <th className="py-2.5 px-3 text-center w-32">Aksi</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100 dark:divide-white/5">
+                  {enrolledStudentsInDetail.map((student, idx) => (
+                    <tr key={student.id} className="hover:bg-slate-50/50 dark:hover:bg-white/5 transition-all">
+                      <td className="py-3 px-3 text-slate-400 font-mono">{idx + 1}</td>
+                      <td className="py-3 px-4 font-extrabold text-slate-850 dark:text-white uppercase tracking-wider">{student.nama}</td>
+                      <td className="py-3 px-4 text-center font-mono text-[11px]">{student.nisn}</td>
+                      <td className="py-3 px-4 uppercase">{student.sekolah_asal || student.sekolahAsal || "-"}</td>
+                      <td className="py-3 px-3 text-center">
+                        <button
+                          onClick={() => handleRemoveStudentFromClassDetail(student.id, student.nama)}
+                          className="px-2.5 py-1 text-[9px] uppercase font-bold text-rose-500 bg-rose-500/10 hover:bg-rose-500 hover:text-white rounded-lg border border-rose-500/20 transition-all"
+                        >
+                          Keluarkan
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+
+                  {enrolledStudentsInDetail.length === 0 && (
+                    <tr>
+                      <td colSpan={5} className="text-center py-8 text-slate-400 font-bold uppercase tracking-wider text-[10px]">
+                        Tidak ada data siswa yang cocok di kelas ini.
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Modal Footer */}
+            <div className="p-6 border-t border-slate-100 dark:border-white/5 bg-slate-50/40 dark:bg-slate-950/15 flex justify-end shrink-0">
+              <button
+                onClick={() => { setSelectedClassDetail(null); setClassSearchTerm(""); }}
+                className="px-5 py-2.5 bg-slate-200 hover:bg-slate-300 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-655 dark:text-slate-350 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all"
+              >
+                Tutup Jendela
+              </button>
+            </div>
+
+          </div>
+        </div>
+      )}
 
       {/* Sticky Mass Action Floating Bar (shown only when 1 or more students are checked) */}
       {selectedStudentIds.length > 0 && (
