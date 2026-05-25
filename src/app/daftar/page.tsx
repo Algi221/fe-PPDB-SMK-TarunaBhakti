@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
-import { ArrowRight, Check, Upload, ArrowLeft, Home, Monitor, Code, Palette, Film, Cpu, Sun, Moon, CreditCard, ShieldCheck, Sparkles, X } from "lucide-react";
+import { ArrowRight, Check, Upload, ArrowLeft, Home, Monitor, Code, Palette, Film, Cpu, Sun, Moon, CreditCard, ShieldCheck, Sparkles, X, FileText, AlertCircle } from "lucide-react";
 import { usePPDB } from "@/context/PPDBContext";
 
 export default function DaftarPage() {
@@ -1727,108 +1727,69 @@ export default function DaftarPage() {
           </div>
         )}
 
-        {/* STEP 13: DEKLARASI & UPLOAD */}
+        {/* STEP 13: DEKLARASI & KONFIRMASI (NO UPLOADS) */}
         {wizardStep === 13 && (
           <div className="animate-in fade-in slide-in-from-right-4 duration-500">
-            <h3 className="text-xl font-extrabold text-slate-800 mb-1">Tahap 13: Berkas & Konfirmasi</h3>
-            <p className="text-sm text-slate-500 mb-6 border-b border-slate-100 pb-4">Lengkapi dokumen terakhir dan nyatakan kebenaran data.</p>
+            <h3 className="text-xl font-extrabold text-slate-800 dark:text-white mb-1">Tahap 13: Berkas & Konfirmasi</h3>
+            <p className="text-sm text-slate-500 dark:text-slate-400 mb-6 border-b border-slate-100 dark:border-slate-800 pb-4">
+              Konfirmasi data pendaftaran Anda dan tinjau persyaratan berkas fisik.
+            </p>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
-              {[
-                { id: 'berkasKK', label: 'Kartu Keluarga (KK)', desc: 'Wajib | PDF/JPG max 5MB' },
-                { id: 'berkasKTP', label: 'KTP Ortu / Wali', desc: 'Wajib | PDF/JPG max 5MB' },
-                { id: 'berkasAkta', label: 'Akta Kelahiran', desc: 'Wajib | PDF/JPG max 5MB' },
-                { id: 'berkasIjazah', label: 'SKL / Ijazah (Opsional)', desc: 'Boleh dikosongi jika belum ada' },
-                { id: 'berkasFoto', label: 'Pas Foto (3x4)', desc: 'Wajib | JPG/PNG max 5MB' }
-              ].map((field) => (
-                <div key={field.id} className="form-group">
-                  <label className="block text-xs font-bold text-slate-600 mb-1.5">{field.label}</label>
-                  <div className="relative">
-                    <input 
-                      type="file" 
-                      id={field.id}
-                      className="hidden" 
-                      accept=".pdf,image/*"
-                      onChange={(e) => {
-                        const file = e.target.files?.[0];
-                        if (file) {
-                          const reader = new FileReader();
-                          reader.onloadend = () => {
-                            setFormData(prev => ({ 
-                              ...prev, 
-                              [`${field.id}Ok`]: true, 
-                              [`${field.id}File`]: file, 
-                              [`${field.id}Name`]: file.name,
-                              [`${field.id}Base64`]: reader.result as string
-                            }));
-                          };
-                          reader.readAsDataURL(file);
-                        }
-                      }}
-                    />
-                    <label
-                      htmlFor={field.id}
-                      className={`block border-2 border-dashed rounded-xl p-4 text-center cursor-pointer transition-colors ${formData[`${field.id}Ok`] ? "border-emerald-500 bg-emerald-50/20" : "border-slate-200 bg-slate-50 hover:bg-slate-100 hover:border-slate-300"}`}
-                    >
-                      <div className="mb-2">
-                        {formData[`${field.id}Ok`] ? (
-                          <Check className="text-emerald-500 mx-auto" size={24} />
-                        ) : (
-                          <Upload className="text-slate-400 mx-auto" size={24} />
-                        )}
+            {/* Premium Notice Box */}
+            <div className="bg-blue-50/50 dark:bg-blue-950/20 border border-blue-100 dark:border-blue-900/60 rounded-3xl p-6 mb-6">
+              <div className="flex gap-4 items-start">
+                <div className="w-10 h-10 bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-sky-400 rounded-full flex items-center justify-center shrink-0 shadow-sm">
+                  <AlertCircle size={20} />
+                </div>
+                <div>
+                  <h4 className="font-extrabold text-slate-800 dark:text-white text-base mb-1">
+                    Informasi Verifikasi Berkas Fisik
+                  </h4>
+                  <p className="text-slate-500 dark:text-slate-400 text-xs leading-relaxed mb-4">
+                    Anda <strong>tidak perlu mengunggah berkas digital</strong> di sini. Sebagai gantinya, silakan bawa berkas fisik/fotokopi berikut ini langsung ke sekolah saat melakukan proses verifikasi pendaftaran:
+                  </p>
+                  
+                  {/* Grid of Documents */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    {[
+                      { title: "Kartu Keluarga (KK)", desc: "1 Lembar Fotokopi" },
+                      { title: "KTP Orang Tua / Wali", desc: "1 Lembar Fotokopi (Ayah & Ibu)" },
+                      { title: "Akta Kelahiran", desc: "1 Lembar Fotokopi" },
+                      { title: "Pas Foto Ukuran 3x4", desc: "2 Lembar (Background Merah/Biru)" },
+                      { title: "SKL / Ijazah SMP Asal", desc: "1 Lembar Fotokopi (Bila sudah ada)" }
+                    ].map((doc, idx) => (
+                      <div key={idx} className="flex gap-3 items-center p-3 rounded-2xl bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800/80 shadow-sm">
+                        <div className="w-8 h-8 rounded-xl bg-slate-50 dark:bg-slate-800/80 text-blue-500 dark:text-sky-400 flex items-center justify-center font-bold text-xs shrink-0 border border-slate-100/50 dark:border-slate-700/50">
+                          <FileText size={14} />
+                        </div>
+                        <div className="min-w-0">
+                          <p className="text-xs font-extrabold text-slate-700 dark:text-slate-200 truncate">{doc.title}</p>
+                          <p className="text-[10px] text-slate-400 dark:text-slate-500 font-medium">{doc.desc}</p>
+                        </div>
                       </div>
-                      {formData[`${field.id}Ok`] ? (
-                        <div>
-                          <p className="text-emerald-700 font-bold text-xs mb-0.5 truncate px-2">{formData[`${field.id}Name`]}</p>
-                          <span className="text-[10px] text-slate-400">Klik untuk mengganti</span>
-                        </div>
-                      ) : (
-                        <div>
-                          <p className="font-bold text-slate-700 text-xs mb-0.5">Pilih Berkas</p>
-                          <span className="text-[10px] text-slate-400">{field.desc}</span>
-                        </div>
-                      )}
-                    </label>
-                    {formData[`${field.id}Ok`] && (
-                      <button 
-                        type="button"
-                        className="absolute top-2 right-2 bg-red-100 text-red-600 hover:bg-red-200 p-1 rounded-full transition-colors z-10"
-                        onClick={(e) => {
-                          e.preventDefault();
-                          setFormData(prev => ({
-                            ...prev,
-                            [`${field.id}Ok`]: false,
-                            [`${field.id}File`]: null,
-                            [`${field.id}Name`]: "",
-                            [`${field.id}Base64`]: ""
-                          }));
-                          const inputElement = document.getElementById(field.id) as HTMLInputElement;
-                          if (inputElement) inputElement.value = "";
-                        }}
-                      >
-                        <X size={14} />
-                      </button>
-                    )}
+                    ))}
                   </div>
                 </div>
-              ))}
+              </div>
             </div>
 
+            {/* Declaration Checkbox */}
             <div className="form-group">
-              <label className="flex items-start gap-3 cursor-pointer p-4 rounded-xl bg-slate-50 border border-slate-100 transition-all hover:bg-slate-100">
+              <label className="flex items-start gap-3.5 cursor-pointer p-5 rounded-2xl bg-slate-50 dark:bg-slate-950/40 border border-slate-100 dark:border-slate-800/60 transition-all hover:bg-slate-100/60 dark:hover:bg-slate-900/40">
                 <input
                   type="checkbox"
-                  className="mt-1 w-5 h-5 accent-blue-600 rounded border-slate-300 shrink-0 cursor-pointer"
+                  className="mt-1 w-5 h-5 accent-blue-600 rounded border-slate-350 dark:border-slate-700 shrink-0 cursor-pointer"
                   checked={formData.deklarasi}
                   onChange={(e) => setFormData(prev => ({ ...prev, deklarasi: e.target.checked }))}
                 />
-                <span className="text-sm text-slate-600 leading-relaxed cursor-pointer">
-                  <strong>Pernyataan:</strong> Saya menyatakan bahwa data yang saya isikan di formulir ini adalah benar. Apabila di kemudian hari terbukti palsu, saya bersedia menerima sanksi yang berlaku.
+                <span className="text-xs md:text-sm text-slate-650 dark:text-slate-350 leading-relaxed cursor-pointer font-medium">
+                  <strong>Pernyataan Kebenaran Data:</strong> Saya menyatakan dengan sadar dan penuh tanggung jawab bahwa seluruh data yang saya isikan di dalam formulir pendaftaran online ini adalah benar, lengkap, dan sesuai dengan dokumen asli. Apabila di kemudian hari ditemukan ketidaksesuaian atau pemalsuan data, saya bersedia menerima sanksi administrasi termasuk pembatalan pendaftaran di SMK Taruna Bhakti.
                 </span>
               </label>
-              {(!formData.deklarasi || !formData.berkasKKOk || !formData.berkasKTPOk || !formData.berkasAktaOk || !formData.berkasFotoOk) && (
-                <p className="text-red-500 text-xs mt-2 ml-1 font-semibold animate-pulse">
-                  * Wajib melengkapi semua berkas (kecuali opsional) & mencentang pernyataan.
+              {!formData.deklarasi && (
+                <p className="text-rose-500 text-xs mt-3 ml-2 font-bold animate-pulse flex items-center gap-1.5">
+                  <span className="inline-block w-1.5 h-1.5 rounded-full bg-rose-500"></span>
+                  Wajib menyetujui pernyataan kebenaran data untuk mengirim pendaftaran.
                 </p>
               )}
             </div>
@@ -1862,7 +1823,7 @@ export default function DaftarPage() {
               disabled={
                 isSubmitting ||
                 (wizardStep === 1 && (!formData.nama || !formData.nisn)) ||
-                (wizardStep === 13 && (!formData.deklarasi || !formData.berkasKKOk || !formData.berkasKTPOk || !formData.berkasAktaOk || !formData.berkasFotoOk))
+                (wizardStep === 13 && !formData.deklarasi)
               }
             >
               {isSubmitting ? (
