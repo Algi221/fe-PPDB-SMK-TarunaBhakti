@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { ArrowRight, Check, Upload, ArrowLeft, Home, Monitor, Code, Palette, Film, Cpu, Sun, Moon, CreditCard, ShieldCheck, Sparkles, X } from "lucide-react";
 import { usePPDB } from "@/context/PPDBContext";
@@ -156,6 +156,7 @@ export default function DaftarPage() {
   const [showPaymentGate, setShowPaymentGate] = useState(false);
   const [submittedCandidate, setSubmittedCandidate] = useState(null);
   const [paymentPolling, setPaymentPolling] = useState(false);
+  const snapScriptLoaded = useRef(false);
   const [paymentError, setPaymentError] = useState(null);
 
   // Dark Mode
@@ -321,6 +322,23 @@ export default function DaftarPage() {
     setWizardStep(step);
   };
 
+  // Load Midtrans Snap script dynamically
+  useEffect(() => {
+    if (showPaymentGate && !snapScriptLoaded.current) {
+      const existingScript = document.querySelector('script[src*="snap.js"]');
+      if (existingScript) {
+        snapScriptLoaded.current = true;
+        return;
+      }
+      const script = document.createElement('script');
+      script.src = 'https://app.sandbox.midtrans.com/snap/snap.js';
+      script.setAttribute('data-client-key', process.env.NEXT_PUBLIC_MIDTRANS_CLIENT_KEY || 'SB-Mid-client-placeholder');
+      script.async = true;
+      script.onload = () => { snapScriptLoaded.current = true; };
+      document.head.appendChild(script);
+    }
+  }, [showPaymentGate]);
+
   if (isSuccess) {
     return (
       <div className="relative min-h-screen flex items-center justify-center p-6 overflow-hidden">
@@ -354,18 +372,65 @@ export default function DaftarPage() {
               <span className="font-bold text-blue-600">{formData.jurusan1 || "-"}</span>
             </div>
           </div>
-          <Link href="/" className="btn-primary-pill w-full flex justify-center">
-            Kembali ke Beranda
-          </Link>
+          <div className="flex flex-col gap-3">
+            <Link href={`/invoice?nisn=${formData.nisn}`} target="_blank" className="w-full flex justify-center items-center py-3 px-6 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-full shadow-lg transition-transform hover:scale-[1.02]">
+              Lihat & Cetak Invoice
+            </Link>
+            <Link href="/" className="btn-primary-pill w-full flex justify-center bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-full shadow-lg transition-transform hover:scale-[1.02]">
+              Kembali ke Beranda
+            </Link>
+          </div>
         </div>
       </div>
     );
   }
 
+
   if (showPaymentGate && submittedCandidate) {
-    const invoiceUrl = submittedCandidate.xendit_invoice_url || `http://localhost:5000/api/payment/mock-checkout?nisn=${submittedCandidate.nisn}`;
+    const handlePay = async () => {
+      try {
+        const backendUrl = "http://localhost:5000"; // Should use env in prod
+        const res = await fetch(`${backendUrl}/api/payment/create-transaction`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ nisn: submittedCandidate.nisn })
+        });
+        const data = await res.json();
+        if (data.success && data.token) {
+          // @ts-ignore
+          if (window.snap) {
+            // @ts-ignore
+            window.snap.pay(data.token, {
+              onSuccess: function (result: any) {
+                setPaymentPolling(false);
+                setShowPaymentGate(false);
+                setFormData(prev => ({ ...prev, nisn: submittedCandidate.nisn }));
+                setIsSuccess(true);
+              },
+              onPending: function (result: any) {
+                alert("Menunggu pembayaran...");
+              },
+              onError: function (result: any) {
+                alert("Pembayaran gagal!");
+              },
+              onClose: function () {
+                console.log("Customer closed the popup without finishing the payment");
+              }
+            });
+          } else {
+            alert("Midtrans script belum dimuat, coba lagi dalam beberapa detik.");
+          }
+        } else {
+          alert("Gagal membuat transaksi: " + data.message);
+        }
+      } catch (err: any) {
+        alert("Error: " + err.message);
+      }
+    };
+
     return (
       <div className="relative min-h-screen flex items-center justify-center p-6 overflow-hidden">
+        
         {/* Background Glowing Blobs */}
         <div className="bg-glow-container">
           <div className="bg-glow bg-glow-1"></div>
@@ -427,21 +492,20 @@ export default function DaftarPage() {
 
           {/* Action Buttons */}
           <div className="space-y-3">
-            <a 
-              href={invoiceUrl} 
-              target="_blank" 
-              rel="noopener noreferrer" 
+            <button 
+              onClick={handlePay}
               className="w-full flex justify-center items-center gap-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold py-3.5 px-6 rounded-2xl shadow-lg shadow-blue-500/20 dark:shadow-blue-500/10 transition duration-300 transform hover:scale-[1.01] active:scale-[0.99]"
             >
-              Bayar Sekarang via Xendit
+              Bayar Sekarang via Midtrans
               <ArrowRight size={16} />
-            </a>
+            </button>
 
             {/* Offline Simulation / Bypass Button */}
             <button
               onClick={() => {
                 setPaymentPolling(false);
                 setShowPaymentGate(false);
+                setFormData(prev => ({ ...prev, nisn: submittedCandidate.nisn }));
                 setIsSuccess(true);
               }}
               className="w-full bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-semibold py-3 px-6 rounded-xl border border-slate-200 dark:border-slate-700 text-xs transition duration-300"
@@ -452,7 +516,7 @@ export default function DaftarPage() {
 
           <div className="flex items-center justify-center gap-1.5 mt-6 text-[10px] text-slate-400 dark:text-slate-500">
             <ShieldCheck size={12} className="text-emerald-500" />
-            <span>Terintegrasi secara aman dengan Xendit Sandbox API</span>
+            <span>Terintegrasi secara aman dengan Midtrans Sandbox API</span>
           </div>
         </div>
       </div>
