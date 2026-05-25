@@ -52,7 +52,7 @@ interface ClassItem {
 }
 
 export default function ClassDivisionManagement() {
-  const { applicants, updateApplicant } = usePPDB();
+  const { applicants, updateApplicant, fetchAdminApplicants } = usePPDB();
   const [mounted, setMounted] = useState(false);
 
   // Core filter states
@@ -78,6 +78,7 @@ export default function ClassDivisionManagement() {
   // Class Detail Modal states
   const [selectedClassDetail, setSelectedClassDetail] = useState<ClassItem | null>(null);
   const [classSearchTerm, setClassSearchTerm] = useState("");
+  const [activeDropClass, setActiveDropClass] = useState<string | null>(null);
 
   // Predefined/Suggested Majors
   const majors = [
@@ -301,6 +302,7 @@ export default function ClassDivisionManagement() {
 
     setIsLoading(false);
     setSelectedStudentIds([]);
+    await fetchAdminApplicants();
     
     if (successCount === total) {
       showToast(`Sukses memindahkan ${successCount} siswa ke kelas ${className || "Belum Ditentukan"}!`);
@@ -309,74 +311,87 @@ export default function ClassDivisionManagement() {
     }
   };
 
-  // Smart Engine: Auto distribute unassigned students across major classes (UNLIMITED LIMITS)
-  const handleAutoDistribute = async () => {
-    const unassigned = approvedApplicantsOfMajor.filter((a: Applicant) => !(a.diterima_kelas || a.diterimaKelas));
+  // Drag and Drop Event Handlers for Student Assignments
+  const handleDragStart = (e: React.DragEvent, studentId: number) => {
+    // If the student being dragged is part of checked students, drag all of them!
+    const dragIds = selectedStudentIds.includes(studentId)
+      ? selectedStudentIds
+      : [studentId];
+    e.dataTransfer.setData("application/json", JSON.stringify(dragIds));
+    e.dataTransfer.effectAllowed = "move";
     
-    if (unassigned.length === 0) {
-      showToast("Semua siswa aktif di jurusan ini sudah terbagi ke dalam kelas!", "info");
-      return;
-    }
+    // Create rich visual drag ghost showing count
+    const dragGhost = document.createElement("div");
+    dragGhost.style.padding = "10px 20px";
+    dragGhost.style.background = "linear-gradient(135deg, #3b82f6, #4f46e5)";
+    dragGhost.style.color = "white";
+    dragGhost.style.fontSize = "11px";
+    dragGhost.style.fontWeight = "900";
+    dragGhost.style.textTransform = "uppercase";
+    dragGhost.style.letterSpacing = "0.05em";
+    dragGhost.style.borderRadius = "14px";
+    dragGhost.style.position = "absolute";
+    dragGhost.style.top = "-1000px";
+    dragGhost.style.boxShadow = "0 8px 30px rgba(59, 130, 246, 0.4)";
+    dragGhost.innerText = `📦 Memindahkan ${dragIds.length} Siswa TB`;
+    document.body.appendChild(dragGhost);
+    e.dataTransfer.setDragImage(dragGhost, 0, 0);
+    setTimeout(() => {
+      document.body.removeChild(dragGhost);
+    }, 0);
+  };
 
-    if (classesOfSelectedMajor.length === 0) {
-      showToast("Gagal: Belum ada kelas yang terdaftar untuk jurusan ini. Buat kelas terlebih dahulu!", "error");
-      return;
-    }
+  const handleDragOver = (e: React.DragEvent, classId: string) => {
+    e.preventDefault();
+    setActiveDropClass(classId);
+  };
 
-    const message = `Sistem akan membagi ${unassigned.length} siswa secara merata ke dalam ${classesOfSelectedMajor.length} kelas aktif (${classesOfSelectedMajor.map(c=>c.name).join(", ")}). Kapasitas kelas tidak dibatasi. Lanjutkan?`;
-    
-    if (!confirm(message)) return;
+  const handleDragLeave = () => {
+    setActiveDropClass(null);
+  };
 
-    setIsLoading(true);
-    setLoadingProgress(0);
+  const handleDrop = async (e: React.DragEvent, className: string) => {
+    e.preventDefault();
+    setActiveDropClass(null);
+    try {
+      const dataStr = e.dataTransfer.getData("application/json");
+      if (!dataStr) return;
+      const ids: number[] = JSON.parse(dataStr);
+      if (!Array.isArray(ids) || ids.length === 0) return;
 
-    const totalStudents = unassigned.length;
-    let distributedCount = 0;
+      setIsLoading(true);
+      setLoadingProgress(0);
 
-    // Distribute evenly without any capacity limits block!
-    const tempEnrollments = { ...classEnrollments };
+      const total = ids.length;
+      let successCount = 0;
 
-    for (let i = 0; i < totalStudents; i++) {
-      const student = unassigned[i];
-      
-      // Find class of selected major with lowest current enrollment count (completely unlimited capacity!)
-      let bestClass: ClassItem | null = null;
-      let lowestCount = Infinity;
+      showToast(`Memindahkan ${total} siswa ke kelas ${className}...`, "info");
 
-      classesOfSelectedMajor.forEach(c => {
-        const count = tempEnrollments[c.name] || 0;
-        if (count < lowestCount) {
-          lowestCount = count;
-          bestClass = c;
+      for (let i = 0; i < total; i++) {
+        const id = ids[i];
+        const payload = {
+          diterima_kelas: className,
+          diterima_tanggal: new Date().toISOString().split("T")[0]
+        };
+        const result = await updateApplicant(id, payload);
+        if (result?.success) {
+          successCount++;
         }
-      });
-
-      if (!bestClass) {
-        break;
+        setLoadingProgress(Math.round(((i + 1) / total) * 100));
       }
 
-      // Record locally
-      tempEnrollments[(bestClass as ClassItem).name]++;
+      setIsLoading(false);
+      setSelectedStudentIds([]);
+      await fetchAdminApplicants();
 
-      const payload = {
-        diterima_kelas: (bestClass as ClassItem).name,
-        diterima_tanggal: new Date().toISOString().split("T")[0]
-      };
-
-      const result = await updateApplicant(student.id, payload);
-      if (result?.success) {
-        distributedCount++;
+      if (successCount === total) {
+        showToast(`Sukses memindahkan ${successCount} siswa ke kelas ${className}!`);
+      } else {
+        showToast(`Berhasil memindahkan ${successCount} dari ${total} siswa ke kelas ${className}.`, "info");
       }
-
-      setLoadingProgress(Math.round(((i + 1) / totalStudents) * 100));
-    }
-
-    setIsLoading(false);
-    
-    if (distributedCount === totalStudents) {
-      showToast(`Sukses! Pembagian kelas otomatis berhasil mendistribusikan ${distributedCount} siswa secara merata.`);
-    } else {
-      showToast(`Pembagian kelas otomatis berhasil mendistribusikan ${distributedCount} dari ${totalStudents} siswa.`, "info");
+    } catch (err) {
+      console.error("Drop error:", err);
+      setIsLoading(false);
     }
   };
 
@@ -612,7 +627,14 @@ export default function ClassDivisionManagement() {
               <div 
                 key={c.id}
                 onClick={() => setSelectedClassDetail(c)}
-                className="bg-slate-50 dark:bg-slate-950/40 p-5 border border-slate-200/60 dark:border-white/5 rounded-3xl flex flex-col justify-between hover:border-blue-500/40 hover:shadow-md cursor-pointer transition-all relative group overflow-hidden"
+                onDragOver={(e) => handleDragOver(e, c.id)}
+                onDragLeave={handleDragLeave}
+                onDrop={(e) => handleDrop(e, c.name)}
+                className={`p-5 border rounded-3xl flex flex-col justify-between hover:shadow-md cursor-pointer transition-all relative group overflow-hidden ${
+                  activeDropClass === c.id
+                    ? "bg-blue-50/50 dark:bg-blue-950/20 border-blue-500 ring-2 ring-blue-500 scale-[1.02] shadow-lg shadow-blue-500/10"
+                    : "bg-slate-50 dark:bg-slate-950/40 border-slate-200/60 dark:border-white/5 hover:border-blue-500/40"
+                }`}
               >
                 {/* Decorative border line */}
                 <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-500 to-indigo-500" />
@@ -694,14 +716,6 @@ export default function ClassDivisionManagement() {
             </div>
           </div>
 
-          {/* Dynamic Auto-Distribute Panel */}
-          <button
-            onClick={handleAutoDistribute}
-            className="w-full xl:w-auto px-4 py-2.5 bg-gradient-to-tr from-indigo-500 to-blue-500 hover:from-indigo-600 hover:to-blue-600 text-white rounded-xl text-[10px] font-black uppercase tracking-wider transition-all flex items-center justify-center gap-2 shadow-sm shadow-indigo-500/10"
-          >
-            <Sparkles size={12} className="animate-pulse" />
-            <span>Pembagian Kelas Otomatis</span>
-          </button>
         </div>
 
         {/* Student Table Checklist */}
@@ -739,8 +753,10 @@ export default function ClassDivisionManagement() {
                   <tr
                     key={student.id}
                     onClick={() => handleSelectStudent(student.id)}
-                    className={`hover:bg-slate-50/50 dark:hover:bg-white/5 transition-all cursor-pointer ${
-                      isSelected ? "bg-blue-500/5 dark:bg-blue-500/10" : ""
+                    draggable={true}
+                    onDragStart={(e) => handleDragStart(e, student.id)}
+                    className={`hover:bg-slate-50/70 dark:hover:bg-white/10 transition-all cursor-grab active:cursor-grabbing select-none ${
+                      isSelected ? "bg-blue-500/10 dark:bg-blue-500/15 border-l-2 border-blue-500" : ""
                     }`}
                   >
                     <td className="py-3 px-4 pl-6 text-center" onClick={(e) => e.stopPropagation()}>

@@ -26,7 +26,8 @@ import {
   Users,
   FileText,
   FileImage,
-  FileWarning
+  FileWarning,
+  School
 } from "lucide-react";
 
 interface Applicant {
@@ -176,6 +177,20 @@ export default function ApplicantsDirectory() {
   const [searchTerm, setSearchTerm] = useState<string>("");
   const [statusFilter, setStatusFilter] = useState<string>("ALL");
   const [majorFilter, setMajorFilter] = useState<string>("ALL");
+  const [classFilter, setClassFilter] = useState<string>("ALL");
+  const [classes, setClasses] = useState<any[]>([]);
+
+  useEffect(() => {
+    const savedClasses = localStorage.getItem("ppdb_classes_config");
+    if (savedClasses) {
+      try {
+        setClasses(JSON.parse(savedClasses));
+      } catch (e) {
+        console.error("Gagal memuat konfigurasi kelas:", e);
+      }
+    }
+  }, []);
+
   const [selectedApplicant, setSelectedApplicant] = useState<Applicant | null>(null);
   const [activeTab, setActiveTab] = useState<string>("biodata");
   const [selectedDoc, setSelectedDoc] = useState<string | null>(null);
@@ -275,8 +290,28 @@ export default function ApplicantsDirectory() {
       a.jurusan_1 === majorFilter ||
       a.jurusan1 === majorFilter;
 
-    return matchesSearch && matchesStatus && matchesMajor;
+    const currentClass = a.diterima_kelas || a.diterimaKelas;
+    const matchesClass =
+      classFilter === "ALL" ||
+      (classFilter === "UNASSIGNED" && !currentClass) ||
+      (currentClass === classFilter);
+
+    return matchesSearch && matchesStatus && matchesMajor && matchesClass;
   });
+
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const itemsPerPage = 10;
+
+  // Reset page to 1 when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, statusFilter, majorFilter, classFilter]);
+
+  const totalPages = Math.max(1, Math.ceil(filteredApplicants.length / itemsPerPage));
+  const paginatedApplicants = filteredApplicants.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
 
   // Simulated Google Sheets Webhook Sync trigger
   const triggerGoogleSheetsSync = () => {
@@ -457,6 +492,25 @@ export default function ApplicantsDirectory() {
             </select>
           </div>
 
+          {/* Class Filter */}
+          <div className="flex items-center gap-2 bg-slate-50 dark:bg-slate-950/40 border border-slate-200 dark:border-white/5 rounded-2xl px-3 py-1.5 shrink-0">
+            <School size={13} className="text-slate-400" />
+            <select
+              value={classFilter}
+              onChange={(e) => setClassFilter(e.target.value)}
+              className="bg-transparent text-slate-600 dark:text-slate-350 text-xs focus:outline-none transition-all font-extrabold uppercase tracking-wide cursor-pointer max-w-[160px]"
+            >
+              <option value="ALL">Semua Kelas</option>
+              <option value="UNASSIGNED">Belum Dapat Kelas</option>
+              {classes.map((c, idx) => (
+                <option key={idx} value={c.name}>
+                  {c.name}
+                </option>
+              ))}
+            </select>
+          </div>
+
+
           {/* Toggle View: Standard Table vs Excel Spreadsheet Grid */}
           <div className="flex items-center bg-slate-100 dark:bg-slate-950 p-1.5 rounded-2xl border border-slate-200/50 dark:border-white/5 shrink-0 shadow-inner">
             <button
@@ -534,7 +588,7 @@ export default function ApplicantsDirectory() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 dark:divide-white/5">
-                {filteredApplicants.map((a: Applicant, idx: number) => (
+                {paginatedApplicants.map((a: Applicant, idx: number) => (
                   <tr
                     key={a.id || idx}
                     className="hover:bg-slate-50/60 dark:hover:bg-white/5 transition-all group cursor-pointer"
@@ -658,7 +712,7 @@ export default function ApplicantsDirectory() {
                 </tr>
               </thead>
               <tbody>
-                {filteredApplicants.map((a: Applicant, rowIdx: number) => (
+                {paginatedApplicants.map((a: Applicant, rowIdx: number) => (
                   <tr
                     key={a.id || rowIdx}
                     className="border-b border-slate-200 dark:border-slate-800 hover:bg-blue-50/30 dark:hover:bg-blue-900/10 cursor-pointer transition-colors duration-150"
@@ -666,7 +720,7 @@ export default function ApplicantsDirectory() {
                   >
                     {/* Row Index Number */}
                     <td className="py-2.5 text-center font-mono text-[10px] border-r border-slate-200 dark:border-slate-800 bg-slate-50/80 dark:bg-slate-950/40 text-slate-400 font-bold">
-                      {rowIdx + 1}
+                      {(currentPage - 1) * itemsPerPage + rowIdx + 1}
                     </td>
 
                     {/* Checkbox A */}
@@ -748,6 +802,34 @@ export default function ApplicantsDirectory() {
                 )}
               </tbody>
             </table>
+          </div>
+        )}
+
+        {/* Pagination Controls */}
+        {filteredApplicants.length > 0 && (
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 p-6 border-t border-slate-100 dark:border-white/5 bg-slate-50/25 dark:bg-slate-950/20">
+            <div className="text-xs text-slate-400 dark:text-slate-500 font-bold uppercase tracking-wider">
+              Menampilkan <span className="text-slate-700 dark:text-slate-300">{(currentPage - 1) * itemsPerPage + 1}</span> - <span className="text-slate-700 dark:text-slate-300">{Math.min(currentPage * itemsPerPage, filteredApplicants.length)}</span> dari <span className="text-slate-700 dark:text-slate-300">{filteredApplicants.length}</span> Siswa
+            </div>
+            <div className="flex items-center gap-2">
+              <button
+                disabled={currentPage === 1}
+                onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                className="px-4 py-2 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-655 dark:text-slate-350 disabled:opacity-40 disabled:pointer-events-none rounded-xl text-xs font-black uppercase tracking-wider transition-all"
+              >
+                Sebelumnya
+              </button>
+              <span className="text-xs text-slate-550 dark:text-slate-400 font-extrabold uppercase px-2">
+                Halaman {currentPage} dari {totalPages}
+              </span>
+              <button
+                disabled={currentPage === totalPages}
+                onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                className="px-4 py-2 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-655 dark:text-slate-350 disabled:opacity-40 disabled:pointer-events-none rounded-xl text-xs font-black uppercase tracking-wider transition-all"
+              >
+                Selanjutnya
+              </button>
+            </div>
           </div>
         )}
       </div>

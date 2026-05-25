@@ -52,6 +52,11 @@ export default function Home() {
   const { publicApplicants, wsStatus } = usePPDB();
   const [rosterSearch, setRosterSearch] = useState("");
   const [selectedRosterClass, setSelectedRosterClass] = useState("Semua");
+  const [rosterPage, setRosterPage] = useState(1);
+
+  useEffect(() => {
+    setRosterPage(1);
+  }, [selectedRosterClass, rosterSearch]);
 
   // Navigation & UI States
   const [isNavbarScrolled, setIsNavbarScrolled] = useState(false);
@@ -319,6 +324,14 @@ export default function Home() {
       return matchesSearch && cls === selectedRosterClass;
     });
   }, [publicApplicants, rosterSearch, selectedRosterClass]);
+
+  const itemsPerPage = 10;
+  const paginatedRosterStudents = useMemo(() => {
+    const start = (rosterPage - 1) * itemsPerPage;
+    return filteredRosterStudents.slice(start, start + itemsPerPage);
+  }, [filteredRosterStudents, rosterPage]);
+
+  const totalRosterPages = Math.ceil(filteredRosterStudents.length / itemsPerPage) || 1;
 
   // majors is now a dynamic state variable loaded from localStorage on mount.
 
@@ -715,10 +728,10 @@ export default function Home() {
             </span>
           </div>
           <h2 className="text-3xl md:text-4xl font-extrabold text-slate-800 dark:text-white mt-1 mb-4">
-            Rombongan Belajar Resmi Siswa Baru
+            Daftar Peserta Didik Baru
           </h2>
           <p className="text-slate-500 dark:text-slate-400 max-w-2xl mx-auto text-sm md:text-base leading-relaxed">
-            Daftar resmi calon peserta didik baru SMK Taruna Bhakti periode {schoolPeriod} yang telah diverifikasi kelulusannya dan secara resmi dialokasikan ke dalam kelas rombel masing-masing.
+            Daftar resmi peserta didik baru SMK Taruna Bhakti periode {schoolPeriod} yang telah diverifikasi kelulusannya dan secara resmi dialokasikan ke dalam kelas masing-masing.
           </p>
         </div>
 
@@ -765,7 +778,6 @@ export default function Home() {
             ))}
           </div>
         </div>
-
         {/* Large Table Container */}
         <div className="bg-white/70 dark:bg-slate-900/60 backdrop-blur-xl border border-slate-200/60 dark:border-slate-800/60 rounded-3xl overflow-hidden shadow-md">
           <div className="max-h-[500px] overflow-y-auto scrollbar-none">
@@ -781,15 +793,16 @@ export default function Home() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 dark:divide-white/5">
-                {filteredRosterStudents.map((student: any, idx: number) => {
+                {paginatedRosterStudents.map((student: any, idx: number) => {
                   const assignedClass = student.diterima_kelas || student.diterimaKelas;
+                  const globalIdx = (rosterPage - 1) * itemsPerPage + idx + 1;
                   
                   return (
                     <tr 
                       key={student.id} 
                       className="hover:bg-slate-50/50 dark:hover:bg-slate-950/20 transition-all"
                     >
-                      <td className="py-3.5 px-6 font-mono text-slate-400">{idx + 1}</td>
+                      <td className="py-3.5 px-6 font-mono text-slate-400">{globalIdx}</td>
                       <td className="py-3.5 px-6 font-extrabold text-slate-850 dark:text-white uppercase tracking-wider">{student.nama}</td>
                       <td className="py-3.5 px-6 text-center font-mono tracking-wide">{student.nisn}</td>
                       <td className="py-3.5 px-6 uppercase text-slate-550 dark:text-slate-400 font-semibold">{student.sekolah_asal || student.sekolahAsal || "-"}</td>
@@ -819,6 +832,58 @@ export default function Home() {
               </tbody>
             </table>
           </div>
+
+          {/* Roster Pagination Controls */}
+          {filteredRosterStudents.length > 0 && (
+            <div className="p-4 border-t border-slate-150 dark:border-white/5 bg-slate-50/50 dark:bg-slate-950/20 flex flex-col sm:flex-row items-center justify-between gap-4">
+              <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">
+                Menampilkan {Math.min(filteredRosterStudents.length, (rosterPage - 1) * itemsPerPage + 1)} - {Math.min(filteredRosterStudents.length, rosterPage * itemsPerPage)} Dari {filteredRosterStudents.length} Siswa
+              </span>
+
+              <div className="flex items-center gap-1">
+                <button
+                  onClick={() => setRosterPage(p => Math.max(1, p - 1))}
+                  disabled={rosterPage === 1}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-black uppercase tracking-wider transition-all border ${
+                    rosterPage === 1
+                      ? "bg-slate-100/50 border-slate-200/30 text-slate-400 cursor-not-allowed opacity-50 dark:bg-slate-800/40 dark:border-slate-700/30"
+                      : "bg-white border-slate-200 hover:bg-slate-50 dark:bg-slate-800 dark:border-slate-700 text-slate-655 dark:text-slate-355"
+                  }`}
+                >
+                  Sebelumnya
+                </button>
+
+                {Array.from({ length: totalRosterPages }).map((_, i) => {
+                  const pageNum = i + 1;
+                  return (
+                    <button
+                      key={pageNum}
+                      onClick={() => setRosterPage(pageNum)}
+                      className={`w-8 h-8 rounded-lg text-xs font-black transition-all border ${
+                        rosterPage === pageNum
+                          ? "bg-blue-600 border-blue-700 text-white shadow-sm shadow-blue-500/10"
+                          : "bg-white border-slate-200 hover:bg-slate-50 dark:bg-slate-800 dark:border-slate-700 text-slate-655 dark:text-slate-355"
+                      }`}
+                    >
+                      {pageNum}
+                    </button>
+                  );
+                })}
+
+                <button
+                  onClick={() => setRosterPage(p => Math.min(totalRosterPages, p + 1))}
+                  disabled={rosterPage === totalRosterPages}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-black uppercase tracking-wider transition-all border ${
+                    rosterPage === totalRosterPages
+                      ? "bg-slate-100/50 border-slate-200/30 text-slate-400 cursor-not-allowed opacity-50 dark:bg-slate-800/40 dark:border-slate-700/30"
+                      : "bg-white border-slate-200 hover:bg-slate-50 dark:bg-slate-800 dark:border-slate-700 text-slate-655 dark:text-slate-355"
+                  }`}
+                >
+                  Selanjutnya
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       </section>
 
