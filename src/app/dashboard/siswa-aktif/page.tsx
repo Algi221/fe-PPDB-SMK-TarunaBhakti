@@ -3,6 +3,8 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { usePPDB } from "@/context/PPDBContext";
 import { motion, AnimatePresence } from "framer-motion";
+import ExcelJS from 'exceljs';
+import { saveAs } from 'file-saver';
 import { 
   Search, 
   Download, 
@@ -25,7 +27,8 @@ import {
   Filter, 
   BookOpen, 
   School,
-  Sparkles
+  Sparkles,
+  Trash2
 } from "lucide-react";
 
 interface Applicant {
@@ -133,10 +136,38 @@ interface Applicant {
 }
 
 export default function ActiveStudentsDirectory() {
-  const { applicants } = usePPDB();
+  const { applicants, addToast } = usePPDB();
   const [searchTerm, setSearchTerm] = useState<string>("");
   const [majorFilter, setMajorFilter] = useState<string>("ALL");
   const [expandedPeriods, setExpandedPeriods] = useState<Record<string, boolean>>({});
+  
+  // Custom periods state
+  const [customPeriods, setCustomPeriods] = useState<string[]>(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem("ppdb_custom_periods");
+      if (saved) return JSON.parse(saved);
+    }
+    return [];
+  });
+  const [isAddPeriodModalOpen, setIsAddPeriodModalOpen] = useState(false);
+  const [newPeriodValue, setNewPeriodValue] = useState("");
+
+  // Compute next suggested academic year based on latest existing period
+  const getNextPeriod = () => {
+    const allPeriods = [
+      ...Object.keys(groupedByPeriod),
+      ...customPeriods
+    ];
+    if (allPeriods.length === 0) {
+      const y = new Date().getFullYear();
+      return `${y}-${y + 1}`;
+    }
+    // Parse the start year from each period string like "2026-2027"
+    const maxStartYear = Math.max(
+      ...allPeriods.map(p => parseInt(p.split("-")[0]) || 0)
+    );
+    return `${maxStartYear + 1}-${maxStartYear + 2}`;
+  };
   
   // Modal detail states
   const [selectedApplicant, setSelectedApplicant] = useState<Applicant | null>(null);
@@ -179,6 +210,11 @@ export default function ActiveStudentsDirectory() {
   const groupedByPeriod = useMemo(() => {
     const groups: Record<string, Applicant[]> = {};
     
+    // Initialize custom periods first
+    customPeriods.forEach(p => {
+      groups[p] = [];
+    });
+
     filteredApplicants.forEach((a: Applicant) => {
       const period = a.periode || "2026-2027";
       if (!groups[period]) {
@@ -193,7 +229,7 @@ export default function ActiveStudentsDirectory() {
     });
 
     return groups;
-  }, [filteredApplicants]);
+  }, [filteredApplicants, customPeriods]);
 
   // Get list of sorted periods (descending, newest first)
   const sortedPeriods = useMemo(() => {
@@ -248,53 +284,76 @@ export default function ActiveStudentsDirectory() {
     return { total, currentBatch, popular };
   }, [activeApplicants]);
 
-  // Export specific list of students to Excel (UTF-8 BOM + sep=,)
-  const handleExportCSV = (students: Applicant[], fileNameSuffix: string) => {
+  // Export specific list of students to Excel (ExcelJS)
+  const handleExportExcel = async (students: Applicant[], fileNameSuffix: string) => {
     if (students.length === 0) return;
 
-    const headers = [
-      "Periode Angkatan",
-      "Nama Lengkap",
-      "NISN",
-      "NIK",
-      "Asal Sekolah",
-      "Pilihan Jurusan 1",
-      "Pilihan Jurusan 2",
-      "No. WhatsApp",
-      "Email",
-      "Status Pembayaran",
-      "Tanggal Terverifikasi"
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet("Siswa Aktif");
+
+    worksheet.columns = [
+      { header: 'Periode Angkatan', key: 'periode', width: 20 },
+      { header: 'Nama Lengkap', key: 'nama', width: 35 },
+      { header: 'NISN', key: 'nisn', width: 25 },
+      { header: 'NIK', key: 'nik', width: 25 },
+      { header: 'Asal Sekolah', key: 'sekolah', width: 35 },
+      { header: 'Pilihan Jurusan 1', key: 'jurusan1', width: 35 },
+      { header: 'Pilihan Jurusan 2', key: 'jurusan2', width: 35 },
+      { header: 'No. WhatsApp', key: 'whatsapp', width: 25 },
+      { header: 'Email', key: 'email', width: 35 },
+      { header: 'Status Pembayaran', key: 'payment_status', width: 25 },
+      { header: 'Tanggal Terverifikasi', key: 'tanggal', width: 25 },
     ];
 
-    const rows = students.map((a: Applicant) => [
-      `"${a.periode || '2026-2027'}"`,
-      `"${a.nama || ''}"`,
-      `"${a.nisn || ''}"`,
-      `"${a.nik || ''}"`,
-      `"${a.sekolah_asal || a.sekolahAsal || ''}"`,
-      `"${a.jurusan_1 || a.jurusan1 || ''}"`,
-      `"${a.jurusan_2 || a.jurusan2 || ''}"`,
-      `"${a.whatsapp || ''}"`,
-      `"${a.email || ''}"`,
-      `"${a.payment_status || 'Paid'}"`,
-      `"${a.tgl_daftar || a.createdAt || ''}"`
-    ]);
+    const headerRow = worksheet.getRow(1);
+    headerRow.height = 35;
+    headerRow.eachCell((cell) => {
+      cell.font = { bold: true, color: { argb: 'FF000000' } };
+      cell.fill = {
+        type: 'pattern',
+        pattern: 'solid',
+        fgColor: { argb: 'FF9BC2E6' }
+      };
+      cell.alignment = { vertical: 'middle', horizontal: 'center' };
+      cell.border = { top: { style: 'thin' }, left: { style: 'thin' }, bottom: { style: 'thin' }, right: { style: 'thin' } };
+    });
 
-    const csvHeaderLine = "sep=,\n";
-    const csvData = [headers.join(","), ...rows.map((e) => e.join(","))].join("\n");
-    const fullCSVString = csvHeaderLine + csvData;
-    
-    // Create blob with UTF-8 BOM bytes (EF BB BF) for direct Excel mapping
-    const blob = new Blob([new Uint8Array([0xEF, 0xBB, 0xBF]), fullCSVString], { type: "text/csv;charset=utf-8;" });
-    const url = URL.createObjectURL(blob);
-    
-    const link = document.createElement("a");
-    link.setAttribute("href", url);
-    link.setAttribute("download", `ppdb_siswa_aktif_${fileNameSuffix}_${Date.now()}.csv`);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
+    students.forEach((a: Applicant) => {
+      worksheet.addRow({
+        periode: a.periode || '2026-2027',
+        nama: a.nama || "",
+        nisn: a.nisn || "",
+        nik: a.nik || "",
+        sekolah: a.sekolah_asal || a.sekolahAsal || "",
+        jurusan1: a.jurusan_1 || a.jurusan1 || "",
+        jurusan2: a.jurusan_2 || a.jurusan2 || "",
+        whatsapp: a.whatsapp || "",
+        email: a.email || "",
+        payment_status: "Lunas",
+        tanggal: a.tgl_daftar ? new Date(a.tgl_daftar).toLocaleDateString("id-ID") : a.createdAt ? new Date(a.createdAt).toLocaleDateString("id-ID") : ""
+      });
+    });
+
+    worksheet.eachRow((row, rowNumber) => {
+      if (rowNumber > 1) {
+        row.height = 25;
+      }
+      row.eachCell((cell, colNumber) => {
+        if (rowNumber > 1) {
+          cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFFFFF' } };
+          cell.border = { top: { style: 'thin' }, left: { style: 'thin' }, bottom: { style: 'thin' }, right: { style: 'thin' } };
+          if ([1, 3, 4, 8, 10, 11].includes(colNumber)) {
+            cell.alignment = { vertical: 'middle', horizontal: 'center' };
+          } else {
+            cell.alignment = { vertical: 'middle', horizontal: 'left', indent: 1 };
+          }
+        }
+      });
+    });
+
+    const buffer = await workbook.xlsx.writeBuffer();
+    const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+    saveAs(blob, `Data_Siswa_Aktif_${fileNameSuffix}_${Date.now()}.xlsx`);
   };
 
   return (
@@ -352,7 +411,7 @@ export default function ActiveStudentsDirectory() {
           </div>
 
           {/* Major/Prodi selection dropdown */}
-          <div className="relative w-full md:w-64">
+          <div className="relative w-full md:w-80">
             <Filter className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-550 animate-pulse" size={14} />
             <select
               value={majorFilter}
@@ -369,19 +428,32 @@ export default function ActiveStudentsDirectory() {
           </div>
         </div>
 
-        {/* Global Export active student roster */}
-        <button
-          onClick={() => handleExportCSV(filteredApplicants, "semua_periode")}
-          disabled={filteredApplicants.length === 0}
-          className={`w-full xl:w-auto px-5 py-3 rounded-2xl text-xs font-black uppercase tracking-wider transition-all flex items-center justify-center gap-2 border shadow-sm ${
-            filteredApplicants.length === 0
-              ? "bg-slate-100 text-slate-400 dark:bg-slate-800 dark:text-slate-600 border-transparent cursor-not-allowed"
-              : "bg-blue-600 hover:bg-blue-500 text-white border-blue-500 hover:border-blue-400 shadow-[0_4px_12px_rgba(59,130,246,0.15)] cursor-pointer"
-          }`}
-        >
-          <Download size={14} />
-          Ekspor Semua Siswa Aktif
-        </button>
+        <div className="flex flex-col xl:flex-row gap-3 w-full xl:w-auto">
+          {/* Add Period Button */}
+          <button
+            onClick={() => {
+              setNewPeriodValue(getNextPeriod());
+              setIsAddPeriodModalOpen(true);
+            }}
+            className="w-full xl:w-auto px-5 py-3 rounded-2xl text-xs font-black uppercase tracking-wider transition-all flex items-center justify-center gap-2 border border-slate-200 dark:border-white/10 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 shadow-sm hover:bg-slate-50 dark:hover:bg-slate-800"
+          >
+            + Tambah Periode
+          </button>
+
+          {/* Global Export active student roster */}
+          <button
+            onClick={() => handleExportExcel(filteredApplicants, "semua_periode")}
+            disabled={filteredApplicants.length === 0}
+            className={`w-full xl:w-auto px-5 py-3 rounded-2xl text-xs font-black uppercase tracking-wider transition-all flex items-center justify-center gap-2 border shadow-sm ${
+              filteredApplicants.length === 0
+                ? "bg-slate-100 text-slate-400 dark:bg-slate-800 dark:text-slate-600 border-transparent cursor-not-allowed"
+                : "bg-blue-600 hover:bg-blue-500 text-white border-blue-500 hover:border-blue-400 shadow-[0_4px_12px_rgba(59,130,246,0.15)] cursor-pointer"
+            }`}
+          >
+            <Download size={14} />
+            Ekspor Semua Siswa
+          </button>
+        </div>
       </div>
 
       {/* Accordion List (Grouped by Period) */}
@@ -439,14 +511,51 @@ export default function ActiveStudentsDirectory() {
                     <button
                       type="button"
                       onClick={(e) => {
-                        e.stopPropagation(); // prevent collapsing accordion
-                        handleExportCSV(students, `angkatan_${period.replace("-", "_")}`);
+                        e.stopPropagation();
+                        handleExportExcel(students, `angkatan_${period.replace("-", "_")}`);
                       }}
                       className="p-2 bg-slate-100 hover:bg-blue-50 hover:text-blue-600 dark:bg-white/5 dark:hover:bg-blue-950/40 border border-slate-200/50 dark:border-white/5 text-slate-500 dark:text-slate-400 rounded-xl transition-all shadow-sm"
                       title={`Ekspor Roster Excel Periode ${period}`}
                     >
                       <Download size={14} />
                     </button>
+
+                    {/* Delete button - only for custom-added periods */}
+                    {customPeriods.includes(period) && students.length === 0 && (
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          if (confirm(`Hapus periode angkatan "${period}"? Tindakan ini tidak dapat dibatalkan.`)) {
+                            const updated = customPeriods.filter(p => p !== period);
+                            setCustomPeriods(updated);
+                            if (typeof window !== 'undefined') {
+                              localStorage.setItem("ppdb_custom_periods", JSON.stringify(updated));
+                            }
+                            addToast("Periode Dihapus", `Angkatan ${period} telah dihapus.`, "warning");
+                          }
+                        }}
+                        className="p-2 bg-rose-50 hover:bg-rose-100 dark:bg-rose-950/30 dark:hover:bg-rose-950/50 border border-rose-200/50 dark:border-rose-900/30 text-rose-500 dark:text-rose-400 rounded-xl transition-all shadow-sm"
+                        title={`Hapus Periode ${period}`}
+                      >
+                        <Trash2 size={14} />
+                      </button>
+                    )}
+
+                    {/* Delete button - warn if has students */}
+                    {customPeriods.includes(period) && students.length > 0 && (
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          addToast("Tidak Bisa Dihapus", `Periode ${period} masih memiliki ${students.length} siswa aktif.`, "warning");
+                        }}
+                        className="p-2 bg-slate-100 dark:bg-white/5 border border-slate-200/50 dark:border-white/5 text-slate-400 dark:text-slate-600 rounded-xl transition-all shadow-sm cursor-not-allowed"
+                        title="Tidak bisa hapus periode yang masih ada siswanya"
+                      >
+                        <Trash2 size={14} />
+                      </button>
+                    )}
                     
                     <div className="p-1 rounded-lg text-slate-400 dark:text-slate-600">
                       {isExpanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
@@ -905,6 +1014,60 @@ export default function ActiveStudentsDirectory() {
                 </button>
               </div>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Add Period Modal */}
+      {isAddPeriodModalOpen && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/60 backdrop-blur-md overflow-hidden animate-in fade-in duration-300">
+          <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-white/10 rounded-3xl w-full max-w-sm flex flex-col shadow-[0_30px_70px_rgba(0,0,0,0.1)] dark:shadow-[0_30px_70px_rgba(0,0,0,0.5)] overflow-hidden animate-in zoom-in-95 transition-colors duration-300">
+            <div className="p-6 border-b border-slate-100 dark:border-white/5 bg-slate-50/50 dark:bg-slate-950/15">
+              <h3 className="text-lg font-black text-slate-850 dark:text-white uppercase tracking-wide">
+                Tambah Periode Angkatan
+              </h3>
+              <p className="text-xs text-slate-400 dark:text-slate-550 font-bold mt-1">
+                Otomatis terisi tahun ajaran berikutnya. Bisa diubah jika perlu.
+              </p>
+            </div>
+            <form onSubmit={(e) => {
+              e.preventDefault();
+              if (!newPeriodValue.trim()) return;
+              const added = [...customPeriods, newPeriodValue.trim()];
+              setCustomPeriods(added);
+              if (typeof window !== 'undefined') {
+                localStorage.setItem("ppdb_custom_periods", JSON.stringify(added));
+              }
+              setNewPeriodValue("");
+              setIsAddPeriodModalOpen(false);
+              addToast("Periode Ditambahkan", `Angkatan ${newPeriodValue.trim()} berhasil dibuat!`, "success");
+            }}>
+              <div className="p-6">
+                <input
+                  type="text"
+                  placeholder={getNextPeriod()}
+                  value={newPeriodValue}
+                  onChange={(e) => setNewPeriodValue(e.target.value)}
+                  className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-950/50 border border-slate-200 dark:border-white/5 rounded-xl text-sm font-bold text-slate-800 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:focus:ring-blue-500/30 transition-all uppercase"
+                  required
+                />
+              </div>
+              <div className="p-5 border-t border-slate-100 dark:border-white/5 bg-slate-50/50 dark:bg-slate-950/15 flex items-center justify-end gap-3">
+                <button
+                  type="button"
+                  onClick={() => setIsAddPeriodModalOpen(false)}
+                  className="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 dark:bg-white/5 dark:hover:bg-white/10 text-slate-600 dark:text-slate-355 rounded-xl text-xs font-black uppercase tracking-wider transition-all border border-slate-200/50 dark:border-white/5"
+                >
+                  Batal
+                </button>
+                <button
+                  type="submit"
+                  className="px-4 py-2.5 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-xs font-black uppercase tracking-wider transition-all shadow-md"
+                >
+                  Simpan Periode
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}

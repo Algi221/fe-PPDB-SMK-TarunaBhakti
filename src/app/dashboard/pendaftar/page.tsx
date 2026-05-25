@@ -2,17 +2,19 @@
 
 import React, { useState, useEffect } from "react";
 import { usePPDB } from "@/context/PPDBContext";
-import { 
-  Search, 
-  Filter, 
-  Download, 
-  TableProperties, 
-  CloudLightning, 
-  FileSpreadsheet, 
-  Check, 
-  X, 
-  Trash2, 
-  Eye, 
+import ExcelJS from 'exceljs';
+import { saveAs } from 'file-saver';
+import {
+  Search,
+  Filter,
+  Download,
+  TableProperties,
+  CloudLightning,
+  FileSpreadsheet,
+  Check,
+  X,
+  Trash2,
+  Eye,
   Pencil,
   Info,
   Calendar,
@@ -301,60 +303,112 @@ export default function ApplicantsDirectory() {
     return () => clearInterval(interval);
   }, [syncStatus]);
 
-  // Export to CSV Function with Auto-Formatting
-  const exportToCSV = () => {
+  // Export to Excel Function with Auto-Formatting
+  const exportToExcel = async () => {
     if (filteredApplicants.length === 0) return;
 
-    const headers = [
-      "Nama Lengkap",
-      "NISN",
-      "NIK",
-      "Asal Sekolah",
-      "Program Studi Pilihan 1",
-      "Program Studi Pilihan 2",
-      "No. WhatsApp",
-      "Email",
-      "Status Verifikasi",
-      "Tanggal Mendaftar"
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet("Data Pendaftar");
+
+    // Define all original columns with wider widths ("jarak nya jauh")
+    worksheet.columns = [
+      { header: 'No.', key: 'no', width: 10 },
+      { header: 'Nama Lengkap', key: 'nama', width: 35 },
+      { header: 'NISN', key: 'nisn', width: 25 },
+      { header: 'NIK', key: 'nik', width: 25 },
+      { header: 'Asal Sekolah', key: 'sekolah', width: 35 },
+      { header: 'Program Studi Pilihan 1', key: 'jurusan1', width: 35 },
+      { header: 'Program Studi Pilihan 2', key: 'jurusan2', width: 35 },
+      { header: 'No. WhatsApp', key: 'whatsapp', width: 25 },
+      { header: 'Email', key: 'email', width: 35 },
+      { header: 'Status Verifikasi', key: 'status', width: 25 },
+      { header: 'Tanggal Mendaftar', key: 'tanggal', width: 25 },
     ];
 
-    const rows = filteredApplicants.map((a: Applicant) => [
-      `"${a.nama || ''}"`,
-      `"${a.nisn || ''}"`,
-      `"${a.nik || ''}"`,
-      `"${a.sekolah_asal || a.sekolahAsal || ''}"`,
-      `"${a.jurusan_1 || a.jurusan1 || ''}"`,
-      `"${a.jurusan_2 || a.jurusan2 || ''}"`,
-      `"${a.whatsapp || ''}"`,
-      `"${a.email || ''}"`,
-      `"${a.status || 'Pending'}"`,
-      `"${a.tgl_daftar || a.createdAt || ''}"`
-    ]);
+    // Style header row (light blue background, black text, centered, taller height)
+    const headerRow = worksheet.getRow(1);
+    headerRow.height = 35; // "tulisan atas yang ada nomer itu agak jarak" (make header taller)
+    
+    headerRow.eachCell((cell) => {
+      cell.font = { bold: true, color: { argb: 'FF000000' } };
+      cell.fill = {
+        type: 'pattern',
+        pattern: 'solid',
+        fgColor: { argb: 'FF9BC2E6' } // Light Blue
+      };
+      cell.alignment = { vertical: 'middle', horizontal: 'center' };
+      cell.border = {
+        top: { style: 'thin' },
+        left: { style: 'thin' },
+        bottom: { style: 'thin' },
+        right: { style: 'thin' }
+      };
+    });
 
-    // Prepend UTF-8 BOM and sep=, so Excel opens it beautifully in separate columns
-    const csvHeaderLine = "sep=,\n";
-    const csvData = [headers.join(","), ...rows.map((e) => e.join(","))].join("\n");
-    const fullCSVString = csvHeaderLine + csvData;
-    
-    // Create blob with UTF-8 BOM bytes (EF BB BF)
-    const blob = new Blob([new Uint8Array([0xEF, 0xBB, 0xBF]), fullCSVString], { type: "text/csv;charset=utf-8;" });
-    const url = URL.createObjectURL(blob);
-    
-    const link = document.createElement("a");
-    link.setAttribute("href", url);
-    link.setAttribute("download", `ppdb_taruna_bhakti_spreadsheet_${Date.now()}.csv`);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
+    // Add data
+    filteredApplicants.forEach((a: Applicant, index: number) => {
+      worksheet.addRow({
+        no: index + 1,
+        nama: a.nama || "",
+        nisn: a.nisn || "",
+        nik: a.nik || "",
+        sekolah: a.sekolah_asal || a.sekolahAsal || "",
+        jurusan1: a.jurusan_1 || a.jurusan1 || "",
+        jurusan2: a.jurusan_2 || a.jurusan2 || "",
+        whatsapp: a.whatsapp || "",
+        email: a.email || "",
+        status: a.status === "Approved" ? "Terverifikasi" : a.status === "Rejected" ? "Ditolak" : "Pending",
+        tanggal: a.tgl_daftar ? new Date(a.tgl_daftar).toLocaleDateString("id-ID") : a.createdAt ? new Date(a.createdAt).toLocaleDateString("id-ID") : ""
+      });
+    });
+
+    // Style all cells (add borders, white backgrounds, and specific alignments)
+    worksheet.eachRow((row, rowNumber) => {
+      if (rowNumber > 1) {
+        row.height = 25; // Give row some breathing room too
+      }
+      
+      row.eachCell((cell, colNumber) => {
+        if (rowNumber > 1) {
+          // Plain white background for data
+          cell.fill = {
+            type: 'pattern',
+            pattern: 'solid',
+            fgColor: { argb: 'FFFFFFFF' }
+          };
+          
+          // Thin borders for everything
+          cell.border = {
+            top: { style: 'thin' },
+            left: { style: 'thin' },
+            bottom: { style: 'thin' },
+            right: { style: 'thin' }
+          };
+
+          // Alignment
+          // No., NISN, NIK, WA, Status, Tanggal (cols 1, 3, 4, 8, 10, 11) -> Centered
+          // Nama, Sekolah, Jurusan, Email (cols 2, 5, 6, 7, 9) -> Left aligned
+          if ([1, 3, 4, 8, 10, 11].includes(colNumber)) {
+            cell.alignment = { vertical: 'middle', horizontal: 'center' };
+          } else {
+            cell.alignment = { vertical: 'middle', horizontal: 'left', indent: 1 };
+          }
+        }
+      });
+    });
+
+    // Generate and save file
+    const buffer = await workbook.xlsx.writeBuffer();
+    const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+    saveAs(blob, `Data_Pendaftar_SMKTB_${Date.now()}.xlsx`);
   };
 
   return (
     <div className="space-y-6 animate-in fade-in duration-500 text-left">
-      
+
       {/* Search, Filter & Spreadsheet Toggle Toolbar */}
       <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800/60 rounded-3xl p-6 shadow-[0_2px_12px_rgba(0,0,0,0.02)] flex flex-col xl:flex-row gap-4 items-center justify-between transition-colors duration-300">
-        
+
         {/* Search Field */}
         <div className="relative w-full xl:max-w-md">
           <span className="absolute inset-y-0 left-0 pl-4 flex items-center text-slate-400 dark:text-slate-550">
@@ -407,11 +461,10 @@ export default function ApplicantsDirectory() {
           <div className="flex items-center bg-slate-100 dark:bg-slate-950 p-1.5 rounded-2xl border border-slate-200/50 dark:border-white/5 shrink-0 shadow-inner">
             <button
               onClick={() => setIsSpreadsheetMode(false)}
-              className={`flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-black uppercase tracking-wider transition-all ${
-                !isSpreadsheetMode
+              className={`flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-black uppercase tracking-wider transition-all ${!isSpreadsheetMode
                   ? "bg-white dark:bg-slate-900 text-blue-600 dark:text-white shadow-sm border border-slate-200/40 dark:border-white/5"
                   : "text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white"
-              }`}
+                }`}
               title="Tampilan Tabel Standard"
             >
               <TableProperties size={14} />
@@ -419,11 +472,10 @@ export default function ApplicantsDirectory() {
             </button>
             <button
               onClick={() => setIsSpreadsheetMode(true)}
-              className={`flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-black uppercase tracking-wider transition-all ${
-                isSpreadsheetMode
+              className={`flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-black uppercase tracking-wider transition-all ${isSpreadsheetMode
                   ? "bg-white dark:bg-slate-900 text-blue-600 dark:text-white shadow-sm border border-slate-200/40 dark:border-white/5"
                   : "text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white"
-              }`}
+                }`}
               title="Tampilan Spreadsheet Google Sheets"
             >
               <FileSpreadsheet size={14} className="text-emerald-500" />
@@ -435,27 +487,26 @@ export default function ApplicantsDirectory() {
           <button
             onClick={triggerGoogleSheetsSync}
             disabled={filteredApplicants.length === 0 || syncStatus === "SYNCING"}
-            className={`px-4 py-3 bg-gradient-to-tr transition-all rounded-2xl text-xs font-black uppercase tracking-wider shrink-0 shadow-sm flex items-center gap-2 border ${
-              syncStatus === "SUCCESS"
+            className={`px-4 py-3 bg-gradient-to-tr transition-all rounded-2xl text-xs font-black uppercase tracking-wider shrink-0 shadow-sm flex items-center gap-2 border ${syncStatus === "SUCCESS"
                 ? "from-emerald-500 to-teal-500 text-white border-emerald-600 shadow-[0_4px_12px_rgba(16,185,129,0.2)]"
                 : syncStatus === "SYNCING"
-                ? "from-blue-500 to-sky-400 text-white opacity-80 cursor-wait border-blue-600"
-                : "from-blue-50/50 to-blue-50 dark:from-slate-950 dark:to-slate-950 text-blue-500 dark:text-blue-400 hover:bg-blue-500/10 border-blue-500/10 dark:border-white/5"
-            }`}
+                  ? "from-blue-500 to-sky-400 text-white opacity-80 cursor-wait border-blue-600"
+                  : "from-blue-50/50 to-blue-50 dark:from-slate-950 dark:to-slate-950 text-blue-500 dark:text-blue-400 hover:bg-blue-500/10 border-blue-500/10 dark:border-white/5"
+              }`}
           >
             <CloudLightning size={14} className={syncStatus === "SYNCING" ? "animate-bounce" : ""} />
             <span>
-              {syncStatus === "SYNCING" 
-                ? `Syncing (${syncProgress}%)` 
+              {syncStatus === "SYNCING"
+                ? `Syncing (${syncProgress}%)`
                 : syncStatus === "SUCCESS"
-                ? "Auto-Synced!"
-                : "Sheets Sync"}
+                  ? "Auto-Synced!"
+                  : "Sheets Sync"}
             </span>
           </button>
 
           {/* Export formatted CSV/Spreadsheet button */}
           <button
-            onClick={exportToCSV}
+            onClick={exportToExcel}
             disabled={filteredApplicants.length === 0}
             className="px-4 py-3 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-250 dark:border-emerald-900/50 hover:bg-emerald-600/10 text-emerald-650 dark:text-emerald-400 disabled:opacity-40 disabled:pointer-events-none rounded-2xl text-xs font-black uppercase tracking-wider transition-all flex items-center gap-1.5 shrink-0"
           >
@@ -467,7 +518,7 @@ export default function ApplicantsDirectory() {
 
       {/* Primary Data Grid (Standard vs Spreadsheet Mode views) */}
       <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800/60 rounded-3xl backdrop-blur-md overflow-hidden shadow-[0_2px_12px_rgba(0,0,0,0.02)] transition-colors duration-300">
-        
+
         {!isSpreadsheetMode ? (
           /* STANDARD TABLE VIEW */
           <div className="overflow-x-auto">
@@ -507,13 +558,12 @@ export default function ApplicantsDirectory() {
                     </td>
                     <td className="py-4 px-6 text-center">
                       <span
-                        className={`inline-flex px-2.5 py-0.5 rounded-full text-[9px] font-extrabold border uppercase tracking-wider ${
-                          a.status === "Approved"
+                        className={`inline-flex px-2.5 py-0.5 rounded-full text-[9px] font-extrabold border uppercase tracking-wider ${a.status === "Approved"
                             ? "bg-emerald-50 dark:bg-emerald-950/60 border-emerald-250 dark:border-emerald-900 text-emerald-600 dark:text-emerald-400"
                             : a.status === "Rejected"
-                            ? "bg-rose-50 dark:bg-rose-950/60 border-rose-250 dark:border-rose-900 text-rose-600 dark:text-rose-400"
-                            : "bg-amber-50 dark:bg-amber-950/60 border-amber-250 dark:border-amber-900 text-amber-600 dark:text-amber-400"
-                        }`}
+                              ? "bg-rose-50 dark:bg-rose-950/60 border-rose-250 dark:border-rose-900 text-rose-600 dark:text-rose-400"
+                              : "bg-amber-50 dark:bg-amber-950/60 border-amber-250 dark:border-amber-900 text-amber-600 dark:text-amber-400"
+                          }`}
                       >
                         {a.status === "Approved" ? "Terverifikasi" : a.status === "Rejected" ? "Ditolak" : "Pending"}
                       </span>
@@ -592,7 +642,7 @@ export default function ApplicantsDirectory() {
               </span>
               <span className="text-slate-400 dark:text-slate-655">Buka baris dengan double-click untuk Verifikasi Dokumen</span>
             </div>
-            
+
             <table className="w-full text-left text-xs font-semibold text-slate-650 dark:text-slate-355 border-collapse table-fixed">
               <thead>
                 {/* Column Headers (Alphabetical A-G) */}
@@ -629,67 +679,60 @@ export default function ApplicantsDirectory() {
                     </td>
 
                     {/* Column B: Nama */}
-                    <td 
+                    <td
                       onClick={() => setActiveCell({ row: rowIdx, col: 1 })}
-                      className={`py-2.5 px-4 truncate border-r border-slate-200 dark:border-slate-800 text-slate-850 dark:text-white font-extrabold text-sm ${
-                        activeCell?.row === rowIdx && activeCell?.col === 1 ? "bg-blue-500/10 outline outline-2 outline-blue-500" : ""
-                      }`}
+                      className={`py-2.5 px-4 truncate border-r border-slate-200 dark:border-slate-800 text-slate-850 dark:text-white font-extrabold text-sm ${activeCell?.row === rowIdx && activeCell?.col === 1 ? "bg-blue-500/10 outline outline-2 outline-blue-500" : ""
+                        }`}
                     >
                       {a.nama}
                     </td>
 
                     {/* Column C: NISN */}
-                    <td 
+                    <td
                       onClick={() => setActiveCell({ row: rowIdx, col: 2 })}
-                      className={`py-2.5 px-4 text-center border-r border-slate-200 dark:border-slate-800 font-mono text-slate-655 dark:text-slate-300 text-[11px] ${
-                        activeCell?.row === rowIdx && activeCell?.col === 2 ? "bg-blue-500/10 outline outline-2 outline-blue-500" : ""
-                      }`}
+                      className={`py-2.5 px-4 text-center border-r border-slate-200 dark:border-slate-800 font-mono text-slate-655 dark:text-slate-300 text-[11px] ${activeCell?.row === rowIdx && activeCell?.col === 2 ? "bg-blue-500/10 outline outline-2 outline-blue-500" : ""
+                        }`}
                     >
                       {a.nisn}
                     </td>
 
                     {/* Column D: Sekolah */}
-                    <td 
+                    <td
                       onClick={() => setActiveCell({ row: rowIdx, col: 3 })}
-                      className={`py-2.5 px-4 truncate border-r border-slate-200 dark:border-slate-800 text-slate-500 dark:text-slate-450 font-semibold ${
-                        activeCell?.row === rowIdx && activeCell?.col === 3 ? "bg-blue-500/10 outline outline-2 outline-blue-500" : ""
-                      }`}
+                      className={`py-2.5 px-4 truncate border-r border-slate-200 dark:border-slate-800 text-slate-500 dark:text-slate-450 font-semibold ${activeCell?.row === rowIdx && activeCell?.col === 3 ? "bg-blue-500/10 outline outline-2 outline-blue-500" : ""
+                        }`}
                     >
                       {a.sekolah_asal || a.sekolahAsal}
                     </td>
 
                     {/* Column E: Jurusan */}
-                    <td 
+                    <td
                       onClick={() => setActiveCell({ row: rowIdx, col: 4 })}
-                      className={`py-2.5 px-4 truncate border-r border-slate-200 dark:border-slate-800 text-blue-600 dark:text-blue-400 font-bold uppercase tracking-wider text-[10px] ${
-                        activeCell?.row === rowIdx && activeCell?.col === 4 ? "bg-blue-500/10 outline outline-2 outline-blue-500" : ""
-                      }`}
+                      className={`py-2.5 px-4 truncate border-r border-slate-200 dark:border-slate-800 text-blue-600 dark:text-blue-400 font-bold uppercase tracking-wider text-[10px] ${activeCell?.row === rowIdx && activeCell?.col === 4 ? "bg-blue-500/10 outline outline-2 outline-blue-500" : ""
+                        }`}
                     >
                       {a.jurusan_1 || a.jurusan1}
                     </td>
 
                     {/* Column F: WA */}
-                    <td 
+                    <td
                       onClick={() => setActiveCell({ row: rowIdx, col: 5 })}
-                      className={`py-2.5 px-4 text-center border-r border-slate-200 dark:border-slate-800 font-mono text-slate-655 dark:text-slate-300 text-[11px] ${
-                        activeCell?.row === rowIdx && activeCell?.col === 5 ? "bg-blue-500/10 outline outline-2 outline-blue-500" : ""
-                      }`}
+                      className={`py-2.5 px-4 text-center border-r border-slate-200 dark:border-slate-800 font-mono text-slate-655 dark:text-slate-300 text-[11px] ${activeCell?.row === rowIdx && activeCell?.col === 5 ? "bg-blue-500/10 outline outline-2 outline-blue-500" : ""
+                        }`}
                     >
                       {a.whatsapp || "-"}
                     </td>
 
                     {/* Column G: Status */}
-                    <td 
+                    <td
                       onClick={() => setActiveCell({ row: rowIdx, col: 6 })}
-                      className={`py-2.5 px-4 text-center text-[10px] font-extrabold uppercase tracking-widest ${
-                        a.status === "Approved"
+                      className={`py-2.5 px-4 text-center text-[10px] font-extrabold uppercase tracking-widest ${a.status === "Approved"
                           ? "text-emerald-600 dark:text-emerald-400 bg-emerald-500/5"
                           : a.status === "Rejected"
-                          ? "text-rose-600 dark:text-rose-400 bg-rose-500/5"
-                          : "text-amber-600 dark:text-amber-400 bg-amber-500/5"
-                      } ${
-                        activeCell?.row === rowIdx && activeCell?.col === 6 ? "bg-blue-500/10 outline outline-2 outline-blue-500" : ""
-                      }`}
+                            ? "text-rose-600 dark:text-rose-400 bg-rose-500/5"
+                            : "text-amber-600 dark:text-amber-400 bg-amber-500/5"
+                        } ${activeCell?.row === rowIdx && activeCell?.col === 6 ? "bg-blue-500/10 outline outline-2 outline-blue-500" : ""
+                        }`}
                     >
                       {a.status || "Pending"}
                     </td>
@@ -727,20 +770,19 @@ export default function ApplicantsDirectory() {
       {selectedApplicant && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md overflow-hidden animate-in fade-in duration-300">
           <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-white/10 rounded-3xl w-full max-w-4xl max-h-[85vh] flex flex-col shadow-[0_30px_70px_rgba(0,0,0,0.1)] dark:shadow-[0_30px_70px_rgba(0,0,0,0.5)] overflow-hidden animate-in zoom-in-95 transition-colors duration-300">
-            
+
             {/* Modal Header */}
             <div className="p-6 border-b border-slate-100 dark:border-white/5 flex items-center justify-between shrink-0 bg-slate-50/50 dark:bg-slate-950/15">
               <div>
                 <h3 className="text-lg font-black text-slate-850 dark:text-white flex items-center gap-3 uppercase tracking-wide">
                   <span>{selectedApplicant.nama}</span>
                   <span
-                    className={`px-2.5 py-0.5 rounded-full text-[9px] font-extrabold border uppercase tracking-wider ${
-                      selectedApplicant.status === "Approved"
+                    className={`px-2.5 py-0.5 rounded-full text-[9px] font-extrabold border uppercase tracking-wider ${selectedApplicant.status === "Approved"
                         ? "bg-emerald-50 dark:bg-emerald-950/60 border-emerald-250 dark:border-emerald-900 text-emerald-600 dark:text-emerald-400"
                         : selectedApplicant.status === "Rejected"
-                        ? "bg-rose-50 dark:bg-rose-950/60 border-rose-250 dark:border-rose-900 text-rose-600 dark:text-rose-400"
-                        : "bg-amber-50 dark:bg-amber-950/60 border-amber-250 dark:border-amber-900 text-amber-600 dark:text-amber-400"
-                    }`}
+                          ? "bg-rose-50 dark:bg-rose-950/60 border-rose-250 dark:border-rose-900 text-rose-600 dark:text-rose-400"
+                          : "bg-amber-50 dark:bg-amber-950/60 border-amber-250 dark:border-amber-900 text-amber-600 dark:text-amber-400"
+                      }`}
                   >
                     {selectedApplicant.status === "Approved" ? "Terverifikasi" : selectedApplicant.status === "Rejected" ? "Ditolak" : "Pending"}
                   </span>
@@ -769,11 +811,10 @@ export default function ApplicantsDirectory() {
                 <button
                   key={t.id}
                   onClick={() => setActiveTab(t.id)}
-                  className={`px-4 py-3.5 text-xs font-black whitespace-nowrap transition-all border-b-2 uppercase tracking-wider ${
-                    activeTab === t.id
+                  className={`px-4 py-3.5 text-xs font-black whitespace-nowrap transition-all border-b-2 uppercase tracking-wider ${activeTab === t.id
                       ? "border-blue-500 text-blue-600 dark:text-white"
                       : "border-transparent text-slate-455 dark:text-slate-450 hover:text-slate-800 dark:hover:text-white"
-                  }`}
+                    }`}
                 >
                   {t.label}
                 </button>
@@ -962,7 +1003,7 @@ export default function ApplicantsDirectory() {
                   <h4 className="text-slate-800 dark:text-white font-black uppercase tracking-widest border-b border-slate-100 dark:border-white/5 pb-2 text-[10px] flex items-center gap-1.5">
                     <FileText size={12} className="text-blue-500" /> Dokumen & Berkas Pendukung
                   </h4>
-                  
+
                   <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
                     {[
                       { key: 'berkas_kk', label: 'Kartu Keluarga', name: 'KK' },
@@ -973,7 +1014,7 @@ export default function ApplicantsDirectory() {
                     ].map((doc) => {
                       const value = selectedApplicant[doc.key] || selectedApplicant[`${doc.key}Base64`] || '';
                       const hasDoc = !!value;
-                      
+
                       return (
                         <button
                           key={doc.key}
@@ -983,22 +1024,20 @@ export default function ApplicantsDirectory() {
                               setSelectedDoc(doc.key);
                             }
                           }}
-                          className={`p-4 rounded-2xl border transition-all flex flex-col items-center justify-center gap-2.5 text-center ${
-                            !hasDoc 
+                          className={`p-4 rounded-2xl border transition-all flex flex-col items-center justify-center gap-2.5 text-center ${!hasDoc
                               ? "bg-slate-50/50 dark:bg-slate-900/40 border-slate-150 dark:border-slate-800 text-slate-400 dark:text-slate-650 cursor-not-allowed"
                               : selectedDoc === doc.key
-                              ? "bg-blue-50/50 dark:bg-blue-950/30 border-blue-400 dark:border-blue-500/50 text-blue-600 dark:text-blue-400 shadow-sm"
-                              : "bg-white hover:bg-slate-50 dark:bg-slate-900 dark:hover:bg-slate-800/80 border-slate-200 dark:border-white/5 text-slate-700 dark:text-slate-300"
-                          }`}
+                                ? "bg-blue-50/50 dark:bg-blue-950/30 border-blue-400 dark:border-blue-500/50 text-blue-600 dark:text-blue-400 shadow-sm"
+                                : "bg-white hover:bg-slate-50 dark:bg-slate-900 dark:hover:bg-slate-800/80 border-slate-200 dark:border-white/5 text-slate-700 dark:text-slate-300"
+                            }`}
                           disabled={!hasDoc}
                         >
-                          <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${
-                            !hasDoc 
-                              ? "bg-slate-100 dark:bg-slate-800/60" 
+                          <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${!hasDoc
+                              ? "bg-slate-100 dark:bg-slate-800/60"
                               : selectedDoc === doc.key
-                              ? "bg-blue-100/80 dark:bg-blue-900/50"
-                              : "bg-slate-50 dark:bg-slate-800"
-                          }`}>
+                                ? "bg-blue-100/80 dark:bg-blue-900/50"
+                                : "bg-slate-50 dark:bg-slate-800"
+                            }`}>
                             {doc.name === 'Foto' ? (
                               <FileImage size={18} />
                             ) : (
@@ -1024,14 +1063,14 @@ export default function ApplicantsDirectory() {
                           <Eye size={12} className="text-blue-500" />
                           Pratinjau: {
                             selectedDoc === 'berkas_kk' ? 'Kartu Keluarga' :
-                            selectedDoc === 'berkas_ktp' ? 'KTP Orang Tua / Wali' :
-                            selectedDoc === 'berkas_akta' ? 'Akta Kelahiran' :
-                            selectedDoc === 'berkas_ijazah' ? 'Ijazah / SKL' : 'Pas Foto'
+                              selectedDoc === 'berkas_ktp' ? 'KTP Orang Tua / Wali' :
+                                selectedDoc === 'berkas_akta' ? 'Akta Kelahiran' :
+                                  selectedDoc === 'berkas_ijazah' ? 'Ijazah / SKL' : 'Pas Foto'
                           }
                         </span>
-                        
+
                         <div className="flex items-center gap-2">
-                          <a 
+                          <a
                             href={selectedApplicant[selectedDoc]}
                             download={`berkas_${selectedDoc}_${selectedApplicant.nisn}.png`}
                             target="_blank"
@@ -1040,7 +1079,7 @@ export default function ApplicantsDirectory() {
                           >
                             <Download size={10} /> Unduh File
                           </a>
-                          
+
                           <button
                             type="button"
                             onClick={() => setSelectedDoc(null)}
@@ -1053,15 +1092,15 @@ export default function ApplicantsDirectory() {
 
                       <div className="flex justify-center items-center bg-slate-100 dark:bg-slate-900/60 border border-slate-200/50 dark:border-white/5 rounded-2xl min-h-[300px] max-h-[500px] overflow-auto p-4">
                         {selectedApplicant[selectedDoc].startsWith("data:application/pdf") ? (
-                          <iframe 
-                            src={selectedApplicant[selectedDoc]} 
+                          <iframe
+                            src={selectedApplicant[selectedDoc]}
                             className="w-full h-[400px] rounded-xl border border-slate-200 dark:border-white/5"
                             title="Pratinjau PDF"
                           />
                         ) : selectedApplicant[selectedDoc].startsWith("data:image/") || selectedApplicant[selectedDoc].startsWith("/") || selectedApplicant[selectedDoc].includes("base64") || selectedApplicant[selectedDoc].startsWith("http") ? (
-                          <img 
-                            src={selectedApplicant[selectedDoc].includes("Mock_Data_Base64") ? "/logo_smktb.png" : selectedApplicant[selectedDoc]} 
-                            alt="Pratinjau Dokumen" 
+                          <img
+                            src={selectedApplicant[selectedDoc].includes("Mock_Data_Base64") ? "/logo_smktb.png" : selectedApplicant[selectedDoc]}
+                            alt="Pratinjau Dokumen"
                             className="max-w-full max-h-[400px] object-contain rounded-xl shadow-sm animate-in fade-in"
                             onError={(e) => {
                               // If mock base64 fails, fallback to general icon/logo
@@ -1152,48 +1191,58 @@ export default function ApplicantsDirectory() {
             {/* Body — scrollable form */}
             <div className="flex-1 overflow-y-auto p-6 space-y-5">
               {[
-                { section: "Identitas Diri", fields: [
-                  { label: "Nama Lengkap", key: "nama" },
-                  { label: "NISN", key: "nisn" },
-                  { label: "NIK", key: "nik" },
-                  { label: "Tempat Lahir", key: "tempat_lahir" },
-                  { label: "Tanggal Lahir", key: "tgl_lahir", type: "date" },
-                  { label: "Jenis Kelamin", key: "jenis_kelamin", type: "select", options: ["L","P","Laki-laki","Perempuan"] },
-                  { label: "Agama", key: "agama", type: "select", options: ["Islam","Kristen","Katolik","Hindu","Buddha","Konghucu"] },
-                  { label: "Golongan Darah", key: "golongan_darah", type: "select", options: ["A","B","AB","O","-"] },
-                ]},
-                { section: "Alamat & Kontak", fields: [
-                  { label: "Alamat", key: "alamat" },
-                  { label: "RT/RW", key: "rt_rw" },
-                  { label: "Kelurahan", key: "kelurahan" },
-                  { label: "Kecamatan", key: "kecamatan" },
-                  { label: "Kode Pos", key: "kode_pos" },
-                  { label: "WhatsApp", key: "whatsapp" },
-                  { label: "Email", key: "email" },
-                  { label: "Tinggal Dengan", key: "tinggal_dengan" },
-                  { label: "Transportasi", key: "transportasi" },
-                ]},
-                { section: "Data Fisik", fields: [
-                  { label: "Tinggi Badan (cm)", key: "tinggi_badan", type: "number" },
-                  { label: "Berat Badan (kg)", key: "berat_badan", type: "number" },
-                ]},
-                { section: "Akademik & Jurusan", fields: [
-                  { label: "Sekolah Asal", key: "sekolah_asal" },
-                  { label: "Tanggal Lulus", key: "tgl_lulus", type: "date" },
-                  { label: "Jurusan Pilihan 1", key: "jurusan_1", type: "select", options: ["Rekayasa Perangkat Lunak","Teknik Jaringan Komputer & Telekomunikasi","Desain Komunikasi Visual","Broadcasting & Perfilman","Teknik Elektronika","Animasi"] },
-                  { label: "Jurusan Pilihan 2", key: "jurusan_2", type: "select", options: ["Rekayasa Perangkat Lunak","Teknik Jaringan Komputer & Telekomunikasi","Desain Komunikasi Visual","Broadcasting & Perfilman","Teknik Elektronika","Animasi"] },
-                  { label: "Alasan Memilih", key: "alasan_memilih" },
-                  { label: "Cita-cita", key: "cita_cita" },
-                ]},
-                { section: "Data Orang Tua", fields: [
-                  { label: "Nama Ayah", key: "nama_ayah" },
-                  { label: "Pekerjaan Ayah", key: "pekerjaan_ayah" },
-                  { label: "Penghasilan Ayah", key: "penghasilan_ayah" },
-                  { label: "Nama Ibu", key: "nama_ibu" },
-                  { label: "Pekerjaan Ibu", key: "pekerjaan_ibu" },
-                  { label: "Penghasilan Ibu", key: "penghasilan_ibu" },
-                  { label: "Telepon Orang Tua", key: "telepon_ortu" },
-                ]},
+                {
+                  section: "Identitas Diri", fields: [
+                    { label: "Nama Lengkap", key: "nama" },
+                    { label: "NISN", key: "nisn" },
+                    { label: "NIK", key: "nik" },
+                    { label: "Tempat Lahir", key: "tempat_lahir" },
+                    { label: "Tanggal Lahir", key: "tgl_lahir", type: "date" },
+                    { label: "Jenis Kelamin", key: "jenis_kelamin", type: "select", options: ["L", "P", "Laki-laki", "Perempuan"] },
+                    { label: "Agama", key: "agama", type: "select", options: ["Islam", "Kristen", "Katolik", "Hindu", "Buddha", "Konghucu"] },
+                    { label: "Golongan Darah", key: "golongan_darah", type: "select", options: ["A", "B", "AB", "O", "-"] },
+                  ]
+                },
+                {
+                  section: "Alamat & Kontak", fields: [
+                    { label: "Alamat", key: "alamat" },
+                    { label: "RT/RW", key: "rt_rw" },
+                    { label: "Kelurahan", key: "kelurahan" },
+                    { label: "Kecamatan", key: "kecamatan" },
+                    { label: "Kode Pos", key: "kode_pos" },
+                    { label: "WhatsApp", key: "whatsapp" },
+                    { label: "Email", key: "email" },
+                    { label: "Tinggal Dengan", key: "tinggal_dengan" },
+                    { label: "Transportasi", key: "transportasi" },
+                  ]
+                },
+                {
+                  section: "Data Fisik", fields: [
+                    { label: "Tinggi Badan (cm)", key: "tinggi_badan", type: "number" },
+                    { label: "Berat Badan (kg)", key: "berat_badan", type: "number" },
+                  ]
+                },
+                {
+                  section: "Akademik & Jurusan", fields: [
+                    { label: "Sekolah Asal", key: "sekolah_asal" },
+                    { label: "Tanggal Lulus", key: "tgl_lulus", type: "date" },
+                    { label: "Jurusan Pilihan 1", key: "jurusan_1", type: "select", options: ["Rekayasa Perangkat Lunak", "Teknik Jaringan Komputer & Telekomunikasi", "Desain Komunikasi Visual", "Broadcasting & Perfilman", "Teknik Elektronika", "Animasi"] },
+                    { label: "Jurusan Pilihan 2", key: "jurusan_2", type: "select", options: ["Rekayasa Perangkat Lunak", "Teknik Jaringan Komputer & Telekomunikasi", "Desain Komunikasi Visual", "Broadcasting & Perfilman", "Teknik Elektronika", "Animasi"] },
+                    { label: "Alasan Memilih", key: "alasan_memilih" },
+                    { label: "Cita-cita", key: "cita_cita" },
+                  ]
+                },
+                {
+                  section: "Data Orang Tua", fields: [
+                    { label: "Nama Ayah", key: "nama_ayah" },
+                    { label: "Pekerjaan Ayah", key: "pekerjaan_ayah" },
+                    { label: "Penghasilan Ayah", key: "penghasilan_ayah" },
+                    { label: "Nama Ibu", key: "nama_ibu" },
+                    { label: "Pekerjaan Ibu", key: "pekerjaan_ibu" },
+                    { label: "Penghasilan Ibu", key: "penghasilan_ibu" },
+                    { label: "Telepon Orang Tua", key: "telepon_ortu" },
+                  ]
+                },
               ].map((section) => (
                 <div key={section.section}>
                   <h4 className="text-[9px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500 mb-3 border-b border-slate-100 dark:border-white/5 pb-1.5">{section.section}</h4>
