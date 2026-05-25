@@ -161,6 +161,16 @@ export default function DaftarPage() {
 
   // Dark Mode
   const [isDark, setIsDark] = useState(false);
+  const [regCost, setRegCost] = useState(150000);
+  const [schoolPeriod, setSchoolPeriod] = useState("2026-2027");
+  const [majors, setMajors] = useState([
+    { code: "RPL", title: "Rekayasa Perangkat Lunak" },
+    { code: "TJKT", title: "Teknik Jaringan Komputer & Telekomunikasi" },
+    { code: "DKV", title: "Desain Komunikasi Visual" },
+    { code: "ANM", title: "Animasi" },
+    { code: "BRF", title: "Broadcasting & Perfilman" },
+    { code: "TE", title: "Teknik Elektronika" }
+  ]);
 
   useEffect(() => {
     const saved = localStorage.getItem('ppdb-theme');
@@ -168,6 +178,30 @@ export default function DaftarPage() {
       document.documentElement.classList.add('dark');
       // eslint-disable-next-line
       setIsDark(true);
+    }
+
+    const savedCost = localStorage.getItem('ppdb_reg_cost');
+    if (savedCost) {
+      const parsed = parseInt(savedCost);
+      if (!isNaN(parsed)) setRegCost(parsed);
+    }
+
+    const savedPeriod = localStorage.getItem('ppdb_school_period');
+    if (savedPeriod) {
+      setSchoolPeriod(savedPeriod);
+      setFormData(prev => ({ ...prev, periode: savedPeriod }));
+    }
+
+    const savedMajors = localStorage.getItem('ppdb_majors_config');
+    if (savedMajors) {
+      try {
+        const parsed = JSON.parse(savedMajors);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          setMajors(parsed);
+        }
+      } catch (e) {
+        console.log("Failed to parse custom majors config:", e);
+      }
     }
   }, []);
 
@@ -229,13 +263,7 @@ export default function DaftarPage() {
     }
   };
 
-  const majors = [
-    { code: "RPL", title: "Rekayasa Perangkat Lunak" },
-    { code: "TJKT", title: "Teknik Jaringan Komputer & Telekomunikasi" },
-    { code: "DKV", title: "Desain Komunikasi Visual" },
-    { code: "BC", title: "Broadcasting & Perfilman" },
-    { code: "TE", title: "Teknik Elektronika" }
-  ];
+  // majors is now a state variable loaded dynamically from localStorage on mount.
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -461,11 +489,11 @@ export default function DaftarPage() {
               <Sparkles size={64} className="text-blue-600 animate-pulse" />
             </div>
             
-            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 block mb-1">
+            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-550 block mb-1">
               Jumlah yang Harus Dibayar
             </span>
             <span className="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600 dark:from-sky-400 dark:to-indigo-400 block mb-4">
-              Rp 150.000
+              Rp {regCost.toLocaleString("id-ID")}
             </span>
 
             <div className="border-t border-slate-100 dark:border-slate-800/80 pt-4 text-xs text-slate-600 dark:text-slate-350 space-y-2.5">
@@ -1072,13 +1100,8 @@ export default function DaftarPage() {
               <div className="mb-5">
                 <label className="block text-xs font-bold text-slate-600 mb-3">b. Program Keahlian</label>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  {[
-                    "Teknik Komputer dan Jaringan (TKJ)",
-                    "Animasi (ANM)",
-                    "Rekayasa Perangkat Lunak (RPL)",
-                    "Produksi dan Siaran Program Televisi (PSPT)",
-                    "Teknik Elektronika Industri (TEI)"
-                  ].map((option) => {
+                  {majors.map((major) => {
+                    const option = `${major.title} (${major.code})`;
                     return (
                       <label key={option} className={`flex items-center gap-3 p-3 rounded-xl border transition-all cursor-pointer ${formData.jurusan1 === option ? "bg-blue-50 border-blue-400 text-blue-700 shadow-sm" : "bg-slate-50 border-slate-200 text-slate-600 hover:bg-slate-100 hover:border-slate-300"
                         }`}>
@@ -1735,36 +1758,36 @@ export default function DaftarPage() {
               Konfirmasi data pendaftaran Anda dan tinjau persyaratan berkas fisik.
             </p>
 
-            {/* Premium Notice Box */}
-            <div className="bg-blue-50/50 dark:bg-blue-950/20 border border-blue-100 dark:border-blue-900/60 rounded-3xl p-6 mb-6">
-              <div className="flex gap-4 items-start">
-                <div className="w-10 h-10 bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-sky-400 rounded-full flex items-center justify-center shrink-0 shadow-sm">
-                  <AlertCircle size={20} />
+            {/* Premium Notice Box - Expanded and Amber Highlighted */}
+            <div className="bg-amber-500/[0.07] dark:bg-amber-500/[0.03] border-2 border-amber-500/30 rounded-[2.5rem] p-8 md:p-10 mb-8 shadow-lg shadow-amber-500/[0.02]">
+              <div className="flex flex-col md:flex-row gap-6 items-start">
+                <div className="w-14 h-14 bg-amber-500/10 dark:bg-amber-500/20 text-amber-600 dark:text-amber-400 rounded-2xl flex items-center justify-center shrink-0 shadow-sm border border-amber-500/20 animate-bounce">
+                  <AlertCircle size={28} />
                 </div>
-                <div>
-                  <h4 className="font-extrabold text-slate-800 dark:text-white text-base mb-1">
-                    Informasi Verifikasi Berkas Fisik
+                <div className="flex-1">
+                  <h4 className="font-black text-slate-900 dark:text-amber-400 text-lg md:text-xl mb-2 tracking-tight">
+                    PENTING: Informasi Verifikasi Berkas Fisik Calon Siswa
                   </h4>
-                  <p className="text-slate-500 dark:text-slate-400 text-xs leading-relaxed mb-4">
-                    Anda <strong>tidak perlu mengunggah berkas digital</strong> di sini. Sebagai gantinya, silakan bawa berkas fisik/fotokopi berikut ini langsung ke sekolah saat melakukan proses verifikasi pendaftaran:
+                  <p className="text-slate-650 dark:text-slate-350 text-sm leading-relaxed mb-6 font-semibold">
+                    Anda <span className="text-amber-600 dark:text-amber-400 font-black underline underline-offset-4">tidak perlu mengunggah berkas digital</span> di dalam formulir online ini. Sebagai gantinya, silakan lengkapi dan bawa berkas fisik/fotokopi berikut ini langsung ke panitia PPDB di sekolah saat melakukan proses verifikasi langsung:
                   </p>
                   
                   {/* Grid of Documents */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     {[
-                      { title: "Kartu Keluarga (KK)", desc: "1 Lembar Fotokopi" },
-                      { title: "KTP Orang Tua / Wali", desc: "1 Lembar Fotokopi (Ayah & Ibu)" },
-                      { title: "Akta Kelahiran", desc: "1 Lembar Fotokopi" },
-                      { title: "Pas Foto Ukuran 3x4", desc: "2 Lembar (Background Merah/Biru)" },
-                      { title: "SKL / Ijazah SMP Asal", desc: "1 Lembar Fotokopi (Bila sudah ada)" }
+                      { title: "Kartu Keluarga (KK)", desc: "1 Lembar Fotokopi Sah" },
+                      { title: "KTP Orang Tua / Wali", desc: "1 Lembar Fotokopi (Kedua Orang Tua / Wali)" },
+                      { title: "Akta Kelahiran", desc: "1 Lembar Fotokopi Sah" },
+                      { title: "Pas Foto Berwarna (3x4)", desc: "2 Lembar (Latar Belakang Merah atau Biru)" },
+                      { title: "SKL / Ijazah SMP Asal", desc: "1 Lembar Fotokopi (Bisa disusulkan jika belum lulus)" }
                     ].map((doc, idx) => (
-                      <div key={idx} className="flex gap-3 items-center p-3 rounded-2xl bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800/80 shadow-sm">
-                        <div className="w-8 h-8 rounded-xl bg-slate-50 dark:bg-slate-800/80 text-blue-500 dark:text-sky-400 flex items-center justify-center font-bold text-xs shrink-0 border border-slate-100/50 dark:border-slate-700/50">
-                          <FileText size={14} />
+                      <div key={idx} className="flex gap-4 items-center p-4 rounded-3xl bg-white dark:bg-slate-900/60 border border-slate-200/60 dark:border-slate-800/80 shadow-md shadow-slate-100/50 dark:shadow-none hover:border-amber-500/30 transition-all duration-300 hover:scale-[1.01]">
+                        <div className="w-10 h-10 rounded-2xl bg-amber-500/10 text-amber-600 dark:text-amber-450 flex items-center justify-center font-bold text-sm shrink-0 border border-amber-500/20">
+                          <FileText size={18} />
                         </div>
                         <div className="min-w-0">
-                          <p className="text-xs font-extrabold text-slate-700 dark:text-slate-200 truncate">{doc.title}</p>
-                          <p className="text-[10px] text-slate-400 dark:text-slate-500 font-medium">{doc.desc}</p>
+                          <p className="text-sm font-black text-slate-800 dark:text-slate-200 truncate">{doc.title}</p>
+                          <p className="text-xs text-slate-450 dark:text-slate-500 font-bold uppercase tracking-wider mt-0.5">{doc.desc}</p>
                         </div>
                       </div>
                     ))}

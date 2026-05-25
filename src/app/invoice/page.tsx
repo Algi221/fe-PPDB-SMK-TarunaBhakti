@@ -9,8 +9,17 @@ function InvoiceContent() {
   const searchParams = useSearchParams();
   const nisn = searchParams.get("nisn");
   const [data, setData] = useState<any>(null);
+  const [regCost, setRegCost] = useState(150000);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const savedCost = localStorage.getItem('ppdb_reg_cost');
+    if (savedCost) {
+      const parsed = parseInt(savedCost);
+      if (!isNaN(parsed)) setRegCost(parsed);
+    }
+  }, []);
 
   useEffect(() => {
     if (!nisn) {
@@ -129,8 +138,8 @@ function InvoiceContent() {
             </thead>
             <tbody>
               <tr className="border-b border-slate-100">
-                <td className="py-4 text-slate-800 font-medium">Biaya Registrasi PPDB 2026/2027</td>
-                <td className="py-4 text-right text-slate-800 font-bold">Rp 150.000</td>
+                <td className="py-4 text-slate-800 font-medium">Biaya Registrasi PPDB {data.periode || "2026-2027"}</td>
+                <td className="py-4 text-right text-slate-800 font-bold">Rp {regCost.toLocaleString("id-ID")}</td>
               </tr>
             </tbody>
           </table>
@@ -140,11 +149,11 @@ function InvoiceContent() {
             <div className="w-1/2">
               <div className="flex justify-between py-2 border-b border-slate-200">
                 <span className="text-slate-500 font-semibold">Subtotal</span>
-                <span className="text-slate-800 font-bold">Rp 150.000</span>
+                <span className="text-slate-800 font-bold">Rp {regCost.toLocaleString("id-ID")}</span>
               </div>
               <div className="flex justify-between py-3 border-b-2 border-slate-800">
                 <span className="text-slate-800 font-black text-lg">Total</span>
-                <span className="text-blue-600 font-black text-xl">Rp 150.000</span>
+                <span className="text-blue-600 font-black text-xl">Rp {regCost.toLocaleString("id-ID")}</span>
               </div>
             </div>
           </div>

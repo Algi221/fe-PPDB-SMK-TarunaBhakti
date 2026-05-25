@@ -4,7 +4,7 @@ import React, { useEffect, useState } from "react";
 import { usePPDB } from "@/context/PPDBContext";
 import { useRouter, usePathname } from "next/navigation";
 import Link from "next/link";
-import { Sun, Moon, LogOut, LayoutDashboard, Users, Settings, Globe, Megaphone, GraduationCap, ChevronLeft, ChevronRight } from "lucide-react";
+import { Sun, Moon, LogOut, LayoutDashboard, Users, Settings, Globe, Megaphone, GraduationCap, ChevronLeft, ChevronRight, Palette, Layers } from "lucide-react";
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const { adminToken, adminUser, logoutAdmin, wsStatus } = usePPDB();
@@ -165,6 +165,32 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           </Link>
 
           <Link
+            href="/dashboard/landing-page"
+            className={`flex items-center ${isCollapsed ? "justify-center px-2 py-3" : "gap-3 px-4 py-3"} rounded-2xl text-xs font-bold uppercase tracking-wider transition-all border ${
+              pathname === "/dashboard/landing-page"
+                ? "bg-blue-50/70 dark:bg-blue-950/40 border-blue-100/80 dark:border-blue-900/40 text-blue-600 dark:text-blue-400 font-extrabold"
+                : "border-transparent text-slate-500 dark:text-slate-400 hover:text-blue-500 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-slate-800/60"
+            }`}
+            title={isCollapsed ? "Kelola Landing & Form" : undefined}
+          >
+            <Palette size={18} className="shrink-0" />
+            {!isCollapsed && <span className="animate-in fade-in duration-300 text-left">Kelola Landing</span>}
+          </Link>
+
+          <Link
+            href="/dashboard/pembagian-kelas"
+            className={`flex items-center ${isCollapsed ? "justify-center px-2 py-3" : "gap-3 px-4 py-3"} rounded-2xl text-xs font-bold uppercase tracking-wider transition-all border ${
+              pathname === "/dashboard/pembagian-kelas"
+                ? "bg-blue-50/70 dark:bg-blue-950/40 border-blue-100/80 dark:border-blue-900/40 text-blue-600 dark:text-blue-400 font-extrabold"
+                : "border-transparent text-slate-500 dark:text-slate-400 hover:text-blue-500 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-slate-800/60"
+            }`}
+            title={isCollapsed ? "Pembagian Kelas" : undefined}
+          >
+            <Layers size={18} className="shrink-0" />
+            {!isCollapsed && <span className="animate-in fade-in duration-300 text-left">Pembagian Kelas</span>}
+          </Link>
+
+          <Link
             href="/dashboard/settings"
             className={`flex items-center ${isCollapsed ? "justify-center px-2 py-3" : "gap-3 px-4 py-3"} rounded-2xl text-xs font-bold uppercase tracking-wider transition-all border ${
               pathname === "/dashboard/settings"
@@ -218,6 +244,10 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               ? "Daftar Siswa Aktif"
               : pathname === "/dashboard/informasi"
               ? "Kelola Informasi & Pengumuman"
+              : pathname === "/dashboard/landing-page"
+              ? "Kelola Landing & Form"
+              : pathname === "/dashboard/pembagian-kelas"
+              ? "Manajemen Pembagian Kelas"
               : "Konfigurasi & Simulasi"}
           </h1>
 

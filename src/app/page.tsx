@@ -58,6 +58,77 @@ export default function Home() {
   const [loadingInformasi, setLoadingInformasi] = useState(true);
   const [selectedNews, setSelectedNews] = useState<InformasiItem | null>(null);
 
+  // Dynamic Landing Page Config States
+  const [heroTitle, setHeroTitle] = useState("Penerimaan Siswa Baru");
+  const [heroTitleSub, setHeroTitleSub] = useState("Portal PPDB SMK Taruna Bhakti");
+  const [heroSubtitle, setHeroSubtitle] = useState("Mulai langkah awal wujudkan masa depan cemerlang di bidang teknologi informasi. Proses pendaftaran online yang mudah, transparan, dan terintegrasi penuh.");
+  const [phone, setPhone] = useState("(021) 8740756");
+  const [email, setEmail] = useState("info@smktarunabhakti.sch.id");
+  const [address, setAddress] = useState("Jl. Pekapuran Kel. Curug Kec. Cimanggis, Depok, Jawa Barat 16453");
+  const [schoolPeriod, setSchoolPeriod] = useState("2026-2027");
+  const [majors, setMajors] = useState([
+    {
+      code: "RPL",
+      title: "Rekayasa Perangkat Lunak",
+      icon: Cpu,
+      logo: "/jurusan/pplg.jpeg",
+      desc: "Belajar pemrograman web, aplikasi mobile, game development, cloud computing, serta kecerdasan buatan (AI) dengan teknologi mutakhir.",
+      color: "#0066ff",
+      careers: "Software Engineer, Web Developer, Mobile Developer, Game Designer, AI Specialist",
+      facilities: "Lab iMac Core-i9, Smart Classroom, AWS Cloud Academy, Google Developer Partner Studio"
+    },
+    {
+      code: "TJKT",
+      title: "Teknik Jaringan Komputer & Telekomunikasi",
+      icon: Layers,
+      logo: "/jurusan/tjkt.jpeg",
+      desc: "Fokus pada perancangan jaringan, administrasi server Linux & Windows, keamanan cyber, infrastruktur cloud, dan sertifikasi CISCO.",
+      color: "#0ea5e9",
+      careers: "Network Engineer, Cloud Administrator, Cybersecurity Analyst, System Administrator",
+      facilities: "CISCO Networking Academy Lab, Mikrotik Academy Lab, Cyber Security Operations Center"
+    },
+    {
+      code: "DKV",
+      title: "Desain Komunikasi Visual",
+      icon: BookOpen,
+      logo: "/jurusan/dkv.jpeg",
+      desc: "Ekspresikan kreativitas lewat UI/UX design, desain grafis, ilustrasi digital, videografi, fotografi komersil, serta branding korporat.",
+      color: "#6366f1",
+      careers: "UI/UX Designer, Graphic Designer, Illustrator, Creative Director, Brand Specialist",
+      facilities: "Wacom Creative Studio, Photo & Video Lighting Lab, Digital Illustration Studio"
+    },
+    {
+      code: "BC",
+      title: "Broadcasting & Perfilman",
+      icon: Video,
+      logo: "/jurusan/bc.jpeg",
+      desc: "Pelajari dunia penyiaran televisi, podcasting, penulisan naskah, penyutradaraan film, tata kamera, serta editing video profesional.",
+      color: "#f59e0b",
+      careers: "Video Editor, Cameraman, Director, Scriptwriter, Podcast Producer, Content Creator",
+      facilities: "Green Screen Studio, Professional TV Control Room, Podcast Soundproof Studio"
+    },
+    {
+      code: "ANM",
+      title: "Animasi",
+      icon: Palette,
+      logo: "/jurusan/animasijpeg.jpeg",
+      desc: "Kuasai seni pemodelan 2D/3D, karakter rigging, rendering, digital sculpting, storyboard, serta visual effects (VFX) standar industri perfilman.",
+      color: "#ec4899",
+      careers: "3D Animator, 2D Animator, 3D Modeler, Storyboard Artist, VFX Compositor, Character Designer",
+      facilities: "iMac Render Farm Studio, Wacom Cintiq Digital Drawing Lab, Motion Capture Lab, Sound Recording Room"
+    },
+    {
+      code: "TE",
+      title: "Teknik Elektronika",
+      icon: Cpu,
+      logo: "/jurusan/te.jpeg",
+      desc: "Pelajari teknologi mikroprosesor, Internet of Things (IoT), robotika cerdas, automasi industri, dan smart home system.",
+      color: "#10b981",
+      careers: "IoT Engineer, Robotics Technician, Automation Programmer, Hardware Specialist",
+      facilities: "Robotics Design Lab, IoT Smart-Home Prototype Sandbox, Microcontroller Lab"
+    }
+  ]);
+
   const formatDate = (dateString: string | null | undefined) => {
     if (!dateString) return "";
     try {
@@ -125,6 +196,51 @@ export default function Home() {
       document.documentElement.classList.add('dark');
       setIsDark(true);
     }
+
+    const savedTitle = localStorage.getItem('ppdb_hero_title');
+    if (savedTitle) setHeroTitle(savedTitle);
+
+    const savedTitleSub = localStorage.getItem('ppdb_hero_title_sub');
+    if (savedTitleSub) setHeroTitleSub(savedTitleSub);
+
+    const savedSubtitle = localStorage.getItem('ppdb_hero_subtitle');
+    if (savedSubtitle) setHeroSubtitle(savedSubtitle);
+
+    const savedPhone = localStorage.getItem('ppdb_phone');
+    if (savedPhone) setPhone(savedPhone);
+
+    const savedEmail = localStorage.getItem('ppdb_email');
+    if (savedEmail) setEmail(savedEmail);
+
+    const savedAddress = localStorage.getItem('ppdb_address');
+    if (savedAddress) setAddress(savedAddress);
+
+    const savedPeriod = localStorage.getItem('ppdb_school_period');
+    if (savedPeriod) setSchoolPeriod(savedPeriod);
+
+    const savedMajors = localStorage.getItem('ppdb_majors_config');
+    if (savedMajors) {
+      try {
+        const parsed = JSON.parse(savedMajors);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          const iconMap: Record<string, any> = {
+            RPL: Cpu,
+            TJKT: Layers,
+            DKV: BookOpen,
+            BC: Video,
+            ANM: Palette,
+            TE: Cpu
+          };
+          const mapped = parsed.map((m: any) => ({
+            ...m,
+            icon: iconMap[m.code] || Cpu
+          }));
+          setMajors(mapped);
+        }
+      } catch (e) {
+        console.log("Failed to load dynamic majors configuration:", e);
+      }
+    }
   }, []);
 
   const toggleDark = () => {
@@ -171,69 +287,7 @@ export default function Home() {
     };
   }, []);
 
-  // Majors list for SMK Taruna Bhakti
-  const majors = [
-    {
-      code: "RPL",
-      title: "Rekayasa Perangkat Lunak",
-      icon: Cpu,
-      logo: "/jurusan/pplg.jpeg",
-      desc: "Belajar pemrograman web, aplikasi mobile, game development, cloud computing, serta kecerdasan buatan (AI) dengan teknologi mutakhir.",
-      color: "#0066ff",
-      careers: "Software Engineer, Web Developer, Mobile Developer, Game Designer, AI Specialist",
-      facilities: "Lab iMac Core-i9, Smart Classroom, AWS Cloud Academy, Google Developer Partner Studio"
-    },
-    {
-      code: "TJKT",
-      title: "Teknik Jaringan Komputer & Telekomunikasi",
-      icon: Layers,
-      logo: "/jurusan/tjkt.jpeg",
-      desc: "Fokus pada perancangan jaringan, administrasi server Linux & Windows, keamanan cyber, infrastruktur cloud, dan sertifikasi CISCO.",
-      color: "#0ea5e9",
-      careers: "Network Engineer, Cloud Administrator, Cybersecurity Analyst, System Administrator",
-      facilities: "CISCO Networking Academy Lab, Mikrotik Academy Lab, Cyber Security Operations Center"
-    },
-    {
-      code: "DKV",
-      title: "Desain Komunikasi Visual",
-      icon: BookOpen,
-      logo: "/jurusan/dkv.jpeg",
-      desc: "Ekspresikan kreativitas lewat UI/UX design, desain grafis, ilustrasi digital, videografi, fotografi komersil, serta branding korporat.",
-      color: "#6366f1",
-      careers: "UI/UX Designer, Graphic Designer, Illustrator, Creative Director, Brand Specialist",
-      facilities: "Wacom Creative Studio, Photo & Video Lighting Lab, Digital Illustration Studio"
-    },
-    {
-      code: "BC",
-      title: "Broadcasting & Perfilman",
-      icon: Video,
-      logo: "/jurusan/bc.jpeg",
-      desc: "Pelajari dunia penyiaran televisi, podcasting, penulisan naskah, penyutradaraan film, tata kamera, serta editing video profesional.",
-      color: "#f59e0b",
-      careers: "Video Editor, Cameraman, Director, Scriptwriter, Podcast Producer, Content Creator",
-      facilities: "Green Screen Studio, Professional TV Control Room, Podcast Soundproof Studio"
-    },
-    {
-      code: "AN",
-      title: "Animasi",
-      icon: Palette,
-      logo: "/jurusan/animasijpeg.jpeg",
-      desc: "Kuasai seni pemodelan 2D/3D, karakter rigging, rendering, digital sculpting, storyboard, serta visual effects (VFX) standar industri perfilman.",
-      color: "#ec4899",
-      careers: "3D Animator, 2D Animator, 3D Modeler, Storyboard Artist, VFX Compositor, Character Designer",
-      facilities: "iMac Render Farm Studio, Wacom Cintiq Digital Drawing Lab, Motion Capture Lab, Sound Recording Room"
-    },
-    {
-      code: "TE",
-      title: "Teknik Elektronika",
-      icon: Cpu,
-      logo: "/jurusan/te.jpeg",
-      desc: "Pelajari teknologi mikroprosesor, Internet of Things (IoT), robotika cerdas, automasi industri, dan smart home system.",
-      color: "#10b981",
-      careers: "IoT Engineer, Robotics Technician, Automation Programmer, Hardware Specialist",
-      facilities: "Robotics Design Lab, IoT Smart-Home Prototype Sandbox, Microcontroller Lab"
-    }
-  ];
+  // majors is now a dynamic state variable loaded from localStorage on mount.
 
   return (
     <div className="relative min-h-screen flex flex-col overflow-x-hidden">
@@ -420,13 +474,12 @@ export default function Home() {
           </div>
 
           <h1 className="hero-title relative z-10">
-            Penerimaan Siswa Baru <br />
-            <span>Portal PPDB SMK Taruna Bhakti</span>
+            {heroTitle} <br />
+            <span>{heroTitleSub}</span>
           </h1>
 
           <p className="hero-subtitle relative z-10">
-            Mulai langkah awal wujudkan masa depan cemerlang di bidang teknologi informasi.
-            Proses pendaftaran online yang mudah, transparan, dan terintegrasi penuh.
+            {heroSubtitle}
           </p>
 
           <div className="hero-action">
@@ -465,7 +518,7 @@ export default function Home() {
       <section id="alur" className="py-24 bg-slate-50 dark:bg-slate-900/60 relative z-10 border-y border-slate-200/50 dark:border-slate-800">
         <div className="max-w-5xl mx-auto px-6">
           <div className="text-center mb-20">
-            <span className="text-blue-600 dark:text-blue-400 font-bold text-xs uppercase tracking-wider bg-blue-50 dark:bg-blue-950/50 border border-blue-100/50 dark:border-blue-900/30 px-3.5 py-1.5 rounded-full">Proses Mudah &amp; Transparan · TP. 2026/2027</span>
+            <span className="text-blue-600 dark:text-blue-400 font-bold text-xs uppercase tracking-wider bg-blue-50 dark:bg-blue-950/50 border border-blue-100/50 dark:border-blue-900/30 px-3.5 py-1.5 rounded-full">Proses Mudah &amp; Transparan · TP. {schoolPeriod}</span>
             <h2 className="text-3xl md:text-5xl font-black text-slate-800 dark:text-white mt-4 mb-4 drop-shadow-sm">Alur Pendaftaran PPDB</h2>
             <p className="text-slate-500 dark:text-slate-400 max-w-xl mx-auto text-sm md:text-base leading-relaxed font-medium">
               Ikuti 6 langkah sederhana berikut untuk menjadi bagian dari SMK Taruna Bhakti Depok.
@@ -728,7 +781,7 @@ export default function Home() {
             <div className="space-y-4">
               <h4 className="text-xs font-black uppercase tracking-wider text-slate-800 dark:text-white">Link Terkait</h4>
               <ul className="space-y-2 text-xs font-semibold">
-                <li><a href="#" className="hover:text-blue-600 dark:hover:text-sky-400 transition-colors">Brosur PPDB 2026</a></li>
+                <li><a href="#" className="hover:text-blue-600 dark:hover:text-sky-400 transition-colors">Brosur PPDB {schoolPeriod.split("-")[0]}</a></li>
                 <li><a href="#" className="hover:text-blue-600 dark:hover:text-sky-400 transition-colors">Syarat Pendaftaran</a></li>
                 <li><a href="#" className="hover:text-blue-600 dark:hover:text-sky-400 transition-colors">Simulasi Mock Payment</a></li>
                 <li><a href="#" className="hover:text-blue-600 dark:hover:text-sky-400 transition-colors">Dasbor Admin Verifikator</a></li>
@@ -739,11 +792,11 @@ export default function Home() {
             <div className="space-y-4">
               <h4 className="text-xs font-black uppercase tracking-wider text-slate-800 dark:text-white">Sekretariat PPDB</h4>
               <p className="text-xs leading-relaxed font-semibold">
-                Jl. Pekapuran Kel. Curug Kec. Cimanggis, Depok, Jawa Barat 16453
+                {address}
               </p>
               <div className="text-xs font-bold space-y-1">
-                <div>Telp: (021) 8740756</div>
-                <div>Email: info@smktarunabhakti.sch.id</div>
+                <div>Telp: {phone}</div>
+                <div>Email: {email}</div>
               </div>
             </div>
           </div>

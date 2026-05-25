@@ -488,9 +488,14 @@ export default function ActiveStudentsDirectory() {
                                 <td className="py-3.5 px-4 font-mono">{student.nisn}</td>
                                 <td className="py-3.5 px-4 uppercase">{student.sekolah_asal || student.sekolahAsal || "-"}</td>
                                 <td className="py-3.5 px-4">
-                                  <div className="flex flex-col gap-0.5">
+                                  <div className="flex flex-col gap-0.5 text-left">
                                     <span className="text-blue-600 dark:text-blue-400 font-extrabold uppercase">{student.jurusan_1 || student.jurusan1}</span>
-                                    <span className="text-[10px] text-slate-400 dark:text-slate-500 uppercase">{student.jurusan_2 || student.jurusan2 || "-"}</span>
+                                    <span className="text-[10px] text-slate-400 dark:text-slate-550 uppercase">{student.jurusan_2 || student.jurusan2 || "-"}</span>
+                                    {(student.diterima_kelas || student.diterimaKelas) && (
+                                      <span className="inline-flex items-center w-fit px-2 py-0.5 rounded-md bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-250 dark:border-emerald-900/40 text-emerald-600 dark:text-emerald-400 text-[8px] font-black uppercase tracking-wider mt-1">
+                                        Kelas: {student.diterima_kelas || student.diterimaKelas}
+                                      </span>
+                                    )}
                                   </div>
                                 </td>
                                 <td className="py-3.5 px-4 text-[10px] text-slate-400 dark:text-slate-550 font-bold uppercase tracking-wider">
