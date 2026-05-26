@@ -131,6 +131,10 @@ interface Applicant {
   berkas_akta?: string;
   berkas_ijazah?: string;
   berkas_foto?: string;
+  diterima_kelas?: string | null;
+  diterimaKelas?: string | null;
+  diterima_tanggal?: string | null;
+  diterimaTanggal?: string | null;
   [key: string]: any;
 }
 
@@ -172,6 +176,41 @@ interface EditFormState {
 
 type SyncStatus = "IDLE" | "SYNCING" | "SUCCESS";
 
+// ============================================================
+// Binary Search Tree (BST) Implementation
+// Search fields: inisial nama, jurusan, asal sekolah, kelas
+// ============================================================
+interface BSTNode {
+  key: string;       // composite sort key
+  id: number;
+  left: BSTNode | null;
+  right: BSTNode | null;
+}
+
+function bstInsert(root: BSTNode | null, node: BSTNode): BSTNode {
+  if (!root) return node;
+  if (node.key < root.key) root.left = bstInsert(root.left, node);
+  else root.right = bstInsert(root.right, node);
+  return root;
+}
+
+// In-order traversal collecting ids whose key contains the query prefix
+function bstSearch(root: BSTNode | null, query: string, results: number[]): void {
+  if (!root) return;
+  bstSearch(root.left, query, results);
+  if (root.key.includes(query)) results.push(root.id);
+  bstSearch(root.right, query, results);
+}
+
+// Build composite key: "<initial>|<jurusan>|<sekolah>|<kelas>"
+function buildKey(a: Applicant): string {
+  const initial = (a.nama || "").trim().charAt(0).toLowerCase();
+  const jurusan = (a.jurusan_1 || a.jurusan1 || "").toLowerCase();
+  const sekolah = (a.sekolah_asal || a.sekolahAsal || "").toLowerCase();
+  const kelas   = (a.diterima_kelas || a.diterimaKelas || "").toLowerCase();
+  return `${initial}|${jurusan}|${sekolah}|${kelas}`;
+}
+
 export default function ApplicantsDirectory() {
   const { applicants, verifyApplicant, rejectApplicant, deleteApplicant, updateApplicant } = usePPDB();
   const [searchTerm, setSearchTerm] = useState<string>("");
@@ -182,14 +221,43 @@ export default function ApplicantsDirectory() {
 
   useEffect(() => {
     const savedClasses = localStorage.getItem("ppdb_classes_config");
+    let baseClasses: any[] = [];
     if (savedClasses) {
       try {
-        setClasses(JSON.parse(savedClasses));
+        baseClasses = JSON.parse(savedClasses);
       } catch (e) {
         console.error("Gagal memuat konfigurasi kelas:", e);
       }
     }
-  }, []);
+
+    // Extract unique classes dynamically assigned to applicants
+    const dynamicClassesSet = new Set<string>();
+    applicants.forEach(a => {
+      const assigned = a.diterima_kelas || a.diterimaKelas;
+      if (assigned) dynamicClassesSet.add(assigned);
+    });
+
+    // Pre-populate with standard SMK classes so it's never empty
+    const standardClasses = [
+      "X RPL 1", "X RPL 2", "X RPL 3",
+      "X TJKT 1", "X TJKT 2", "X TJKT 3",
+      "X DKV 1", "X DKV 2", "X DKV 3",
+      "X BC 1", "X BC 2",
+      "X TE 1", "X TE 2",
+      "X ANM 1", "X ANM 2"
+    ];
+    standardClasses.forEach(c => dynamicClassesSet.add(c));
+    
+    // Merge localStorage configs and dynamic classes
+    baseClasses.forEach(c => dynamicClassesSet.add(c.name));
+
+    const mergedClasses = Array.from(dynamicClassesSet)
+      .filter(name => name && name.trim().length > 2) // Filter out garbage like "X"
+      .sort()
+      .map(name => ({ name }));
+
+    setClasses(mergedClasses);
+  }, [applicants]);
 
   const [selectedApplicant, setSelectedApplicant] = useState<Applicant | null>(null);
   const [activeTab, setActiveTab] = useState<string>("biodata");
@@ -273,12 +341,29 @@ export default function ApplicantsDirectory() {
     "Animasi"
   ];
 
-  // Filtering Logic
+  // ── BST-based search ────────────────────────────────────────
+  // Build BST from all applicants keyed by composite field
+  const bstRoot = React.useMemo(() => {
+    let root: BSTNode | null = null;
+    applicants.forEach((a: Applicant) => {
+      root = bstInsert(root, { key: buildKey(a), id: a.id, left: null, right: null });
+    });
+    return root;
+  }, [applicants]);
+
+  // IDs that match the BST query (empty query → all IDs)
+  const bstMatchedIds = React.useMemo(() => {
+    const q = searchTerm.trim().toLowerCase();
+    if (!q) return null; // null means "skip BST filter — show all"
+    const ids: number[] = [];
+    bstSearch(bstRoot, q, ids);
+    return new Set(ids);
+  }, [bstRoot, searchTerm]);
+
+  // Filtering Logic — BST gates the search, dropdowns gate status/major/class
   const filteredApplicants = applicants.filter((a: Applicant) => {
-    const matchesSearch =
-      a.nama?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      a.nisn?.includes(searchTerm) ||
-      (a.sekolah_asal || a.sekolahAsal)?.toLowerCase().includes(searchTerm.toLowerCase());
+    // BST search: match against inisial nama, jurusan, asal sekolah, kelas
+    const matchesSearch = bstMatchedIds === null || bstMatchedIds.has(a.id);
 
     const matchesStatus =
       statusFilter === "ALL" ||
@@ -453,7 +538,7 @@ export default function ApplicantsDirectory() {
             type="text"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            placeholder="Cari pendaftar, NISN, atau sekolah asal..."
+            placeholder="Search: inisial nama, jurusan, sekolah, kelas..."
             className="w-full pl-11 pr-4 py-3 bg-slate-50 dark:bg-slate-950/40 border border-slate-200 dark:border-white/5 rounded-2xl text-slate-850 dark:text-white placeholder-slate-400 dark:placeholder-slate-655 text-sm focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 dark:focus:ring-blue-500/15 transition-all font-semibold"
           />
         </div>
@@ -500,7 +585,7 @@ export default function ApplicantsDirectory() {
               onChange={(e) => setClassFilter(e.target.value)}
               className="bg-transparent text-slate-600 dark:text-slate-350 text-xs focus:outline-none transition-all font-extrabold uppercase tracking-wide cursor-pointer max-w-[160px]"
             >
-              <option value="ALL">Semua Kelas</option>
+              <option value="ALL">Semua Rombel</option>
               <option value="UNASSIGNED">Belum Dapat Kelas</option>
               {classes.map((c, idx) => (
                 <option key={idx} value={c.name}>
@@ -580,9 +665,9 @@ export default function ApplicantsDirectory() {
               <thead>
                 <tr className="border-b border-slate-100 dark:border-white/5 text-slate-400 dark:text-slate-500 font-black text-[9px] uppercase tracking-widest bg-slate-50/50 dark:bg-slate-950/15">
                   <th className="py-4 px-6 pl-8">Nama Calon Siswa</th>
-                  <th className="py-4 px-6">NISN / NIK</th>
                   <th className="py-4 px-6">Asal Sekolah</th>
                   <th className="py-4 px-6">Pilihan Jurusan Utama</th>
+                  <th className="py-4 px-6 text-center">Kelas</th>
                   <th className="py-4 px-6 text-center">Status</th>
                   <th className="py-4 px-6 text-right pr-8">Aksi Administrasi</th>
                 </tr>
@@ -600,15 +685,22 @@ export default function ApplicantsDirectory() {
                         Daftar: {new Date(a.tgl_daftar || a.createdAt || Date.now()).toLocaleDateString("id-ID")}
                       </span>
                     </td>
-                    <td className="py-4 px-6">
-                      <div className="text-slate-600 dark:text-slate-300 font-mono text-[11px]">{a.nisn}</div>
-                      <span className="text-[9px] text-slate-400 dark:text-slate-500 font-mono font-semibold tracking-wide">{a.nik || "NIK Kosong"}</span>
-                    </td>
                     <td className="py-4 px-6 text-slate-600 dark:text-slate-400 font-semibold">{a.sekolah_asal || a.sekolahAsal}</td>
                     <td className="py-4 px-6">
                       <span className="px-2.5 py-1 rounded-full bg-blue-50/70 dark:bg-blue-950/40 text-blue-550 dark:text-blue-400 border border-blue-100/80 dark:border-blue-900/40 font-extrabold text-[9px] uppercase tracking-wide">
                         {a.jurusan_1 || a.jurusan1}
                       </span>
+                    </td>
+                    <td className="py-4 px-6 text-center">
+                      {(a.diterima_kelas || a.diterimaKelas) ? (
+                        <span className="inline-flex px-2.5 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-900/40 text-emerald-600 dark:text-emerald-400 text-[9px] font-black uppercase tracking-wider">
+                          {a.diterima_kelas || a.diterimaKelas}
+                        </span>
+                      ) : (
+                        <span className="inline-flex px-2.5 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800/60 border border-slate-200 dark:border-white/5 text-slate-400 dark:text-slate-500 text-[9px] font-bold uppercase tracking-wider">
+                          —
+                        </span>
+                      )}
                     </td>
                     <td className="py-4 px-6 text-center">
                       <span
@@ -704,11 +796,10 @@ export default function ApplicantsDirectory() {
                   <th className="py-2 px-2 text-center w-12 border-r border-slate-200 dark:border-slate-800">#</th>
                   <th className="py-2 px-3 border-r border-slate-200 dark:border-slate-800 w-8 flex-none text-center">A</th>
                   <th className="py-2 px-4 border-r border-slate-200 dark:border-slate-800 w-[220px]">B (NAMA_LENGKAP)</th>
-                  <th className="py-2 px-4 border-r border-slate-200 dark:border-slate-800 w-[120px] text-center">C (NISN)</th>
-                  <th className="py-2 px-4 border-r border-slate-200 dark:border-slate-800 w-[200px]">D (ASAL_SEKOLAH)</th>
-                  <th className="py-2 px-4 border-r border-slate-200 dark:border-slate-800 w-[180px]">E (JURUSAN_UTAMA)</th>
-                  <th className="py-2 px-4 border-r border-slate-200 dark:border-slate-800 w-[130px] text-center">F (NO_WA)</th>
-                  <th className="py-2 px-4 w-[120px] text-center">G (STATUS)</th>
+                  <th className="py-2 px-4 border-r border-slate-200 dark:border-slate-800 w-[200px]">C (ASAL_SEKOLAH)</th>
+                  <th className="py-2 px-4 border-r border-slate-200 dark:border-slate-800 w-[180px]">D (JURUSAN_UTAMA)</th>
+                  <th className="py-2 px-4 border-r border-slate-200 dark:border-slate-800 w-[130px] text-center">E (NO_WA)</th>
+                  <th className="py-2 px-4 w-[120px] text-center">F (STATUS)</th>
                 </tr>
               </thead>
               <tbody>
@@ -741,16 +832,7 @@ export default function ApplicantsDirectory() {
                       {a.nama}
                     </td>
 
-                    {/* Column C: NISN */}
-                    <td
-                      onClick={() => setActiveCell({ row: rowIdx, col: 2 })}
-                      className={`py-2.5 px-4 text-center border-r border-slate-200 dark:border-slate-800 font-mono text-slate-655 dark:text-slate-300 text-[11px] ${activeCell?.row === rowIdx && activeCell?.col === 2 ? "bg-blue-500/10 outline outline-2 outline-blue-500" : ""
-                        }`}
-                    >
-                      {a.nisn}
-                    </td>
-
-                    {/* Column D: Sekolah */}
+                    {/* Column C: Sekolah */}
                     <td
                       onClick={() => setActiveCell({ row: rowIdx, col: 3 })}
                       className={`py-2.5 px-4 truncate border-r border-slate-200 dark:border-slate-800 text-slate-500 dark:text-slate-450 font-semibold ${activeCell?.row === rowIdx && activeCell?.col === 3 ? "bg-blue-500/10 outline outline-2 outline-blue-500" : ""
@@ -759,7 +841,7 @@ export default function ApplicantsDirectory() {
                       {a.sekolah_asal || a.sekolahAsal}
                     </td>
 
-                    {/* Column E: Jurusan */}
+                    {/* Column D: Jurusan */}
                     <td
                       onClick={() => setActiveCell({ row: rowIdx, col: 4 })}
                       className={`py-2.5 px-4 truncate border-r border-slate-200 dark:border-slate-800 text-blue-600 dark:text-blue-400 font-bold uppercase tracking-wider text-[10px] ${activeCell?.row === rowIdx && activeCell?.col === 4 ? "bg-blue-500/10 outline outline-2 outline-blue-500" : ""
@@ -768,7 +850,7 @@ export default function ApplicantsDirectory() {
                       {a.jurusan_1 || a.jurusan1}
                     </td>
 
-                    {/* Column F: WA */}
+                    {/* Column E: WA */}
                     <td
                       onClick={() => setActiveCell({ row: rowIdx, col: 5 })}
                       className={`py-2.5 px-4 text-center border-r border-slate-200 dark:border-slate-800 font-mono text-slate-655 dark:text-slate-300 text-[11px] ${activeCell?.row === rowIdx && activeCell?.col === 5 ? "bg-blue-500/10 outline outline-2 outline-blue-500" : ""
@@ -777,7 +859,7 @@ export default function ApplicantsDirectory() {
                       {a.whatsapp || "-"}
                     </td>
 
-                    {/* Column G: Status */}
+                    {/* Column F: Status */}
                     <td
                       onClick={() => setActiveCell({ row: rowIdx, col: 6 })}
                       className={`py-2.5 px-4 text-center text-[10px] font-extrabold uppercase tracking-widest ${a.status === "Approved"
@@ -795,7 +877,7 @@ export default function ApplicantsDirectory() {
 
                 {filteredApplicants.length === 0 && (
                   <tr>
-                    <td colSpan={8} className="text-center py-12 font-mono text-slate-450 italic uppercase bg-slate-50/50 dark:bg-slate-950/20">
+                    <td colSpan={7} className="text-center py-12 font-mono text-slate-450 italic uppercase bg-slate-50/50 dark:bg-slate-950/20">
                       Zero lines of data found. Filter criteria matches nothing.
                     </td>
                   </tr>
@@ -854,53 +936,65 @@ export default function ApplicantsDirectory() {
           <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-white/10 rounded-3xl w-full max-w-4xl max-h-[85vh] flex flex-col shadow-[0_30px_70px_rgba(0,0,0,0.1)] dark:shadow-[0_30px_70px_rgba(0,0,0,0.5)] overflow-hidden animate-in zoom-in-95 transition-colors duration-300">
 
             {/* Modal Header */}
-            <div className="p-6 border-b border-slate-100 dark:border-white/5 flex items-center justify-between shrink-0 bg-slate-50/50 dark:bg-slate-950/15">
-              <div>
-                <h3 className="text-lg font-black text-slate-850 dark:text-white flex items-center gap-3 uppercase tracking-wide">
-                  <span>{selectedApplicant.nama}</span>
-                  <span
-                    className={`px-2.5 py-0.5 rounded-full text-[9px] font-extrabold border uppercase tracking-wider ${selectedApplicant.status === "Approved"
-                        ? "bg-emerald-50 dark:bg-emerald-950/60 border-emerald-250 dark:border-emerald-900 text-emerald-600 dark:text-emerald-400"
-                        : selectedApplicant.status === "Rejected"
-                          ? "bg-rose-50 dark:bg-rose-950/60 border-rose-250 dark:border-rose-900 text-rose-600 dark:text-rose-400"
-                          : "bg-amber-50 dark:bg-amber-950/60 border-amber-250 dark:border-amber-900 text-amber-600 dark:text-amber-400"
-                      }`}
-                  >
-                    {selectedApplicant.status === "Approved" ? "Terverifikasi" : selectedApplicant.status === "Rejected" ? "Ditolak" : "Pending"}
-                  </span>
-                </h3>
-                <p className="text-xs text-slate-400 dark:text-slate-550 font-bold uppercase tracking-wider mt-1">NISN: {selectedApplicant.nisn} · Asal: {selectedApplicant.sekolah_asal || selectedApplicant.sekolahAsal}</p>
+            <div className="p-6 md:p-8 border-b border-slate-100 dark:border-white/5 flex items-start justify-between shrink-0 bg-white dark:bg-slate-900 relative">
+              <div className="absolute inset-0 bg-gradient-to-r from-blue-50/50 to-transparent dark:from-blue-900/10 dark:to-transparent pointer-events-none"></div>
+              
+              <div className="flex items-center gap-5 relative z-10">
+                <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-blue-600 to-indigo-500 flex items-center justify-center text-white text-2xl font-black shadow-lg shadow-blue-500/20 shrink-0">
+                  {selectedApplicant.nama.substring(0, 1).toUpperCase()}
+                </div>
+                <div>
+                  <h3 className="text-xl md:text-2xl font-black text-slate-850 dark:text-white flex items-center gap-3 uppercase tracking-wide">
+                    <span>{selectedApplicant.nama}</span>
+                    <span
+                      className={`px-3 py-1 rounded-full text-[9px] font-extrabold border uppercase tracking-widest ${selectedApplicant.status === "Approved"
+                          ? "bg-emerald-50 dark:bg-emerald-950/60 border-emerald-250 dark:border-emerald-900 text-emerald-600 dark:text-emerald-400"
+                          : selectedApplicant.status === "Rejected"
+                            ? "bg-rose-50 dark:bg-rose-950/60 border-rose-250 dark:border-rose-900 text-rose-600 dark:text-rose-400"
+                            : "bg-amber-50 dark:bg-amber-950/60 border-amber-250 dark:border-amber-900 text-amber-600 dark:text-amber-400"
+                        }`}
+                    >
+                      {selectedApplicant.status === "Approved" ? "Terverifikasi" : selectedApplicant.status === "Rejected" ? "Ditolak" : "Pending"}
+                    </span>
+                  </h3>
+                  <p className="text-xs text-slate-400 dark:text-slate-500 font-bold uppercase tracking-wider mt-1.5 flex items-center gap-2">
+                    <span className="text-blue-500">NISN:</span> {selectedApplicant.nisn} 
+                    <span className="text-slate-300 dark:text-slate-700">•</span> 
+                    <span className="text-blue-500">Asal:</span> {selectedApplicant.sekolah_asal || selectedApplicant.sekolahAsal}
+                  </p>
+                </div>
               </div>
               <button
                 onClick={() => setSelectedApplicant(null)}
-                className="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 dark:bg-white/5 dark:hover:bg-white/10 border border-slate-200 dark:border-white/5 text-slate-500 dark:text-slate-400 hover:text-slate-850 dark:hover:text-white flex items-center justify-center transition-all font-bold"
+                className="w-10 h-10 rounded-full bg-slate-100 hover:bg-slate-200 dark:bg-white/5 dark:hover:bg-white/10 border border-slate-200 dark:border-white/5 text-slate-500 dark:text-slate-400 hover:text-rose-500 dark:hover:text-rose-400 flex items-center justify-center transition-all font-bold relative z-10 shrink-0"
               >
                 ✕
               </button>
             </div>
 
             {/* Modal Tabs Navigation */}
-            <div className="flex border-b border-slate-100 dark:border-white/5 bg-slate-50/30 dark:bg-slate-950/10 px-6 overflow-x-auto shrink-0 scrollbar-none">
-              {[
-                { id: "biodata", label: "Bio Diri & Kontak" },
-                { id: "periodik", label: "Periodik & Kesehatan" },
-                { id: "bantuan", label: "Bantuan & Prestasi" },
-                { id: "orangtua", label: "Orang Tua / Wali" },
-                { id: "akademik", label: "Akademik & Jurusan" },
-                { id: "pernyataan", label: "Komitmen & Janji" },
-                { id: "berkas", label: "Dokumen Terlampir" }
-              ].map((t) => (
-                <button
-                  key={t.id}
-                  onClick={() => setActiveTab(t.id)}
-                  className={`px-4 py-3.5 text-xs font-black whitespace-nowrap transition-all border-b-2 uppercase tracking-wider ${activeTab === t.id
-                      ? "border-blue-500 text-blue-600 dark:text-white"
-                      : "border-transparent text-slate-455 dark:text-slate-450 hover:text-slate-800 dark:hover:text-white"
-                    }`}
-                >
-                  {t.label}
-                </button>
-              ))}
+            <div className="px-6 py-4 bg-slate-50/80 dark:bg-slate-950/40 border-b border-slate-100 dark:border-white/5 shrink-0">
+              <div className="flex flex-wrap bg-slate-200/50 dark:bg-slate-900/50 p-1.5 rounded-2xl gap-1 w-full border border-slate-200/50 dark:border-white/5">
+                {[
+                  { id: "biodata", label: "Biodata" },
+                  { id: "periodik", label: "Periodik" },
+                  { id: "bantuan", label: "Bantuan" },
+                  { id: "orangtua", label: "Orang Tua" },
+                  { id: "akademik", label: "Akademik" },
+                  { id: "pernyataan", label: "Pernyataan" }
+                ].map((t) => (
+                  <button
+                    key={t.id}
+                    onClick={() => setActiveTab(t.id)}
+                    className={`px-3 py-2.5 text-[10px] md:text-xs font-black transition-all rounded-xl uppercase tracking-wider flex-1 text-center min-w-[90px] whitespace-nowrap ${activeTab === t.id
+                        ? "bg-white dark:bg-slate-800 text-blue-600 dark:text-white shadow-sm border border-slate-200/50 dark:border-white/10"
+                        : "text-slate-500 dark:text-slate-450 hover:text-slate-800 dark:hover:text-white hover:bg-slate-200/50 dark:hover:bg-slate-800/50 border border-transparent"
+                      }`}
+                  >
+                    {t.label}
+                  </button>
+                ))}
+              </div>
             </div>
 
             {/* Modal Tab Content Viewport */}
@@ -908,25 +1002,55 @@ export default function ApplicantsDirectory() {
               {activeTab === "biodata" && (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                   <div>
-                    <h4 className="text-slate-800 dark:text-white font-black uppercase tracking-widest mb-4 border-b border-slate-100 dark:border-white/5 pb-2 text-[10px] flex items-center gap-1.5">
-                      <User size={12} className="text-blue-500" /> Identitas Diri
+                    <h4 className="text-slate-800 dark:text-white font-black uppercase tracking-widest mb-4 border-b border-slate-100 dark:border-white/5 pb-3 text-[10px] flex items-center gap-2">
+                      <div className="w-6 h-6 rounded-md bg-blue-50 dark:bg-blue-500/10 flex items-center justify-center text-blue-500">
+                        <User size={12} />
+                      </div>
+                      Identitas Diri
                     </h4>
-                    <div className="space-y-4">
-                      <div><span className="text-slate-400 dark:text-slate-550 block mb-0.5 font-bold uppercase text-[9px] tracking-wider">Nama Lengkap</span> <span className="text-slate-850 dark:text-white text-sm font-extrabold">{selectedApplicant.nama}</span></div>
-                      <div><span className="text-slate-400 dark:text-slate-550 block mb-0.5 font-bold uppercase text-[9px] tracking-wider">NISN / NIK</span> <span className="text-slate-800 dark:text-white font-mono font-extrabold">{selectedApplicant.nisn} / {selectedApplicant.nik || "-"}</span></div>
-                      <div><span className="text-slate-400 dark:text-slate-550 block mb-0.5 font-bold uppercase text-[9px] tracking-wider">Tempat, Tanggal Lahir</span> <span className="text-slate-800 dark:text-white font-extrabold">{selectedApplicant.tempat_lahir || selectedApplicant.tempatLahir}, {selectedApplicant.tgl_lahir || selectedApplicant.tglLahir}</span></div>
-                      <div><span className="text-slate-400 dark:text-slate-550 block mb-0.5 font-bold uppercase text-[9px] tracking-wider">Jenis Kelamin / Agama</span> <span className="text-slate-800 dark:text-white font-extrabold">{selectedApplicant.jenis_kelamin || selectedApplicant.jenisKelamin} / {selectedApplicant.agama}</span></div>
+                    <div className="flex flex-col gap-3">
+                      <div className="bg-slate-50 dark:bg-slate-800/30 rounded-xl p-3 border border-slate-100 dark:border-white/5 hover:border-blue-500/20 transition-colors">
+                        <span className="text-slate-400 dark:text-slate-550 block mb-1 font-bold uppercase text-[9px] tracking-wider">Nama Lengkap</span>
+                        <span className="text-slate-850 dark:text-white text-sm font-black">{selectedApplicant.nama}</span>
+                      </div>
+                      <div className="bg-slate-50 dark:bg-slate-800/30 rounded-xl p-3 border border-slate-100 dark:border-white/5 hover:border-blue-500/20 transition-colors">
+                        <span className="text-slate-400 dark:text-slate-550 block mb-1 font-bold uppercase text-[9px] tracking-wider">NISN / NIK</span>
+                        <span className="text-slate-800 dark:text-white font-mono font-bold text-xs">{selectedApplicant.nisn} / {selectedApplicant.nik || "-"}</span>
+                      </div>
+                      <div className="bg-slate-50 dark:bg-slate-800/30 rounded-xl p-3 border border-slate-100 dark:border-white/5 hover:border-blue-500/20 transition-colors">
+                        <span className="text-slate-400 dark:text-slate-550 block mb-1 font-bold uppercase text-[9px] tracking-wider">Tempat, Tanggal Lahir</span>
+                        <span className="text-slate-800 dark:text-white font-bold text-xs">{selectedApplicant.tempat_lahir || selectedApplicant.tempatLahir}, {selectedApplicant.tgl_lahir || selectedApplicant.tglLahir}</span>
+                      </div>
+                      <div className="bg-slate-50 dark:bg-slate-800/30 rounded-xl p-3 border border-slate-100 dark:border-white/5 hover:border-blue-500/20 transition-colors">
+                        <span className="text-slate-400 dark:text-slate-550 block mb-1 font-bold uppercase text-[9px] tracking-wider">Jenis Kelamin / Agama</span>
+                        <span className="text-slate-800 dark:text-white font-bold text-xs">{selectedApplicant.jenis_kelamin || selectedApplicant.jenisKelamin} / {selectedApplicant.agama}</span>
+                      </div>
                     </div>
                   </div>
                   <div>
-                    <h4 className="text-slate-800 dark:text-white font-black uppercase tracking-widest mb-4 border-b border-slate-100 dark:border-white/5 pb-2 text-[10px] flex items-center gap-1.5">
-                      <Info size={12} className="text-blue-500" /> Alamat & Kontak
+                    <h4 className="text-slate-800 dark:text-white font-black uppercase tracking-widest mb-4 border-b border-slate-100 dark:border-white/5 pb-3 text-[10px] flex items-center gap-2">
+                      <div className="w-6 h-6 rounded-md bg-blue-50 dark:bg-blue-500/10 flex items-center justify-center text-blue-500">
+                        <Info size={12} />
+                      </div>
+                      Alamat & Kontak
                     </h4>
-                    <div className="space-y-4">
-                      <div><span className="text-slate-400 dark:text-slate-550 block mb-0.5 font-bold uppercase text-[9px] tracking-wider">WhatsApp / Email</span> <span className="text-blue-600 dark:text-blue-400 text-sm font-mono font-extrabold">{selectedApplicant.whatsapp} / {selectedApplicant.email}</span></div>
-                      <div><span className="text-slate-400 dark:text-slate-550 block mb-0.5 font-bold uppercase text-[9px] tracking-wider">Alamat Tempat Tinggal</span> <span className="text-slate-800 dark:text-white font-extrabold">{selectedApplicant.alamat} (RT/RW {selectedApplicant.rt_rw || selectedApplicant.rtRw})</span></div>
-                      <div><span className="text-slate-400 dark:text-slate-550 block mb-0.5 font-bold uppercase text-[9px] tracking-wider">Kelurahan / Kecamatan</span> <span className="text-slate-800 dark:text-white font-extrabold">{selectedApplicant.kelurahan} / {selectedApplicant.kecamatan}</span></div>
-                      <div><span className="text-slate-400 dark:text-slate-555 block mb-0.5 font-bold uppercase text-[9px] tracking-wider">Tinggal Dengan / Transportasi</span> <span className="text-slate-800 dark:text-white font-extrabold">{selectedApplicant.tinggal_dengan || selectedApplicant.tinggalDengan} / {selectedApplicant.transportasi}</span></div>
+                    <div className="flex flex-col gap-3">
+                      <div className="bg-slate-50 dark:bg-slate-800/30 rounded-xl p-3 border border-slate-100 dark:border-white/5 hover:border-blue-500/20 transition-colors">
+                        <span className="text-slate-400 dark:text-slate-550 block mb-1 font-bold uppercase text-[9px] tracking-wider">WhatsApp / Email</span>
+                        <span className="text-blue-600 dark:text-blue-400 text-xs font-mono font-black">{selectedApplicant.whatsapp} / {selectedApplicant.email}</span>
+                      </div>
+                      <div className="bg-slate-50 dark:bg-slate-800/30 rounded-xl p-3 border border-slate-100 dark:border-white/5 hover:border-blue-500/20 transition-colors">
+                        <span className="text-slate-400 dark:text-slate-550 block mb-1 font-bold uppercase text-[9px] tracking-wider">Alamat Tempat Tinggal</span>
+                        <span className="text-slate-800 dark:text-white font-bold text-xs">{selectedApplicant.alamat} (RT/RW {selectedApplicant.rt_rw || selectedApplicant.rtRw})</span>
+                      </div>
+                      <div className="bg-slate-50 dark:bg-slate-800/30 rounded-xl p-3 border border-slate-100 dark:border-white/5 hover:border-blue-500/20 transition-colors">
+                        <span className="text-slate-400 dark:text-slate-550 block mb-1 font-bold uppercase text-[9px] tracking-wider">Kelurahan / Kecamatan</span>
+                        <span className="text-slate-800 dark:text-white font-bold text-xs">{selectedApplicant.kelurahan} / {selectedApplicant.kecamatan}</span>
+                      </div>
+                      <div className="bg-slate-50 dark:bg-slate-800/30 rounded-xl p-3 border border-slate-100 dark:border-white/5 hover:border-blue-500/20 transition-colors">
+                        <span className="text-slate-400 dark:text-slate-555 block mb-1 font-bold uppercase text-[9px] tracking-wider">Tinggal Dengan / Transportasi</span>
+                        <span className="text-slate-800 dark:text-white font-bold text-xs">{selectedApplicant.tinggal_dengan || selectedApplicant.tinggalDengan} / {selectedApplicant.transportasi}</span>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -935,28 +1059,52 @@ export default function ApplicantsDirectory() {
               {activeTab === "periodik" && (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                   <div>
-                    <h4 className="text-slate-800 dark:text-white font-black uppercase tracking-widest mb-4 border-b border-slate-100 dark:border-white/5 pb-2 text-[10px] flex items-center gap-1.5">
-                      <Calendar size={12} className="text-blue-500" /> Data Fisik & Periodik
+                    <h4 className="text-slate-800 dark:text-white font-black uppercase tracking-widest mb-4 border-b border-slate-100 dark:border-white/5 pb-3 text-[10px] flex items-center gap-2">
+                      <div className="w-6 h-6 rounded-md bg-emerald-50 dark:bg-emerald-500/10 flex items-center justify-center text-emerald-500">
+                        <Calendar size={12} />
+                      </div>
+                      Data Fisik & Periodik
                     </h4>
-                    <div className="space-y-4">
-                      <div><span className="text-slate-400 dark:text-slate-550 block mb-0.5 font-bold uppercase text-[9px] tracking-wider">Tinggi / Berat Badan</span> <span className="text-slate-800 dark:text-white font-extrabold">{selectedApplicant.tinggi_badan || selectedApplicant.tinggiBadan || "-"} cm / {selectedApplicant.berat_badan || selectedApplicant.beratBadan || "-"} kg</span></div>
-                      <div><span className="text-slate-400 dark:text-slate-550 block mb-0.5 font-bold uppercase text-[9px] tracking-wider">Jarak ke Sekolah</span> <span className="text-slate-800 dark:text-white font-extrabold">{selectedApplicant.jarak_sekolah || selectedApplicant.jarakSekolah || "-"} km</span></div>
-                      <div><span className="text-slate-400 dark:text-slate-555 block mb-0.5 font-bold uppercase text-[9px] tracking-wider">Waktu Tempuh Perjalanan</span> <span className="text-slate-800 dark:text-white font-extrabold">{selectedApplicant.waktu_jam || selectedApplicant.waktuJam || 0} Jam {selectedApplicant.waktu_menit || selectedApplicant.waktuMenit || 0} Menit</span></div>
-                      <div><span className="text-slate-400 dark:text-slate-555 block mb-0.5 font-bold uppercase text-[9px] tracking-wider">Jumlah Saudara Kandung</span> <span className="text-slate-800 dark:text-white font-extrabold">{selectedApplicant.jumlah_saudara || selectedApplicant.jumlahSaudara || 0} orang</span></div>
+                    <div className="flex flex-col gap-3">
+                      <div className="bg-slate-50 dark:bg-slate-800/30 rounded-xl p-3 border border-slate-100 dark:border-white/5 hover:border-emerald-500/20 transition-colors">
+                        <span className="text-slate-400 dark:text-slate-550 block mb-1 font-bold uppercase text-[9px] tracking-wider">Tinggi / Berat Badan</span>
+                        <span className="text-slate-800 dark:text-white font-bold text-xs">{selectedApplicant.tinggi_badan || selectedApplicant.tinggiBadan || "-"} cm / {selectedApplicant.berat_badan || selectedApplicant.beratBadan || "-"} kg</span>
+                      </div>
+                      <div className="bg-slate-50 dark:bg-slate-800/30 rounded-xl p-3 border border-slate-100 dark:border-white/5 hover:border-emerald-500/20 transition-colors">
+                        <span className="text-slate-400 dark:text-slate-550 block mb-1 font-bold uppercase text-[9px] tracking-wider">Jarak ke Sekolah</span>
+                        <span className="text-slate-800 dark:text-white font-bold text-xs">{selectedApplicant.jarak_sekolah || selectedApplicant.jarakSekolah || "-"} km</span>
+                      </div>
+                      <div className="bg-slate-50 dark:bg-slate-800/30 rounded-xl p-3 border border-slate-100 dark:border-white/5 hover:border-emerald-500/20 transition-colors">
+                        <span className="text-slate-400 dark:text-slate-555 block mb-1 font-bold uppercase text-[9px] tracking-wider">Waktu Tempuh Perjalanan</span>
+                        <span className="text-slate-800 dark:text-white font-bold text-xs">{selectedApplicant.waktu_jam || selectedApplicant.waktuJam || 0} Jam {selectedApplicant.waktu_menit || selectedApplicant.waktuMenit || 0} Menit</span>
+                      </div>
+                      <div className="bg-slate-50 dark:bg-slate-800/30 rounded-xl p-3 border border-slate-100 dark:border-white/5 hover:border-emerald-500/20 transition-colors">
+                        <span className="text-slate-400 dark:text-slate-555 block mb-1 font-bold uppercase text-[9px] tracking-wider">Jumlah Saudara Kandung</span>
+                        <span className="text-slate-800 dark:text-white font-bold text-xs">{selectedApplicant.jumlah_saudara || selectedApplicant.jumlahSaudara || 0} orang</span>
+                      </div>
                     </div>
                   </div>
                   <div>
-                    <h4 className="text-slate-800 dark:text-white font-black uppercase tracking-widest mb-4 border-b border-slate-100 dark:border-white/5 pb-2 text-[10px] flex items-center gap-1.5">
-                      <Heart size={12} className="text-blue-500" /> Kondisi Kesehatan
+                    <h4 className="text-slate-800 dark:text-white font-black uppercase tracking-widest mb-4 border-b border-slate-100 dark:border-white/5 pb-3 text-[10px] flex items-center gap-2">
+                      <div className="w-6 h-6 rounded-md bg-rose-50 dark:bg-rose-500/10 flex items-center justify-center text-rose-500">
+                        <Heart size={12} />
+                      </div>
+                      Kondisi Kesehatan
                     </h4>
-                    <div className="space-y-4">
-                      <div><span className="text-slate-400 dark:text-slate-550 block mb-0.5 font-bold uppercase text-[9px] tracking-wider">Golongan Darah</span> <span className="text-slate-800 dark:text-white font-extrabold uppercase">{selectedApplicant.golongan_darah || selectedApplicant.golonganDarah || "-"}</span></div>
-                      <div><span className="text-slate-400 dark:text-slate-550 block mb-0.5 font-bold uppercase text-[9px] tracking-wider">Riwayat Penyakit</span> <span className="text-slate-800 dark:text-white font-extrabold">{selectedApplicant.penyakit_diderita || selectedApplicant.penyakitDiderita || "Tidak Ada"}</span></div>
-                      <div>
-                        <span className="text-slate-400 dark:text-slate-550 block mb-1.5 font-bold uppercase text-[9px] tracking-wider">Kebutuhan Khusus</span>
+                    <div className="flex flex-col gap-3">
+                      <div className="bg-slate-50 dark:bg-slate-800/30 rounded-xl p-3 border border-slate-100 dark:border-white/5 hover:border-rose-500/20 transition-colors">
+                        <span className="text-slate-400 dark:text-slate-550 block mb-1 font-bold uppercase text-[9px] tracking-wider">Golongan Darah</span>
+                        <span className="text-rose-600 dark:text-rose-400 font-black text-xs uppercase">{selectedApplicant.golongan_darah || selectedApplicant.golonganDarah || "-"}</span>
+                      </div>
+                      <div className="bg-slate-50 dark:bg-slate-800/30 rounded-xl p-3 border border-slate-100 dark:border-white/5 hover:border-rose-500/20 transition-colors">
+                        <span className="text-slate-400 dark:text-slate-550 block mb-1 font-bold uppercase text-[9px] tracking-wider">Riwayat Penyakit</span>
+                        <span className="text-slate-800 dark:text-white font-bold text-xs">{selectedApplicant.penyakit_diderita || selectedApplicant.penyakitDiderita || "Tidak Ada"}</span>
+                      </div>
+                      <div className="bg-slate-50 dark:bg-slate-800/30 rounded-xl p-3 border border-slate-100 dark:border-white/5 hover:border-rose-500/20 transition-colors">
+                        <span className="text-slate-400 dark:text-slate-550 block mb-2 font-bold uppercase text-[9px] tracking-wider">Kebutuhan Khusus</span>
                         <div className="flex flex-wrap gap-1.5">
                           {Array.isArray(selectedApplicant.kebutuhan_khusus) ? selectedApplicant.kebutuhan_khusus.map((k, idx) => (
-                            <span key={idx} className="bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-350 border border-slate-200 dark:border-white/5 px-2.5 py-1 rounded-lg font-black text-[9px] uppercase">{k}</span>
+                            <span key={idx} className="bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-350 border border-slate-200 dark:border-white/5 px-2.5 py-1 rounded-lg font-black text-[9px] uppercase shadow-sm">{k}</span>
                           )) : <span className="text-slate-455 italic font-semibold">Tidak Ada</span>}
                         </div>
                       </div>
@@ -968,21 +1116,39 @@ export default function ApplicantsDirectory() {
               {activeTab === "bantuan" && (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                   <div>
-                    <h4 className="text-slate-800 dark:text-white font-black uppercase tracking-widest mb-4 border-b border-slate-100 dark:border-white/5 pb-2 text-[10px] flex items-center gap-1.5">
-                      <HelpCircle size={12} className="text-blue-500" /> Jaminan Sosial / Bantuan
+                    <h4 className="text-slate-800 dark:text-white font-black uppercase tracking-widest mb-4 border-b border-slate-100 dark:border-white/5 pb-3 text-[10px] flex items-center gap-2">
+                      <div className="w-6 h-6 rounded-md bg-amber-50 dark:bg-amber-500/10 flex items-center justify-center text-amber-500">
+                        <HelpCircle size={12} />
+                      </div>
+                      Jaminan Sosial / Bantuan
                     </h4>
-                    <div className="space-y-4">
-                      <div><span className="text-slate-400 dark:text-slate-550 block mb-0.5 font-bold uppercase text-[9px] tracking-wider">Penerima KPS</span> <span className="text-slate-800 dark:text-white font-extrabold">{selectedApplicant.punya_kps || selectedApplicant.punyaKps || "Tidak"} {selectedApplicant.no_kps || selectedApplicant.noKps ? `(No: ${selectedApplicant.no_kps || selectedApplicant.noKps})` : ""}</span></div>
-                      <div><span className="text-slate-400 dark:text-slate-550 block mb-0.5 font-bold uppercase text-[9px] tracking-wider">Penerima KIP</span> <span className="text-slate-800 dark:text-white font-extrabold">{selectedApplicant.punya_kip || selectedApplicant.punyaKip || "Tidak"} {selectedApplicant.no_kip || selectedApplicant.noKip ? `(No: ${selectedApplicant.no_kip || selectedApplicant.noKip})` : ""}</span></div>
+                    <div className="flex flex-col gap-3">
+                      <div className="bg-slate-50 dark:bg-slate-800/30 rounded-xl p-3 border border-slate-100 dark:border-white/5 hover:border-amber-500/20 transition-colors">
+                        <span className="text-slate-400 dark:text-slate-550 block mb-1 font-bold uppercase text-[9px] tracking-wider">Penerima KPS</span>
+                        <span className="text-slate-800 dark:text-white font-bold text-xs">{selectedApplicant.punya_kps || selectedApplicant.punyaKps || "Tidak"} {selectedApplicant.no_kps || selectedApplicant.noKps ? `(No: ${selectedApplicant.no_kps || selectedApplicant.noKps})` : ""}</span>
+                      </div>
+                      <div className="bg-slate-50 dark:bg-slate-800/30 rounded-xl p-3 border border-slate-100 dark:border-white/5 hover:border-amber-500/20 transition-colors">
+                        <span className="text-slate-400 dark:text-slate-550 block mb-1 font-bold uppercase text-[9px] tracking-wider">Penerima KIP</span>
+                        <span className="text-slate-800 dark:text-white font-bold text-xs">{selectedApplicant.punya_kip || selectedApplicant.punyaKip || "Tidak"} {selectedApplicant.no_kip || selectedApplicant.noKip ? `(No: ${selectedApplicant.no_kip || selectedApplicant.noKip})` : ""}</span>
+                      </div>
                     </div>
                   </div>
                   <div>
-                    <h4 className="text-slate-800 dark:text-white font-black uppercase tracking-widest mb-4 border-b border-slate-100 dark:border-white/5 pb-2 text-[10px] flex items-center gap-1.5">
-                      <Layers size={12} className="text-blue-500" /> Beasiswa & Prestasi
+                    <h4 className="text-slate-800 dark:text-white font-black uppercase tracking-widest mb-4 border-b border-slate-100 dark:border-white/5 pb-3 text-[10px] flex items-center gap-2">
+                      <div className="w-6 h-6 rounded-md bg-purple-50 dark:bg-purple-500/10 flex items-center justify-center text-purple-500">
+                        <Layers size={12} />
+                      </div>
+                      Beasiswa & Prestasi
                     </h4>
-                    <div className="space-y-4">
-                      <div><span className="text-slate-400 dark:text-slate-550 block mb-0.5 font-bold uppercase text-[9px] tracking-wider">Uraian Prestasi</span> <span className="text-slate-800 dark:text-white font-extrabold">{selectedApplicant.uraian_prestasi || selectedApplicant.uraianPrestasi || "Tidak Ada"}</span></div>
-                      <div><span className="text-slate-400 dark:text-slate-555 block mb-0.5 font-bold uppercase text-[9px] tracking-wider">Uraian Beasiswa</span> <span className="text-slate-800 dark:text-white font-extrabold">{selectedApplicant.uraian_beasiswa || selectedApplicant.uraianBeasiswa || "Tidak Ada"}</span></div>
+                    <div className="flex flex-col gap-3">
+                      <div className="bg-slate-50 dark:bg-slate-800/30 rounded-xl p-3 border border-slate-100 dark:border-white/5 hover:border-purple-500/20 transition-colors">
+                        <span className="text-slate-400 dark:text-slate-550 block mb-1 font-bold uppercase text-[9px] tracking-wider">Uraian Prestasi</span>
+                        <span className="text-slate-800 dark:text-white font-bold text-xs">{selectedApplicant.uraian_prestasi || selectedApplicant.uraianPrestasi || "Tidak Ada"}</span>
+                      </div>
+                      <div className="bg-slate-50 dark:bg-slate-800/30 rounded-xl p-3 border border-slate-100 dark:border-white/5 hover:border-purple-500/20 transition-colors">
+                        <span className="text-slate-400 dark:text-slate-555 block mb-1 font-bold uppercase text-[9px] tracking-wider">Uraian Beasiswa</span>
+                        <span className="text-slate-800 dark:text-white font-bold text-xs">{selectedApplicant.uraian_beasiswa || selectedApplicant.uraianBeasiswa || "Tidak Ada"}</span>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -991,32 +1157,65 @@ export default function ApplicantsDirectory() {
               {activeTab === "orangtua" && (
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                   <div>
-                    <h4 className="text-slate-800 dark:text-white font-black uppercase tracking-widest mb-4 border-b border-slate-100 dark:border-white/5 pb-2 text-[10px] flex items-center gap-1.5">
-                      <User size={12} className="text-blue-500" /> Ayah Kandung
+                    <h4 className="text-slate-800 dark:text-white font-black uppercase tracking-widest mb-4 border-b border-slate-100 dark:border-white/5 pb-3 text-[10px] flex items-center gap-2">
+                      <div className="w-6 h-6 rounded-md bg-indigo-50 dark:bg-indigo-500/10 flex items-center justify-center text-indigo-500">
+                        <User size={12} />
+                      </div>
+                      Ayah Kandung
                     </h4>
-                    <div className="space-y-3.5">
-                      <div><span className="text-slate-400 dark:text-slate-550 block mb-0.5 font-bold uppercase text-[9px] tracking-wider">Nama Lengkap</span> <span className="text-slate-850 dark:text-white font-extrabold">{selectedApplicant.nama_ayah || selectedApplicant.namaAyah || "-"}</span></div>
-                      <div><span className="text-slate-400 dark:text-slate-550 block mb-0.5 font-bold uppercase text-[9px] tracking-wider">Pekerjaan Ayah</span> <span className="text-slate-800 dark:text-white font-extrabold">{selectedApplicant.pekerjaan_ayah || selectedApplicant.pekerjaanAyah || "-"}</span></div>
-                      <div><span className="text-slate-400 dark:text-slate-550 block mb-0.5 font-bold uppercase text-[9px] tracking-wider">Penghasilan Bulanan</span> <span className="text-slate-800 dark:text-white font-extrabold">{selectedApplicant.penghasilan_ayah || selectedApplicant.penghasilanAyah || "-"}</span></div>
+                    <div className="flex flex-col gap-3">
+                      <div className="bg-slate-50 dark:bg-slate-800/30 rounded-xl p-3 border border-slate-100 dark:border-white/5 hover:border-indigo-500/20 transition-colors">
+                        <span className="text-slate-400 dark:text-slate-550 block mb-1 font-bold uppercase text-[9px] tracking-wider">Nama Lengkap</span>
+                        <span className="text-slate-850 dark:text-white font-bold text-xs">{selectedApplicant.nama_ayah || selectedApplicant.namaAyah || "-"}</span>
+                      </div>
+                      <div className="bg-slate-50 dark:bg-slate-800/30 rounded-xl p-3 border border-slate-100 dark:border-white/5 hover:border-indigo-500/20 transition-colors">
+                        <span className="text-slate-400 dark:text-slate-550 block mb-1 font-bold uppercase text-[9px] tracking-wider">Pekerjaan Ayah</span>
+                        <span className="text-slate-800 dark:text-white font-bold text-xs">{selectedApplicant.pekerjaan_ayah || selectedApplicant.pekerjaanAyah || "-"}</span>
+                      </div>
+                      <div className="bg-slate-50 dark:bg-slate-800/30 rounded-xl p-3 border border-slate-100 dark:border-white/5 hover:border-indigo-500/20 transition-colors">
+                        <span className="text-slate-400 dark:text-slate-550 block mb-1 font-bold uppercase text-[9px] tracking-wider">Penghasilan Bulanan</span>
+                        <span className="text-slate-800 dark:text-white font-bold text-xs">{selectedApplicant.penghasilan_ayah || selectedApplicant.penghasilanAyah || "-"}</span>
+                      </div>
                     </div>
                   </div>
                   <div>
-                    <h4 className="text-slate-800 dark:text-white font-black uppercase tracking-widest mb-4 border-b border-slate-100 dark:border-white/5 pb-2 text-[10px] flex items-center gap-1.5">
-                      <User size={12} className="text-blue-500" /> Ibu Kandung
+                    <h4 className="text-slate-800 dark:text-white font-black uppercase tracking-widest mb-4 border-b border-slate-100 dark:border-white/5 pb-3 text-[10px] flex items-center gap-2">
+                      <div className="w-6 h-6 rounded-md bg-pink-50 dark:bg-pink-500/10 flex items-center justify-center text-pink-500">
+                        <User size={12} />
+                      </div>
+                      Ibu Kandung
                     </h4>
-                    <div className="space-y-3.5">
-                      <div><span className="text-slate-400 dark:text-slate-550 block mb-0.5 font-bold uppercase text-[9px] tracking-wider">Nama Lengkap</span> <span className="text-slate-850 dark:text-white font-extrabold">{selectedApplicant.nama_ibu || selectedApplicant.namaIbu || "-"}</span></div>
-                      <div><span className="text-slate-400 dark:text-slate-550 block mb-0.5 font-bold uppercase text-[9px] tracking-wider">Pendidikan / Pekerjaan</span> <span className="text-slate-800 dark:text-white font-extrabold">{selectedApplicant.pendidikan_ibu || selectedApplicant.pendidikanIbu || "-"} / {selectedApplicant.pekerjaan_ibu || selectedApplicant.pekerjaanIbu || "-"}</span></div>
-                      <div><span className="text-slate-400 dark:text-slate-555 block mb-0.5 font-bold uppercase text-[9px] tracking-wider">Penghasilan Bulanan</span> <span className="text-slate-800 dark:text-white font-extrabold">{selectedApplicant.penghasilan_ibu || selectedApplicant.penghasilanIbu || "-"}</span></div>
+                    <div className="flex flex-col gap-3">
+                      <div className="bg-slate-50 dark:bg-slate-800/30 rounded-xl p-3 border border-slate-100 dark:border-white/5 hover:border-pink-500/20 transition-colors">
+                        <span className="text-slate-400 dark:text-slate-550 block mb-1 font-bold uppercase text-[9px] tracking-wider">Nama Lengkap</span>
+                        <span className="text-slate-850 dark:text-white font-bold text-xs">{selectedApplicant.nama_ibu || selectedApplicant.namaIbu || "-"}</span>
+                      </div>
+                      <div className="bg-slate-50 dark:bg-slate-800/30 rounded-xl p-3 border border-slate-100 dark:border-white/5 hover:border-pink-500/20 transition-colors">
+                        <span className="text-slate-400 dark:text-slate-550 block mb-1 font-bold uppercase text-[9px] tracking-wider">Pendidikan / Pekerjaan</span>
+                        <span className="text-slate-800 dark:text-white font-bold text-xs">{selectedApplicant.pendidikan_ibu || selectedApplicant.pendidikanIbu || "-"} / {selectedApplicant.pekerjaan_ibu || selectedApplicant.pekerjaanIbu || "-"}</span>
+                      </div>
+                      <div className="bg-slate-50 dark:bg-slate-800/30 rounded-xl p-3 border border-slate-100 dark:border-white/5 hover:border-pink-500/20 transition-colors">
+                        <span className="text-slate-400 dark:text-slate-555 block mb-1 font-bold uppercase text-[9px] tracking-wider">Penghasilan Bulanan</span>
+                        <span className="text-slate-800 dark:text-white font-bold text-xs">{selectedApplicant.penghasilan_ibu || selectedApplicant.penghasilanIbu || "-"}</span>
+                      </div>
                     </div>
                   </div>
                   <div>
-                    <h4 className="text-slate-800 dark:text-white font-black uppercase tracking-widest mb-4 border-b border-slate-100 dark:border-white/5 pb-2 text-[10px] flex items-center gap-1.5">
-                      <Users size={12} className="text-blue-500" /> Wali & Kontak Darurat
+                    <h4 className="text-slate-800 dark:text-white font-black uppercase tracking-widest mb-4 border-b border-slate-100 dark:border-white/5 pb-3 text-[10px] flex items-center gap-2">
+                      <div className="w-6 h-6 rounded-md bg-teal-50 dark:bg-teal-500/10 flex items-center justify-center text-teal-500">
+                        <Users size={12} />
+                      </div>
+                      Wali & Kontak Darurat
                     </h4>
-                    <div className="space-y-3.5">
-                      <div><span className="text-slate-400 dark:text-slate-550 block mb-0.5 font-bold uppercase text-[9px] tracking-wider">Nama Wali</span> <span className="text-slate-850 dark:text-white font-extrabold">{selectedApplicant.nama_wali || selectedApplicant.namaWali || "Tidak Ada"}</span></div>
-                      <div><span className="text-slate-400 dark:text-slate-550 block mb-0.5 font-bold uppercase text-[9px] tracking-wider">No. Telepon Orang Tua</span> <span className="text-blue-600 dark:text-blue-455 font-mono text-sm font-extrabold">{selectedApplicant.telepon_ortu || selectedApplicant.teleponOrtu || "-"}</span></div>
+                    <div className="flex flex-col gap-3">
+                      <div className="bg-slate-50 dark:bg-slate-800/30 rounded-xl p-3 border border-slate-100 dark:border-white/5 hover:border-teal-500/20 transition-colors">
+                        <span className="text-slate-400 dark:text-slate-550 block mb-1 font-bold uppercase text-[9px] tracking-wider">Nama Wali</span>
+                        <span className="text-slate-850 dark:text-white font-bold text-xs">{selectedApplicant.nama_wali || selectedApplicant.namaWali || "Tidak Ada"}</span>
+                      </div>
+                      <div className="bg-slate-50 dark:bg-slate-800/30 rounded-xl p-3 border border-slate-100 dark:border-white/5 hover:border-teal-500/20 transition-colors">
+                        <span className="text-slate-400 dark:text-slate-550 block mb-1 font-bold uppercase text-[9px] tracking-wider">No. Telepon Orang Tua</span>
+                        <span className="text-teal-600 dark:text-teal-400 font-mono text-sm font-black">{selectedApplicant.telepon_ortu || selectedApplicant.teleponOrtu || "-"}</span>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -1025,23 +1224,47 @@ export default function ApplicantsDirectory() {
               {activeTab === "akademik" && (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                   <div>
-                    <h4 className="text-slate-800 dark:text-white font-black uppercase tracking-widest mb-4 border-b border-slate-100 dark:border-white/5 pb-2 text-[10px] flex items-center gap-1.5">
-                      <Info size={12} className="text-blue-500" /> Pendidikan Asal
+                    <h4 className="text-slate-800 dark:text-white font-black uppercase tracking-widest mb-4 border-b border-slate-100 dark:border-white/5 pb-3 text-[10px] flex items-center gap-2">
+                      <div className="w-6 h-6 rounded-md bg-blue-50 dark:bg-blue-500/10 flex items-center justify-center text-blue-500">
+                        <Info size={12} />
+                      </div>
+                      Pendidikan Asal
                     </h4>
-                    <div className="space-y-4">
-                      <div><span className="text-slate-400 dark:text-slate-550 block mb-0.5 font-bold uppercase text-[9px] tracking-wider">Nama Sekolah Asal</span> <span className="text-slate-850 dark:text-white text-sm font-extrabold">{selectedApplicant.sekolah_asal || selectedApplicant.sekolahAsal}</span></div>
-                      <div><span className="text-slate-400 dark:text-slate-550 block mb-0.5 font-bold uppercase text-[9px] tracking-wider">No. Ijazah / SKHUN</span> <span className="text-slate-800 dark:text-white font-mono font-extrabold">{selectedApplicant.no_ijazah || selectedApplicant.noIjazah || "-"} / {selectedApplicant.no_skhun || selectedApplicant.noSkhun || "-"}</span></div>
-                      <div><span className="text-slate-400 dark:text-slate-555 block mb-0.5 font-bold uppercase text-[9px] tracking-wider">Tgl Lulus / Lama Belajar</span> <span className="text-slate-800 dark:text-white font-extrabold">{selectedApplicant.tgl_lulus || selectedApplicant.tglLulus || "-"} ({selectedApplicant.lama_belajar || selectedApplicant.lamaBelajar || 3} Tahun)</span></div>
+                    <div className="flex flex-col gap-3">
+                      <div className="bg-slate-50 dark:bg-slate-800/30 rounded-xl p-3 border border-slate-100 dark:border-white/5 hover:border-blue-500/20 transition-colors">
+                        <span className="text-slate-400 dark:text-slate-550 block mb-1 font-bold uppercase text-[9px] tracking-wider">Nama Sekolah Asal</span>
+                        <span className="text-slate-850 dark:text-white text-sm font-black">{selectedApplicant.sekolah_asal || selectedApplicant.sekolahAsal}</span>
+                      </div>
+                      <div className="bg-slate-50 dark:bg-slate-800/30 rounded-xl p-3 border border-slate-100 dark:border-white/5 hover:border-blue-500/20 transition-colors">
+                        <span className="text-slate-400 dark:text-slate-550 block mb-1 font-bold uppercase text-[9px] tracking-wider">No. Ijazah / SKHUN</span>
+                        <span className="text-slate-800 dark:text-white font-mono font-bold text-xs">{selectedApplicant.no_ijazah || selectedApplicant.noIjazah || "-"} / {selectedApplicant.no_skhun || selectedApplicant.noSkhun || "-"}</span>
+                      </div>
+                      <div className="bg-slate-50 dark:bg-slate-800/30 rounded-xl p-3 border border-slate-100 dark:border-white/5 hover:border-blue-500/20 transition-colors">
+                        <span className="text-slate-400 dark:text-slate-555 block mb-1 font-bold uppercase text-[9px] tracking-wider">Tgl Lulus / Lama Belajar</span>
+                        <span className="text-slate-800 dark:text-white font-bold text-xs">{selectedApplicant.tgl_lulus || selectedApplicant.tglLulus || "-"} ({selectedApplicant.lama_belajar || selectedApplicant.lamaBelajar || 3} Tahun)</span>
+                      </div>
                     </div>
                   </div>
                   <div>
-                    <h4 className="text-slate-800 dark:text-white font-black uppercase tracking-widest mb-4 border-b border-slate-100 dark:border-white/5 pb-2 text-[10px] flex items-center gap-1.5">
-                      <Layers size={12} className="text-blue-500" /> Pilihan Minat Studi
+                    <h4 className="text-slate-800 dark:text-white font-black uppercase tracking-widest mb-4 border-b border-slate-100 dark:border-white/5 pb-3 text-[10px] flex items-center gap-2">
+                      <div className="w-6 h-6 rounded-md bg-orange-50 dark:bg-orange-500/10 flex items-center justify-center text-orange-500">
+                        <Layers size={12} />
+                      </div>
+                      Pilihan Minat Studi
                     </h4>
-                    <div className="space-y-4">
-                      <div><span className="text-slate-400 dark:text-slate-550 block mb-0.5 font-bold uppercase text-[9px] tracking-wider">Program Studi Pilihan Utama</span> <span className="text-blue-600 dark:text-blue-400 text-sm font-extrabold uppercase">{selectedApplicant.jurusan_1 || selectedApplicant.jurusan1}</span></div>
-                      <div><span className="text-slate-400 dark:text-slate-555 block mb-0.5 font-bold uppercase text-[9px] tracking-wider">Program Studi Pilihan Cadangan</span> <span className="text-slate-500 dark:text-slate-400 text-sm font-extrabold uppercase">{selectedApplicant.jurusan_2 || selectedApplicant.jurusan2}</span></div>
-                      <div><span className="text-slate-400 dark:text-slate-555 block mb-0.5 font-bold uppercase text-[9px] tracking-wider">Alasan Memilih Jurusan</span> <span className="text-slate-800 dark:text-white font-extrabold">{selectedApplicant.alasan_memilih || selectedApplicant.alasanMemilih || "Ingin belajar IT"}</span></div>
+                    <div className="flex flex-col gap-3">
+                      <div className="bg-blue-50 dark:bg-blue-900/10 rounded-xl p-3 border border-blue-100 dark:border-blue-500/10 shadow-sm">
+                        <span className="text-blue-500 dark:text-blue-400 block mb-1 font-bold uppercase text-[9px] tracking-wider">Program Studi Pilihan Utama</span>
+                        <span className="text-blue-700 dark:text-blue-300 text-sm font-black uppercase">{selectedApplicant.jurusan_1 || selectedApplicant.jurusan1}</span>
+                      </div>
+                      <div className="bg-slate-50 dark:bg-slate-800/30 rounded-xl p-3 border border-slate-100 dark:border-white/5 hover:border-orange-500/20 transition-colors">
+                        <span className="text-slate-400 dark:text-slate-555 block mb-1 font-bold uppercase text-[9px] tracking-wider">Program Studi Pilihan Cadangan</span>
+                        <span className="text-slate-600 dark:text-slate-400 text-xs font-bold uppercase">{selectedApplicant.jurusan_2 || selectedApplicant.jurusan2}</span>
+                      </div>
+                      <div className="bg-slate-50 dark:bg-slate-800/30 rounded-xl p-3 border border-slate-100 dark:border-white/5 hover:border-orange-500/20 transition-colors">
+                        <span className="text-slate-400 dark:text-slate-555 block mb-1 font-bold uppercase text-[9px] tracking-wider">Alasan Memilih Jurusan</span>
+                        <span className="text-slate-800 dark:text-white font-bold text-xs">{selectedApplicant.alasan_memilih || selectedApplicant.alasanMemilih || "Ingin belajar IT"}</span>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -1077,137 +1300,6 @@ export default function ApplicantsDirectory() {
                       <div className="flex items-center gap-2"><span className="text-emerald-500 font-extrabold">✓</span> Menjaga Nama Baik Almamater</div>
                     </div>
                   </div>
-                </div>
-              )}
-
-              {activeTab === "berkas" && (
-                <div className="space-y-6">
-                  <h4 className="text-slate-800 dark:text-white font-black uppercase tracking-widest border-b border-slate-100 dark:border-white/5 pb-2 text-[10px] flex items-center gap-1.5">
-                    <FileText size={12} className="text-blue-500" /> Dokumen & Berkas Pendukung
-                  </h4>
-
-                  <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-                    {[
-                      { key: 'berkas_kk', label: 'Kartu Keluarga', name: 'KK' },
-                      { key: 'berkas_ktp', label: 'KTP Ortu / Wali', name: 'KTP' },
-                      { key: 'berkas_akta', label: 'Akta Kelahiran', name: 'Akta' },
-                      { key: 'berkas_ijazah', label: 'Ijazah / SKL', name: 'Ijazah' },
-                      { key: 'berkas_foto', label: 'Pas Foto (3x4)', name: 'Foto' }
-                    ].map((doc) => {
-                      const value = selectedApplicant[doc.key] || selectedApplicant[`${doc.key}Base64`] || '';
-                      const hasDoc = !!value;
-
-                      return (
-                        <button
-                          key={doc.key}
-                          type="button"
-                          onClick={() => {
-                            if (hasDoc) {
-                              setSelectedDoc(doc.key);
-                            }
-                          }}
-                          className={`p-4 rounded-2xl border transition-all flex flex-col items-center justify-center gap-2.5 text-center ${!hasDoc
-                              ? "bg-slate-50/50 dark:bg-slate-900/40 border-slate-150 dark:border-slate-800 text-slate-400 dark:text-slate-650 cursor-not-allowed"
-                              : selectedDoc === doc.key
-                                ? "bg-blue-50/50 dark:bg-blue-950/30 border-blue-400 dark:border-blue-500/50 text-blue-600 dark:text-blue-400 shadow-sm"
-                                : "bg-white hover:bg-slate-50 dark:bg-slate-900 dark:hover:bg-slate-800/80 border-slate-200 dark:border-white/5 text-slate-700 dark:text-slate-300"
-                            }`}
-                          disabled={!hasDoc}
-                        >
-                          <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${!hasDoc
-                              ? "bg-slate-100 dark:bg-slate-800/60"
-                              : selectedDoc === doc.key
-                                ? "bg-blue-100/80 dark:bg-blue-900/50"
-                                : "bg-slate-50 dark:bg-slate-800"
-                            }`}>
-                            {doc.name === 'Foto' ? (
-                              <FileImage size={18} />
-                            ) : (
-                              <FileText size={18} />
-                            )}
-                          </div>
-                          <div>
-                            <p className="font-extrabold text-[10px] tracking-wide uppercase leading-tight">{doc.label}</p>
-                            <span className="text-[9px] font-bold text-slate-400 mt-1 block">
-                              {hasDoc ? "Tersedia (Klik)" : "Tidak Ada"}
-                            </span>
-                          </div>
-                        </button>
-                      );
-                    })}
-                  </div>
-
-                  {/* Inline Document Preview Box */}
-                  {selectedDoc && selectedApplicant[selectedDoc] ? (
-                    <div className="mt-6 border border-slate-200 dark:border-white/5 rounded-3xl overflow-hidden bg-slate-50 dark:bg-slate-950/40 p-4 transition-colors">
-                      <div className="flex items-center justify-between border-b border-slate-200/60 dark:border-white/5 pb-3 mb-4">
-                        <span className="text-slate-800 dark:text-white font-black uppercase text-[10px] tracking-widest flex items-center gap-2">
-                          <Eye size={12} className="text-blue-500" />
-                          Pratinjau: {
-                            selectedDoc === 'berkas_kk' ? 'Kartu Keluarga' :
-                              selectedDoc === 'berkas_ktp' ? 'KTP Orang Tua / Wali' :
-                                selectedDoc === 'berkas_akta' ? 'Akta Kelahiran' :
-                                  selectedDoc === 'berkas_ijazah' ? 'Ijazah / SKL' : 'Pas Foto'
-                          }
-                        </span>
-
-                        <div className="flex items-center gap-2">
-                          <a
-                            href={selectedApplicant[selectedDoc]}
-                            download={`berkas_${selectedDoc}_${selectedApplicant.nisn}.png`}
-                            target="_blank"
-                            rel="noreferrer"
-                            className="px-3.5 py-1.5 bg-blue-600 hover:bg-blue-500 text-white rounded-xl font-bold uppercase tracking-wider text-[9px] transition-all flex items-center gap-1 shadow-sm"
-                          >
-                            <Download size={10} /> Unduh File
-                          </a>
-
-                          <button
-                            type="button"
-                            onClick={() => setSelectedDoc(null)}
-                            className="p-1.5 bg-slate-200 dark:bg-white/5 text-slate-600 dark:text-slate-400 hover:text-red-500 dark:hover:text-red-400 rounded-lg transition-all"
-                          >
-                            <X size={12} />
-                          </button>
-                        </div>
-                      </div>
-
-                      <div className="flex justify-center items-center bg-slate-100 dark:bg-slate-900/60 border border-slate-200/50 dark:border-white/5 rounded-2xl min-h-[300px] max-h-[500px] overflow-auto p-4">
-                        {selectedApplicant[selectedDoc].startsWith("data:application/pdf") ? (
-                          <iframe
-                            src={selectedApplicant[selectedDoc]}
-                            className="w-full h-[400px] rounded-xl border border-slate-200 dark:border-white/5"
-                            title="Pratinjau PDF"
-                          />
-                        ) : selectedApplicant[selectedDoc].startsWith("data:image/") || selectedApplicant[selectedDoc].startsWith("/") || selectedApplicant[selectedDoc].includes("base64") || selectedApplicant[selectedDoc].startsWith("http") ? (
-                          <img
-                            src={selectedApplicant[selectedDoc].includes("Mock_Data_Base64") ? "/logo_smktb.png" : selectedApplicant[selectedDoc]}
-                            alt="Pratinjau Dokumen"
-                            className="max-w-full max-h-[400px] object-contain rounded-xl shadow-sm animate-in fade-in"
-                            onError={(e) => {
-                              // If mock base64 fails, fallback to general icon/logo
-                              e.currentTarget.src = "/logo_smktb.png";
-                            }}
-                          />
-                        ) : (
-                          <div className="text-center p-8 space-y-3">
-                            <div className="w-16 h-16 rounded-2xl bg-amber-50 dark:bg-amber-950/20 border border-amber-200/30 dark:border-amber-500/20 flex items-center justify-center text-amber-500 mx-auto">
-                              <FileWarning size={32} />
-                            </div>
-                            <div>
-                              <p className="font-extrabold text-slate-700 dark:text-slate-300 text-sm">Dokumen Tidak Dapat Dipratinjau</p>
-                              <p className="text-slate-400 dark:text-slate-500 text-[10px] mt-1">Dokumen disimpan dalam format text mentah atau link luar. Silakan klik tombol 'Unduh File' di atas.</p>
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="mt-6 border border-dashed border-slate-200 dark:border-slate-800/60 rounded-3xl p-8 text-center text-slate-455 dark:text-slate-500 transition-colors">
-                      <p className="font-black uppercase text-[10px] tracking-widest text-slate-400 dark:text-slate-550 mb-1">Tidak ada dokumen yang dipilih</p>
-                      <p className="text-[10px] text-slate-400/80">Silakan klik salah satu tombol dokumen di atas untuk mempratinjau.</p>
-                    </div>
-                  )}
                 </div>
               )}
             </div>
@@ -1254,27 +1346,37 @@ export default function ApplicantsDirectory() {
 
       {/* ===== EDIT MODAL ===== */}
       {editApplicant && (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/70 backdrop-blur-md animate-in fade-in duration-200">
-          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 rounded-3xl w-full max-w-3xl max-h-[90vh] flex flex-col shadow-2xl overflow-hidden">
+        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 lg:p-8 bg-black/70 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-white/10 rounded-3xl w-full max-w-4xl max-h-[90vh] flex flex-col shadow-2xl overflow-hidden animate-in zoom-in-95 transition-all">
             {/* Header */}
-            <div className="p-5 border-b border-slate-100 dark:border-white/5 flex items-center justify-between bg-blue-50/50 dark:bg-blue-950/10 shrink-0">
-              <div>
-                <h3 className="text-sm font-black text-slate-800 dark:text-white uppercase tracking-wide flex items-center gap-2">
-                  <Pencil size={14} className="text-blue-500" />
-                  Edit Data — {editApplicant.nama}
-                </h3>
-                <p className="text-[10px] text-slate-400 font-bold mt-0.5">NISN: {editApplicant.nisn} · ID: #{editApplicant.id}</p>
+            <div className="p-6 md:p-8 border-b border-slate-100 dark:border-white/5 flex items-start justify-between bg-white dark:bg-slate-900 shrink-0 relative">
+              <div className="absolute inset-0 bg-gradient-to-r from-blue-50/50 to-transparent dark:from-blue-900/10 dark:to-transparent pointer-events-none"></div>
+              
+              <div className="flex items-center gap-5 relative z-10">
+                <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-blue-600 to-indigo-500 flex items-center justify-center text-white shadow-lg shadow-blue-500/20 shrink-0">
+                  <Pencil size={24} />
+                </div>
+                <div>
+                  <h3 className="text-xl md:text-2xl font-black text-slate-850 dark:text-white uppercase tracking-wide">
+                    Edit Data — {editApplicant.nama}
+                  </h3>
+                  <p className="text-xs text-slate-400 font-bold uppercase tracking-wider mt-1.5 flex items-center gap-2">
+                    <span className="text-blue-500">NISN:</span> {editApplicant.nisn}
+                    <span className="text-slate-300 dark:text-slate-700">•</span> 
+                    <span className="text-blue-500">ID:</span> #{editApplicant.id}
+                  </p>
+                </div>
               </div>
-              <button onClick={() => setEditApplicant(null)} className="w-8 h-8 rounded-full bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-slate-500 hover:text-rose-500 flex items-center justify-center transition-all">
-                <X size={14} />
+              <button onClick={() => setEditApplicant(null)} className="w-10 h-10 rounded-full bg-slate-100 hover:bg-slate-200 dark:bg-white/5 dark:hover:bg-white/10 border border-slate-200 dark:border-white/5 text-slate-500 hover:text-rose-500 flex items-center justify-center transition-all relative z-10 shrink-0">
+                <X size={16} />
               </button>
             </div>
 
             {/* Body — scrollable form */}
-            <div className="flex-1 overflow-y-auto p-6 space-y-5">
+            <div className="flex-1 overflow-y-auto p-6 md:p-8 space-y-6 bg-slate-50/50 dark:bg-slate-950/20 hide-scrollbar">
               {[
                 {
-                  section: "Identitas Diri", fields: [
+                  section: "Identitas Diri", icon: <User size={14} />, fields: [
                     { label: "Nama Lengkap", key: "nama" },
                     { label: "NISN", key: "nisn" },
                     { label: "NIK", key: "nik" },
@@ -1286,7 +1388,7 @@ export default function ApplicantsDirectory() {
                   ]
                 },
                 {
-                  section: "Alamat & Kontak", fields: [
+                  section: "Alamat & Kontak", icon: <School size={14} />, fields: [
                     { label: "Alamat", key: "alamat" },
                     { label: "RT/RW", key: "rt_rw" },
                     { label: "Kelurahan", key: "kelurahan" },
@@ -1299,13 +1401,13 @@ export default function ApplicantsDirectory() {
                   ]
                 },
                 {
-                  section: "Data Fisik", fields: [
+                  section: "Data Fisik", icon: <Heart size={14} />, fields: [
                     { label: "Tinggi Badan (cm)", key: "tinggi_badan", type: "number" },
                     { label: "Berat Badan (kg)", key: "berat_badan", type: "number" },
                   ]
                 },
                 {
-                  section: "Akademik & Jurusan", fields: [
+                  section: "Akademik & Jurusan", icon: <Layers size={14} />, fields: [
                     { label: "Sekolah Asal", key: "sekolah_asal" },
                     { label: "Tanggal Lulus", key: "tgl_lulus", type: "date" },
                     { label: "Jurusan Pilihan 1", key: "jurusan_1", type: "select", options: ["Rekayasa Perangkat Lunak", "Teknik Jaringan Komputer & Telekomunikasi", "Desain Komunikasi Visual", "Broadcasting & Perfilman", "Teknik Elektronika", "Animasi"] },
@@ -1315,7 +1417,7 @@ export default function ApplicantsDirectory() {
                   ]
                 },
                 {
-                  section: "Data Orang Tua", fields: [
+                  section: "Data Orang Tua", icon: <Users size={14} />, fields: [
                     { label: "Nama Ayah", key: "nama_ayah" },
                     { label: "Pekerjaan Ayah", key: "pekerjaan_ayah" },
                     { label: "Penghasilan Ayah", key: "penghasilan_ayah" },
@@ -1326,17 +1428,22 @@ export default function ApplicantsDirectory() {
                   ]
                 },
               ].map((section) => (
-                <div key={section.section}>
-                  <h4 className="text-[9px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500 mb-3 border-b border-slate-100 dark:border-white/5 pb-1.5">{section.section}</h4>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div key={section.section} className="bg-white dark:bg-slate-900 border border-slate-200/60 dark:border-white/5 rounded-3xl p-6 md:p-8 shadow-sm">
+                  <h4 className="text-xs font-black uppercase tracking-widest text-slate-800 dark:text-white mb-6 flex items-center gap-3 border-b border-slate-100 dark:border-white/5 pb-4">
+                    <div className="w-8 h-8 rounded-xl bg-blue-50 dark:bg-blue-500/10 flex items-center justify-center text-blue-500">
+                      {section.icon}
+                    </div>
+                    {section.section}
+                  </h4>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
                     {section.fields.map((f) => (
-                      <div key={f.key}>
-                        <label className="block text-[9px] font-black uppercase tracking-wider text-slate-400 dark:text-slate-500 mb-1">{f.label}</label>
+                      <div key={f.key} className="group">
+                        <label className="block text-[10px] font-black uppercase tracking-widest text-slate-455 dark:text-slate-450 mb-2 group-focus-within:text-blue-500 dark:group-focus-within:text-blue-400 transition-colors">{f.label}</label>
                         {f.type === "select" ? (
                           <select
                             value={(editForm as any)[f.key] || ""}
                             onChange={e => setEditForm(prev => ({ ...prev, [f.key]: e.target.value }))}
-                            className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-white/10 rounded-xl px-3 py-2 text-xs font-semibold text-slate-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all cursor-pointer"
+                            className="w-full bg-slate-50 hover:bg-slate-100/80 dark:bg-slate-800 border border-slate-200/80 dark:border-white/10 rounded-xl px-4 py-3 text-xs font-bold text-slate-700 dark:text-white focus:outline-none focus:ring-4 focus:ring-blue-500/15 focus:border-blue-500 transition-all cursor-pointer"
                           >
                             {(f.options || []).map(o => <option key={o} value={o}>{o}</option>)}
                           </select>
@@ -1345,7 +1452,7 @@ export default function ApplicantsDirectory() {
                             type={f.type || "text"}
                             value={(editForm as any)[f.key] || ""}
                             onChange={e => setEditForm(prev => ({ ...prev, [f.key]: e.target.value }))}
-                            className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-white/10 rounded-xl px-3 py-2 text-xs font-semibold text-slate-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
+                            className="w-full bg-slate-50 hover:bg-slate-100/80 dark:bg-slate-800 border border-slate-200/80 dark:border-white/10 rounded-xl px-4 py-3 text-xs font-bold text-slate-700 dark:text-white focus:outline-none focus:ring-4 focus:ring-blue-500/15 focus:border-blue-500 transition-all"
                           />
                         )}
                       </div>
@@ -1356,17 +1463,17 @@ export default function ApplicantsDirectory() {
             </div>
 
             {/* Footer */}
-            <div className="p-5 border-t border-slate-100 dark:border-white/5 bg-slate-50/50 dark:bg-slate-950/10 flex items-center justify-end gap-3 shrink-0">
+            <div className="p-6 border-t border-slate-100 dark:border-white/5 bg-slate-50/80 dark:bg-slate-950/40 flex items-center justify-end gap-4 shrink-0">
               <button
                 onClick={() => setEditApplicant(null)}
-                className="px-5 py-2.5 bg-slate-100 hover:bg-slate-200 dark:bg-white/5 dark:hover:bg-white/10 text-slate-600 dark:text-slate-300 rounded-xl text-xs font-black uppercase tracking-wider transition-all border border-slate-200 dark:border-white/5"
+                className="px-6 py-3 bg-white hover:bg-slate-100 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 rounded-xl text-xs font-black uppercase tracking-wider transition-all border border-slate-200 dark:border-white/5"
               >
                 Batal
               </button>
               <button
                 onClick={handleEditSave}
                 disabled={isSaving}
-                className="px-6 py-2.5 bg-blue-600 hover:bg-blue-500 disabled:opacity-60 disabled:cursor-wait text-white rounded-xl text-xs font-black uppercase tracking-wider transition-all shadow-[0_4px_12px_rgba(59,130,246,0.3)] flex items-center gap-2"
+                className="px-8 py-3 bg-blue-600 hover:bg-blue-500 disabled:opacity-60 text-white rounded-xl text-xs font-black uppercase tracking-wider transition-all shadow-[0_8px_20px_rgba(37,99,235,0.25)] flex items-center gap-2"
               >
                 {isSaving ? "Menyimpan..." : "Simpan Perubahan"}
               </button>

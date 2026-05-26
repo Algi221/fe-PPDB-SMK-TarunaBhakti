@@ -34,7 +34,8 @@ import {
   Megaphone,
   Clock,
   Radio,
-  Search
+  Search,
+  School
 } from "lucide-react";
 
 import DataPendaftarTable from "../components/DataPendaftarTable";
@@ -61,6 +62,18 @@ export default function Home() {
   // Navigation & UI States
   const [isNavbarScrolled, setIsNavbarScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [isClassDropdownOpen, setIsClassDropdownOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsClassDropdownOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   // Modals
   const [activeModal, setActiveModal] = useState<string | null>(null);
@@ -299,24 +312,135 @@ export default function Home() {
     };
   }, []);
 
+  // ============================================================
+  // Binary Search Tree (BST) Implementation
+  // Search fields: inisial nama, jurusan, asal sekolah, kelas
+  // ============================================================
+  interface BSTNode {
+    key: string;       // composite sort key
+    id: number;
+    left: BSTNode | null;
+    right: BSTNode | null;
+  }
+
+  function bstInsert(root: BSTNode | null, node: BSTNode): BSTNode {
+    if (!root) return node;
+    if (node.key < root.key) root.left = bstInsert(root.left, node);
+    else root.right = bstInsert(root.right, node);
+    return root;
+  }
+
+  // In-order traversal collecting ids whose key contains the query prefix
+  function bstSearch(root: BSTNode | null, query: string, results: number[]): void {
+    if (!root) return;
+    bstSearch(root.left, query, results);
+    if (root.key.includes(query)) results.push(root.id);
+    bstSearch(root.right, query, results);
+  }
+
   // Memoized Roster filters & unique class list
-  const uniqueRosterClasses = useMemo(() => {
+  const [uniqueRosterClasses, setUniqueRosterClasses] = useState<string[]>([]);
+
+  useEffect(() => {
     const classesSet = new Set<string>();
+
+    // 1. Pre-populate with standard SMK classes
+    const standardClasses = [
+      "X RPL 1", "X RPL 2", "X RPL 3",
+      "X TJKT 1", "X TJKT 2", "X TJKT 3",
+      "X DKV 1", "X DKV 2", "X DKV 3",
+      "X BC 1", "X BC 2",
+      "X TE 1", "X TE 2",
+      "X ANM 1", "X ANM 2"
+    ];
+    standardClasses.forEach(c => classesSet.add(c));
+
+    // 2. Load from localStorage (classes created by admin)
+    const savedClasses = localStorage.getItem("ppdb_classes_config");
+    if (savedClasses) {
+      try {
+        const parsed = JSON.parse(savedClasses);
+        if (Array.isArray(parsed)) {
+          parsed.forEach((c: any) => classesSet.add(c.name));
+        }
+      } catch (e) {
+        // Ignore JSON error
+      }
+    }
+
+    // 3. Extract dynamically assigned classes
     publicApplicants.forEach((a: any) => {
       const cls = a.diterima_kelas || a.diterimaKelas;
       if (cls) classesSet.add(cls);
     });
-    return Array.from(classesSet).sort();
+
+    const merged = Array.from(classesSet)
+      .filter(name => name && name.trim().length > 2) // Filter out garbage like "X"
+      .sort();
+
+    setUniqueRosterClasses(merged);
   }, [publicApplicants]);
 
+  const groupedClasses = useMemo(() => {
+    const groups: { [key: string]: string[] } = {};
+    
+    uniqueRosterClasses.forEach(cls => {
+      // Extract major code, usually the second word (e.g. "X RPL 1" -> "RPL")
+      const parts = cls.split(" ");
+      let groupName = "Lainnya";
+      
+      if (parts.length >= 2) {
+        const code = parts[1];
+        // Match with majors
+        const foundMajor = majors.find(m => m.code === code);
+        groupName = foundMajor ? foundMajor.title : code;
+      }
+      
+      if (!groups[groupName]) groups[groupName] = [];
+      groups[groupName].push(cls);
+    });
+    
+    return groups;
+  }, [uniqueRosterClasses, majors]);
+
   const filteredRosterStudents = useMemo(() => {
-    return publicApplicants.filter((a: any) => {
+    // Helper untuk membuat kunci pencarian BST
+    const buildKey = (a: any) => {
+      const nama = (a.nama || "").toLowerCase();
+      const initial = nama.charAt(0);
+      const jurusan = (a.jurusan_1 || a.jurusan1 || "").toLowerCase();
+      const sekolah = (a.sekolah_asal || a.sekolahAsal || "").toLowerCase();
+      const kelas = (a.diterima_kelas || a.diterimaKelas || "").toLowerCase();
+      return `${initial}|${jurusan}|${sekolah}|${kelas}`;
+    };
+
+    const validApplicants = publicApplicants.filter((a: any) => {
       const hasClass = a.diterima_kelas || a.diterimaKelas;
       const isApproved = a.status === "Approved";
-      if (!isApproved || !hasClass) return false;
+      return isApproved && hasClass;
+    });
 
-      const matchesSearch = (a.nama || "").toLowerCase().includes(rosterSearch.toLowerCase()) || 
-                            (a.nisn || "").includes(rosterSearch);
+    let bstRoot: BSTNode | null = null;
+    validApplicants.forEach((a: any) => {
+      bstRoot = bstInsert(bstRoot, {
+        key: buildKey(a),
+        id: a.id,
+        left: null,
+        right: null,
+      });
+    });
+
+    const query = rosterSearch.toLowerCase().trim();
+    let matchedIds = new Set<number>();
+
+    if (query) {
+      const results: number[] = [];
+      bstSearch(bstRoot, query, results);
+      matchedIds = new Set(results);
+    }
+
+    return validApplicants.filter((a: any) => {
+      const matchesSearch = !query || matchedIds.has(a.id);
       
       if (selectedRosterClass === "Semua") return matchesSearch;
       
@@ -736,7 +860,7 @@ export default function Home() {
         </div>
 
         {/* Toolbar & Search */}
-        <div className="bg-white/70 dark:bg-slate-900/60 backdrop-blur-xl border border-slate-200/60 dark:border-slate-800/60 rounded-3xl p-6 mb-8 shadow-sm flex flex-col md:flex-row gap-4 items-center justify-between">
+        <div className="relative z-30 bg-white/70 dark:bg-slate-900/60 backdrop-blur-xl border border-slate-200/60 dark:border-slate-800/60 rounded-3xl p-6 mb-8 shadow-sm flex flex-col md:flex-row gap-4 items-center justify-between">
           {/* Search bar */}
           <div className="relative w-full md:max-w-md">
             <span className="absolute inset-y-0 left-0 pl-4 flex items-center text-slate-400">
@@ -746,36 +870,75 @@ export default function Home() {
               type="text"
               value={rosterSearch}
               onChange={(e) => setRosterSearch(e.target.value)}
-              placeholder="Cari nama siswa atau NISN..."
+              placeholder="BST Search: inisial nama, jurusan, sekolah, kelas..."
               className="w-full pl-11 pr-4 py-3 bg-slate-50 dark:bg-slate-950/40 border border-slate-200 dark:border-white/5 rounded-2xl text-slate-850 dark:text-white placeholder-slate-400 text-sm focus:outline-none focus:border-blue-500 transition-all font-semibold"
             />
           </div>
 
-          {/* Dynamic Class Tabs */}
-          <div className="flex flex-wrap gap-2 justify-center md:justify-end w-full md:w-auto overflow-x-auto py-1 scrollbar-none">
+          {/* Beautiful Custom Class Filter Dropdown */}
+          <div className="relative" ref={dropdownRef}>
             <button
-              onClick={() => setSelectedRosterClass("Semua")}
-              className={`px-4 py-2 rounded-xl text-xs font-black uppercase tracking-wider transition-all border ${
-                selectedRosterClass === "Semua"
-                  ? "bg-blue-650 border-blue-700 text-white shadow-md shadow-blue-500/20"
-                  : "bg-slate-100 border-slate-200/50 hover:bg-slate-200/60 dark:bg-slate-800 dark:border-slate-700 text-slate-655 dark:text-slate-350"
-              }`}
+              onClick={() => setIsClassDropdownOpen(!isClassDropdownOpen)}
+              className="flex items-center justify-between gap-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 hover:border-blue-500/50 dark:hover:border-blue-500/50 rounded-2xl px-5 py-3 shrink-0 shadow-sm md:min-w-[220px] w-full transition-all group"
             >
-              Semua Rombel
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-full bg-blue-50 dark:bg-blue-500/10 flex items-center justify-center text-blue-600 dark:text-blue-400">
+                  <School size={14} />
+                </div>
+                <div className="flex flex-col items-start">
+                  <span className="text-[9px] uppercase font-bold text-slate-400 tracking-widest">Filter Rombel</span>
+                  <span className="text-sm font-black text-slate-700 dark:text-slate-200 uppercase tracking-wide">
+                    {selectedRosterClass === "Semua" ? "Semua Kelas" : selectedRosterClass}
+                  </span>
+                </div>
+              </div>
+              <ChevronRight size={16} className={`text-slate-400 transition-transform duration-300 ${isClassDropdownOpen ? "rotate-90" : ""}`} />
             </button>
-            {uniqueRosterClasses.map((clsName) => (
-              <button
-                key={clsName}
-                onClick={() => setSelectedRosterClass(clsName)}
-                className={`px-4 py-2 rounded-xl text-xs font-black uppercase tracking-wider transition-all border ${
-                  selectedRosterClass === clsName
-                    ? "bg-blue-650 border-blue-700 text-white shadow-md shadow-blue-500/20"
-                    : "bg-slate-100 border-slate-200/50 hover:bg-slate-200/60 dark:bg-slate-800 dark:border-slate-700 text-slate-655 dark:text-slate-350"
-                }`}
-              >
-                {clsName}
-              </button>
-            ))}
+
+            {/* Dropdown Menu */}
+            {isClassDropdownOpen && (
+              <div className="absolute top-full right-0 md:left-0 mt-3 w-full md:w-[320px] bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-white/10 rounded-2xl shadow-2xl shadow-blue-900/5 overflow-hidden z-[100] animate-in slide-in-from-top-2 fade-in duration-200">
+                <div className="max-h-[380px] overflow-y-auto scrollbar-thin scrollbar-thumb-slate-200 dark:scrollbar-thumb-slate-800 p-2">
+                  
+                  <button
+                    onClick={() => { setSelectedRosterClass("Semua"); setIsClassDropdownOpen(false); }}
+                    className={`w-full text-left px-4 py-3 rounded-xl text-sm font-bold transition-all flex items-center justify-between mb-2 ${
+                      selectedRosterClass === "Semua" 
+                        ? "bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400" 
+                        : "hover:bg-slate-50 dark:hover:bg-slate-800/50 text-slate-700 dark:text-slate-300"
+                    }`}
+                  >
+                    <span>Semua Kelas</span>
+                    {selectedRosterClass === "Semua" && <Check size={14} className="text-blue-600 dark:text-blue-400" />}
+                  </button>
+
+                  {Object.entries(groupedClasses).map(([groupName, classes]) => (
+                    <div key={groupName} className="mb-2 last:mb-0">
+                      <div className="px-4 py-2 flex items-center gap-2">
+                        <div className="w-1 h-3 rounded-full bg-blue-500/40"></div>
+                        <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">{groupName}</span>
+                      </div>
+                      <div className="grid grid-cols-2 gap-1 px-2">
+                        {classes.map(clsName => (
+                          <button
+                            key={clsName}
+                            onClick={() => { setSelectedRosterClass(clsName); setIsClassDropdownOpen(false); }}
+                            className={`text-left px-3 py-2 rounded-lg text-xs font-bold transition-all flex items-center justify-between ${
+                              selectedRosterClass === clsName 
+                                ? "bg-blue-500 text-white shadow-md shadow-blue-500/20" 
+                                : "hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-400"
+                            }`}
+                          >
+                            <span>{clsName}</span>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+
+                </div>
+              </div>
+            )}
           </div>
         </div>
         {/* Large Table Container */}
@@ -786,7 +949,6 @@ export default function Home() {
                 <tr className="border-b border-slate-150 dark:border-white/5 text-slate-400 dark:text-slate-500 font-black text-[9px] uppercase tracking-widest bg-slate-50/50 dark:bg-slate-950/20 sticky top-0 backdrop-blur-xl z-20">
                   <th className="py-4 px-6 text-left w-16">No</th>
                   <th className="py-4 px-6">Nama Lengkap Siswa</th>
-                  <th className="py-4 px-6 text-center">NISN Resmi</th>
                   <th className="py-4 px-6">Asal Sekolah SMP</th>
                   <th className="py-4 px-6">Kompetensi Keahlian</th>
                   <th className="py-4 px-6 text-center">Rombongan Belajar</th>
@@ -804,7 +966,6 @@ export default function Home() {
                     >
                       <td className="py-3.5 px-6 font-mono text-slate-400">{globalIdx}</td>
                       <td className="py-3.5 px-6 font-extrabold text-slate-850 dark:text-white uppercase tracking-wider">{student.nama}</td>
-                      <td className="py-3.5 px-6 text-center font-mono tracking-wide">{student.nisn}</td>
                       <td className="py-3.5 px-6 uppercase text-slate-550 dark:text-slate-400 font-semibold">{student.sekolah_asal || student.sekolahAsal || "-"}</td>
                       <td className="py-3.5 px-6">
                         <span className="text-blue-600 dark:text-blue-400 font-extrabold uppercase text-[10px]">
@@ -822,7 +983,7 @@ export default function Home() {
 
                 {filteredRosterStudents.length === 0 && (
                   <tr>
-                    <td colSpan={6} className="text-center py-16 text-slate-400 font-bold uppercase tracking-wider">
+                    <td colSpan={5} className="text-center py-16 text-slate-400 font-bold uppercase tracking-wider">
                       {selectedRosterClass === "Semua" 
                         ? "Belum ada data pendaftar resmi yang dibagi ke dalam kelas." 
                         : `Belum ada siswa terdaftar di rombel kelas ${selectedRosterClass}.`}
