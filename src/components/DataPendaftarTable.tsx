@@ -128,7 +128,7 @@ export default function DataPendaftarTable() {
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={14} />
           <input
             type="text"
-            placeholder="Cari Nama atau NISN..."
+            placeholder="Cari Nama Pendaftar..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg pl-9 pr-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500/50 text-slate-800 dark:text-white transition-all placeholder:text-slate-400"
@@ -157,7 +157,7 @@ export default function DataPendaftarTable() {
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="border-b border-slate-200/50 dark:border-slate-700/50">
-                <th className="px-4 py-3 text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Nama & NISN</th>
+                <th className="px-4 py-3 text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Nama Lengkap</th>
                 <th className="px-4 py-3 text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Asal Sekolah</th>
                 <th className="px-4 py-3 text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Status</th>
                 <th className="px-4 py-3 text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Aksi</th>
@@ -179,7 +179,6 @@ export default function DataPendaftarTable() {
                   >
                     <td className="px-4 py-3">
                       <div className="text-xs font-bold text-slate-800 dark:text-white mb-0.5">{item.nama}</div>
-                      <div className="text-[10px] font-medium text-slate-500 dark:text-slate-400 opacity-80">{item.nisn}</div>
                     </td>
                     <td className="px-4 py-3">
                       <div className="text-xs font-semibold text-slate-700 dark:text-slate-300">{item.sekolah_asal || item.sekolahAsal}</div>
@@ -267,7 +266,6 @@ export default function DataPendaftarTable() {
                 <div className="flex-1 min-w-0">
                   <h3 className="text-lg font-extrabold text-slate-900 dark:text-white truncate">{selectedStudent.nama}</h3>
                   <div className="flex flex-wrap gap-2 text-[10px] font-semibold text-slate-500 dark:text-slate-400 mt-1">
-                    <span className="flex items-center gap-1"><FileText size={12} /> NISN: {selectedStudent.nisn}</span>
                     <span className="flex items-center gap-1"><MapPin size={12} /> Asal: {selectedStudent.sekolah_asal || selectedStudent.sekolahAsal}</span>
                   </div>
                 </div>
