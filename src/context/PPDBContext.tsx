@@ -201,6 +201,8 @@ export function PPDBProvider({ children }: { children: React.ReactNode }) {
         addToast("Applicant Approved", `Pendaftar #${id} telah berhasil diverifikasi!`, "success");
         await fetchAdminApplicants();
         await fetchPublicApplicants();
+      } else {
+        addToast("Gagal Memverifikasi", data.message || "Gagal memperbarui status pendaftar.", "danger");
       }
     } catch (err: any) {
       console.error("API status update error:", err.message);
@@ -225,6 +227,8 @@ export function PPDBProvider({ children }: { children: React.ReactNode }) {
         addToast("Applicant Rejected", `Calon siswa #${id} telah ditolak.`, "warning");
         await fetchAdminApplicants();
         await fetchPublicApplicants();
+      } else {
+        addToast("Gagal Menolak", data.message || "Gagal memperbarui status pendaftar.", "danger");
       }
     } catch (err: any) {
       console.error("API status update error:", err.message);
@@ -248,6 +252,8 @@ export function PPDBProvider({ children }: { children: React.ReactNode }) {
         addToast("Applicant Deleted", `Data pendaftar #${id} telah dihapus permanen.`, "danger");
         await fetchAdminApplicants();
         await fetchPublicApplicants();
+      } else {
+        addToast("Gagal Menghapus", data.message || "Gagal menghapus data pendaftar.", "danger");
       }
     } catch (err: any) {
       console.error("API delete error:", err.message);
