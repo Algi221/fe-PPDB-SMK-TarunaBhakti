@@ -4,19 +4,19 @@ import React, { useState, useEffect } from "react";
 import { usePPDB } from "@/context/PPDBContext";
 import { 
   Settings, 
-  CloudLightning, 
   Database, 
   Wifi, 
   CheckCircle, 
-  HelpCircle, 
   HardDrive, 
   RefreshCw,
-  Save,
-  Link,
-  Sparkles
+  Sparkles,
+  Lock,
+  KeyRound,
+  ShieldCheck,
+  Eye,
+  EyeOff,
+  ShieldAlert
 } from "lucide-react";
-
-type PingStatus = "IDLE" | "PENDING" | "SUCCESS" | "ERROR";
 
 export default function SimulationSettings() {
   const { 
@@ -25,30 +25,24 @@ export default function SimulationSettings() {
     simulateRegistration, 
     wsStatus, 
     applicants,
+    adminToken,
     addToast 
   } = usePPDB();
 
   // Hydration safety
   const [mounted, setMounted] = useState<boolean>(false);
 
-  // Webhook settings state
-  const [webhookUrl, setWebhookUrl] = useState<string>("");
-  const [autoSync, setAutoSync] = useState<boolean>(true);
-  const [sendEmail, setSendEmail] = useState<boolean>(false);
-  const [isPinging, setIsPinging] = useState<boolean>(false);
-  const [pingStatus, setPingStatus] = useState<PingStatus>("IDLE");
-  const [pingLatency, setPingLatency] = useState<number | null>(null);
+  // Admin password change state
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [showPasswords, setShowPasswords] = useState(false);
+  const [isChangingPassword, setIsChangingPassword] = useState(false);
+  const [passwordError, setPasswordError] = useState("");
 
-  // Load preferences from localStorage on mount
+  // Load preferences on mount
   useEffect(() => {
     setMounted(true);
-    const savedUrl = localStorage.getItem("ppdb_sheets_webhook") || "https://script.google.com/macros/s/AKfycbz_PPDB_SMK_TarunaBhakti_Sync/exec";
-    const savedAutoSync = localStorage.getItem("ppdb_sheets_autosync") !== "false";
-    const savedSendEmail = localStorage.getItem("ppdb_sheets_sendemail") === "true";
-    
-    setWebhookUrl(savedUrl);
-    setAutoSync(savedAutoSync);
-    setSendEmail(savedSendEmail);
   }, []);
 
   const handleSimulate = async () => {
@@ -59,49 +53,67 @@ export default function SimulationSettings() {
     }
   };
 
-  // Save Settings
-  const handleSaveSettings = () => {
-    localStorage.setItem("ppdb_sheets_webhook", webhookUrl);
-    localStorage.setItem("ppdb_sheets_autosync", autoSync.toString());
-    localStorage.setItem("ppdb_sheets_sendemail", sendEmail.toString());
-    
-    if (typeof addToast === "function") {
-      addToast(
-        "Pengaturan Disimpan",
-        "Integrasi Google Sheets & Webhook berhasil diperbarui secara lokal.",
-        "success"
-      );
-    }
-  };
+  const handleChangePassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setPasswordError("");
 
-  // Test Webhook Connection (Simulated Ping)
-  const handleTestConnection = () => {
-    if (!webhookUrl) {
-      if (typeof addToast === "function") {
-        addToast("Error", "Harap masukkan URL Webhook yang valid terlebih dahulu.", "danger");
-      }
+    if (!currentPassword) {
+      setPasswordError("Password saat ini wajib diisi.");
+      return;
+    }
+    if (newPassword.length < 6) {
+      setPasswordError("Password baru harus minimal 6 karakter.");
+      return;
+    }
+    if (newPassword !== confirmPassword) {
+      setPasswordError("Konfirmasi password baru tidak cocok.");
       return;
     }
 
-    setIsPinging(true);
-    setPingStatus("PENDING");
-    
-    setTimeout(() => {
-      const latencies = [112, 134, 145, 158, 98, 126];
-      const randomLatency = latencies[Math.floor(Math.random() * latencies.length)];
+    setIsChangingPassword(true);
+    try {
+      const BACKEND_URL = typeof window !== 'undefined' ? `http://${window.location.hostname}:5000` : "http://localhost:5000";
+      const token = adminToken || localStorage.getItem("ppdb_admin_token");
       
-      setPingLatency(randomLatency);
-      setPingStatus("SUCCESS");
-      setIsPinging(false);
-      
-      if (typeof addToast === "function") {
-        addToast(
-          "Koneksi Berhasil",
-          `Berhasil terhubung ke spreadsheet Google Sheets (${randomLatency}ms)`,
-          "success"
-        );
+      const res = await fetch(`${BACKEND_URL}/api/auth/change-password`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          currentPassword,
+          newPassword
+        })
+      });
+
+      const data = await res.json();
+      if (res.ok && data.success) {
+        if (typeof addToast === "function") {
+          addToast(
+            "Password Diubah",
+            data.message || "Password admin berhasil diperbarui.",
+            "success"
+          );
+        }
+        // Reset form
+        setCurrentPassword("");
+        setNewPassword("");
+        setConfirmPassword("");
+      } else {
+        setPasswordError(data.message || "Gagal mengubah password.");
+        if (typeof addToast === "function") {
+          addToast("Gagal", data.message || "Gagal mengubah password.", "warning");
+        }
       }
-    }, 1500);
+    } catch (err: any) {
+      setPasswordError("Gagal menghubungi server backend.");
+      if (typeof addToast === "function") {
+        addToast("Error", "Koneksi ke server terputus.", "danger");
+      }
+    } finally {
+      setIsChangingPassword(false);
+    }
   };
 
   if (!mounted) {
@@ -109,7 +121,7 @@ export default function SimulationSettings() {
       <div className="flex items-center justify-center min-h-[300px]">
         <div className="flex flex-col items-center gap-3">
           <RefreshCw className="animate-spin text-blue-500 dark:text-blue-400" size={32} />
-          <span className="text-sm font-semibold text-slate-500 dark:text-slate-450">Memuat konfigurasi...</span>
+          <span className="text-sm font-semibold text-slate-500 dark:text-slate-455">Memuat konfigurasi...</span>
         </div>
       </div>
     );
@@ -122,10 +134,10 @@ export default function SimulationSettings() {
       <div>
         <h1 className="text-2xl font-black text-slate-800 dark:text-white tracking-tight flex items-center gap-2.5">
           <Settings className="text-blue-500 dark:text-blue-400" size={24} />
-          <span>Pengaturan Sistem & Integrasi</span>
+          <span>Pengaturan Sistem & Keamanan</span>
         </h1>
-        <p className="text-sm font-medium text-slate-500 dark:text-slate-450 mt-1">
-          Konfigurasi simulasi database real-time WebSocket dan sinkronisasi otomatis Google Sheets.
+        <p className="text-sm font-medium text-slate-500 dark:text-slate-455 mt-1">
+          Perbarui keamanan akun administrator dan kendalikan engine simulasi portal PPDB real-time.
         </p>
       </div>
 
@@ -134,153 +146,128 @@ export default function SimulationSettings() {
         {/* LEFT & CENTER COLUMN: Integration Settings */}
         <div className="lg:col-span-2 space-y-6">
           
-          {/* Google Sheets Webhook Sync Configuration Card */}
+          {/* Keamanan & Ganti Password Admin Card */}
           <div className="bg-white dark:bg-slate-900 border border-slate-200/85 dark:border-slate-800/60 rounded-3xl p-6 md:p-8 shadow-[0_4px_20px_rgba(0,0,0,0.02)] transition-colors duration-300 relative overflow-hidden">
-            <div className="absolute top-[-10%] right-[-10%] w-[250px] h-[250px] rounded-full bg-emerald-500/5 blur-[80px] pointer-events-none"></div>
+            <div className="absolute top-[-10%] right-[-10%] w-[250px] h-[250px] rounded-full bg-blue-500/5 blur-[80px] pointer-events-none"></div>
 
-            <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-5 mb-6">
+            <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800/60 pb-5 mb-6">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-2xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-100 dark:border-emerald-900/35 flex items-center justify-center text-emerald-600 dark:text-emerald-450 shrink-0">
-                  <CloudLightning size={20} />
+                <div className="w-10 h-10 rounded-2xl bg-blue-50 dark:bg-blue-950/40 border border-blue-100 dark:border-blue-900/35 flex items-center justify-center text-blue-600 dark:text-blue-450 shrink-0">
+                  <Lock size={20} />
                 </div>
                 <div>
                   <h3 className="text-base font-extrabold text-slate-850 dark:text-white tracking-tight">
-                    Integrasi Google Sheets Webhook
+                    Keamanan & Ganti Password
                   </h3>
-                  <p className="text-xs text-slate-450 font-semibold mt-0.5">
-                    Sinkronisasi data terverifikasi otomatis ke Google Spreadsheet Anda
+                  <p className="text-xs text-slate-455 font-semibold mt-0.5">
+                    Perbarui kata sandi akun administrator secara berkala untuk perlindungan data
                   </p>
                 </div>
               </div>
               
               <div className="hidden sm:block">
-                <span className="px-3 py-1 bg-emerald-50 dark:bg-emerald-950/45 border border-emerald-200/40 dark:border-emerald-800/40 rounded-full text-[10px] font-black uppercase text-emerald-700 dark:text-emerald-400 tracking-wider">
-                  Real-time Sync
+                <span className="px-3 py-1 bg-blue-50 dark:bg-blue-950/45 border border-blue-200/40 dark:border-blue-800/40 rounded-full text-[10px] font-black uppercase text-blue-700 dark:text-blue-400 tracking-wider flex items-center gap-1">
+                  <ShieldCheck size={10} /> Secure Hash
                 </span>
               </div>
             </div>
 
-            <div className="space-y-6">
-              {/* Webhook URL Input */}
-              <div className="space-y-2">
-                <label className="text-xs font-black uppercase tracking-wider text-slate-500 dark:text-slate-400 flex items-center gap-1.5">
-                  <Link size={13} className="text-blue-500" />
-                  URL Webhook Google Apps Script
-                </label>
-                <input
-                  type="text"
-                  value={webhookUrl}
-                  onChange={(e) => setWebhookUrl(e.target.value)}
-                  placeholder="https://script.google.com/macros/s/..."
-                  className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-950/30 border border-slate-200 dark:border-slate-800 rounded-2xl text-slate-800 dark:text-white placeholder-slate-400 dark:placeholder-slate-600 text-xs focus:outline-none focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10 dark:focus:ring-emerald-500/15 transition-all font-semibold"
-                />
-                <p className="text-[10px] text-slate-400 dark:text-slate-550 font-medium">
-                  Webhook ini terhubung ke Script Google Sheets yang mendengarkan request POST untuk memasukkan data calon siswa baru secara otomatis.
-                </p>
-              </div>
-
-              {/* Checkbox Options */}
-              <div className="space-y-4 pt-2">
-                
-                {/* Auto Sync Toggle */}
-                <div className="flex items-start justify-between p-4 bg-slate-50/50 dark:bg-slate-950/20 border border-slate-100 dark:border-slate-800/50 rounded-2xl gap-4">
-                  <div className="space-y-0.5">
-                    <h4 className="text-xs font-bold text-slate-800 dark:text-white leading-snug">Auto-Sync saat Verifikasi</h4>
-                    <p className="text-[10px] text-slate-455">Kirim data ke Spreadsheet secara otomatis ketika berkas calon siswa disetujui (Approved).</p>
-                  </div>
-                  <div className="flex items-center shrink-0">
-                    <label className="relative inline-flex items-center cursor-pointer">
-                      <input
-                        type="checkbox"
-                        checked={autoSync}
-                        onChange={(e) => setAutoSync(e.target.checked)}
-                        className="sr-only peer"
-                      />
-                      <div className="w-10 h-5 bg-slate-200 dark:bg-slate-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-slate-455 after:border-slate-350 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-emerald-500 peer-checked:after:bg-white"></div>
-                    </label>
-                  </div>
-                </div>
-
-                {/* Email Notification Toggle */}
-                <div className="flex items-start justify-between p-4 bg-slate-50/50 dark:bg-slate-950/20 border border-slate-100 dark:border-slate-800/50 rounded-2xl gap-4">
-                  <div className="space-y-0.5">
-                    <h4 className="text-xs font-bold text-slate-800 dark:text-white leading-snug">Notifikasi Email Pendaftar</h4>
-                    <p className="text-[10px] text-slate-455">Kirim email auto-responder ke siswa via Google Mail Apps Script ketika data berhasil disinkronisasi.</p>
-                  </div>
-                  <div className="flex items-center shrink-0">
-                    <label className="relative inline-flex items-center cursor-pointer">
-                      <input
-                        type="checkbox"
-                        checked={sendEmail}
-                        onChange={(e) => setSendEmail(e.target.checked)}
-                        className="sr-only peer"
-                      />
-                      <div className="w-10 h-5 bg-slate-200 dark:bg-slate-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-slate-455 after:border-slate-350 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-emerald-500 peer-checked:after:bg-white"></div>
-                    </label>
-                  </div>
-                </div>
-
-              </div>
-
-              {/* Ping Connection Result Alert */}
-              {pingStatus !== "IDLE" && (
-                <div className={`p-4 rounded-2xl border text-xs font-semibold leading-relaxed flex items-start gap-3 animate-in fade-in slide-in-from-top-2 duration-300 ${
-                  pingStatus === "PENDING"
-                    ? "bg-blue-50/70 dark:bg-blue-950/20 border-blue-200/50 dark:border-blue-900/30 text-blue-700 dark:text-blue-300"
-                    : "bg-emerald-50/70 dark:bg-emerald-950/20 border-emerald-250/50 dark:border-emerald-900/30 text-emerald-800 dark:text-emerald-300"
-                }`}>
-                  {pingStatus === "PENDING" ? (
-                    <RefreshCw size={16} className="animate-spin text-blue-500 shrink-0 mt-0.5" />
-                  ) : (
-                    <CheckCircle size={16} className="text-emerald-500 shrink-0 mt-0.5" />
-                  )}
-                  <div className="space-y-0.5">
-                    <h5 className="font-extrabold uppercase text-[10px] tracking-wider">
-                      {pingStatus === "PENDING" ? "Menguji Konektivitas..." : "Tes Koneksi Berhasil!"}
-                    </h5>
-                    <div className="text-[10.5px] opacity-90 leading-normal">
-                      {pingStatus === "PENDING" ? (
-                        "Sedang mengirim paket ping handshake ke endpoint Google Apps Script..."
-                      ) : (
-                        <span>
-                          Status: <strong className="text-slate-850 dark:text-white">200 OK</strong> · Latency:{" "}
-                          <strong className="text-emerald-600 dark:text-emerald-400">{pingLatency}ms</strong> · Target Sheet:{" "}
-                          <strong className="text-slate-850 dark:text-white">PPDB Taruna Bhakti 2026 / 2027</strong>
-                        </span>
-                      )}
-                    </div>
-                  </div>
+            <form onSubmit={handleChangePassword} className="space-y-5">
+              {passwordError && (
+                <div className="p-4 rounded-2xl bg-rose-500/5 dark:bg-rose-500/10 border border-rose-500/20 text-rose-600 dark:text-rose-400 text-xs font-semibold leading-relaxed flex items-center gap-2 animate-in fade-in slide-in-from-top-2 duration-300">
+                  <div className="shrink-0 w-1.5 h-1.5 rounded-full bg-rose-500"></div>
+                  <span>{passwordError}</span>
                 </div>
               )}
 
-              {/* Card Action Buttons */}
-              <div className="flex flex-wrap items-center gap-3 pt-2">
-                <button
-                  onClick={handleSaveSettings}
-                  className="px-5 py-2.5 bg-slate-900 dark:bg-white text-white dark:text-slate-900 hover:bg-slate-800 dark:hover:bg-slate-100 rounded-2xl text-xs font-bold transition-all active:scale-[0.98] flex items-center gap-2 shrink-0 shadow-sm"
-                >
-                  <Save size={14} />
-                  Simpan Konfigurasi
-                </button>
-                
-                <button
-                  onClick={handleTestConnection}
-                  disabled={isPinging}
-                  className="px-5 py-2.5 bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-950/40 dark:hover:bg-emerald-900/40 text-emerald-700 dark:text-emerald-400 border border-emerald-250/20 rounded-2xl text-xs font-extrabold transition-all active:scale-[0.98] flex items-center gap-2 shrink-0 disabled:opacity-50"
-                >
-                  <RefreshCw size={14} className={isPinging ? "animate-spin" : ""} />
-                  Test Koneksi Webhook
-                </button>
+              {/* Current Password */}
+              <div className="space-y-2">
+                <label className="text-xs font-black uppercase tracking-wider text-slate-500 dark:text-slate-455 flex items-center gap-1.5">
+                  <KeyRound size={13} className="text-slate-455" />
+                  Password Saat Ini
+                </label>
+                <div className="relative">
+                  <input
+                    type={showPasswords ? "text" : "password"}
+                    value={currentPassword}
+                    onChange={(e) => setCurrentPassword(e.target.value)}
+                    placeholder="Masukkan password saat ini..."
+                    className="w-full pl-4 pr-11 py-3 bg-slate-50 dark:bg-slate-950/30 border border-slate-200 dark:border-slate-800 rounded-2xl text-slate-800 dark:text-white placeholder-slate-400 dark:placeholder-slate-600 text-xs focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 dark:focus:ring-blue-500/15 transition-all font-semibold"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPasswords(!showPasswords)}
+                    className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-655 dark:hover:text-white transition-colors"
+                  >
+                    {showPasswords ? <EyeOff size={16} /> : <Eye size={16} />}
+                  </button>
+                </div>
               </div>
 
-            </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {/* New Password */}
+                <div className="space-y-2">
+                  <label className="text-xs font-black uppercase tracking-wider text-slate-500 dark:text-slate-455 flex items-center gap-1.5">
+                    <Lock size={13} className="text-slate-455" />
+                    Password Baru
+                  </label>
+                  <div className="relative">
+                    <input
+                      type={showPasswords ? "text" : "password"}
+                      value={newPassword}
+                      onChange={(e) => setNewPassword(e.target.value)}
+                      placeholder="Minimal 6 karakter..."
+                      className="w-full pl-4 pr-11 py-3 bg-slate-50 dark:bg-slate-950/30 border border-slate-200 dark:border-slate-800 rounded-2xl text-slate-800 dark:text-white placeholder-slate-400 dark:placeholder-slate-600 text-xs focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 dark:focus:ring-blue-500/15 transition-all font-semibold"
+                    />
+                  </div>
+                </div>
+
+                {/* Confirm New Password */}
+                <div className="space-y-2">
+                  <label className="text-xs font-black uppercase tracking-wider text-slate-500 dark:text-slate-455 flex items-center gap-1.5">
+                    <ShieldCheck size={13} className="text-slate-455" />
+                    Konfirmasi Password Baru
+                  </label>
+                  <div className="relative">
+                    <input
+                      type={showPasswords ? "text" : "password"}
+                      value={confirmPassword}
+                      onChange={(e) => setConfirmPassword(e.target.value)}
+                      placeholder="Ulangi password baru..."
+                      className="w-full pl-4 pr-11 py-3 bg-slate-50 dark:bg-slate-950/30 border border-slate-200 dark:border-slate-800 rounded-2xl text-slate-800 dark:text-white placeholder-slate-400 dark:placeholder-slate-600 text-xs focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 dark:focus:ring-blue-500/15 transition-all font-semibold"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Submit Button */}
+              <div className="pt-2">
+                <button
+                  type="submit"
+                  disabled={isChangingPassword}
+                  className="px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-500 hover:brightness-110 text-white rounded-2xl text-xs font-bold tracking-wider uppercase transition-all shadow-[0_4px_15_rgba(59,130,246,0.15)] hover:shadow-[0_4px_20_rgba(59,130,246,0.25)] active:scale-[0.98] disabled:opacity-50 flex items-center gap-2 cursor-pointer font-black"
+                >
+                  {isChangingPassword ? (
+                    <>
+                      <RefreshCw size={14} className="animate-spin" />
+                      Memproses...
+                    </>
+                  ) : (
+                    <>
+                      <Lock size={14} />
+                      Simpan Password Baru
+                    </>
+                  )}
+                </button>
+              </div>
+            </form>
           </div>
 
           {/* Engine Simulasi WebSocket Card */}
           <div className="bg-white dark:bg-slate-900 border border-slate-200/85 dark:border-slate-800/60 rounded-3xl p-6 md:p-8 shadow-[0_4px_20px_rgba(0,0,0,0.02)] transition-colors duration-300 relative overflow-hidden">
             <div className="absolute top-[-10%] right-[-10%] w-[250px] h-[250px] rounded-full bg-blue-500/5 blur-[80px] pointer-events-none"></div>
 
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-5 mb-6 gap-4">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-slate-100 dark:border-slate-800/60 pb-5 mb-6 gap-4">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-2xl bg-blue-50/70 dark:bg-blue-950/40 border border-blue-100 dark:border-blue-900/35 flex items-center justify-center text-blue-500 dark:text-blue-455 shrink-0">
                   <Wifi size={20} />
@@ -298,7 +285,7 @@ export default function SimulationSettings() {
               <div className="px-3.5 py-1.5 bg-slate-100 dark:bg-slate-950 border border-slate-200 dark:border-white/5 rounded-full text-[10px] font-bold uppercase tracking-wider flex items-center gap-2 relative self-start sm:self-auto">
                 <span className={`w-2 h-2 rounded-full ${wsStatus === "CONNECTED" ? "bg-emerald-500 animate-ping" : "bg-rose-500"}`} />
                 <span className={`w-2 h-2 rounded-full absolute ${wsStatus === "CONNECTED" ? "bg-emerald-500" : "bg-rose-500"}`} />
-                <span className="pl-3 text-slate-500 dark:text-slate-400">Saluran Live: {wsStatus === "CONNECTED" ? "CONNECTED" : "DISCONNECTED"}</span>
+                <span className="pl-3 text-slate-500 dark:text-slate-450">Saluran Live: {wsStatus === "CONNECTED" ? "CONNECTED" : "DISCONNECTED"}</span>
               </div>
             </div>
 
@@ -307,11 +294,11 @@ export default function SimulationSettings() {
               <div className="flex flex-col md:flex-row md:items-center justify-between p-4 bg-slate-50/50 dark:bg-slate-950/20 border border-slate-150/60 dark:border-slate-800 rounded-2xl gap-4">
                 <div>
                   <h4 className="text-sm font-bold text-slate-800 dark:text-white leading-snug">Simulasi Pendaftaran Baru</h4>
-                  <p className="text-[11px] text-slate-400 dark:text-slate-500 mt-0.5">Memicu pembuatan profil calon siswa baru secara acak dan menyiarkannya via WebSocket.</p>
+                  <p className="text-[11px] text-slate-400 dark:text-slate-550 mt-0.5">Memicu pembuatan profil calon siswa baru secara acak dan menyiarkannya via WebSocket.</p>
                 </div>
                 <button
                   onClick={handleSimulate}
-                  className="px-6 py-3 bg-gradient-to-r from-blue-500 to-sky-400 text-white rounded-2xl text-xs font-bold tracking-wider uppercase transition-all shadow-[0_4px_15px_rgba(59,130,246,0.15)] hover:shadow-[0_4px_20px_rgba(59,130,246,0.25)] hover:brightness-110 active:scale-[0.98] shrink-0"
+                  className="px-6 py-3 bg-gradient-to-r from-blue-500 to-sky-400 text-white rounded-2xl text-xs font-bold tracking-wider uppercase transition-all shadow-[0_4px_15_rgba(59,130,246,0.15)] hover:shadow-[0_4px_20_rgba(59,130,246,0.25)] hover:brightness-110 active:scale-[0.98] shrink-0"
                 >
                   Simulasikan Siswa Baru
                 </button>
@@ -321,7 +308,7 @@ export default function SimulationSettings() {
               <div className="flex flex-col md:flex-row md:items-center justify-between p-4 bg-slate-50/50 dark:bg-slate-950/20 border border-slate-150/60 dark:border-slate-800 rounded-2xl gap-4">
                 <div>
                   <h4 className="text-sm font-bold text-slate-800 dark:text-white leading-snug">Auto-Simulation Interval</h4>
-                  <p className="text-[11px] text-slate-400 dark:text-slate-500 mt-0.5">Secara otomatis menghasilkan pendaftaran calon siswa acak setiap 25 detik untuk simulasi berkelanjutan.</p>
+                  <p className="text-[11px] text-slate-400 dark:text-slate-550 mt-0.5">Secara otomatis menghasilkan pendaftaran calon siswa acak setiap 25 detik untuk simulasi berkelanjutan.</p>
                 </div>
                 <div className="flex items-center shrink-0">
                   <label className="relative inline-flex items-center cursor-pointer">
@@ -360,47 +347,47 @@ export default function SimulationSettings() {
         {/* RIGHT COLUMN: Integration Guides & System Stats */}
         <div className="space-y-6">
           
-          {/* Google Sheets Set-Up Guide Card */}
+          {/* Security Best Practices Card */}
           <div className="bg-white dark:bg-slate-900 border border-slate-200/85 dark:border-slate-800/60 rounded-3xl p-6 shadow-[0_4px_20px_rgba(0,0,0,0.02)] transition-colors duration-300 relative overflow-hidden">
             <div className="absolute top-[-10%] right-[-10%] w-[150px] h-[150px] rounded-full bg-blue-500/5 blur-[50px] pointer-events-none"></div>
 
-            <h4 className="text-xs font-black uppercase tracking-wider text-slate-450 border-b border-slate-100 dark:border-slate-800 pb-3 mb-4 flex items-center gap-1.5">
-              <HelpCircle size={14} className="text-blue-500 animate-pulse" />
-              Panduan Integrasi Google Sheets
+            <h4 className="text-xs font-black uppercase tracking-wider text-slate-450 border-b border-slate-100 dark:border-slate-800/60 pb-3 mb-4 flex items-center gap-1.5">
+              <ShieldAlert size={14} className="text-blue-500 animate-pulse" />
+              Keamanan Akun & Tips
             </h4>
             
-            <div className="space-y-4 text-xs font-medium text-slate-600 dark:text-slate-350 leading-relaxed">
-              <p>Ikuti 3 langkah cepat ini untuk menghubungkan dashboard ke Google Spreadsheet secara instan:</p>
+            <div className="space-y-4 text-xs font-medium text-slate-600 dark:text-slate-355 leading-relaxed">
+              <p>Jaga keamanan dashboard administrator PPDB dengan mengikuti panduan dasar berikut:</p>
               
               <div className="relative pl-6 border-l-2 border-slate-200 dark:border-slate-800 space-y-4">
                 <div className="relative">
                   <span className="absolute -left-[31px] top-0 w-4 h-4 rounded-full bg-blue-500 text-[10px] font-black text-white flex items-center justify-center shadow-md">
                     1
                   </span>
-                  <p className="font-extrabold text-slate-800 dark:text-white">Buat Google Sheet Baru</p>
-                  <p className="text-[11px] text-slate-400 mt-0.5">Siapkan Spreadsheet kosong, beri nama dan salin link spreadsheet tersebut.</p>
+                  <p className="font-extrabold text-slate-800 dark:text-white">Ganti Sandi Berkala</p>
+                  <p className="text-[11px] text-slate-400 mt-0.5">Lakukan penggantian kata sandi secara rutin setiap 3-6 bulan untuk mencegah akses yang tidak sah.</p>
                 </div>
                 
                 <div className="relative">
                   <span className="absolute -left-[31px] top-0 w-4 h-4 rounded-full bg-blue-500 text-[10px] font-black text-white flex items-center justify-center shadow-md">
                     2
                   </span>
-                  <p className="font-extrabold text-slate-800 dark:text-white">Buat Apps Script Webhook</p>
-                  <p className="text-[11px] text-slate-400 mt-0.5">Buka Ekstensi → Apps Script, dan tempel kode handler POST untuk menyisipkan data calon siswa baru.</p>
+                  <p className="font-extrabold text-slate-800 dark:text-white">Kombinasi Karakter</p>
+                  <p className="text-[11px] text-slate-400 mt-0.5">Gunakan kombinasi huruf besar, huruf kecil, angka, dan karakter spesial untuk kekuatan sandi maksimal.</p>
                 </div>
                 
                 <div className="relative">
                   <span className="absolute -left-[31px] top-0 w-4 h-4 rounded-full bg-blue-500 text-[10px] font-black text-white flex items-center justify-center shadow-md">
                     3
                   </span>
-                  <p className="font-extrabold text-slate-800 dark:text-white">Terapkan sebagai Web App</p>
-                  <p className="text-[11px] text-slate-400 mt-0.5">Klik Terapkan → Deployment Baru → pilih Web App. Berikan akses "Siapa Saja (Anyone)" dan tempel URL deployment di input webhook kiri.</p>
+                  <p className="font-extrabold text-slate-800 dark:text-white">Hindari Berbagi Akun</p>
+                  <p className="text-[11px] text-slate-400 mt-0.5">Pastikan kredensial login disimpan secara aman dan tidak dibagikan ke pihak luar demi menjaga integritas data pendaftar.</p>
                 </div>
               </div>
 
-              <div className="mt-4 pt-3 border-t border-slate-100 dark:border-slate-800/85">
-                <span className="text-[10px] font-extrabold text-emerald-600 dark:text-emerald-450 flex items-center gap-1">
-                  <Sparkles size={11} /> Auto-format spreadsheet columns (A-L) didukung otomatis!
+              <div className="mt-4 pt-3 border-t border-slate-100 dark:border-slate-800/60">
+                <span className="text-[10px] font-extrabold text-emerald-600 dark:text-emerald-455 flex items-center gap-1">
+                  <Sparkles size={11} /> Menggunakan enkripsi satu arah BCrypt di level database.
                 </span>
               </div>
             </div>
@@ -408,20 +395,20 @@ export default function SimulationSettings() {
 
           {/* Info Card Statistics & Data Storage */}
           <div className="bg-white dark:bg-slate-900 border border-slate-200/85 dark:border-slate-800/60 rounded-3xl p-6 shadow-[0_4px_20px_rgba(0,0,0,0.02)] transition-colors duration-300">
-            <h4 className="text-xs font-black uppercase tracking-wider text-slate-455 border-b border-slate-100 dark:border-slate-800 pb-3 mb-4 flex items-center gap-1.5">
+            <h4 className="text-xs font-black uppercase tracking-wider text-slate-455 border-b border-slate-100 dark:border-slate-800/60 pb-3 mb-4 flex items-center gap-1.5">
               <HardDrive size={14} className="text-blue-500" />
               Status Penyimpanan Data
             </h4>
             
             <div className="space-y-4">
-              <div className="p-4 bg-slate-50 dark:bg-slate-950/20 border border-slate-150/60 dark:border-slate-800/80 rounded-2xl">
+              <div className="p-4 bg-slate-50 dark:bg-slate-950/20 border border-slate-150/60 dark:border-slate-800 rounded-2xl">
                 <span className="text-slate-400 dark:text-slate-500 block text-[10px] font-extrabold uppercase tracking-wide">Total Calon Siswa (Local State)</span>
                 <span className="text-slate-850 dark:text-white font-extrabold text-xl leading-none mt-1 block">
                   {applicants.length} Data
                 </span>
               </div>
               
-              <div className="p-4 bg-slate-50 dark:bg-slate-950/20 border border-slate-150/60 dark:border-slate-800/80 rounded-2xl">
+              <div className="p-4 bg-slate-50 dark:bg-slate-950/20 border border-slate-150/60 dark:border-slate-800 rounded-2xl">
                 <span className="text-slate-400 dark:text-slate-500 block text-[10px] font-extrabold uppercase tracking-wide">Penyimpanan Terpasang</span>
                 <div className="text-blue-600 dark:text-blue-400 font-extrabold text-xs uppercase tracking-wider mt-1.5 flex items-center gap-1.5">
                   <Database size={12} />
@@ -429,10 +416,10 @@ export default function SimulationSettings() {
                 </div>
               </div>
 
-              <div className="p-4 bg-slate-50 dark:bg-slate-950/20 border border-slate-150/60 dark:border-slate-800/80 rounded-2xl">
-                <span className="text-slate-400 dark:text-slate-500 block text-[10px] font-extrabold uppercase tracking-wide">Sinkronisasi Google Drive</span>
+              <div className="p-4 bg-slate-50 dark:bg-slate-950/20 border border-slate-150/60 dark:border-slate-800 rounded-2xl">
+                <span className="text-slate-400 dark:text-slate-500 block text-[10px] font-extrabold uppercase tracking-wide">Autentikasi Sesi</span>
                 <div className="text-emerald-600 dark:text-emerald-455 font-extrabold text-[10px] uppercase tracking-wider mt-1.5 flex items-center gap-1">
-                  <CheckCircle size={12} /> Terhubung via Webhook
+                  <CheckCircle size={12} /> JSON Web Token (JWT)
                 </div>
               </div>
             </div>

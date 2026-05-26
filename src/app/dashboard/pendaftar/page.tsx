@@ -682,7 +682,7 @@ export default function ApplicantsDirectory() {
                     <td className="py-4 px-6 pl-8">
                       <div className="font-extrabold text-slate-850 dark:text-white text-sm">{a.nama}</div>
                       <span className="text-[9px] text-slate-400 dark:text-slate-550 font-bold tracking-wide uppercase mt-0.5 block">
-                        Daftar: {new Date(a.tgl_daftar || a.createdAt || Date.now()).toLocaleDateString("id-ID")}
+                        Daftar: {new Date(a.tgl_daftar || a.createdAt || Date.now()).toLocaleDateString("id-ID")} · Lahir: {a.tempat_lahir || a.tempatLahir || "-"}, {a.tgl_lahir || a.tglLahir || "-"}
                       </span>
                     </td>
                     <td className="py-4 px-6 text-slate-600 dark:text-slate-400 font-semibold">{a.sekolah_asal || a.sekolahAsal}</td>
@@ -798,8 +798,9 @@ export default function ApplicantsDirectory() {
                   <th className="py-2 px-4 border-r border-slate-200 dark:border-slate-800 w-[220px]">B (NAMA_LENGKAP)</th>
                   <th className="py-2 px-4 border-r border-slate-200 dark:border-slate-800 w-[200px]">C (ASAL_SEKOLAH)</th>
                   <th className="py-2 px-4 border-r border-slate-200 dark:border-slate-800 w-[180px]">D (JURUSAN_UTAMA)</th>
-                  <th className="py-2 px-4 border-r border-slate-200 dark:border-slate-800 w-[130px] text-center">E (NO_WA)</th>
-                  <th className="py-2 px-4 w-[120px] text-center">F (STATUS)</th>
+                  <th className="py-2 px-4 border-r border-slate-200 dark:border-slate-800 w-[130px] text-center font-mono">E (NO_WA)</th>
+                  <th className="py-2 px-4 border-r border-slate-200 dark:border-slate-800 w-[120px] text-center font-mono">F (STATUS)</th>
+                  <th className="py-2 px-4 w-[160px] text-center font-mono">G (TANGGAL_LAHIR)</th>
                 </tr>
               </thead>
               <tbody>
@@ -862,7 +863,7 @@ export default function ApplicantsDirectory() {
                     {/* Column F: Status */}
                     <td
                       onClick={() => setActiveCell({ row: rowIdx, col: 6 })}
-                      className={`py-2.5 px-4 text-center text-[10px] font-extrabold uppercase tracking-widest ${a.status === "Approved"
+                      className={`py-2.5 px-4 text-center text-[10px] font-extrabold uppercase tracking-widest border-r border-slate-200 dark:border-slate-800 ${a.status === "Approved"
                           ? "text-emerald-600 dark:text-emerald-400 bg-emerald-500/5"
                           : a.status === "Rejected"
                             ? "text-rose-600 dark:text-rose-400 bg-rose-500/5"
@@ -872,12 +873,21 @@ export default function ApplicantsDirectory() {
                     >
                       {a.status || "Pending"}
                     </td>
+
+                    {/* Column G: Tanggal Lahir */}
+                    <td
+                      onClick={() => setActiveCell({ row: rowIdx, col: 7 })}
+                      className={`py-2.5 px-4 text-center text-xs font-mono font-bold text-slate-600 dark:text-slate-355 ${activeCell?.row === rowIdx && activeCell?.col === 7 ? "bg-blue-500/10 outline outline-2 outline-blue-500" : ""
+                        }`}
+                    >
+                      {a.tgl_lahir || a.tglLahir || "-"}
+                    </td>
                   </tr>
                 ))}
 
                 {filteredApplicants.length === 0 && (
                   <tr>
-                    <td colSpan={7} className="text-center py-12 font-mono text-slate-450 italic uppercase bg-slate-50/50 dark:bg-slate-950/20">
+                    <td colSpan={8} className="text-center py-12 font-mono text-slate-450 italic uppercase bg-slate-50/50 dark:bg-slate-950/20">
                       Zero lines of data found. Filter criteria matches nothing.
                     </td>
                   </tr>

@@ -136,7 +136,14 @@ interface Applicant {
 }
 
 export default function ActiveStudentsDirectory() {
-  const { applicants, addToast } = usePPDB();
+  const { applicants, addToast, fetchAdminApplicants } = usePPDB();
+
+  // Fetch fresh applicant data on mount
+  useEffect(() => {
+    if (typeof fetchAdminApplicants === "function") {
+      fetchAdminApplicants();
+    }
+  }, [fetchAdminApplicants]);
   const [searchTerm, setSearchTerm] = useState<string>("");
   const [majorFilter, setMajorFilter] = useState<string>("ALL");
   const [expandedPeriods, setExpandedPeriods] = useState<Record<string, boolean>>({});
@@ -420,10 +427,11 @@ export default function ActiveStudentsDirectory() {
             >
               <option value="ALL">Semua Jurusan</option>
               <option value="Rekayasa Perangkat Lunak">RPL / PPLG</option>
-              <option value="Teknik Komputer dan Jaringan">TKJ / TJKT</option>
+              <option value="Teknik Jaringan Komputer & Telekomunikasi">TJKT / TKJ</option>
               <option value="Desain Komunikasi Visual">DKV</option>
               <option value="Animasi">Animasi</option>
-              <option value="Broadcasting">Broadcasting / BCF</option>
+              <option value="Broadcasting & Perfilman">Broadcasting / BCF</option>
+              <option value="Teknik Elektronika">Teknik Elektronika / TE</option>
             </select>
           </div>
         </div>
@@ -593,7 +601,12 @@ export default function ActiveStudentsDirectory() {
                                 className="border-b border-slate-100/50 dark:border-white/5 hover:bg-slate-50/30 dark:hover:bg-slate-950/10 transition-colors"
                               >
                                 <td className="py-3.5 px-3 text-slate-400 dark:text-slate-600 font-mono">{idx + 1}</td>
-                                <td className="py-3.5 px-4 font-black text-slate-800 dark:text-white uppercase tracking-wider">{student.nama}</td>
+                                <td className="py-3.5 px-4">
+                                  <div className="font-black text-slate-800 dark:text-white uppercase tracking-wider">{student.nama}</div>
+                                  <span className="text-[9px] text-slate-400 dark:text-slate-550 font-bold uppercase tracking-wider block mt-0.5">
+                                    Lahir: {student.tempat_lahir || student.tempatLahir || "-"}, {student.tgl_lahir || student.tglLahir || "-"}
+                                  </span>
+                                </td>
                                 <td className="py-3.5 px-4 font-mono">{student.nisn}</td>
                                 <td className="py-3.5 px-4 uppercase">{student.sekolah_asal || student.sekolahAsal || "-"}</td>
                                 <td className="py-3.5 px-4">

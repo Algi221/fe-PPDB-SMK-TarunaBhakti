@@ -55,6 +55,36 @@ export default function ClassDivisionManagement() {
   const { applicants, updateApplicant, fetchAdminApplicants } = usePPDB();
   const [mounted, setMounted] = useState(false);
 
+  const getMajorLogoUrl = (code: string) => {
+    switch (code.toUpperCase()) {
+      case "RPL":
+        return "/jurusan/pplg.jpeg";
+      case "TJKT":
+        return "/jurusan/tjkt.jpeg";
+      case "DKV":
+        return "/jurusan/dkv.jpeg";
+      case "BC":
+        return "/jurusan/bc.jpeg";
+      case "ANM":
+        return "/jurusan/animasijpeg.jpeg";
+      case "TE":
+        return "/jurusan/te.jpeg";
+      default:
+        return "/logo_smktb.png";
+    }
+  };
+
+  const getMajorLogo = (code: string, size = "w-5 h-5") => {
+    const url = getMajorLogoUrl(code);
+    return (
+      <img
+        src={url}
+        alt={`Logo ${code}`}
+        className={`${size} rounded-full object-cover shrink-0 border border-slate-200/80 dark:border-white/10`}
+      />
+    );
+  };
+
   // Core filter states
   const [selectedMajor, setSelectedMajor] = useState<string>("RPL");
   const [searchTerm, setSearchTerm] = useState("");
@@ -557,8 +587,8 @@ export default function ClassDivisionManagement() {
 
       </div>
 
-      {/* Selected Major Selector Badges */}
-      <div className="flex flex-wrap gap-1.5 border-b border-slate-200/80 dark:border-slate-800/40 pb-4">
+      {/* Selected Major Selector Cards Grid */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4 border-b border-slate-200/80 dark:border-slate-800/40 pb-6">
         {activeMajors.map((m) => (
           <button
             key={m.code}
@@ -567,13 +597,23 @@ export default function ClassDivisionManagement() {
               setSelectedStudentIds([]);
               setAssignmentFilter("ALL");
             }}
-            className={`px-4 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all border ${
+            className={`flex flex-col items-center justify-center text-center p-6 rounded-3xl transition-all border duration-300 hover:scale-[1.03] group ${
               selectedMajor === m.code
-                ? "bg-blue-500 border-blue-600 text-white shadow-sm shadow-blue-500/10"
-                : "bg-white border-slate-200 hover:bg-slate-50 dark:bg-slate-900 dark:border-slate-800 dark:text-slate-400 dark:hover:text-white shadow-sm"
+                ? "bg-blue-500 border-blue-600 text-white shadow-lg shadow-blue-500/20"
+                : "bg-white border-slate-200 hover:border-blue-500/40 hover:bg-slate-50/50 dark:bg-slate-900 dark:border-slate-800 dark:text-slate-400 dark:hover:text-white shadow-sm"
             }`}
           >
-            {m.name} ({m.code})
+            {getMajorLogo(m.code, "w-12 h-12 shadow-md")}
+            <span className={`mt-3 text-[9px] font-black uppercase tracking-widest leading-normal ${
+              selectedMajor === m.code ? "text-white" : "text-slate-700 dark:text-slate-350"
+            }`}>
+              {m.name}
+            </span>
+            <span className={`text-[8px] font-bold uppercase tracking-wider mt-1 ${
+              selectedMajor === m.code ? "text-blue-100" : "text-slate-400"
+            }`}>
+              ({m.code})
+            </span>
           </button>
         ))}
       </div>
@@ -770,7 +810,9 @@ export default function ClassDivisionManagement() {
 
                     <td className="py-3 px-4">
                       <div className="font-extrabold text-slate-850 dark:text-white text-sm">{student.nama}</div>
-                      <span className="text-[9px] text-slate-400 font-bold uppercase tracking-wider block mt-0.5">Status: Terverifikasi (Siswa Aktif)</span>
+                      <span className="text-[9px] text-slate-400 font-bold uppercase tracking-wider block mt-0.5">
+                        Lahir: {student.tempat_lahir || student.tempatLahir || "-"}, {student.tgl_lahir || student.tglLahir || "-"}
+                      </span>
                     </td>
 
                     <td className="py-3 px-4 text-center font-mono text-[11px] text-slate-600 dark:text-slate-300">
@@ -911,7 +953,12 @@ export default function ClassDivisionManagement() {
                   {enrolledStudentsInDetail.map((student, idx) => (
                     <tr key={student.id} className="hover:bg-slate-50/50 dark:hover:bg-white/5 transition-all">
                       <td className="py-3 px-3 text-slate-400 font-mono">{idx + 1}</td>
-                      <td className="py-3 px-4 font-extrabold text-slate-850 dark:text-white uppercase tracking-wider">{student.nama}</td>
+                      <td className="py-3 px-4">
+                        <div className="font-extrabold text-slate-850 dark:text-white uppercase tracking-wider">{student.nama}</div>
+                        <span className="text-[9px] text-slate-400 font-bold uppercase tracking-wider block mt-0.5">
+                          Lahir: {student.tempat_lahir || student.tempatLahir || "-"}, {student.tgl_lahir || student.tglLahir || "-"}
+                        </span>
+                      </td>
                       <td className="py-3 px-4 text-center font-mono text-[11px]">{student.nisn}</td>
                       <td className="py-3 px-4 uppercase">{student.sekolah_asal || student.sekolahAsal || "-"}</td>
                       <td className="py-3 px-3 text-center">
