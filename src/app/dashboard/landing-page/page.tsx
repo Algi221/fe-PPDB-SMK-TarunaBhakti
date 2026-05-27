@@ -23,8 +23,29 @@ import {
   Video, 
   PlusCircle, 
   X,
-  AlertCircle
+  AlertCircle,
+  ListOrdered,
+  ArrowRightCircle,
+  CreditCard,
+  Users,
+  Award,
+  ShieldCheck
 } from "lucide-react";
+
+interface AlurItem {
+  id: number;
+  title: string;
+  desc: string;
+}
+
+const DEFAULT_ALUR: AlurItem[] = [
+  { id: 1, title: "Pendaftaran Online", desc: "Calon peserta didik mendaftar secara online melalui portal wizard PPDB dan mengisi data lengkap." },
+  { id: 2, title: "Simulasi / Gateway Pembayaran", desc: "Melakukan pembayaran administrasi pendaftaran sebesar Rp 150.000" },
+  { id: 3, title: "Verifikasi & Konfirmasi", desc: "Konfirmasi data pendaftaran otomatis secara real-time via WhatsApp di 08119892324." },
+  { id: 4, title: "Pemberkasan & Seragam", desc: "Datang langsung ke sekolah untuk verifikasi berkas asli fisik dan ukur seragam siswa baru." },
+  { id: 5, title: "Uji Kelayakan (Tes Seleksi)", desc: "Mengikuti serangkaian tes bakat minat, wawancara kepribadian, serta tes kesehatan/fisik dasar calon siswa." },
+  { id: 6, title: "Pengumuman & Kelulusan", desc: "Pengumuman kelulusan resmi dan status penerimaan calon peserta didik baru melalui web smktarunabhakti.net." }
+];
 
 interface MajorItem {
   code: string;
@@ -95,7 +116,7 @@ const DEFAULT_MAJORS: MajorItem[] = [
 
 export default function LandingPageConfigurator() {
   const [mounted, setMounted] = useState(false);
-  const [activeTab, setActiveTab] = useState<"landing" | "form" | "majors">("landing");
+  const [activeTab, setActiveTab] = useState<"landing" | "form" | "majors" | "alur">("landing");
   
   // Toasts / Notifications
   const [toast, setToast] = useState<{ message: string; type: "success" | "error" } | null>(null);
@@ -112,6 +133,9 @@ export default function LandingPageConfigurator() {
   const [schoolPeriod, setSchoolPeriod] = useState("");
   const [regCost, setRegCost] = useState("");
 
+  // Form states - Alur
+  const [alurList, setAlurList] = useState<AlurItem[]>([]);
+
   // Form states - Majors/Competencies
   const [majorsList, setMajorsList] = useState<MajorItem[]>([]);
   const [editingMajor, setEditingMajor] = useState<MajorItem | null>(null);
@@ -126,30 +150,68 @@ export default function LandingPageConfigurator() {
     logo: "/logo_smktb.png"
   });
 
+  // API Helper
+  const saveConfig = async (key: string, value: any) => {
+    try {
+      // Simpan ke localStorage agar langsung update di landing page
+      localStorage.setItem(key, typeof value === "object" ? JSON.stringify(value) : value);
+
+      const token = localStorage.getItem("token");
+      await fetch("http://localhost:5000/api/config", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({ key, value })
+      });
+    } catch (err) {
+      console.error("Gagal menyimpan ke backend", err);
+    }
+  };
+
   // Load all configurations on mount
   useEffect(() => {
     setMounted(true);
 
-    setHeroTitle(localStorage.getItem("ppdb_hero_title") || "Penerimaan Siswa Baru");
-    setHeroTitleSub(localStorage.getItem("ppdb_hero_title_sub") || "Portal PPDB SMK Taruna Bhakti");
-    setHeroSubtitle(localStorage.getItem("ppdb_hero_subtitle") || "Mulai langkah awal wujudkan masa depan cemerlang di bidang teknologi informasi. Proses pendaftaran online yang mudah, transparan, dan terintegrasi penuh.");
-    setPhone(localStorage.getItem("ppdb_phone") || "(021) 8740756");
-    setEmail(localStorage.getItem("ppdb_email") || "info@smktarunabhakti.sch.id");
-    setAddress(localStorage.getItem("ppdb_address") || "Jl. Pekapuran Kel. Curug Kec. Cimanggis, Depok, Jawa Barat 16453");
-
-    setSchoolPeriod(localStorage.getItem("ppdb_school_period") || "2026-2027");
-    setRegCost(localStorage.getItem("ppdb_reg_cost") || "Rp 250.000");
-
-    const savedMajors = localStorage.getItem("ppdb_majors_config");
-    if (savedMajors) {
+    const loadConfig = async () => {
       try {
-        setMajorsList(JSON.parse(savedMajors));
-      } catch (e) {
-        setMajorsList(DEFAULT_MAJORS);
+        const res = await fetch("http://localhost:5000/api/config");
+        const data = await res.json();
+        
+        if (data.success && data.data) {
+          const config = data.data;
+          setHeroTitle(config.ppdb_hero_title || "Penerimaan Siswa Baru");
+          setHeroTitleSub(config.ppdb_hero_title_sub || "Portal PPDB SMK Taruna Bhakti");
+          setHeroSubtitle(config.ppdb_hero_subtitle || "Mulai langkah awal wujudkan masa depan cemerlang di bidang teknologi informasi. Proses pendaftaran online yang mudah, transparan, dan terintegrasi penuh.");
+          setPhone(config.ppdb_phone || "(021) 8740756");
+          setEmail(config.ppdb_email || "info@smktarunabhakti.sch.id");
+          setAddress(config.ppdb_address || "Jl. Pekapuran Kel. Curug Kec. Cimanggis, Depok, Jawa Barat 16453");
+          
+          setSchoolPeriod(config.ppdb_school_period || "2026-2027");
+          setRegCost(config.ppdb_reg_cost || "Rp 250.000");
+
+          setAlurList(config.ppdb_alur_config || DEFAULT_ALUR);
+          setMajorsList(config.ppdb_majors_config || DEFAULT_MAJORS);
+        } else {
+          // Defaults if no data in DB
+          setHeroTitle("Penerimaan Siswa Baru");
+          setHeroTitleSub("Portal PPDB SMK Taruna Bhakti");
+          setHeroSubtitle("Mulai langkah awal wujudkan masa depan cemerlang di bidang teknologi informasi. Proses pendaftaran online yang mudah, transparan, dan terintegrasi penuh.");
+          setPhone("(021) 8740756");
+          setEmail("info@smktarunabhakti.sch.id");
+          setAddress("Jl. Pekapuran Kel. Curug Kec. Cimanggis, Depok, Jawa Barat 16453");
+          setSchoolPeriod("2026-2027");
+          setRegCost("Rp 250.000");
+          setAlurList(DEFAULT_ALUR);
+          setMajorsList(DEFAULT_MAJORS);
+        }
+      } catch (err) {
+        console.error("Gagal mengambil konfigurasi", err);
       }
-    } else {
-      setMajorsList(DEFAULT_MAJORS);
-    }
+    };
+
+    loadConfig();
   }, []);
 
   const showToast = (message: string, type: "success" | "error" = "success") => {
@@ -159,68 +221,87 @@ export default function LandingPageConfigurator() {
     }, 4000);
   };
 
-  const handleSaveLanding = () => {
-    localStorage.setItem("ppdb_hero_title", heroTitle);
-    localStorage.setItem("ppdb_hero_title_sub", heroTitleSub);
-    localStorage.setItem("ppdb_hero_subtitle", heroSubtitle);
-    localStorage.setItem("ppdb_phone", phone);
-    localStorage.setItem("ppdb_email", email);
-    localStorage.setItem("ppdb_address", address);
+  const handleSaveLanding = async () => {
+    await saveConfig("ppdb_hero_title", heroTitle);
+    await saveConfig("ppdb_hero_title_sub", heroTitleSub);
+    await saveConfig("ppdb_hero_subtitle", heroSubtitle);
+    await saveConfig("ppdb_phone", phone);
+    await saveConfig("ppdb_email", email);
+    await saveConfig("ppdb_address", address);
 
-    // Trigger local state updates to simulate event listeners if any
-    window.dispatchEvent(new Event("storage"));
-    showToast("Konfigurasi Landing Page berhasil disimpan!");
+    showToast("Konfigurasi Landing Page berhasil disimpan ke Server!");
   };
 
-  const handleSaveFormSettings = () => {
-    localStorage.setItem("ppdb_school_period", schoolPeriod);
-    localStorage.setItem("ppdb_reg_cost", regCost);
+  const handleSaveFormSettings = async () => {
+    await saveConfig("ppdb_school_period", schoolPeriod);
+    await saveConfig("ppdb_reg_cost", regCost);
 
-    window.dispatchEvent(new Event("storage"));
-    showToast("Konfigurasi Form Pendaftaran berhasil disimpan!");
+    showToast("Konfigurasi Form Pendaftaran berhasil disimpan ke Server!");
   };
 
   // Reset landing to default
-  const handleResetLanding = () => {
+  const handleResetLanding = async () => {
     if (confirm("Apakah Anda yakin ingin mengembalikan semua data Landing Page ke setelan bawaan pabrik?")) {
-      setHeroTitle("Penerimaan Siswa Baru");
-      setHeroTitleSub("Portal PPDB SMK Taruna Bhakti");
-      setHeroSubtitle("Mulai langkah awal wujudkan masa depan cemerlang di bidang teknologi informasi. Proses pendaftaran online yang mudah, transparan, dan terintegrasi penuh.");
-      setPhone("(021) 8740756");
-      setEmail("info@smktarunabhakti.sch.id");
-      setAddress("Jl. Pekapuran Kel. Curug Kec. Cimanggis, Depok, Jawa Barat 16453");
+      const defHeroTitle = "Penerimaan Siswa Baru";
+      const defHeroTitleSub = "Portal PPDB SMK Taruna Bhakti";
+      const defHeroSubtitle = "Mulai langkah awal wujudkan masa depan cemerlang di bidang teknologi informasi. Proses pendaftaran online yang mudah, transparan, dan terintegrasi penuh.";
+      const defPhone = "(021) 8740756";
+      const defEmail = "info@smktarunabhakti.sch.id";
+      const defAddress = "Jl. Pekapuran Kel. Curug Kec. Cimanggis, Depok, Jawa Barat 16453";
+
+      setHeroTitle(defHeroTitle);
+      setHeroTitleSub(defHeroTitleSub);
+      setHeroSubtitle(defHeroSubtitle);
+      setPhone(defPhone);
+      setEmail(defEmail);
+      setAddress(defAddress);
       
-      localStorage.setItem("ppdb_hero_title", "Penerimaan Siswa Baru");
-      localStorage.setItem("ppdb_hero_title_sub", "Portal PPDB SMK Taruna Bhakti");
-      localStorage.setItem("ppdb_hero_subtitle", "Mulai langkah awal wujudkan masa depan cemerlang di bidang teknologi informasi. Proses pendaftaran online yang mudah, transparan, dan terintegrasi penuh.");
-      localStorage.setItem("ppdb_phone", "(021) 8740756");
-      localStorage.setItem("ppdb_email", "info@smktarunabhakti.sch.id");
-      localStorage.setItem("ppdb_address", "Jl. Pekapuran Kel. Curug Kec. Cimanggis, Depok, Jawa Barat 16453");
+      await saveConfig("ppdb_hero_title", defHeroTitle);
+      await saveConfig("ppdb_hero_title_sub", defHeroTitleSub);
+      await saveConfig("ppdb_hero_subtitle", defHeroSubtitle);
+      await saveConfig("ppdb_phone", defPhone);
+      await saveConfig("ppdb_email", defEmail);
+      await saveConfig("ppdb_address", defAddress);
       
-      window.dispatchEvent(new Event("storage"));
       showToast("Data Landing Page berhasil di-reset!");
     }
   };
 
   // Reset form to default
-  const handleResetForm = () => {
+  const handleResetForm = async () => {
     if (confirm("Apakah Anda yakin ingin mengembalikan setelan biaya & periode form ke default?")) {
       setSchoolPeriod("2026-2027");
       setRegCost("Rp 250.000");
 
-      localStorage.setItem("ppdb_school_period", "2026-2027");
-      localStorage.setItem("ppdb_reg_cost", "Rp 250.000");
+      await saveConfig("ppdb_school_period", "2026-2027");
+      await saveConfig("ppdb_reg_cost", "Rp 250.000");
 
-      window.dispatchEvent(new Event("storage"));
       showToast("Setelan Form berhasil di-reset!");
     }
   };
 
+  // Alur Logic
+  const handleAlurChange = (id: number, field: "title" | "desc", value: string) => {
+    setAlurList(prev => prev.map(item => item.id === id ? { ...item, [field]: value } : item));
+  };
+
+  const handleSaveAlur = async () => {
+    await saveConfig("ppdb_alur_config", alurList);
+    showToast("Alur pendaftaran berhasil disimpan ke Server!");
+  };
+
+  const handleResetAlur = async () => {
+    if (confirm("Apakah Anda yakin ingin mengembalikan alur ke bawaan pabrik?")) {
+      setAlurList(DEFAULT_ALUR);
+      await saveConfig("ppdb_alur_config", DEFAULT_ALUR);
+      showToast("Alur pendaftaran berhasil di-reset!");
+    }
+  };
+
   // Majors CRUD Logic
-  const handleSaveMajors = (updatedList: MajorItem[]) => {
+  const handleSaveMajors = async (updatedList: MajorItem[]) => {
     setMajorsList(updatedList);
-    localStorage.setItem("ppdb_majors_config", JSON.stringify(updatedList));
-    window.dispatchEvent(new Event("storage"));
+    await saveConfig("ppdb_majors_config", updatedList);
   };
 
   const handleEditMajorClick = (major: MajorItem) => {
@@ -355,6 +436,18 @@ export default function LandingPageConfigurator() {
         >
           <Layers size={14} />
           <span>Daftar Jurusan PPDB</span>
+        </button>
+
+        <button
+          onClick={() => { setActiveTab("alur"); setIsAddingMajor(false); setEditingMajor(null); }}
+          className={`flex items-center gap-2 px-5 py-3.5 rounded-t-2xl text-xs font-black uppercase tracking-wider transition-all border-b-2 ${
+            activeTab === "alur"
+              ? "border-blue-500 text-blue-600 dark:text-white bg-white dark:bg-slate-900/50"
+              : "border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white"
+          }`}
+        >
+          <ListOrdered size={14} />
+          <span>Alur Pendaftaran</span>
         </button>
       </div>
 
@@ -507,7 +600,64 @@ export default function LandingPageConfigurator() {
           </div>
         )}
 
-        {/* TAB 3: PROGRAM STUDI (JURUSAN) CONFIG */}
+        {/* TAB 3: ALUR PENDAFTARAN */}
+        {activeTab === "alur" && (
+          <div className="space-y-6">
+            <div className="flex items-center justify-between border-b border-slate-100 dark:border-white/5 pb-4">
+              <div>
+                <h3 className="text-sm font-black uppercase tracking-wider text-slate-850 dark:text-white">Alur Pendaftaran PPDB</h3>
+                <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider mt-1">Ubah judul dan deskripsi dari tiap tahap alur pendaftaran.</p>
+              </div>
+              <button 
+                onClick={handleResetAlur}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-slate-200 dark:border-white/5 hover:bg-slate-50 dark:hover:bg-white/5 text-[10px] uppercase font-bold text-slate-500 hover:text-slate-850 dark:hover:text-white transition-all shadow-sm"
+              >
+                <RefreshCw size={12} />
+                <span>Reset ke Default</span>
+              </button>
+            </div>
+
+            <div className="space-y-4">
+              {alurList.map((item) => (
+                <div key={item.id} className="p-5 border border-slate-200/60 dark:border-white/5 bg-slate-50 dark:bg-slate-900/30 rounded-2xl flex flex-col md:flex-row gap-4">
+                  <div className="flex shrink-0">
+                    <span className="w-10 h-10 rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 flex items-center justify-center font-black text-sm">
+                      {item.id}
+                    </span>
+                  </div>
+                  <div className="flex-1 space-y-3">
+                    <input 
+                      type="text" 
+                      value={item.title}
+                      onChange={(e) => handleAlurChange(item.id, "title", e.target.value)}
+                      placeholder={`Judul Tahap 0${item.id}`}
+                      className="w-full px-4 py-2.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/5 rounded-xl text-slate-800 dark:text-white font-bold text-sm focus:outline-none focus:border-blue-500 transition-all"
+                    />
+                    <textarea 
+                      rows={2}
+                      value={item.desc}
+                      onChange={(e) => handleAlurChange(item.id, "desc", e.target.value)}
+                      placeholder="Deskripsi langkah..."
+                      className="w-full px-4 py-2.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/5 rounded-xl text-slate-800 dark:text-white font-medium text-xs focus:outline-none focus:border-blue-500 transition-all leading-relaxed"
+                    />
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <div className="pt-4 border-t border-slate-100 dark:border-white/5 flex justify-end gap-3">
+              <button 
+                onClick={handleSaveAlur}
+                className="flex items-center gap-2 px-6 py-3 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white font-black uppercase text-xs tracking-wider transition-all shadow-md hover:shadow-blue-500/20"
+              >
+                <Save size={14} />
+                <span>Simpan Alur</span>
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* TAB 4: PROGRAM STUDI (JURUSAN) CONFIG */}
         {activeTab === "majors" && (
           <div className="space-y-6">
             <div className="flex items-center justify-between border-b border-slate-100 dark:border-white/5 pb-4">
@@ -660,8 +810,6 @@ export default function LandingPageConfigurator() {
             {/* Majors List Cards Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
               {majorsList.map((major, idx) => {
-                const IconComponent = major.code === "RPL" ? Cpu : major.code === "TJKT" ? Layers : major.code === "DKV" ? BookOpen : major.code === "BC" ? Video : major.code === "ANM" ? Palette : Cpu;
-                
                 return (
                   <div 
                     key={major.code || idx}
@@ -673,10 +821,14 @@ export default function LandingPageConfigurator() {
                     <div className="flex justify-between items-start gap-2 mb-3">
                       <div className="flex items-center gap-3">
                         <div 
-                          className="w-10 h-10 rounded-2xl flex items-center justify-center font-extrabold text-white shrink-0"
+                          className="w-10 h-10 rounded-2xl flex items-center justify-center overflow-hidden shrink-0 border border-slate-200 dark:border-slate-800 shadow-sm"
                           style={{ backgroundColor: major.color }}
                         >
-                          <IconComponent size={16} />
+                          {major.logo ? (
+                            <img src={major.logo} alt={major.code} className="w-full h-full object-cover" onError={(e: any) => { e.target.style.display = 'none'; }} />
+                          ) : (
+                            <span className="text-white font-black text-[10px]">{major.code}</span>
+                          )}
                         </div>
                         <div>
                           <h4 className="font-extrabold text-slate-850 dark:text-white text-sm leading-tight truncate max-w-[150px]">{major.title}</h4>

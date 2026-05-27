@@ -49,6 +49,21 @@ interface InformasiItem {
   foto_url?: string | null;
 }
 
+interface AlurItem {
+  id: number;
+  title: string;
+  desc: string;
+}
+
+const DEFAULT_ALUR: AlurItem[] = [
+  { id: 1, title: "Pendaftaran Online", desc: "Calon peserta didik mendaftar secara online melalui portal wizard PPDB dan mengisi data lengkap." },
+  { id: 2, title: "Simulasi / Gateway Pembayaran", desc: "Melakukan pembayaran administrasi pendaftaran sebesar Rp 150.000" },
+  { id: 3, title: "Verifikasi & Konfirmasi", desc: "Konfirmasi data pendaftaran otomatis secara real-time via WhatsApp di 08119892324." },
+  { id: 4, title: "Pemberkasan & Seragam", desc: "Datang langsung ke sekolah untuk verifikasi berkas asli fisik dan ukur seragam siswa baru." },
+  { id: 5, title: "Uji Kelayakan (Tes Seleksi)", desc: "Mengikuti serangkaian tes bakat minat, wawancara kepribadian, serta tes kesehatan/fisik dasar calon siswa." },
+  { id: 6, title: "Pengumuman & Kelulusan", desc: "Pengumuman kelulusan resmi dan status penerimaan calon peserta didik baru melalui web smktarunabhakti.net." }
+];
+
 export default function Home() {
   const { publicApplicants, wsStatus } = usePPDB();
   const [rosterSearch, setRosterSearch] = useState("");
@@ -153,6 +168,10 @@ export default function Home() {
       facilities: "Robotics Design Lab, IoT Smart-Home Prototype Sandbox, Microcontroller Lab"
     }
   ]);
+  
+  // Alur Config
+  const [alurList, setAlurList] = useState<AlurItem[]>(DEFAULT_ALUR);
+
 
   const formatDate = (dateString: string | null | undefined) => {
     if (!dateString) return "";
@@ -222,50 +241,54 @@ export default function Home() {
       setIsDark(true);
     }
 
-    const savedTitle = localStorage.getItem('ppdb_hero_title');
-    if (savedTitle) setHeroTitle(savedTitle);
-
-    const savedTitleSub = localStorage.getItem('ppdb_hero_title_sub');
-    if (savedTitleSub) setHeroTitleSub(savedTitleSub);
-
-    const savedSubtitle = localStorage.getItem('ppdb_hero_subtitle');
-    if (savedSubtitle) setHeroSubtitle(savedSubtitle);
-
-    const savedPhone = localStorage.getItem('ppdb_phone');
-    if (savedPhone) setPhone(savedPhone);
-
-    const savedEmail = localStorage.getItem('ppdb_email');
-    if (savedEmail) setEmail(savedEmail);
-
-    const savedAddress = localStorage.getItem('ppdb_address');
-    if (savedAddress) setAddress(savedAddress);
-
-    const savedPeriod = localStorage.getItem('ppdb_school_period');
-    if (savedPeriod) setSchoolPeriod(savedPeriod);
-
-    const savedMajors = localStorage.getItem('ppdb_majors_config');
-    if (savedMajors) {
+    const loadDynamicConfig = async () => {
       try {
-        const parsed = JSON.parse(savedMajors);
-        if (Array.isArray(parsed) && parsed.length > 0) {
-          const iconMap: Record<string, any> = {
-            RPL: Cpu,
-            TJKT: Layers,
-            DKV: BookOpen,
-            BC: Video,
-            ANM: Palette,
-            TE: Cpu
-          };
-          const mapped = parsed.map((m: any) => ({
-            ...m,
-            icon: iconMap[m.code] || Cpu
-          }));
-          setMajors(mapped);
+        // Coba load dari localStorage dulu agar perubahan langsung terlihat
+        const localAlur = localStorage.getItem("ppdb_alur_config");
+        if (localAlur) {
+          try {
+            setAlurList(JSON.parse(localAlur));
+          } catch (e) {
+            console.error("Gagal parse alur dari localStorage", e);
+          }
+        }
+
+        const res = await fetch("http://localhost:5000/api/config");
+        const data = await res.json();
+        
+        if (data.success && data.data) {
+          const config = data.data;
+          if (config.ppdb_hero_title) setHeroTitle(config.ppdb_hero_title);
+          if (config.ppdb_hero_title_sub) setHeroTitleSub(config.ppdb_hero_title_sub);
+          if (config.ppdb_hero_subtitle) setHeroSubtitle(config.ppdb_hero_subtitle);
+          if (config.ppdb_phone) setPhone(config.ppdb_phone);
+          if (config.ppdb_email) setEmail(config.ppdb_email);
+          if (config.ppdb_address) setAddress(config.ppdb_address);
+          if (config.ppdb_school_period) setSchoolPeriod(config.ppdb_school_period);
+          if (config.ppdb_alur_config) setAlurList(config.ppdb_alur_config);
+          
+          if (config.ppdb_majors_config && Array.isArray(config.ppdb_majors_config)) {
+            const iconMap: Record<string, any> = {
+              RPL: Cpu,
+              TJKT: Layers,
+              DKV: BookOpen,
+              BC: Video,
+              ANM: Palette,
+              TE: Cpu
+            };
+            const mapped = config.ppdb_majors_config.map((m: any) => ({
+              ...m,
+              icon: iconMap[m.code] || Cpu
+            }));
+            setMajors(mapped);
+          }
         }
       } catch (e) {
-        console.log("Failed to load dynamic majors configuration:", e);
+        console.log("Failed to load dynamic configuration from backend:", e);
       }
-    }
+    };
+
+    loadDynamicConfig();
   }, []);
 
   const toggleDark = () => {
@@ -700,97 +723,54 @@ export default function Home() {
             <div className="absolute left-[32px] md:left-1/2 top-0 bottom-0 w-1 border-l-2 border-dashed border-white/40 dark:border-slate-950/40 transform -translate-x-1/2 z-0"></div>
 
             <div className="space-y-16 relative z-10">
+              {alurList.map((item, index) => {
+                const isLeft = index % 2 === 0;
+                
+                // Define distinct styles for up to 6 steps
+                const styles = [
+                  { color: "blue", bg: "bg-blue-600", text: "text-blue-500 dark:text-blue-400", bgLight: "bg-blue-50 dark:bg-blue-950/60", shadow: "shadow-[0_0_20px_rgba(37,99,235,0.4)]", borderHover: "hover:border-blue-500/20", icon: FileText },
+                  { color: "amber", bg: "bg-amber-500", text: "text-amber-500 dark:text-amber-400", bgLight: "bg-amber-50 dark:bg-amber-950/60", shadow: "shadow-[0_0_20px_rgba(245,158,11,0.4)]", borderHover: "hover:border-amber-500/20", icon: CreditCard },
+                  { color: "teal", bg: "bg-teal-500", text: "text-teal-500 dark:text-teal-400", bgLight: "bg-teal-50 dark:bg-teal-950/60", shadow: "shadow-[0_0_20px_rgba(20,184,166,0.4)]", borderHover: "hover:border-teal-500/20", icon: Phone },
+                  { color: "rose", bg: "bg-rose-500", text: "text-rose-500 dark:text-rose-400", bgLight: "bg-rose-50 dark:bg-rose-950/60", shadow: "shadow-[0_0_20px_rgba(244,63,94,0.4)]", borderHover: "hover:border-rose-500/20", icon: Users },
+                  { color: "indigo", bg: "bg-indigo-600", text: "text-indigo-500 dark:text-indigo-400", bgLight: "bg-indigo-50 dark:bg-indigo-950/60", shadow: "shadow-[0_0_20px_rgba(79,70,229,0.4)]", borderHover: "hover:border-indigo-500/20", icon: Award },
+                  { color: "emerald", bg: "bg-emerald-500", text: "text-emerald-500 dark:text-emerald-400", bgLight: "bg-emerald-50 dark:bg-emerald-950/60", shadow: "shadow-[0_0_20px_rgba(16,185,129,0.4)]", borderHover: "hover:border-emerald-500/20", icon: ShieldCheck },
+                ];
+                
+                // Fallback to blue if index exceeds the defined styles
+                const stepStyle = styles[index % styles.length];
+                const Icon = stepStyle.icon;
 
-              {/* Step 1: Left Card */}
-              <div className="relative grid grid-cols-1 md:grid-cols-2 md:gap-20 items-center">
-                <div className="pl-20 md:pl-0 md:pr-12 md:text-right">
-                  <div className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border border-white/60 dark:border-slate-800 p-6 rounded-3xl shadow-xl hover:shadow-2xl hover:border-blue-500/20 hover:-translate-y-1 transition-all duration-300">
-                    <span className="inline-block px-3 py-1 bg-blue-50 dark:bg-blue-950/60 text-blue-500 dark:text-blue-400 rounded-full text-[10px] font-extrabold uppercase tracking-wider mb-3">Tahap 01</span>
-                    <h3 className="text-lg font-black text-slate-800 dark:text-white mb-2">Pendaftaran Online</h3>
-                    <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed font-medium">Calon peserta didik mendaftar secara online melalui portal wizard PPDB dan mengisi data lengkap.</p>
+                return (
+                  <div key={item.id} className="relative grid grid-cols-1 md:grid-cols-2 md:gap-20 items-center">
+                    {isLeft ? (
+                      <>
+                        <div className="pl-20 md:pl-0 md:pr-12 md:text-right">
+                          <div className={`bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border border-white/60 dark:border-slate-800 p-6 rounded-3xl shadow-xl hover:shadow-2xl ${stepStyle.borderHover} hover:-translate-y-1 transition-all duration-300`}>
+                            <span className={`inline-block px-3 py-1 ${stepStyle.bgLight} ${stepStyle.text} rounded-full text-[10px] font-extrabold uppercase tracking-wider mb-3`}>Tahap 0{item.id}</span>
+                            <h3 className="text-lg font-black text-slate-800 dark:text-white mb-2">{item.title}</h3>
+                            <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed font-medium">{item.desc}</p>
+                          </div>
+                        </div>
+                        <div className="hidden md:block"></div>
+                      </>
+                    ) : (
+                      <>
+                        <div className="hidden md:block"></div>
+                        <div className="pl-20 md:pl-12 md:text-left">
+                          <div className={`bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border border-white/60 dark:border-slate-800 p-6 rounded-3xl shadow-xl hover:shadow-2xl ${stepStyle.borderHover} hover:-translate-y-1 transition-all duration-300`}>
+                            <span className={`inline-block px-3 py-1 ${stepStyle.bgLight} ${stepStyle.text} rounded-full text-[10px] font-extrabold uppercase tracking-wider mb-3`}>Tahap 0{item.id}</span>
+                            <h3 className="text-lg font-black text-slate-800 dark:text-white mb-2">{item.title}</h3>
+                            <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed font-medium">{item.desc}</p>
+                          </div>
+                        </div>
+                      </>
+                    )}
+                    <div className={`absolute left-0 md:left-1/2 md:-translate-x-1/2 top-1/2 -translate-y-1/2 w-16 h-16 rounded-full ${stepStyle.bg} border-4 border-white dark:border-slate-900 text-white flex items-center justify-center font-black text-lg z-10 ${stepStyle.shadow} transition-all duration-300`}>
+                      <Icon size={22} />
+                    </div>
                   </div>
-                </div>
-                <div className="hidden md:block"></div>
-                <div className="absolute left-0 md:left-1/2 md:-translate-x-1/2 top-1/2 -translate-y-1/2 w-16 h-16 rounded-full bg-blue-600 border-4 border-white dark:border-slate-900 text-white flex items-center justify-center font-black text-lg z-10 shadow-[0_0_20px_rgba(37,99,235,0.4)] transition-all duration-300">
-                  <FileText size={22} />
-                </div>
-              </div>
-
-              {/* Step 2: Right Card */}
-              <div className="relative grid grid-cols-1 md:grid-cols-2 md:gap-20 items-center">
-                <div className="hidden md:block"></div>
-                <div className="pl-20 md:pl-12 md:text-left">
-                  <div className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border border-white/60 dark:border-slate-800 p-6 rounded-3xl shadow-xl hover:shadow-2xl hover:border-amber-500/20 hover:-translate-y-1 transition-all duration-300">
-                    <span className="inline-block px-3 py-1 bg-amber-50 dark:bg-amber-950/60 text-amber-500 dark:text-amber-400 rounded-full text-[10px] font-extrabold uppercase tracking-wider mb-3">Tahap 02</span>
-                    <h3 className="text-lg font-black text-slate-800 dark:text-white mb-2">Simulasi / Gateway Pembayaran</h3>
-                    <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed font-medium">Melakukan pembayaran administrasi pendaftaran sebesar Rp 150.000</p>
-                  </div>
-                </div>
-                <div className="absolute left-0 md:left-1/2 md:-translate-x-1/2 top-1/2 -translate-y-1/2 w-16 h-16 rounded-full bg-amber-500 border-4 border-white dark:border-slate-900 text-white flex items-center justify-center font-black text-lg z-10 shadow-[0_0_20px_rgba(245,158,11,0.4)] transition-all duration-300">
-                  <CreditCard size={22} />
-                </div>
-              </div>
-
-              {/* Step 3: Left Card */}
-              <div className="relative grid grid-cols-1 md:grid-cols-2 md:gap-20 items-center">
-                <div className="pl-20 md:pl-0 md:pr-12 md:text-right">
-                  <div className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border border-white/60 dark:border-slate-800 p-6 rounded-3xl shadow-xl hover:shadow-2xl hover:border-teal-500/20 hover:-translate-y-1 transition-all duration-300">
-                    <span className="inline-block px-3 py-1 bg-teal-50 dark:bg-teal-950/60 text-teal-500 dark:text-teal-400 rounded-full text-[10px] font-extrabold uppercase tracking-wider mb-3">Tahap 03</span>
-                    <h3 className="text-lg font-black text-slate-800 dark:text-white mb-2">Verifikasi & Konfirmasi</h3>
-                    <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed font-medium">Konfirmasi data pendaftaran otomatis secara real-time via WhatsApp di <span className="font-extrabold text-teal-600 dark:text-teal-400">08119892324</span>.</p>
-                  </div>
-                </div>
-                <div className="hidden md:block"></div>
-                <div className="absolute left-0 md:left-1/2 md:-translate-x-1/2 top-1/2 -translate-y-1/2 w-16 h-16 rounded-full bg-teal-500 border-4 border-white dark:border-slate-900 text-white flex items-center justify-center font-black text-lg z-10 shadow-[0_0_20px_rgba(20,184,166,0.4)] transition-all duration-300">
-                  <Phone size={22} />
-                </div>
-              </div>
-
-              {/* Step 4: Right Card */}
-              <div className="relative grid grid-cols-1 md:grid-cols-2 md:gap-20 items-center">
-                <div className="hidden md:block"></div>
-                <div className="pl-20 md:pl-12 md:text-left">
-                  <div className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border border-white/60 dark:border-slate-800 p-6 rounded-3xl shadow-xl hover:shadow-2xl hover:border-rose-500/20 hover:-translate-y-1 transition-all duration-300">
-                    <span className="inline-block px-3 py-1 bg-rose-50 dark:bg-rose-950/60 text-rose-500 dark:text-rose-400 rounded-full text-[10px] font-extrabold uppercase tracking-wider mb-3">Tahap 04</span>
-                    <h3 className="text-lg font-black text-slate-800 dark:text-white mb-2">Pemberkasan & Seragam</h3>
-                    <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed font-medium">Datang langsung to school to verify physical original documents and measure new student uniforms.</p>
-                  </div>
-                </div>
-                <div className="absolute left-0 md:left-1/2 md:-translate-x-1/2 top-1/2 -translate-y-1/2 w-16 h-16 rounded-full bg-rose-500 border-4 border-white dark:border-slate-900 text-white flex items-center justify-center font-black text-lg z-10 shadow-[0_0_20px_rgba(244,63,94,0.4)] transition-all duration-300">
-                  <Users size={22} />
-                </div>
-              </div>
-
-              {/* Step 5: Left Card */}
-              <div className="relative grid grid-cols-1 md:grid-cols-2 md:gap-20 items-center">
-                <div className="pl-20 md:pl-0 md:pr-12 md:text-right">
-                  <div className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border border-white/60 dark:border-slate-800 p-6 rounded-3xl shadow-xl hover:shadow-2xl hover:border-indigo-500/20 hover:-translate-y-1 transition-all duration-300">
-                    <span className="inline-block px-3 py-1 bg-indigo-50 dark:bg-indigo-950/60 text-indigo-500 dark:text-indigo-400 rounded-full text-[10px] font-extrabold uppercase tracking-wider mb-3">Tahap 05</span>
-                    <h3 className="text-lg font-black text-slate-800 dark:text-white mb-2">Uji Kelayakan (Tes Seleksi)</h3>
-                    <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed font-medium">Mengikuti serangkaian tes bakat minat, wawancara kepribadian, serta tes kesehatan/fisik dasar calon siswa.</p>
-                  </div>
-                </div>
-                <div className="hidden md:block"></div>
-                <div className="absolute left-0 md:left-1/2 md:-translate-x-1/2 top-1/2 -translate-y-1/2 w-16 h-16 rounded-full bg-indigo-600 border-4 border-white dark:border-slate-900 text-white flex items-center justify-center font-black text-lg z-10 shadow-[0_0_20px_rgba(79,70,229,0.4)] transition-all duration-300">
-                  <Award size={22} />
-                </div>
-              </div>
-
-              {/* Step 6: Right Card */}
-              <div className="relative grid grid-cols-1 md:grid-cols-2 md:gap-20 items-center">
-                <div className="hidden md:block"></div>
-                <div className="pl-20 md:pl-12 md:text-left">
-                  <div className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border border-white/60 dark:border-slate-800 p-6 rounded-3xl shadow-xl hover:shadow-2xl hover:border-emerald-500/20 hover:-translate-y-1 transition-all duration-300">
-                    <span className="inline-block px-3 py-1 bg-emerald-50 dark:bg-emerald-950/60 text-emerald-500 dark:text-emerald-400 rounded-full text-[10px] font-extrabold uppercase tracking-wider mb-3">Tahap 06</span>
-                    <h3 className="text-lg font-black text-slate-800 dark:text-white mb-2">Pengumuman & Kelulusan</h3>
-                    <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed font-medium">Pengumuman kelulusan resmi dan status penerimaan calon peserta didik baru melalui web <span className="font-extrabold text-emerald-600 dark:text-emerald-400">smktarunabhakti.net</span>.</p>
-                  </div>
-                </div>
-                <div className="absolute left-0 md:left-1/2 md:-translate-x-1/2 top-1/2 -translate-y-1/2 w-16 h-16 rounded-full bg-emerald-500 border-4 border-white dark:border-slate-900 text-white flex items-center justify-center font-black text-lg z-10 shadow-[0_0_20px_rgba(16,185,129,0.4)] transition-all duration-300">
-                  <ShieldCheck size={22} />
-                </div>
-              </div>
-
+                );
+              })}
             </div>
           </div>
         </div>

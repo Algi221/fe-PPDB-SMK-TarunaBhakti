@@ -423,8 +423,8 @@ export function PPDBProvider({ children }: { children: React.ReactNode }) {
       }, 5000);
     };
 
-    ws.onerror = (err) => {
-      console.error("WebSocket connection encountered an error:", err);
+    ws.onerror = () => {
+      // Silently handle WS errors in the console to avoid messy event traces
       setWsStatus("ERROR");
       addWsLog("SYSTEM", "ERROR", { message: "Encountered networking error." });
     };

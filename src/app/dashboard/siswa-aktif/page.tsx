@@ -654,80 +654,130 @@ export default function ActiveStudentsDirectory() {
 
       {/* Beautiful Rich ReadOnly Detail Modal */}
       {selectedApplicant && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md overflow-hidden animate-in fade-in duration-300">
-          <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-white/10 rounded-3xl w-full max-w-4xl max-h-[85vh] flex flex-col shadow-[0_30px_70px_rgba(0,0,0,0.1)] dark:shadow-[0_30px_70px_rgba(0,0,0,0.5)] overflow-hidden animate-in zoom-in-95 transition-colors duration-300">
+        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" onClick={() => setSelectedApplicant(null)}></div>
+          <div className="relative bg-white w-full max-w-4xl rounded-[24px] shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200 flex flex-col max-h-[90vh]">
             
-            {/* Modal Header */}
-            <div className="p-6 border-b border-slate-100 dark:border-white/5 flex items-center justify-between shrink-0 bg-slate-50/50 dark:bg-slate-950/15">
-              <div>
-                <h3 className="text-lg font-black text-slate-850 dark:text-white flex items-center gap-3 uppercase tracking-wide">
-                  <span>{selectedApplicant.nama}</span>
-                  <span className="px-2.5 py-0.5 rounded-full text-[9px] font-black border uppercase tracking-widest bg-emerald-50 dark:bg-emerald-950/60 border-emerald-250 dark:border-emerald-900 text-emerald-600 dark:text-emerald-400">
-                    Siswa Aktif
-                  </span>
-                </h3>
-                <p className="text-xs text-slate-400 dark:text-slate-550 font-bold uppercase tracking-wider mt-1">NISN: {selectedApplicant.nisn} · Asal: {selectedApplicant.sekolah_asal || selectedApplicant.sekolahAsal} · Angkatan: {selectedApplicant.periode || "2026-2027"}</p>
+            {/* Modal Top Header */}
+            <div className="px-8 pt-8 pb-6 flex justify-between items-start">
+              <div className="flex gap-5 items-center">
+                <div className="w-16 h-16 rounded-2xl bg-blue-600 flex items-center justify-center text-white font-black text-3xl shadow-lg shadow-blue-500/30 shrink-0">
+                  {(selectedApplicant.nama || "K")[0].toUpperCase()}
+                </div>
+                <div>
+                  <div className="flex items-center gap-3 mb-1.5">
+                    <h2 className="text-2xl font-black text-slate-800 uppercase tracking-tight">{selectedApplicant.nama}</h2>
+                    <span className="px-3 py-1 text-[10px] font-bold text-emerald-600 bg-emerald-50 border border-emerald-500/30 rounded-full uppercase tracking-widest whitespace-nowrap">
+                      Siswa Aktif
+                    </span>
+                  </div>
+                  <div className="text-xs font-bold text-slate-400 uppercase tracking-widest flex items-center gap-2 flex-wrap">
+                    <span className="text-blue-500">NISN: {selectedApplicant.nisn}</span>
+                    <span className="w-1 h-1 bg-slate-300 rounded-full"></span>
+                    <span>ASAL: {selectedApplicant.sekolah_asal || selectedApplicant.sekolahAsal || "-"}</span>
+                    <span className="w-1 h-1 bg-slate-300 rounded-full"></span>
+                    <span>ANGKATAN: {selectedApplicant.periode || "2026-2027"}</span>
+                  </div>
+                </div>
               </div>
               <button
                 onClick={() => setSelectedApplicant(null)}
-                className="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 dark:bg-white/5 dark:hover:bg-white/10 border border-slate-200 dark:border-white/5 text-slate-500 dark:text-slate-400 hover:text-slate-850 dark:hover:text-white flex items-center justify-center transition-all font-bold"
+                className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-400 hover:bg-slate-200 hover:text-slate-600 transition-colors shrink-0 ml-4"
               >
-                ✕
+                <X size={18} />
               </button>
             </div>
 
-            {/* Modal Tabs Navigation */}
-            <div className="flex border-b border-slate-100 dark:border-white/5 bg-slate-50/30 dark:bg-slate-950/10 px-6 overflow-x-auto shrink-0 scrollbar-none">
-              {[
-                { id: "biodata", label: "Bio Diri & Kontak" },
-                { id: "periodik", label: "Periodik & Kesehatan" },
-                { id: "bantuan", label: "Bantuan & Prestasi" },
-                { id: "orangtua", label: "Orang Tua / Wali" },
-                { id: "akademik", label: "Akademik & Jurusan" },
-                { id: "pernyataan", label: "Komitmen & Janji" },
-                { id: "berkas", label: "Dokumen Terlampir" }
-              ].map((t) => (
-                <button
-                  key={t.id}
-                  onClick={() => {
-                    setActiveTab(t.id);
-                    setSelectedDoc(null);
-                  }}
-                  className={`px-4 py-3.5 text-xs font-black whitespace-nowrap transition-all border-b-2 uppercase tracking-wider ${
-                    activeTab === t.id
-                      ? "border-blue-500 text-blue-600 dark:text-white"
-                      : "border-transparent text-slate-455 dark:text-slate-450 hover:text-slate-800 dark:hover:text-white"
-                  }`}
-                >
-                  {t.label}
-                </button>
-              ))}
+            {/* Navigation Tabs */}
+            <div className="px-8 shrink-0">
+              <div className="bg-slate-100 p-1.5 rounded-[16px] flex items-center gap-1 w-full overflow-x-auto scrollbar-none">
+                {[
+                  { id: "biodata", label: "Biodata" },
+                  { id: "periodik", label: "Periodik" },
+                  { id: "bantuan", label: "Bantuan" },
+                  { id: "orangtua", label: "Orang Tua" },
+                  { id: "akademik", label: "Akademik" },
+                  { id: "pernyataan", label: "Pernyataan" }
+                ].map((t) => (
+                  <button
+                    key={t.id}
+                    onClick={() => {
+                      setActiveTab(t.id);
+                      setSelectedDoc(null);
+                    }}
+                    className={`px-6 py-2.5 text-[11px] font-bold uppercase tracking-widest rounded-[12px] shrink-0 transition-colors ${
+                      activeTab === t.id
+                        ? "bg-white text-blue-600 shadow-sm"
+                        : "text-slate-500 hover:text-slate-700 hover:bg-slate-200/50"
+                    }`}
+                  >
+                    {t.label}
+                  </button>
+                ))}
+              </div>
             </div>
 
             {/* Modal Tab Content Viewport */}
-            <div className="flex-1 overflow-y-auto p-8 text-xs leading-relaxed text-slate-655 dark:text-slate-350 font-bold max-h-[50vh] transition-colors duration-300">
+            <div className="flex-1 overflow-y-auto p-8 max-h-[60vh] transition-colors duration-300">
               {activeTab === "biodata" && (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                  <div>
-                    <h4 className="text-slate-800 dark:text-white font-black uppercase tracking-widest mb-4 border-b border-slate-100 dark:border-white/5 pb-2 text-[10px] flex items-center gap-1.5">
-                      <User size={12} className="text-blue-500" /> Identitas Diri
-                    </h4>
-                    <div className="space-y-4">
-                      <div><span className="text-slate-400 dark:text-slate-550 block mb-0.5 font-bold uppercase text-[9px] tracking-wider">Nama Lengkap</span> <span className="text-slate-850 dark:text-white text-sm font-extrabold">{selectedApplicant.nama}</span></div>
-                      <div><span className="text-slate-400 dark:text-slate-550 block mb-0.5 font-bold uppercase text-[9px] tracking-wider">NISN / NIK</span> <span className="text-slate-800 dark:text-white font-mono font-extrabold">{selectedApplicant.nisn} / {selectedApplicant.nik || "-"}</span></div>
-                      <div><span className="text-slate-400 dark:text-slate-550 block mb-0.5 font-bold uppercase text-[9px] tracking-wider">Tempat, Tanggal Lahir</span> <span className="text-slate-800 dark:text-white font-extrabold">{selectedApplicant.tempat_lahir || selectedApplicant.tempatLahir}, {selectedApplicant.tgl_lahir || selectedApplicant.tglLahir}</span></div>
-                      <div><span className="text-slate-400 dark:text-slate-550 block mb-0.5 font-bold uppercase text-[9px] tracking-wider">Jenis Kelamin / Agama</span> <span className="text-slate-800 dark:text-white font-extrabold">{selectedApplicant.jenis_kelamin || selectedApplicant.jenisKelamin} / {selectedApplicant.agama}</span></div>
+                  {/* Identitas Diri Column */}
+                  <div className="space-y-4">
+                    <div className="flex items-center gap-2 mb-2">
+                      <div className="w-6 h-6 rounded-md bg-blue-50 text-blue-500 flex items-center justify-center">
+                        <User size={14} />
+                      </div>
+                      <h3 className="text-[11px] font-extrabold text-slate-700 uppercase tracking-widest">Identitas Diri</h3>
+                    </div>
+
+                    <div className="bg-slate-50 rounded-[16px] p-4 border border-slate-100">
+                      <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Nama Lengkap</div>
+                      <div className="text-sm font-bold text-slate-800">{selectedApplicant.nama}</div>
+                    </div>
+
+                    <div className="bg-slate-50 rounded-[16px] p-4 border border-slate-100">
+                      <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">NISN / NIK</div>
+                      <div className="text-sm font-bold text-slate-600">{selectedApplicant.nisn} / {selectedApplicant.nik || "-"}</div>
+                    </div>
+
+                    <div className="bg-slate-50 rounded-[16px] p-4 border border-slate-100">
+                      <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Tempat, Tanggal Lahir</div>
+                      <div className="text-sm font-bold text-slate-600">{selectedApplicant.tempat_lahir || selectedApplicant.tempatLahir}, {selectedApplicant.tgl_lahir || selectedApplicant.tglLahir}</div>
+                    </div>
+
+                    <div className="bg-slate-50 rounded-[16px] p-4 border border-slate-100">
+                      <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Jenis Kelamin / Agama</div>
+                      <div className="text-sm font-bold text-slate-600">{selectedApplicant.jenis_kelamin || selectedApplicant.jenisKelamin} / {selectedApplicant.agama}</div>
                     </div>
                   </div>
-                  <div>
-                    <h4 className="text-slate-800 dark:text-white font-black uppercase tracking-widest mb-4 border-b border-slate-100 dark:border-white/5 pb-2 text-[10px] flex items-center gap-1.5">
-                      <Info size={12} className="text-blue-500" /> Alamat & Kontak
-                    </h4>
-                    <div className="space-y-4">
-                      <div><span className="text-slate-400 dark:text-slate-550 block mb-0.5 font-bold uppercase text-[9px] tracking-wider">WhatsApp / Email</span> <span className="text-blue-600 dark:text-blue-400 text-sm font-mono font-extrabold">{selectedApplicant.whatsapp} / {selectedApplicant.email}</span></div>
-                      <div><span className="text-slate-400 dark:text-slate-550 block mb-0.5 font-bold uppercase text-[9px] tracking-wider">Alamat Tempat Tinggal</span> <span className="text-slate-800 dark:text-white font-extrabold">{selectedApplicant.alamat} (RT/RW {selectedApplicant.rt_rw || selectedApplicant.rtRw})</span></div>
-                      <div><span className="text-slate-400 dark:text-slate-550 block mb-0.5 font-bold uppercase text-[9px] tracking-wider">Kelurahan / Kecamatan</span> <span className="text-slate-800 dark:text-white font-extrabold">{selectedApplicant.kelurahan} / {selectedApplicant.kecamatan}</span></div>
-                      <div><span className="text-slate-400 dark:text-slate-555 block mb-0.5 font-bold uppercase text-[9px] tracking-wider">Tinggal Dengan / Transportasi</span> <span className="text-slate-800 dark:text-white font-extrabold">{selectedApplicant.tinggal_dengan || selectedApplicant.tinggalDengan} / {selectedApplicant.transportasi}</span></div>
+
+                  {/* Alamat & Kontak Column */}
+                  <div className="space-y-4">
+                    <div className="flex items-center gap-2 mb-2">
+                      <div className="w-6 h-6 rounded-md bg-blue-50 text-blue-500 flex items-center justify-center">
+                        <span className="text-blue-500 font-bold" style={{fontSize: "12px"}}>!</span>
+                      </div>
+                      <h3 className="text-[11px] font-extrabold text-slate-700 uppercase tracking-widest">Alamat & Kontak</h3>
+                    </div>
+
+                    <div className="bg-slate-50 rounded-[16px] p-4 border border-slate-100">
+                      <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">WhatsApp / Email</div>
+                      <div className="text-sm font-bold text-blue-500">{selectedApplicant.whatsapp || "-"} / {selectedApplicant.email || "-"}</div>
+                    </div>
+
+                    <div className="bg-slate-50 rounded-[16px] p-4 border border-slate-100">
+                      <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Alamat Tempat Tinggal</div>
+                      <div className="text-sm font-bold text-slate-600">{selectedApplicant.alamat} (RT/RW {selectedApplicant.rt_rw || selectedApplicant.rtRw})</div>
+                    </div>
+
+                    <div className="bg-slate-50 rounded-[16px] p-4 border border-slate-100">
+                      <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Kelurahan / Kecamatan</div>
+                      <div className="text-sm font-bold text-slate-600">{selectedApplicant.kelurahan} / {selectedApplicant.kecamatan}</div>
+                    </div>
+
+                    <div className="bg-slate-50 rounded-[16px] p-4 border border-slate-100">
+                      <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Tinggal Dengan / Transportasi</div>
+                      <div className="text-sm font-bold text-slate-600">{selectedApplicant.tinggal_dengan || selectedApplicant.tinggalDengan} / {selectedApplicant.transportasi}</div>
                     </div>
                   </div>
                 </div>
@@ -881,7 +931,7 @@ export default function ActiveStudentsDirectory() {
                 </div>
               )}
 
-              {activeTab === "berkas" && (
+              {false && (
                 <div className="space-y-6">
                   <h4 className="text-slate-800 dark:text-white font-black uppercase tracking-widest border-b border-slate-100 dark:border-white/5 pb-2 text-[10px] flex items-center gap-1.5">
                     <FileText size={12} className="text-blue-500" /> Dokumen & Berkas Pendukung
@@ -1016,12 +1066,14 @@ export default function ActiveStudentsDirectory() {
             </div>
 
             {/* Modal Action Controls Footer */}
-            <div className="p-6 border-t border-slate-100 dark:border-white/5 bg-slate-50/50 dark:bg-slate-950/15 flex items-center justify-between shrink-0">
-              <span className="text-slate-400 dark:text-slate-500 text-[10px] font-mono font-bold uppercase tracking-wider">ID_SISWA: #{selectedApplicant.id}</span>
-              <div className="flex items-center gap-2.5">
+            <div className="px-8 py-5 border-t border-slate-100 flex items-center justify-between bg-white shrink-0">
+              <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                ID_SISWA: #{selectedApplicant.id}
+              </div>
+              <div className="flex items-center gap-3">
                 <button
                   onClick={() => setSelectedApplicant(null)}
-                  className="px-5 py-2.5 bg-slate-100 hover:bg-slate-200 dark:bg-white/5 dark:hover:bg-white/10 text-slate-600 dark:text-slate-355 hover:text-slate-850 dark:hover:text-white rounded-xl text-xs font-black uppercase tracking-wider transition-all border border-slate-200/50 dark:border-white/5"
+                  className="px-6 py-2.5 rounded-[12px] font-bold text-[11px] uppercase tracking-widest bg-slate-50 text-slate-600 hover:bg-slate-100 hover:text-slate-900 border border-slate-100 transition-colors"
                 >
                   Tutup
                 </button>
