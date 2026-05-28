@@ -312,9 +312,17 @@ export function PPDBProvider({ children }: { children: React.ReactNode }) {
       }
     } catch (err: any) {
       console.error("Auth API error:", err.message);
-      if (username === "admin_tb" && password === "AdminTarunaBhakti2026") {
+      if (username === "super_admin_TB" && password === "AdminTarunaBhakti2026") {
         const token = "mock_jwt_token_for_taruna_bhakti_dev_purposes";
-        const admin = { username: "admin_tb", nama: "Administrator PPDB TB (Local)" };
+        const admin = { username: "super_admin_TB", nama: "Administrator PPDB TB (Local)", role: "superadmin" };
+        setAdminToken(token);
+        setAdminUser(admin);
+        localStorage.setItem("ppdb_admin_token", token);
+        localStorage.setItem("ppdb_admin_user", JSON.stringify(admin));
+        return { success: true };
+      } else if (username === "admin_tb" && password === "AdminTarunaBhakti2026") {
+        const token = "mock_jwt_token_for_taruna_bhakti_dev_purposes";
+        const admin = { username: "admin_tb", nama: "Panitia PPDB Biasa", role: "admin" };
         setAdminToken(token);
         setAdminUser(admin);
         localStorage.setItem("ppdb_admin_token", token);

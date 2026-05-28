@@ -151,13 +151,15 @@ export default function LandingPageConfigurator() {
   });
 
   // API Helper
+  const getBackendUrl = () => typeof window !== 'undefined' ? `http://${window.location.hostname}:5000` : 'http://localhost:5000';
+
   const saveConfig = async (key: string, value: any) => {
     try {
       // Simpan ke localStorage agar langsung update di landing page
       localStorage.setItem(key, typeof value === "object" ? JSON.stringify(value) : value);
 
       const token = localStorage.getItem("token");
-      await fetch("http://localhost:5000/api/config", {
+      await fetch(`${getBackendUrl()}/api/config`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -176,7 +178,7 @@ export default function LandingPageConfigurator() {
 
     const loadConfig = async () => {
       try {
-        const res = await fetch("http://localhost:5000/api/config");
+        const res = await fetch(`${getBackendUrl()}/api/config`);
         const data = await res.json();
         
         if (data.success && data.data) {

@@ -4,7 +4,7 @@ import React, { useEffect, useState } from "react";
 import { usePPDB } from "@/context/PPDBContext";
 import { useRouter, usePathname } from "next/navigation";
 import Link from "next/link";
-import { Sun, Moon, LogOut, LayoutDashboard, Users, Settings, Globe, Megaphone, GraduationCap, ChevronLeft, ChevronRight, Palette, Layers } from "lucide-react";
+import { Sun, Moon, LogOut, LayoutDashboard, Users, Settings, Globe, Megaphone, GraduationCap, ChevronLeft, ChevronRight, Palette, Layers, Shield } from "lucide-react";
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const { adminToken, adminUser, logoutAdmin, wsStatus } = usePPDB();
@@ -38,15 +38,14 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   };
 
   useEffect(() => {
-    if (mounted && !adminToken && pathname !== "/dashboard/login") {
+    if (!adminToken && mounted) {
       router.push("/dashboard/login");
     }
-  }, [adminToken, pathname, router, mounted]);
+  }, [adminToken, mounted, router]);
 
-  const toggleDark = () => {
-    const next = !isDark;
-    setIsDark(next);
-    if (next) {
+  const toggleTheme = () => {
+    setIsDark(!isDark);
+    if (!isDark) {
       document.documentElement.classList.add("dark");
       localStorage.setItem("ppdb-theme", "dark");
     } else {
@@ -101,10 +100,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               </div>
             )}
           </Link>
-          <button
+          <button 
             onClick={handleToggleCollapse}
-            className="p-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-slate-800/60 dark:hover:bg-slate-700/60 border border-slate-200/50 dark:border-white/5 text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-white transition-all shadow-sm flex items-center justify-center shrink-0"
-            title={isCollapsed ? "Perbesar Sidebar" : "Perkecil Sidebar"}
+            className="w-7 h-7 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-blue-50 dark:hover:bg-blue-900/40 text-slate-500 dark:text-slate-400 flex items-center justify-center transition-colors"
           >
             {isCollapsed ? <ChevronRight size={14} /> : <ChevronLeft size={14} />}
           </button>
@@ -190,6 +188,21 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             {!isCollapsed && <span className="animate-in fade-in duration-300 text-left">Pembagian Kelas</span>}
           </Link>
 
+          {adminUser?.role === 'superadmin' && (
+            <Link
+              href="/dashboard/admin"
+              className={`flex items-center ${isCollapsed ? "justify-center px-2 py-3" : "gap-3 px-4 py-3"} rounded-2xl text-xs font-bold uppercase tracking-wider transition-all border ${
+                pathname === "/dashboard/admin"
+                  ? "bg-blue-50/70 dark:bg-blue-950/40 border-blue-100/80 dark:border-blue-900/40 text-blue-600 dark:text-blue-400 font-extrabold"
+                  : "border-transparent text-slate-500 dark:text-slate-400 hover:text-blue-500 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-slate-800/60"
+              }`}
+              title={isCollapsed ? "Manajemen Admin" : undefined}
+            >
+              <Shield size={18} className="shrink-0" />
+              {!isCollapsed && <span className="animate-in fade-in duration-300 text-left">Manajemen Admin</span>}
+            </Link>
+          )}
+
           <Link
             href="/dashboard/settings"
             className={`flex items-center ${isCollapsed ? "justify-center px-2 py-3" : "gap-3 px-4 py-3"} rounded-2xl text-xs font-bold uppercase tracking-wider transition-all border ${
@@ -263,28 +276,29 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
             {/* Dark Mode Toggle Switch */}
             <button
-              onClick={toggleDark}
-              className="flex items-center justify-center w-10 h-10 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-355 hover:bg-slate-200 dark:hover:bg-slate-700 transition-all border border-slate-200 dark:border-slate-700"
-              title={isDark ? "Mode Terang" : "Mode Gelap"}
+              onClick={toggleTheme}
+              className="w-9 h-9 rounded-full bg-white dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700/60 flex items-center justify-center text-slate-500 dark:text-slate-400 hover:text-blue-500 dark:hover:text-blue-400 hover:bg-slate-50 dark:hover:bg-slate-800/80 transition-all shadow-sm hover:shadow"
+              title={isDark ? "Beralih ke Terang" : "Beralih ke Gelap"}
             >
-              {isDark ? <Sun size={18} /> : <Moon size={18} />}
+              {isDark ? <Sun size={16} /> : <Moon size={16} />}
             </button>
-
-            {/* Open Portal Homepage Link */}
-            <Link
+            <div className="h-6 w-px bg-slate-200/80 dark:bg-slate-800/60 mx-1"></div>
+            <Link 
               href="/"
               target="_blank"
-              className="h-10 px-4 bg-blue-50 hover:bg-blue-100 text-blue-600 dark:bg-blue-950/30 dark:hover:bg-blue-950/60 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 border border-blue-100 dark:border-blue-900/30 hover:border-blue-200 dark:hover:border-blue-900/50 rounded-xl text-xs font-extrabold uppercase tracking-wider transition-all flex items-center gap-1.5"
+              className="px-3.5 py-2 bg-gradient-to-tr from-blue-600 to-indigo-500 hover:from-blue-500 hover:to-indigo-400 text-white rounded-xl text-xs font-bold shadow shadow-blue-500/20 hover:shadow-blue-500/40 transition-all flex items-center gap-2 tracking-wide uppercase"
             >
               <Globe size={14} />
-              <span>Beranda</span>
+              <span>Lihat Web</span>
             </Link>
           </div>
         </header>
 
-        {/* Content View */}
-        <main className="flex-1 overflow-y-auto p-8 relative z-10">
-          {children}
+        {/* Content Area */}
+        <main className="flex-1 overflow-y-auto p-4 md:p-8 bg-transparent scroll-smooth">
+          <div className="mx-auto max-w-[1600px] animate-in slide-in-from-bottom-4 duration-500 fade-in">
+            {children}
+          </div>
         </main>
       </div>
     </div>
