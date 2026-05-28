@@ -51,6 +51,26 @@ const timeAgo = (dateStr: string | null | undefined) => {
   return `${diffDays} hari yang lalu`;
 };
 
+// Helper to parse dynamic JSON media attachments
+const parseMedia = (raw: string | null | undefined) => {
+  if (!raw) return { foto: "", video: "", videoName: "", dokumen: "", dokumenName: "" };
+  if (raw.startsWith("{")) {
+    try {
+      const parsed = JSON.parse(raw);
+      return {
+        foto: parsed.foto || "",
+        video: parsed.video || "",
+        videoName: parsed.video_name || "",
+        dokumen: parsed.dokumen || "",
+        dokumenName: parsed.dokumen_name || ""
+      };
+    } catch (e) {
+      // fallback
+    }
+  }
+  return { foto: raw, video: "", videoName: "", dokumen: "", dokumenName: "" };
+};
+
 export default function ForumPage() {
   const [isNavbarScrolled, setIsNavbarScrolled] = useState(false);
   const [isDark, setIsDark] = useState(false);
@@ -183,6 +203,7 @@ export default function ForumPage() {
             <div className="space-y-4">
               {filtered.map((item, index) => {
                 const badge = getCategoryBadge();
+                const media = parseMedia(item.foto_url);
                 return (
                   <motion.div
                     initial={{ opacity: 0, filter: 'blur(10px)', y: 20 }}
@@ -193,9 +214,21 @@ export default function ForumPage() {
                     className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-2xl p-6 hover:shadow-md hover:border-blue-200 dark:hover:border-blue-800 transition-all duration-300 cursor-pointer group"
                   >
                     <div className="flex justify-between items-start mb-4">
-                      <span className={`text-[10px] font-bold uppercase tracking-widest px-2.5 py-1 rounded-md ${badge.cls}`}>
-                        {badge.label}
-                      </span>
+                      <div className="flex flex-wrap gap-2 items-center">
+                        <span className={`text-[10px] font-bold uppercase tracking-widest px-2.5 py-1 rounded-md ${badge.cls}`}>
+                          {badge.label}
+                        </span>
+                        {media.video && (
+                          <span className="text-[9px] font-extrabold uppercase tracking-wider px-2 py-0.5 rounded-md bg-blue-500/10 text-blue-600 dark:bg-blue-400/10 dark:text-blue-400 border border-blue-500/15">
+                            🎥 Video
+                          </span>
+                        )}
+                        {media.dokumen && (
+                          <span className="text-[9px] font-extrabold uppercase tracking-wider px-2 py-0.5 rounded-md bg-emerald-500/10 text-emerald-600 dark:bg-emerald-400/10 dark:text-emerald-400 border border-emerald-500/15">
+                            📄 Dokumen
+                          </span>
+                        )}
+                      </div>
                       <div className="flex items-center gap-1.5 text-xs font-medium text-slate-400">
                         <Calendar size={13} />
                         {formatDate(item.tanggal)}
@@ -203,9 +236,9 @@ export default function ForumPage() {
                     </div>
 
                     <div className="flex flex-col sm:flex-row gap-5 mb-4">
-                      {item.foto_url && (
+                      {media.foto && (
                         <div className="w-full sm:w-48 h-48 sm:h-32 shrink-0 rounded-xl overflow-hidden bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-sm">
-                          <img src={item.foto_url} alt={item.judul || "Pengumuman"} className="w-full h-full object-cover" />
+                          <img src={media.foto} alt={item.judul || "Pengumuman"} className="w-full h-full object-cover group-hover:scale-102 transition-transform duration-350" />
                         </div>
                       )}
                       <div className="flex-1 min-w-0">
@@ -314,51 +347,112 @@ export default function ForumPage() {
       </main>
 
       {/* ── DETAIL MODAL ── */}
-      {selectedPost && (
-        <div
-          className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-md overflow-y-auto"
-          onClick={() => setSelectedPost(null)}
-        >
+      {selectedPost && (() => {
+        const media = parseMedia(selectedPost.foto_url);
+        return (
           <div
-            className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-white/10 rounded-3xl w-full max-w-2xl shadow-2xl overflow-hidden my-8"
-            onClick={(e) => e.stopPropagation()}
+            className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-md overflow-y-auto"
+            onClick={() => setSelectedPost(null)}
           >
-            {selectedPost.foto_url && (
-              <div className="h-56 relative">
-                <img src={selectedPost.foto_url} alt={selectedPost.judul} className="w-full h-full object-cover" />
-                <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-transparent to-transparent" />
+            <div
+              className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-white/10 rounded-3xl w-full max-w-2xl shadow-2xl overflow-hidden my-8"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {media.foto && (
+                <div className="h-64 relative border-b border-slate-100 dark:border-white/5">
+                  <img src={media.foto} alt={selectedPost.judul} className="w-full h-full object-cover" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-transparent to-transparent" />
+                </div>
+              )}
+              
+              <div className="p-6 border-b border-slate-100 dark:border-white/5 flex items-center justify-between bg-slate-50/50 dark:bg-slate-950/15">
+                <div className="flex items-center gap-2 text-blue-600 dark:text-blue-400 text-[10px] font-black uppercase tracking-widest bg-blue-50 dark:bg-blue-950/60 px-3 py-1.5 rounded-xl border border-blue-100 dark:border-blue-900">
+                  <Calendar size={11} />
+                  {formatDate(selectedPost.tanggal)}
+                </div>
+                <button
+                  onClick={() => setSelectedPost(null)}
+                  className="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 dark:bg-white/5 dark:hover:bg-white/10 text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white flex items-center justify-center transition-all font-bold"
+                >
+                  ✕
+                </button>
               </div>
-            )}
-            
-            <div className="p-6 border-b border-slate-100 dark:border-white/5 flex items-center justify-between bg-slate-50/50 dark:bg-slate-950/15">
-              <div className="flex items-center gap-2 text-blue-600 dark:text-blue-400 text-[10px] font-black uppercase tracking-widest bg-blue-50 dark:bg-blue-950/60 px-3 py-1.5 rounded-xl border border-blue-100 dark:border-blue-900">
-                <Calendar size={11} />
-                {formatDate(selectedPost.tanggal)}
+
+              <div className="p-8 space-y-6">
+                <h2 className="text-xl font-black text-slate-900 dark:text-white leading-snug break-all">{selectedPost.judul}</h2>
+                <p className="text-sm text-slate-605 dark:text-slate-300 leading-relaxed whitespace-pre-line break-all">{selectedPost.konten}</p>
+
+                {/* Additional Media Section */}
+                {(media.video || media.dokumen) && (
+                  <div className="pt-6 border-t border-slate-100 dark:border-white/5 space-y-6">
+                    <h4 className="text-xs font-black text-slate-800 dark:text-slate-200 uppercase tracking-widest text-left">
+                      Lampiran Pengumuman
+                    </h4>
+                    
+                    <div className="space-y-6">
+                      {/* Video Player (Inline playback only, no download) */}
+                      {media.video && (
+                        <div className="space-y-3 text-left">
+                          <span className="text-[10px] font-bold text-slate-400 dark:text-slate-550 uppercase tracking-wider block">🎥 Video Lampiran:</span>
+                          <div className="rounded-2xl border border-slate-200 dark:border-slate-800 overflow-hidden bg-slate-950 shadow-md">
+                            <video src={media.video} controls className="w-full max-h-72 object-contain" />
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Document Preview & Download Button */}
+                      {media.dokumen && (
+                        <div className="space-y-3 text-left w-full">
+                          <span className="text-[10px] font-bold text-slate-400 dark:text-slate-550 uppercase tracking-wider block">📄 Pratinjau Dokumen Resmi / Surat Keputusan:</span>
+                          
+                          {media.dokumen.startsWith("data:application/pdf") ? (
+                            <div className="rounded-2xl border border-slate-200 dark:border-slate-800 overflow-hidden shadow-md bg-white">
+                              <iframe src={media.dokumen} className="w-full h-[450px] border-0" />
+                            </div>
+                          ) : media.dokumen.startsWith("data:image/") ? (
+                            <div className="rounded-2xl border border-slate-200 dark:border-slate-800 overflow-hidden shadow-md bg-slate-100 dark:bg-slate-900 flex items-center justify-center p-4">
+                              <img src={media.dokumen} alt="Dokumen Preview" className="max-w-full max-h-96 object-contain rounded-xl" />
+                            </div>
+                          ) : (
+                            <div className="p-4 bg-slate-50 dark:bg-slate-900/40 border border-slate-200 dark:border-slate-800 rounded-2xl flex items-center gap-3">
+                              <div className="w-10 h-10 rounded-xl bg-emerald-500/10 text-emerald-650 dark:text-emerald-450 flex items-center justify-center border border-emerald-500/20 shrink-0">
+                                <BookOpen size={18} />
+                              </div>
+                              <div className="min-w-0 flex-1">
+                                <h6 className="text-xs font-bold text-slate-800 dark:text-slate-200 truncate">{media.dokumenName || "dokumen.pdf"}</h6>
+                                <span className="text-[9px] text-slate-400 dark:text-slate-550 block mt-0.5">Pratinjau langsung tidak tersedia untuk format berkas ini. Silakan unduh dokumen untuk melihat isi berkas.</span>
+                              </div>
+                            </div>
+                          )}
+                          
+                          <div className="pt-2">
+                            <a
+                              href={media.dokumen}
+                              download={media.dokumenName || "lampiran_dokumen.pdf"}
+                              className="w-full inline-flex items-center justify-center gap-2 px-5 py-3.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-extrabold uppercase tracking-wider shadow-[0_4px_12px_rgba(16,185,129,0.2)] transition-all active:scale-[0.98]"
+                            >
+                              Unduh Lampiran Dokumen ({media.dokumenName || "dokumen.pdf"})
+                            </a>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
               </div>
-              <button
-                onClick={() => setSelectedPost(null)}
-                className="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 dark:bg-white/5 dark:hover:bg-white/10 text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white flex items-center justify-center transition-all font-bold"
-              >
-                ✕
-              </button>
-            </div>
 
-            <div className="p-8 space-y-4">
-              <h2 className="text-xl font-black text-slate-900 dark:text-white leading-snug">{selectedPost.judul}</h2>
-              <p className="text-sm text-slate-600 dark:text-slate-300 leading-relaxed whitespace-pre-line">{selectedPost.konten}</p>
-            </div>
-
-            <div className="p-6 bg-slate-50/50 dark:bg-slate-950/15 border-t border-slate-100 dark:border-white/5 flex justify-end">
-              <button
-                onClick={() => setSelectedPost(null)}
-                className="px-6 py-2.5 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-xs font-black uppercase tracking-wider shadow-sm transition-all"
-              >
-                Tutup
-              </button>
+              <div className="p-6 bg-slate-50/50 dark:bg-slate-955/15 border-t border-slate-100 dark:border-white/5 flex justify-end">
+                <button
+                  onClick={() => setSelectedPost(null)}
+                  className="px-6 py-2.5 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-xs font-black uppercase tracking-wider shadow-sm transition-all"
+                >
+                  Tutup
+                </button>
+              </div>
             </div>
           </div>
-        </div>
-      )}
+        );
+      })()}
     </div>
   );
 }

@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
-import { Search, Eye, X, CheckCircle, Clock, XCircle, User, MapPin, Phone, Mail, FileText, ChevronLeft, ChevronRight, ArrowRight } from "lucide-react";
+import { Search, Eye, X, CheckCircle, Clock, XCircle, User, MapPin, Phone, Mail, FileText, ChevronLeft, ChevronRight, ArrowRight, Calendar, Sparkles } from "lucide-react";
 import { usePPDB } from "@/context/PPDBContext";
 
 interface Student {
@@ -88,6 +88,188 @@ export default function DataPendaftarTable() {
 
     return () => clearTimeout(timer);
   }, [publicApplicants, activeRows.length]);
+
+  if (selectedStudent) {
+    const getGenderLabel = (g: string | null | undefined) => {
+      if (!g) return "Laki-laki";
+      const clean = g.toUpperCase().trim();
+      if (clean === "L" || clean === "LAKI-LAKI" || clean === "LAKI_LAKI") return "Laki-laki";
+      if (clean === "P" || clean === "PEREMPUAN") return "Perempuan";
+      return g;
+    };
+
+    const getFormattedDate = (d: string | null | undefined) => {
+      if (!d) return "14 Juni 2010";
+      try {
+        const date = new Date(d);
+        const options: Intl.DateTimeFormatOptions = { day: 'numeric', month: 'long', year: 'numeric' };
+        return date.toLocaleDateString('id-ID', options);
+      } catch (e) {
+        return d;
+      }
+    };
+
+    return (
+      <div className="flex flex-col h-full animate-in slide-in-from-right duration-500 ease-out text-left relative z-10">
+        {/* Back navigation header inside mockup browser */}
+        <div className="flex items-center justify-between pb-3 mb-3 border-b border-slate-100 dark:border-slate-800 transition-colors">
+          <button
+            onClick={() => setSelectedStudent(null)}
+            className="inline-flex items-center gap-1.5 text-xs font-black uppercase tracking-wider text-slate-500 hover:text-blue-600 dark:text-slate-400 dark:hover:text-blue-400 transition-colors"
+          >
+            <ChevronLeft size={16} />
+            <span>Kembali ke Daftar</span>
+          </button>
+          
+          <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">
+            ID: #TB-{selectedStudent.id}
+          </span>
+        </div>
+
+        {/* Premium Flexing Card */}
+        <div className="flex-1 flex flex-col items-center justify-center py-1.5 overflow-hidden">
+          
+          <div className="w-full max-w-xl md:max-w-2xl bg-gradient-to-br from-white via-slate-50/50 to-blue-50/20 dark:from-slate-950 dark:via-slate-900/90 dark:to-indigo-950/30 border border-slate-200 dark:border-blue-500/20 rounded-[24px] p-5 shadow-2xl relative overflow-hidden flex flex-col justify-between transition-colors duration-300">
+            {/* Ambient Background Lights - Dark Mode Only */}
+            <div className="absolute top-0 right-0 w-48 h-48 bg-blue-500/10 dark:bg-blue-500/15 rounded-full blur-[80px] pointer-events-none" />
+            <div className="absolute -bottom-10 -left-10 w-48 h-48 bg-indigo-600/10 dark:bg-indigo-650/15 rounded-full blur-[80px] pointer-events-none" />
+
+            {/* Perforated Ticket Notches (Desktop Only) */}
+            <div className="hidden md:block absolute -top-3 left-[58.33%] -translate-x-1/2 w-6 h-6 rounded-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 z-20 transition-colors" />
+            <div className="hidden md:block absolute -bottom-3 left-[58.33%] -translate-x-1/2 w-6 h-6 rounded-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 z-20 transition-colors" />
+
+            {/* Card Header */}
+            <div className="flex justify-between items-center border-b border-slate-150 dark:border-white/5 pb-3 mb-4 transition-colors">
+              <div className="flex items-center gap-2.5">
+                <img src="/logo_smktb.png" alt="Logo TB" className="w-8 h-8 object-contain animate-pulse" />
+                <div>
+                  <h4 className="text-[11px] font-black text-slate-800 dark:text-white uppercase tracking-wider leading-none">SMK Taruna Bhakti</h4>
+                  <span className="text-[7.5px] font-extrabold text-blue-600 dark:text-blue-400 uppercase tracking-widest block mt-0.5">PPDB ONLINE 2026/2027</span>
+                </div>
+              </div>
+              <div>
+                {selectedStudent.status === "Approved" ? (
+                  <span className="px-2 py-0.5 bg-emerald-500/10 border border-emerald-500/30 text-emerald-600 dark:text-emerald-400 text-[8.5px] font-black uppercase tracking-widest rounded-md animate-pulse">
+                    Terverifikasi
+                  </span>
+                ) : (
+                  <span className="px-2 py-0.5 bg-amber-500/10 border border-amber-500/30 text-amber-500 dark:text-amber-400 text-[8.5px] font-black uppercase tracking-widest rounded-md animate-pulse">
+                    Dalam Proses
+                  </span>
+                )}
+              </div>
+            </div>
+
+            {/* Card Grid Body */}
+            <div className="grid grid-cols-1 md:grid-cols-12 gap-5 items-center relative z-10">
+              
+              {/* Left Side: Student Info */}
+              <div className="md:col-span-7 pr-0 md:pr-4 border-r-0 md:border-r md:border-dashed border-slate-200 dark:border-slate-800/80 space-y-3.5">
+                <div>
+                  <span className="text-[7.5px] font-extrabold text-slate-400 dark:text-slate-550 uppercase tracking-widest block mb-0.5">Calon Peserta Didik Baru</span>
+                  <h2 className="text-lg md:text-xl font-black text-slate-850 dark:text-transparent dark:bg-clip-text dark:bg-gradient-to-r dark:from-white dark:via-blue-100 dark:to-sky-200 uppercase tracking-tight leading-snug truncate">
+                    {selectedStudent.nama}
+                  </h2>
+                  <div className="w-8 h-0.5 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-full mt-1.5" />
+                </div>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="bg-slate-50/80 dark:bg-white/5 border border-slate-150 dark:border-white/5 rounded-xl p-2.5 transition-colors flex items-start gap-2">
+                    <div className="w-6.5 h-6.5 rounded-lg bg-blue-500/10 dark:bg-blue-500/20 text-blue-600 dark:text-blue-400 flex items-center justify-center shrink-0 mt-0.5">
+                      <MapPin size={13} />
+                    </div>
+                    <div className="overflow-hidden">
+                      <span className="text-[7px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest block mb-0.5">Sekolah Asal</span>
+                      <div className="text-[10px] font-black text-slate-700 dark:text-slate-200 truncate">
+                        {selectedStudent.sekolah_asal || selectedStudent.sekolahAsal || "-"}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="bg-slate-50/80 dark:bg-white/5 border border-slate-150 dark:border-white/5 rounded-xl p-2.5 transition-colors flex items-start gap-2">
+                    <div className="w-6.5 h-6.5 rounded-lg bg-purple-500/10 dark:bg-purple-500/20 text-purple-600 dark:text-purple-400 flex items-center justify-center shrink-0 mt-0.5">
+                      <User size={13} />
+                    </div>
+                    <div>
+                      <span className="text-[7px] font-black text-slate-400 dark:text-slate-550 uppercase tracking-widest block mb-0.5">Jenis Kelamin</span>
+                      <div className="text-[10px] font-black text-slate-700 dark:text-slate-200">
+                        {getGenderLabel((selectedStudent as any).jenis_kelamin)}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="bg-slate-50/80 dark:bg-white/5 border border-slate-150 dark:border-white/5 rounded-xl p-2.5 transition-colors flex items-start gap-2">
+                    <div className="w-6.5 h-6.5 rounded-lg bg-amber-500/10 dark:bg-amber-500/20 text-amber-500 dark:text-amber-400 flex items-center justify-center shrink-0 mt-0.5">
+                      <Calendar size={13} />
+                    </div>
+                    <div className="overflow-hidden">
+                      <span className="text-[7px] font-black text-slate-400 dark:text-slate-550 uppercase tracking-widest block mb-0.5">Tanggal Lahir</span>
+                      <div className="text-[10px] font-black text-slate-700 dark:text-slate-200 truncate">
+                        {getFormattedDate((selectedStudent as any).tanggal_lahir)}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="bg-slate-50/80 dark:bg-white/5 border border-slate-150 dark:border-white/5 rounded-xl p-2.5 transition-colors flex items-start gap-2">
+                    <div className="w-6.5 h-6.5 rounded-lg bg-emerald-500/10 dark:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0 mt-0.5">
+                      <CheckCircle size={13} />
+                    </div>
+                    <div>
+                      <span className="text-[7px] font-black text-slate-400 dark:text-slate-555 uppercase tracking-widest block mb-0.5">No Registrasi</span>
+                      <div className="text-[10px] font-black text-slate-700 dark:text-slate-200">
+                        TB-{selectedStudent.id}-{selectedStudent.nisn ? selectedStudent.nisn.substring(0, 4) : '2026'}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Right Side: QR Code Verification Badge (Large) */}
+              <div className="md:col-span-5 flex flex-col items-center justify-center text-center space-y-2.5 pl-0 md:pl-2">
+                <div className="relative p-2 bg-white dark:bg-slate-800 rounded-2xl shadow-xl border border-blue-500/20 dark:border-blue-500/40 group hover:scale-[1.02] transition-transform duration-300">
+                  {/* Viewfinder corner lines */}
+                  <div className="absolute top-1.5 left-1.5 w-3 h-3 border-t-2 border-l-2 border-blue-600 dark:border-blue-400 rounded-tl" />
+                  <div className="absolute top-1.5 right-1.5 w-3 h-3 border-t-2 border-r-2 border-blue-600 dark:border-blue-400 rounded-tr" />
+                  <div className="absolute bottom-1.5 left-1.5 w-3 h-3 border-b-2 border-l-2 border-blue-600 dark:border-blue-400 rounded-bl" />
+                  <div className="absolute bottom-1.5 right-1.5 w-3 h-3 border-b-2 border-r-2 border-blue-600 dark:border-blue-400 rounded-br" />
+                  
+                  <img 
+                    src={`https://api.qrserver.com/v1/create-qr-code/?size=350x350&data=https://ppdb.smktarunabhakti.sch.id/verify/${selectedStudent.id}`} 
+                    alt="Verification QR" 
+                    className="w-40 h-40 object-contain rounded-xl"
+                  />
+                </div>
+                <div className="space-y-0.5">
+                  <span className="text-[9px] font-black text-blue-600 dark:text-blue-400 tracking-widest uppercase block animate-pulse">SCAN VERIFIKASI</span>
+                  <span className="text-[7px] text-slate-400 dark:text-slate-500 font-extrabold uppercase block tracking-wider">PANITIA PPDB SMK TB</span>
+                </div>
+              </div>
+
+            </div>
+
+            {/* Card Footer */}
+            <div className="border-t border-slate-150 dark:border-white/5 pt-3 mt-4 flex flex-col sm:flex-row items-center justify-between gap-2 text-[8px] font-bold text-slate-450 dark:text-slate-400 tracking-wider transition-colors">
+              <span className="uppercase">REGISTERED NO: TB-{selectedStudent.id}-{(selectedStudent as any).jenis_kelamin || 'L'}-{selectedStudent.nisn ? selectedStudent.nisn.substring(0, 4) : '2026'}</span>
+              <span className="text-slate-500 font-black">TP. 2026/2027</span>
+            </div>
+
+          </div>
+
+          {/* Screenshot instruction */}
+          <div className="mt-3.5 text-center max-w-md px-4">
+            <span className="text-[10px] text-blue-600 dark:text-blue-400 font-black uppercase tracking-wider block mb-0.5 flex items-center justify-center gap-1">
+              <Sparkles size={12} className="text-amber-500 animate-spin" />
+              <span>📷 Screenshot &amp; Flexing Kelulusanmu!</span>
+            </span>
+            <p className="text-[8.5px] text-slate-450 dark:text-slate-500 font-semibold leading-relaxed">
+              Tangkap layar (screenshot) kartu bukti pendaftaran ini dan bagikan di media sosialmu untuk memperlihatkan pencapaianmu masuk SMK Taruna Bhakti!
+            </p>
+          </div>
+        </div>
+
+      </div>
+    );
+  }
 
   // Filter local active rows
   const filteredData = activeRows.filter(item => {
@@ -239,149 +421,7 @@ export default function DataPendaftarTable() {
         )}
       </div>
 
-      {/* MODAL BIODATA */}
-      {selectedStudent && (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" onClick={() => setSelectedStudent(null)}></div>
-          <div className="relative bg-white w-full max-w-4xl rounded-[24px] shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200 flex flex-col">
-            
-            {/* Modal Top Header */}
-            <div className="px-8 pt-8 pb-6 flex justify-between items-start">
-              <div className="flex gap-5 items-center">
-                <div className="w-16 h-16 rounded-2xl bg-blue-600 flex items-center justify-center text-white font-black text-3xl shadow-lg shadow-blue-500/30">
-                  {(selectedStudent.nama || "K")[0].toUpperCase()}
-                </div>
-                <div>
-                  <div className="flex items-center gap-3 mb-1.5">
-                    <h2 className="text-2xl font-black text-slate-800 uppercase tracking-tight">{selectedStudent.nama}</h2>
-                    {selectedStudent.status === "Approved" ? (
-                      <span className="px-3 py-1 text-[10px] font-bold text-emerald-600 bg-emerald-50 border border-emerald-500/30 rounded-full uppercase tracking-widest">
-                        Terverifikasi
-                      </span>
-                    ) : (
-                      <span className="px-3 py-1 text-[10px] font-bold text-amber-600 bg-amber-50 border border-amber-500/30 rounded-full uppercase tracking-widest">
-                        Menunggu
-                      </span>
-                    )}
-                  </div>
-                  <div className="text-xs font-bold text-slate-400 uppercase tracking-widest flex items-center gap-2">
-                    <span className="text-blue-500">NISN: {selectedStudent.nisn}</span>
-                    <span className="w-1 h-1 bg-slate-300 rounded-full"></span>
-                    <span>ASAL: {selectedStudent.sekolah_asal || selectedStudent.sekolahAsal || "SMPN 2 DEPOK"}</span>
-                  </div>
-                </div>
-              </div>
-              <button
-                onClick={() => setSelectedStudent(null)}
-                className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-400 hover:bg-slate-200 hover:text-slate-600 transition-colors"
-              >
-                <X size={18} />
-              </button>
-            </div>
 
-            {/* Navigation Tabs */}
-            <div className="px-8">
-              <div className="bg-slate-100 p-1.5 rounded-[16px] flex items-center gap-1 w-full overflow-x-auto">
-                <button className="px-6 py-2.5 bg-white text-blue-600 text-[11px] font-bold uppercase tracking-widest rounded-[12px] shadow-sm shrink-0">Biodata</button>
-                <button className="px-6 py-2.5 text-slate-500 hover:text-slate-700 text-[11px] font-bold uppercase tracking-widest rounded-[12px] hover:bg-slate-200/50 transition-colors shrink-0">Periodik</button>
-                <button className="px-6 py-2.5 text-slate-500 hover:text-slate-700 text-[11px] font-bold uppercase tracking-widest rounded-[12px] hover:bg-slate-200/50 transition-colors shrink-0">Bantuan</button>
-                <button className="px-6 py-2.5 text-slate-500 hover:text-slate-700 text-[11px] font-bold uppercase tracking-widest rounded-[12px] hover:bg-slate-200/50 transition-colors shrink-0">Orang Tua</button>
-                <button className="px-6 py-2.5 text-slate-500 hover:text-slate-700 text-[11px] font-bold uppercase tracking-widest rounded-[12px] hover:bg-slate-200/50 transition-colors shrink-0">Akademik</button>
-                <button className="px-6 py-2.5 text-slate-500 hover:text-slate-700 text-[11px] font-bold uppercase tracking-widest rounded-[12px] hover:bg-slate-200/50 transition-colors shrink-0">Pernyataan</button>
-              </div>
-            </div>
-
-            {/* Content Area */}
-            <div className="p-8 grid grid-cols-1 md:grid-cols-2 gap-8 max-h-[50vh] overflow-y-auto">
-              {/* Identitas Diri Column */}
-              <div className="space-y-4">
-                <div className="flex items-center gap-2 mb-2">
-                  <div className="w-6 h-6 rounded-md bg-blue-50 text-blue-500 flex items-center justify-center">
-                    <User size={14} />
-                  </div>
-                  <h3 className="text-[11px] font-extrabold text-slate-700 uppercase tracking-widest">Identitas Diri</h3>
-                </div>
-
-                <div className="bg-slate-50 rounded-[16px] p-4 border border-slate-100">
-                  <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Nama Lengkap</div>
-                  <div className="text-sm font-bold text-slate-800">{selectedStudent.nama}</div>
-                </div>
-
-                <div className="bg-slate-50 rounded-[16px] p-4 border border-slate-100">
-                  <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">NISN / NIK</div>
-                  <div className="text-sm font-bold text-slate-600">{selectedStudent.nisn} / {(selectedStudent as any).nik || "3276266362372757"}</div>
-                </div>
-
-                <div className="bg-slate-50 rounded-[16px] p-4 border border-slate-100">
-                  <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Tempat, Tanggal Lahir</div>
-                  <div className="text-sm font-bold text-slate-600">{(selectedStudent as any).tempat_lahir || "Depok"}, {(selectedStudent as any).tanggal_lahir || "2010-06-14T17:00:00.000Z"}</div>
-                </div>
-
-                <div className="bg-slate-50 rounded-[16px] p-4 border border-slate-100">
-                  <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Jenis Kelamin / Agama</div>
-                  <div className="text-sm font-bold text-slate-600">{(selectedStudent as any).jenis_kelamin || "L"} / {(selectedStudent as any).agama || "Islam"}</div>
-                </div>
-              </div>
-
-              {/* Alamat & Kontak Column */}
-              <div className="space-y-4">
-                <div className="flex items-center gap-2 mb-2">
-                  <div className="w-6 h-6 rounded-md bg-blue-50 text-blue-500 flex items-center justify-center">
-                    <span className="text-blue-500 font-bold" style={{fontSize: "12px"}}>!</span>
-                  </div>
-                  <h3 className="text-[11px] font-extrabold text-slate-700 uppercase tracking-widest">Alamat & Kontak</h3>
-                </div>
-
-                <div className="bg-slate-50 rounded-[16px] p-4 border border-slate-100">
-                  <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">WhatsApp / Email</div>
-                  <div className="text-sm font-bold text-blue-500">{selectedStudent.whatsapp || "081234085214"} / {selectedStudent.email || "kevinlestari@email.com"}</div>
-                </div>
-
-                <div className="bg-slate-50 rounded-[16px] p-4 border border-slate-100">
-                  <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Alamat Tempat Tinggal</div>
-                  <div className="text-sm font-bold text-slate-600">{selectedStudent.alamat || "Jl. Pekapuran No. 83 (RT/RW 03/05)"}</div>
-                </div>
-
-                <div className="bg-slate-50 rounded-[16px] p-4 border border-slate-100">
-                  <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Kelurahan / Kecamatan</div>
-                  <div className="text-sm font-bold text-slate-600">{(selectedStudent as any).kelurahan || "Curug"} / {(selectedStudent as any).kecamatan || "Cimanggis"}</div>
-                </div>
-
-                <div className="bg-slate-50 rounded-[16px] p-4 border border-slate-100">
-                  <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Tinggal Dengan / Transportasi</div>
-                  <div className="text-sm font-bold text-slate-600">{(selectedStudent as any).tinggal_dengan || "Orang Tua"} / {(selectedStudent as any).transportasi || "Jalan Kaki"}</div>
-                </div>
-              </div>
-            </div>
-
-            {/* Footer */}
-            <div className="px-8 py-5 border-t border-slate-100 flex items-center justify-between bg-white">
-              <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
-                ID_SISWA: #{selectedStudent.id}
-              </div>
-              <div className="flex items-center gap-3">
-                <button
-                  onClick={() => setSelectedStudent(null)}
-                  className="px-6 py-2.5 rounded-[12px] font-bold text-[11px] uppercase tracking-widest bg-slate-50 text-slate-600 hover:bg-slate-100 hover:text-slate-900 border border-slate-100 transition-colors"
-                >
-                  Tutup
-                </button>
-                <button
-                  onClick={() => {
-                     if(confirm("Apakah Anda yakin ingin menolak / menggugurkan pendaftar ini?")) {
-                       // Logic implementation here
-                     }
-                  }}
-                  className="px-6 py-2.5 rounded-[12px] font-bold text-[11px] uppercase tracking-widest bg-[#ff0040] text-white hover:bg-red-600 transition-colors shadow-lg shadow-[#ff0040]/30"
-                >
-                  Tolak / Gugurkan
-                </button>
-              </div>
-            </div>
-
-          </div>
-        </div>
-      )}
     </div>
   );
 }

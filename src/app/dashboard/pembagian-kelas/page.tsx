@@ -2,6 +2,8 @@
 
 import React, { useState, useEffect, useMemo } from "react";
 import { usePPDB } from "@/context/PPDBContext";
+import ExcelJS from 'exceljs';
+import { saveAs } from 'file-saver';
 import { 
   Users, 
   Layers, 
@@ -486,8 +488,8 @@ export default function ClassDivisionManagement() {
     }
   };
 
-  // Export Class Roster CSV
-  const handleExportClassCSV = (className: string) => {
+  // Export Class Roster Excel (ExcelJS)
+  const handleExportClassCSV = async (className: string) => {
     const classStudents = applicants.filter((a: Applicant) => {
       const cls = a.diterima_kelas || a.diterimaKelas;
       return cls === className;
@@ -498,27 +500,79 @@ export default function ClassDivisionManagement() {
       return;
     }
 
-    const headers = ["Nama Siswa", "NISN", "Asal Sekolah", "WhatsApp", "Email", "Tanggal Pembagian Kelas"];
-    const rows = classStudents.map((s: Applicant) => [
-      `"${s.nama || ''}"`,
-      `"${s.nisn || ''}"`,
-      `"${s.sekolah_asal || s.sekolahAsal || ''}"`,
-      `"${s.whatsapp || ''}"`,
-      `"${s.email || ''}"`,
-      `"${s.diterima_tanggal || s.diterimaTanggal || ''}"`
-    ]);
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet(`Roster_${className}`);
 
-    const csvData = [headers.join(","), ...rows.map(e => e.join(","))].join("\n");
-    const blob = new Blob([new Uint8Array([0xEF, 0xBB, 0xBF]), "sep=,\n" + csvData], { type: "text/csv;charset=utf-8;" });
-    const url = URL.createObjectURL(blob);
-    
-    const link = document.createElement("a");
-    link.setAttribute("href", url);
-    link.setAttribute("download", `roster_${className.replace(/\s+/g, "_")}.csv`);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
+    worksheet.columns = [
+      { header: 'No.', key: 'no', width: 10 },
+      { header: 'Nama Siswa', key: 'nama', width: 35 },
+      { header: 'NISN', key: 'nisn', width: 25 },
+      { header: 'Asal Sekolah', key: 'sekolah', width: 35 },
+      { header: 'No. WhatsApp', key: 'whatsapp', width: 25 },
+      { header: 'Email', key: 'email', width: 35 },
+      { header: 'Tanggal Diterima', key: 'tanggal', width: 25 }
+    ];
+
+    const headerRow = worksheet.getRow(1);
+    headerRow.height = 35;
+    headerRow.eachCell((cell) => {
+      cell.font = { bold: true, color: { argb: 'FF000000' } };
+      cell.fill = {
+        type: 'pattern',
+        pattern: 'solid',
+        fgColor: { argb: 'FF9BC2E6' } // Light Blue
+      };
+      cell.alignment = { vertical: 'middle', horizontal: 'center' };
+      cell.border = {
+        top: { style: 'thin' },
+        left: { style: 'thin' },
+        bottom: { style: 'thin' },
+        right: { style: 'thin' }
+      };
+    });
+
+    classStudents.forEach((s: Applicant, index: number) => {
+      worksheet.addRow({
+        no: index + 1,
+        nama: s.nama || "",
+        nisn: s.nisn || "",
+        sekolah: s.sekolah_asal || s.sekolahAsal || "",
+        whatsapp: s.whatsapp || "",
+        email: s.email || "",
+        tanggal: s.diterima_tanggal || s.diterimaTanggal || ""
+      });
+    });
+
+    worksheet.eachRow((row, rowNumber) => {
+      if (rowNumber > 1) {
+        row.height = 25;
+      }
+      row.eachCell((cell, colNumber) => {
+        if (rowNumber > 1) {
+          cell.fill = {
+            type: 'pattern',
+            pattern: 'solid',
+            fgColor: { argb: 'FFFFFFFF' }
+          };
+          cell.border = {
+            top: { style: 'thin' },
+            left: { style: 'thin' },
+            bottom: { style: 'thin' },
+            right: { style: 'thin' }
+          };
+
+          if ([1, 3, 5, 7].includes(colNumber)) {
+            cell.alignment = { vertical: 'middle', horizontal: 'center' };
+          } else {
+            cell.alignment = { vertical: 'middle', horizontal: 'left', indent: 1 };
+          }
+        }
+      });
+    });
+
+    const buffer = await workbook.xlsx.writeBuffer();
+    const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+    saveAs(blob, `Roster_Kelas_${className.replace(/\s+/g, "_")}_${Date.now()}.xlsx`);
   };
 
   if (!mounted) return null;
@@ -865,7 +919,7 @@ export default function ClassDivisionManagement() {
                           className="px-2 py-1 text-[9px] uppercase font-black bg-slate-50 hover:bg-slate-100 dark:bg-slate-950/40 dark:text-white border border-slate-250 dark:border-white/5 rounded-lg focus:outline-none cursor-pointer"
                           defaultValue=""
                         >
-                          <option value="" disabled>Pilih Rombel</option>
+                          <option value="" disabled>Pilih Kelas</option>
                           {classesOfSelectedMajor.map(c => (
                             <option key={c.id} value={c.name}>{c.name}</option>
                           ))}
@@ -999,45 +1053,34 @@ export default function ClassDivisionManagement() {
 
       {/* Sticky Mass Action Floating Bar (shown only when 1 or more students are checked) */}
       {selectedStudentIds.length > 0 && (
-        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 bg-slate-900 border border-slate-800 text-white rounded-2xl px-6 py-4 flex items-center justify-between gap-6 shadow-[0_15px_40px_rgba(0,0,0,0.4)] w-full max-w-2xl animate-in slide-in-from-bottom duration-300">
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 bg-slate-900 border border-slate-800 text-white rounded-2xl px-6 py-4 flex flex-col md:flex-row items-center justify-between gap-6 shadow-[0_15px_40px_rgba(0,0,0,0.4)] w-full max-w-3xl animate-in slide-in-from-bottom duration-300">
           <div className="flex items-center gap-3">
             <span className="w-5 h-5 rounded-full bg-blue-500 text-white font-extrabold flex items-center justify-center text-[10px] shrink-0">
               {selectedStudentIds.length}
             </span>
             <div className="text-left">
               <h5 className="text-[11px] font-black uppercase tracking-wider">Siswa Terpilih</h5>
-              <p className="text-[9px] text-slate-400 font-semibold leading-none mt-0.5">Terapkan tindakan massal untuk pendaftar aktif.</p>
+              <p className="text-[9px] text-slate-400 font-semibold leading-none mt-0.5">Tentukan kelas secara massal untuk pendaftar aktif.</p>
             </div>
           </div>
 
-          <div className="flex items-center gap-3 shrink-0">
-            {/* Class Dropdown */}
-            <select
-              value={targetClass}
-              onChange={(e) => setTargetClass(e.target.value)}
-              className="px-3 py-2 bg-slate-800 border border-slate-700 text-white rounded-xl text-xs focus:outline-none cursor-pointer font-bold uppercase"
-            >
-              <option value="" disabled>-- Pilih Rombel --</option>
-              <option value="UNASSIGN">-- Hapus Dari Kelas --</option>
-              {classesOfSelectedMajor.map(c => (
-                <option key={c.id} value={c.name}>{c.name}</option>
-              ))}
-            </select>
-
+          <div className="flex flex-wrap items-center gap-2 shrink-0">
+            <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider mr-1">Tentukan Kelas:</span>
+            {classesOfSelectedMajor.map((c) => (
+              <button
+                key={c.id}
+                onClick={() => handleAssignSelectedToClass(c.name)}
+                className="px-3 py-1.5 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-[9px] font-black uppercase tracking-wider transition-all border border-blue-500 shadow-sm"
+              >
+                {c.name}
+              </button>
+            ))}
             <button
-              onClick={() => {
-                if (targetClass === "UNASSIGN") {
-                  handleAssignSelectedToClass("");
-                } else if (targetClass) {
-                  handleAssignSelectedToClass(targetClass);
-                } else {
-                  showToast("Silakan pilih kelas terlebih dahulu!", "error");
-                }
-              }}
-              className="px-4 py-2.5 bg-blue-500 hover:bg-blue-600 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all flex items-center gap-1.5"
+              onClick={() => handleAssignSelectedToClass("")}
+              className="px-3 py-1.5 bg-rose-500/10 hover:bg-rose-500 border border-rose-500/20 hover:border-rose-500 text-rose-400 hover:text-white rounded-xl text-[9px] font-black uppercase tracking-wider transition-all"
+              title="Keluarkan Siswa dari Kelas"
             >
-              <span>Terapkan</span>
-              <ChevronRight size={12} />
+              Keluarkan
             </button>
           </div>
         </div>

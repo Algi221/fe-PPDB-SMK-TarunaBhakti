@@ -430,13 +430,14 @@ export default function ApplicantsDirectory() {
     const workbook = new ExcelJS.Workbook();
     const worksheet = workbook.addWorksheet("Data Pendaftar");
 
-    // Define all original columns with wider widths ("jarak nya jauh")
+    // Define all original columns with wider widths
     worksheet.columns = [
       { header: 'No.', key: 'no', width: 10 },
       { header: 'Nama Lengkap', key: 'nama', width: 35 },
       { header: 'NISN', key: 'nisn', width: 25 },
       { header: 'NIK', key: 'nik', width: 25 },
       { header: 'Asal Sekolah', key: 'sekolah', width: 35 },
+      { header: 'Rombel Kelas', key: 'kelas', width: 20 },
       { header: 'Program Studi Pilihan 1', key: 'jurusan1', width: 35 },
       { header: 'Program Studi Pilihan 2', key: 'jurusan2', width: 35 },
       { header: 'No. WhatsApp', key: 'whatsapp', width: 25 },
@@ -447,14 +448,14 @@ export default function ApplicantsDirectory() {
 
     // Style header row (light blue background, black text, centered, taller height)
     const headerRow = worksheet.getRow(1);
-    headerRow.height = 35; // "tulisan atas yang ada nomer itu agak jarak" (make header taller)
+    headerRow.height = 35;
     
     headerRow.eachCell((cell) => {
       cell.font = { bold: true, color: { argb: 'FF000000' } };
       cell.fill = {
         type: 'pattern',
         pattern: 'solid',
-        fgColor: { argb: 'FF9BC2E6' } // Light Blue
+        fgColor: { argb: 'FF9BC2E6' }
       };
       cell.alignment = { vertical: 'middle', horizontal: 'center' };
       cell.border = {
@@ -473,6 +474,7 @@ export default function ApplicantsDirectory() {
         nisn: a.nisn || "",
         nik: a.nik || "",
         sekolah: a.sekolah_asal || a.sekolahAsal || "",
+        kelas: a.diterima_kelas || a.diterimaKelas || "Belum Diatur",
         jurusan1: a.jurusan_1 || a.jurusan1 || "",
         jurusan2: a.jurusan_2 || a.jurusan2 || "",
         whatsapp: a.whatsapp || "",
@@ -485,19 +487,17 @@ export default function ApplicantsDirectory() {
     // Style all cells (add borders, white backgrounds, and specific alignments)
     worksheet.eachRow((row, rowNumber) => {
       if (rowNumber > 1) {
-        row.height = 25; // Give row some breathing room too
+        row.height = 25;
       }
       
       row.eachCell((cell, colNumber) => {
         if (rowNumber > 1) {
-          // Plain white background for data
           cell.fill = {
             type: 'pattern',
             pattern: 'solid',
             fgColor: { argb: 'FFFFFFFF' }
           };
           
-          // Thin borders for everything
           cell.border = {
             top: { style: 'thin' },
             left: { style: 'thin' },
@@ -505,10 +505,7 @@ export default function ApplicantsDirectory() {
             right: { style: 'thin' }
           };
 
-          // Alignment
-          // No., NISN, NIK, WA, Status, Tanggal (cols 1, 3, 4, 8, 10, 11) -> Centered
-          // Nama, Sekolah, Jurusan, Email (cols 2, 5, 6, 7, 9) -> Left aligned
-          if ([1, 3, 4, 8, 10, 11].includes(colNumber)) {
+          if ([1, 3, 4, 6, 9, 11, 12].includes(colNumber)) {
             cell.alignment = { vertical: 'middle', horizontal: 'center' };
           } else {
             cell.alignment = { vertical: 'middle', horizontal: 'left', indent: 1 };
@@ -615,33 +612,12 @@ export default function ApplicantsDirectory() {
                   ? "bg-white dark:bg-slate-900 text-blue-600 dark:text-white shadow-sm border border-slate-200/40 dark:border-white/5"
                   : "text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white"
                 }`}
-              title="Tampilan Spreadsheet Google Sheets"
+              title="Tampilan Excel Sheet Mode"
             >
               <FileSpreadsheet size={14} className="text-emerald-500" />
-              <span className="hidden sm:inline text-emerald-500">Spreadsheet</span>
+              <span className="hidden sm:inline text-emerald-500">Excel Mode</span>
             </button>
           </div>
-
-          {/* Google Sheets Sync Webhook Action Trigger */}
-          <button
-            onClick={triggerGoogleSheetsSync}
-            disabled={filteredApplicants.length === 0 || syncStatus === "SYNCING"}
-            className={`px-4 py-3 bg-gradient-to-tr transition-all rounded-2xl text-xs font-black uppercase tracking-wider shrink-0 shadow-sm flex items-center gap-2 border ${syncStatus === "SUCCESS"
-                ? "from-emerald-500 to-teal-500 text-white border-emerald-600 shadow-[0_4px_12px_rgba(16,185,129,0.2)]"
-                : syncStatus === "SYNCING"
-                  ? "from-blue-500 to-sky-400 text-white opacity-80 cursor-wait border-blue-600"
-                  : "from-blue-50/50 to-blue-50 dark:from-slate-950 dark:to-slate-950 text-blue-500 dark:text-blue-400 hover:bg-blue-500/10 border-blue-500/10 dark:border-white/5"
-              }`}
-          >
-            <CloudLightning size={14} className={syncStatus === "SYNCING" ? "animate-bounce" : ""} />
-            <span>
-              {syncStatus === "SYNCING"
-                ? `Syncing (${syncProgress}%)`
-                : syncStatus === "SUCCESS"
-                  ? "Auto-Synced!"
-                  : "Sheets Sync"}
-            </span>
-          </button>
 
           {/* Export formatted CSV/Spreadsheet button */}
           <button
@@ -784,9 +760,9 @@ export default function ApplicantsDirectory() {
             <div className="bg-[#f8fafc] dark:bg-slate-950 text-slate-500 dark:text-slate-400 border-b border-slate-200 dark:border-slate-800 p-2.5 text-[10px] font-bold font-mono tracking-widest flex items-center justify-between shrink-0">
               <span className="flex items-center gap-2">
                 <FileSpreadsheet size={13} className="text-emerald-500" />
-                <span>SHEETS1 : PPDB_SMK_TARUNABHAKTI_2026.XLSX</span>
+                <span>EXCEL MODE : PPDB_SMK_TARUNABHAKTI_2026.XLSX</span>
               </span>
-              <span className="text-slate-400 dark:text-slate-655">Buka baris dengan double-click untuk Verifikasi Dokumen</span>
+              <span className="text-slate-400 dark:text-slate-655">Double-click baris untuk Verifikasi Dokumen</span>
             </div>
 
             <table className="w-full text-left text-xs font-semibold text-slate-650 dark:text-slate-355 border-collapse table-fixed">

@@ -593,10 +593,10 @@ export default function DaftarPage() {
 
       <div className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border border-white/60 dark:border-slate-800/60 shadow-[0_20px_50px_rgba(0,102,255,0.06)] dark:shadow-[0_20px_50px_rgba(0,0,0,0.3)] rounded-[2.5rem] p-6 md:p-10 max-w-4xl w-full relative z-10">
 
-        <div className="flex justify-between items-center mb-10 relative">
-          <div className="absolute top-1/2 left-0 w-full h-1 bg-slate-100 dark:bg-slate-800 -translate-y-1/2 z-0 rounded-full"></div>
+        <div className="flex justify-between items-center mb-12 relative px-4">
+          <div className="absolute top-1/2 left-0 w-full h-[3px] bg-slate-100 dark:bg-slate-800/80 -translate-y-1/2 z-0 rounded-full"></div>
           <div
-            className="absolute top-1/2 left-0 h-1 bg-blue-600 dark:bg-blue-500 -translate-y-1/2 z-0 rounded-full transition-all duration-500"
+            className="absolute top-1/2 left-0 h-[3px] bg-blue-600 dark:bg-blue-500 -translate-y-1/2 z-0 rounded-full transition-all duration-500"
             style={{ width: `${((wizardStep - 1) / 12) * 100}%` }}
           ></div>
 
@@ -606,15 +606,20 @@ export default function DaftarPage() {
             return (
               <div
                 key={step}
+                onClick={() => goToStep(step)}
                 title={`Tahap ${step}`}
-                className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm z-10 transition-all duration-300 select-none ${isCurrent
-                  ? "bg-blue-600 dark:bg-blue-500 text-white shadow-lg shadow-blue-500/30 scale-110"
-                  : isCompleted
-                    ? "bg-blue-600 dark:bg-blue-500 text-white ring-2 ring-blue-300 dark:ring-blue-900 ring-offset-2 dark:ring-offset-slate-900"
-                    : "bg-white dark:bg-slate-900 text-slate-400 dark:text-slate-500 border-2 border-slate-200 dark:border-slate-800"
-                  }`}
+                className={`rounded-full z-10 transition-all duration-500 ease-out cursor-pointer select-none relative ${
+                  isCurrent
+                    ? "w-7 h-7 bg-blue-600 dark:bg-blue-500 shadow-[0_0_20px_rgba(37,99,235,0.65)] scale-125 ring-[6px] ring-blue-500/20"
+                    : isCompleted
+                      ? "w-4.5 h-4.5 bg-blue-600 dark:bg-blue-500 hover:bg-blue-700 ring-[4px] ring-blue-500/10"
+                      : "w-4 h-4 bg-white dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-800 hover:border-blue-500"
+                }`}
               >
-                {isCompleted ? <Check size={16} /> : step}
+                {/* Clean indicator dot for active step to look premium */}
+                {isCurrent && (
+                  <span className="absolute inset-1.5 bg-white rounded-full animate-pulse"></span>
+                )}
               </div>
             );
           })}

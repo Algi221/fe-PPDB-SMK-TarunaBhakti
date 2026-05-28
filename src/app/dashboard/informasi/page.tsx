@@ -42,7 +42,11 @@ export default function KelolaInformasi() {
   const [judul, setJudul] = useState<string>("");
   const [konten, setKonten] = useState<string>("");
   const [tanggal, setTanggal] = useState<string>("");
-  const [fotoUrl, setFotoUrl] = useState<string>(""); // Base64
+  const [fotoUrl, setFotoUrl] = useState<string>(""); // Base64 Image
+  const [videoUrl, setVideoUrl] = useState<string>(""); // Base64 Video
+  const [videoName, setVideoName] = useState<string>("");
+  const [dokumenUrl, setDokumenUrl] = useState<string>(""); // Base64 Document
+  const [dokumenName, setDokumenName] = useState<string>("");
   const [dragActive, setDragActive] = useState<boolean>(false);
 
   // Detail View State
@@ -52,6 +56,26 @@ export default function KelolaInformasi() {
   const [deleteConfirmId, setDeleteConfirmId] = useState<number | null>(null);
 
   const BACKEND_URL = "http://localhost:5000";
+
+  // Helper to parse dynamic JSON media attachments
+  const parseMedia = (raw: string | null | undefined) => {
+    if (!raw) return { foto: "", video: "", videoName: "", dokumen: "", dokumenName: "" };
+    if (raw.startsWith("{")) {
+      try {
+        const parsed = JSON.parse(raw);
+        return {
+          foto: parsed.foto || "",
+          video: parsed.video || "",
+          videoName: parsed.video_name || "",
+          dokumen: parsed.dokumen || "",
+          dokumenName: parsed.dokumen_name || ""
+        };
+      } catch (e) {
+        // fallback
+      }
+    }
+    return { foto: raw, video: "", videoName: "", dokumen: "", dokumenName: "" };
+  };
 
   // Format date helper
   const formatDate = (dateString: string) => {
@@ -132,6 +156,10 @@ export default function KelolaInformasi() {
     const today = new Date().toISOString().split('T')[0];
     setTanggal(today);
     setFotoUrl("");
+    setVideoUrl("");
+    setVideoName("");
+    setDokumenUrl("");
+    setDokumenName("");
     setIsOpenModal(true);
   };
 
@@ -141,7 +169,14 @@ export default function KelolaInformasi() {
     setJudul(item.judul);
     setKonten(item.konten);
     setTanggal(formatInputDate(item.tanggal));
-    setFotoUrl(item.foto_url || "");
+    
+    const media = parseMedia(item.foto_url);
+    setFotoUrl(media.foto);
+    setVideoUrl(media.video);
+    setVideoName(media.videoName);
+    setDokumenUrl(media.dokumen);
+    setDokumenName(media.dokumenName);
+    
     setIsOpenModal(true);
   };
 
@@ -181,6 +216,93 @@ export default function KelolaInformasi() {
     if (file) processFile(file);
   };
 
+  // Convert Video to Base64
+  const processVideoFile = (file: File) => {
+    if (!file) return;
+    
+    // Check size limit (limit to 10MB)
+    if (file.size > 10 * 1024 * 1024) {
+      if (typeof addToast === "function") {
+        addToast("Ukuran Video Terlalu Besar", "Harap pilih video dengan ukuran di bawah 10 MB.", "warning");
+      }
+      return;
+    }
+
+    if (!file.type.startsWith("video/")) {
+      if (typeof addToast === "function") {
+        addToast("Format Tidak Valid", "Hanya berkas video yang diperbolehkan.", "warning");
+      }
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      if (typeof reader.result === "string") {
+        setVideoUrl(reader.result);
+        setVideoName(file.name);
+        if (typeof addToast === "function") {
+          addToast("Video Siap", "Video berhasil diproses untuk diunggah.", "success");
+        }
+      }
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleVideoFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) processVideoFile(file);
+  };
+
+  // Convert Document to Base64
+  const processDokumenFile = (file: File) => {
+    if (!file) return;
+    
+    // Check size limit (limit to 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      if (typeof addToast === "function") {
+        addToast("Ukuran Dokumen Terlalu Besar", "Harap pilih dokumen dengan ukuran di bawah 5 MB.", "warning");
+      }
+      return;
+    }
+
+    // Allow typical document mime types: pdf, doc, docx, xls, xlsx, txt
+    const allowedTypes = [
+      "application/pdf",
+      "application/msword",
+      "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+      "application/vnd.ms-excel",
+      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      "text/plain"
+    ];
+    // Also allow by extension as a fallback
+    const ext = file.name.split('.').pop()?.toLowerCase();
+    const isAllowedExt = ["pdf", "doc", "docx", "xls", "xlsx", "txt"].includes(ext || "");
+
+    if (!allowedTypes.includes(file.type) && !isAllowedExt) {
+      if (typeof addToast === "function") {
+        addToast("Format Tidak Valid", "Hanya dokumen PDF, Word, Excel, atau Text yang diperbolehkan.", "warning");
+      }
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      if (typeof reader.result === "string") {
+        setDokumenUrl(reader.result);
+        setDokumenName(file.name);
+        if (typeof addToast === "function") {
+          addToast("Dokumen Siap", "Dokumen berhasil diproses untuk diunggah.", "success");
+        }
+      }
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleDokumenFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) processDokumenFile(file);
+  };
+
   // Drag and drop event handlers
   const handleDrag = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
@@ -213,11 +335,19 @@ export default function KelolaInformasi() {
     }
 
     setSubmitting(true);
+    const mediaObj = {
+      foto: fotoUrl || "",
+      video: videoUrl || "",
+      video_name: videoName || "",
+      dokumen: dokumenUrl || "",
+      dokumen_name: dokumenName || ""
+    };
+    const hasMedia = fotoUrl || videoUrl || dokumenUrl;
     const payload = {
       judul: judul.trim(),
       konten: konten.trim(),
       tanggal,
-      foto_url: fotoUrl || null
+      foto_url: hasMedia ? JSON.stringify(mediaObj) : null
     };
 
     try {
@@ -405,78 +535,95 @@ export default function KelolaInformasi() {
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {informasiList.map((item) => (
-            <div 
-              key={item.id}
-              className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800/60 hover:border-slate-350 dark:hover:border-white/10 rounded-3xl overflow-hidden shadow-[0_2px_10px_rgba(0,0,0,0.01)] dark:shadow-[0_2px_10px_rgba(0,0,0,0.2)] hover:shadow-xl hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between group relative cursor-pointer"
-              onClick={() => setPreviewItem(item)}
-            >
-              
-              {/* Floating Date Badge */}
-              <div className="absolute top-4 left-4 z-10 px-3 py-1.5 bg-slate-950/80 backdrop-blur-md border border-white/10 text-white text-[10px] font-black uppercase tracking-widest rounded-xl flex items-center gap-1.5 shadow-md">
-                <Calendar size={11} className="text-blue-400" />
-                <span>{formatDate(item.tanggal)}</span>
-              </div>
+          {informasiList.map((item) => {
+            const media = parseMedia(item.foto_url);
+            return (
+              <div 
+                key={item.id}
+                className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800/60 hover:border-slate-350 dark:hover:border-white/10 rounded-3xl overflow-hidden shadow-[0_2px_10px_rgba(0,0,0,0.01)] dark:shadow-[0_2px_10px_rgba(0,0,0,0.2)] hover:shadow-xl hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between group relative cursor-pointer"
+                onClick={() => setPreviewItem(item)}
+              >
+                
+                {/* Floating Date Badge */}
+                <div className="absolute top-4 left-4 z-10 px-3 py-1.5 bg-slate-950/80 backdrop-blur-md border border-white/10 text-white text-[10px] font-black uppercase tracking-widest rounded-xl flex items-center gap-1.5 shadow-md">
+                  <Calendar size={11} className="text-blue-400" />
+                  <span>{formatDate(item.tanggal)}</span>
+                </div>
 
-              <div>
-                {/* Image Section */}
-                <div className="h-48 bg-slate-100 dark:bg-slate-950 overflow-hidden relative border-b border-slate-150 dark:border-white/5">
-                  {item.foto_url ? (
-                    <img 
-                      src={item.foto_url} 
-                      alt={item.judul}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                    />
-                  ) : (
-                    <div className="w-full h-full bg-gradient-to-br from-blue-500/10 to-indigo-650/10 dark:from-blue-600/5 dark:to-indigo-500/5 flex flex-col items-center justify-center text-slate-400 dark:text-slate-650 gap-2">
-                      <ImageIcon size={32} strokeWidth={1.5} className="group-hover:scale-110 transition-transform duration-300" />
-                      <span className="text-[10px] font-black uppercase tracking-wider text-slate-400 dark:text-slate-600">Media Poster Kosong</span>
-                    </div>
+                {/* Floating Media Indicators */}
+                <div className="absolute top-4 right-4 z-10 flex gap-1">
+                  {media.video && (
+                    <span className="px-2.5 py-1.5 bg-blue-600/90 backdrop-blur-md border border-blue-400/20 text-white text-[9px] font-black uppercase tracking-wider rounded-xl shadow-md">
+                      🎥 Video
+                    </span>
                   )}
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                  {media.dokumen && (
+                    <span className="px-2.5 py-1.5 bg-emerald-600/90 backdrop-blur-md border border-emerald-400/20 text-white text-[9px] font-black uppercase tracking-wider rounded-xl shadow-md">
+                      📄 Dokumen
+                    </span>
+                  )}
                 </div>
 
-                {/* Content Section */}
-                <div className="p-6 space-y-3">
-                  <h4 className="text-slate-850 dark:text-white font-extrabold text-base tracking-tight leading-snug line-clamp-2 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
-                    {item.judul}
-                  </h4>
-                  <p className="text-xs text-slate-500 dark:text-slate-405 font-medium leading-relaxed line-clamp-3">
-                    {item.konten}
-                  </p>
+                <div>
+                  {/* Image Section */}
+                  <div className="h-48 bg-slate-100 dark:bg-slate-955 overflow-hidden relative border-b border-slate-150 dark:border-white/5">
+                    {media.foto ? (
+                      <img 
+                        src={media.foto} 
+                        alt={item.judul}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                      />
+                    ) : (
+                      <div className="w-full h-full bg-gradient-to-br from-blue-500/10 to-indigo-650/10 dark:from-blue-600/5 dark:to-indigo-500/5 flex flex-col items-center justify-center text-slate-400 dark:text-slate-650 gap-2">
+                        <ImageIcon size={32} strokeWidth={1.5} className="group-hover:scale-110 transition-transform duration-300" />
+                        <span className="text-[10px] font-black uppercase tracking-wider text-slate-400 dark:text-slate-600">Media Poster Kosong</span>
+                      </div>
+                    )}
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                  </div>
+
+                  {/* Content Section */}
+                  <div className="p-6 space-y-3">
+                    <h4 className="text-slate-850 dark:text-white font-extrabold text-base tracking-tight leading-snug line-clamp-2 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                      {item.judul}
+                    </h4>
+                    <p className="text-xs text-slate-500 dark:text-slate-405 font-medium leading-relaxed line-clamp-3">
+                      {item.konten}
+                    </p>
+                  </div>
                 </div>
-              </div>
 
-              {/* Action Bar Footer */}
-              <div className="px-6 py-4 bg-slate-50/50 dark:bg-slate-950/20 border-t border-slate-100 dark:border-white/5 flex items-center justify-between relative z-20" onClick={(e) => e.stopPropagation()}>
-                <button
-                  onClick={() => setPreviewItem(item)}
-                  className="text-[11px] font-extrabold uppercase tracking-wide text-blue-550 dark:text-blue-400 hover:text-blue-600 dark:hover:text-blue-300 flex items-center gap-1 active:scale-[0.98] transition-all"
-                >
-                  <span>Pratinjau</span>
-                  <ArrowRight size={12} className="group-hover:translate-x-1 transition-transform" />
-                </button>
-
-                <div className="flex items-center gap-1.5">
+                {/* Action Bar Footer */}
+                <div className="px-6 py-4 bg-slate-50/50 dark:bg-slate-955/20 border-t border-slate-100 dark:border-white/5 flex items-center justify-between relative z-20" onClick={(e) => e.stopPropagation()}>
                   <button
-                    onClick={() => handleOpenEditModal(item)}
-                    className="p-2 bg-slate-100 hover:bg-blue-500/10 dark:bg-white/5 dark:hover:bg-blue-500/10 text-slate-500 dark:text-slate-400 hover:text-blue-500 dark:hover:text-blue-300 rounded-xl transition-all border border-slate-200/50 dark:border-white/5 hover:border-blue-500/20"
-                    title="Edit Informasi"
+                    onClick={() => setPreviewItem(item)}
+                    className="text-[11px] font-extrabold uppercase tracking-wide text-blue-550 dark:text-blue-400 hover:text-blue-600 dark:hover:text-blue-300 flex items-center gap-1 active:scale-[0.98] transition-all"
                   >
-                    <Edit3 size={13} />
+                    <span>Pratinjau</span>
+                    <ArrowRight size={12} className="group-hover:translate-x-1 transition-transform" />
                   </button>
-                  <button
-                    onClick={() => setDeleteConfirmId(item.id)}
-                    className="p-2 bg-slate-100 hover:bg-rose-500/10 dark:bg-white/5 dark:hover:bg-rose-500/10 text-slate-400 hover:text-rose-600 dark:hover:text-rose-300 rounded-xl transition-all border border-slate-200/50 dark:border-white/5 hover:border-rose-500/20"
-                    title="Hapus Informasi"
-                  >
-                    <Trash2 size={13} />
-                  </button>
-                </div>
-              </div>
 
-            </div>
-          ))}
+                  <div className="flex items-center gap-1.5">
+                    <button
+                      onClick={() => handleOpenEditModal(item)}
+                      className="p-2 bg-slate-100 hover:bg-blue-500/10 dark:bg-white/5 dark:hover:bg-blue-500/10 text-slate-500 dark:text-slate-400 hover:text-blue-500 dark:hover:text-blue-300 rounded-xl transition-all border border-slate-200/50 dark:border-white/5 hover:border-blue-500/20"
+                      title="Edit Informasi"
+                    >
+                      <Edit3 size={13} />
+                    </button>
+                    <button
+                      onClick={() => setDeleteConfirmId(item.id)}
+                      className="p-2 bg-slate-100 hover:bg-rose-500/10 dark:bg-white/5 dark:hover:bg-rose-500/10 text-slate-400 hover:text-rose-600 dark:hover:text-rose-300 rounded-xl transition-all border border-slate-200/50 dark:border-white/5 hover:border-rose-500/20"
+                      title="Hapus Informasi"
+                    >
+                      <Trash2 size={13} />
+                    </button>
+                  </div>
+                </div>
+
+              </div>
+            );
+          })}
         </div>
       )}
 
@@ -602,6 +749,89 @@ export default function KelolaInformasi() {
                   )}
                 </div>
 
+                {/* Additional Media Uploaders */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-6 border-t border-slate-150 dark:border-white/5">
+                  {/* Video Uploader */}
+                  <div className="space-y-2 text-left">
+                    <label className="text-slate-650 dark:text-slate-400 font-extrabold uppercase text-[10px] tracking-wider block">Video Informasi (Maks 10MB)</label>
+                    
+                    {videoUrl ? (
+                      <div className="relative rounded-2xl border border-slate-200 dark:border-white/5 overflow-hidden h-36 bg-slate-950 group flex items-center justify-center">
+                        <video src={videoUrl} className="h-full w-full object-contain" />
+                        <div className="absolute inset-0 bg-black/45 backdrop-blur-[2px] opacity-0 group-hover:opacity-100 flex flex-col items-center justify-center gap-2 transition-opacity duration-200">
+                          <span className="text-[9px] text-white font-extrabold uppercase tracking-wider truncate max-w-[90%]">{videoName}</span>
+                          <button
+                            type="button"
+                            onClick={() => { setVideoUrl(""); setVideoName(""); }}
+                            className="px-3 py-1.5 bg-rose-600 hover:bg-rose-500 text-white rounded-xl text-[10px] font-black uppercase tracking-wider flex items-center gap-1 shadow-md transition-all active:scale-95"
+                          >
+                            <Trash2 size={11} />
+                            <span>Hapus Video</span>
+                          </button>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="border-2 border-dashed border-slate-300 dark:border-slate-800 hover:border-slate-450 dark:hover:border-slate-700 bg-slate-50 dark:bg-slate-950/20 rounded-2xl p-4 text-center transition-all flex flex-col items-center justify-center gap-1.5 cursor-pointer h-36 relative overflow-hidden">
+                        <input
+                          type="file"
+                          accept="video/mp4,video/webm"
+                          onChange={handleVideoFileChange}
+                          className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                        />
+                        <div className="w-10 h-10 rounded-full bg-indigo-50 dark:bg-indigo-950 flex items-center justify-center text-indigo-650 dark:text-indigo-400 border border-indigo-100 dark:border-indigo-900/50">
+                          <Upload size={16} />
+                        </div>
+                        <div className="space-y-0.5">
+                          <h5 className="text-[11px] font-black text-slate-800 dark:text-slate-200 uppercase tracking-wide">Pilih Berkas Video</h5>
+                          <p className="text-[9px] text-slate-400 dark:text-slate-500 font-semibold leading-relaxed">Format MP4 atau WEBM. Maksimal 10 MB</p>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Document Uploader */}
+                  <div className="space-y-2 text-left">
+                    <label className="text-slate-650 dark:text-slate-400 font-extrabold uppercase text-[10px] tracking-wider block">Dokumen Lampiran (Maks 5MB)</label>
+                    
+                    {dokumenUrl ? (
+                      <div className="relative rounded-2xl border border-slate-200 dark:border-white/5 overflow-hidden h-36 bg-slate-50 dark:bg-slate-950/40 p-4 group flex flex-col items-center justify-center text-center shadow-inner">
+                        <div className="w-10 h-10 rounded-xl bg-emerald-500/10 text-emerald-500 flex items-center justify-center border border-emerald-500/20 mb-1">
+                          <FileText size={18} />
+                        </div>
+                        <h6 className="text-[10px] font-extrabold text-slate-800 dark:text-slate-200 truncate max-w-[90%] leading-tight">{dokumenName}</h6>
+                        <span className="text-[8px] text-slate-400 font-black uppercase tracking-wider block mt-0.5">Dokumen Siap</span>
+                        
+                        <div className="absolute inset-0 bg-black/45 backdrop-blur-[2px] opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity duration-200">
+                          <button
+                            type="button"
+                            onClick={() => { setDokumenUrl(""); setDokumenName(""); }}
+                            className="px-3 py-1.5 bg-rose-600 hover:bg-rose-500 text-white rounded-xl text-[10px] font-black uppercase tracking-wider flex items-center gap-1 shadow-md transition-all active:scale-95"
+                          >
+                            <Trash2 size={11} />
+                            <span>Hapus Berkas</span>
+                          </button>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="border-2 border-dashed border-slate-300 dark:border-slate-800 hover:border-slate-450 dark:hover:border-slate-700 bg-slate-50 dark:bg-slate-950/20 rounded-2xl p-4 text-center transition-all flex flex-col items-center justify-center gap-1.5 cursor-pointer h-36 relative overflow-hidden">
+                        <input
+                          type="file"
+                          accept=".pdf,.doc,.docx,.xls,.xlsx,.txt"
+                          onChange={handleDokumenFileChange}
+                          className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                        />
+                        <div className="w-10 h-10 rounded-full bg-emerald-50 dark:bg-emerald-950 flex items-center justify-center text-emerald-650 dark:text-emerald-400 border border-emerald-100 dark:border-emerald-900/50">
+                          <Upload size={16} />
+                        </div>
+                        <div className="space-y-0.5">
+                          <h5 className="text-[11px] font-black text-slate-800 dark:text-slate-200 uppercase tracking-wide">Pilih Berkas Dokumen</h5>
+                          <p className="text-[9px] text-slate-400 dark:text-slate-500 font-semibold leading-relaxed">PDF, DOCX, XLSX, TXT. Maksimal 5 MB</p>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
               </div>
 
               {/* Modal Action Buttons Footer */}
@@ -635,57 +865,115 @@ export default function KelolaInformasi() {
       )}
 
       {/* DETAIL PREVIEW MODAL */}
-      {previewItem && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md overflow-y-auto animate-in fade-in duration-300">
-          <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-white/10 rounded-3xl w-full max-w-3xl shadow-[0_30px_70px_rgba(0,0,0,0.15)] dark:shadow-[0_30px_70px_rgba(0,0,0,0.6)] overflow-hidden animate-in zoom-in-95 my-8 transition-colors duration-300">
-            
-            {/* Poster Header */}
-            {previewItem.foto_url ? (
-              <div className="h-80 relative border-b border-slate-150 dark:border-white/5">
-                <img src={previewItem.foto_url} alt={previewItem.judul} className="w-full h-full object-cover" />
-                <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-transparent to-transparent" />
-                
-                {/* Floating Date Over Image */}
-                <div className="absolute bottom-6 left-6 z-10 px-3 py-1.5 bg-blue-600 text-white text-[10px] font-black uppercase tracking-widest rounded-xl flex items-center gap-1.5 shadow-md border border-blue-500">
-                  <Calendar size={11} />
-                  <span>{formatDate(previewItem.tanggal)}</span>
+      {previewItem && (() => {
+        const media = parseMedia(previewItem.foto_url);
+        return (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md overflow-y-auto animate-in fade-in duration-300">
+            <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-white/10 rounded-3xl w-full max-w-3xl shadow-[0_30px_70px_rgba(0,0,0,0.15)] dark:shadow-[0_30px_70px_rgba(0,0,0,0.6)] overflow-hidden animate-in zoom-in-95 my-8 transition-colors duration-300">
+              
+              {/* Poster Header */}
+              {media.foto ? (
+                <div className="h-80 relative border-b border-slate-150 dark:border-white/5">
+                  <img src={media.foto} alt={previewItem.judul} className="w-full h-full object-cover" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-transparent to-transparent" />
+                  
+                  {/* Floating Date Over Image */}
+                  <div className="absolute bottom-6 left-6 z-10 px-3 py-1.5 bg-blue-600 text-white text-[10px] font-black uppercase tracking-widest rounded-xl flex items-center gap-1.5 shadow-md border border-blue-500">
+                    <Calendar size={11} />
+                    <span>{formatDate(previewItem.tanggal)}</span>
+                  </div>
+                  
+                  <button
+                    onClick={() => setPreviewItem(null)}
+                    className="absolute top-4 right-4 w-8 h-8 rounded-full bg-slate-950/60 backdrop-blur-md border border-white/10 text-white hover:bg-slate-955 flex items-center justify-center transition-all font-bold"
+                  >
+                    ✕
+                  </button>
                 </div>
-                
-                <button
-                  onClick={() => setPreviewItem(null)}
-                  className="absolute top-4 right-4 w-8 h-8 rounded-full bg-slate-950/60 backdrop-blur-md border border-white/10 text-white hover:bg-slate-950 flex items-center justify-center transition-all font-bold"
-                >
-                  ✕
-                </button>
-              </div>
-            ) : (
-              <div className="p-6 border-b border-slate-150 dark:border-white/5 flex items-center justify-between bg-slate-50/50 dark:bg-slate-950/15">
-                <div className="px-3 py-1.5 bg-blue-100 dark:bg-blue-950/60 border border-blue-200 dark:border-blue-900 text-blue-600 dark:text-blue-400 text-[10px] font-black uppercase tracking-widest rounded-xl flex items-center gap-1.5 shadow-sm">
-                  <Calendar size={11} />
-                  <span>{formatDate(previewItem.tanggal)}</span>
+              ) : (
+                <div className="p-6 border-b border-slate-150 dark:border-white/5 flex items-center justify-between bg-slate-50/50 dark:bg-slate-950/15">
+                  <div className="px-3 py-1.5 bg-blue-100 dark:bg-blue-950/60 border border-blue-200 dark:border-blue-900 text-blue-600 dark:text-blue-400 text-[10px] font-black uppercase tracking-widest rounded-xl flex items-center gap-1.5 shadow-sm">
+                    <Calendar size={11} />
+                    <span>{formatDate(previewItem.tanggal)}</span>
+                  </div>
+                  <button
+                    onClick={() => setPreviewItem(null)}
+                    className="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 dark:bg-white/5 dark:hover:bg-white/10 border border-slate-200/50 dark:border-white/5 text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white flex items-center justify-center transition-all font-bold"
+                  >
+                    ✕
+                  </button>
                 </div>
-                <button
-                  onClick={() => setPreviewItem(null)}
-                  className="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 dark:bg-white/5 dark:hover:bg-white/10 border border-slate-200/50 dark:border-white/5 text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white flex items-center justify-center transition-all font-bold"
-                >
-                  ✕
-                </button>
+              )}
+
+              {/* Content Details */}
+              <div className="p-8 space-y-6">
+                <h2 className="text-xl font-black text-slate-850 dark:text-white uppercase leading-snug tracking-tight text-left">
+                  {previewItem.judul}
+                </h2>
+
+                <p className="text-sm text-slate-655 dark:text-slate-350 leading-relaxed font-semibold whitespace-pre-line text-left">
+                  {previewItem.konten}
+                </p>
+
+                {/* Additional Media in Preview */}
+                {(media.video || media.dokumen) && (
+                  <div className="pt-6 border-t border-slate-150 dark:border-white/5 space-y-6">
+                    <h5 className="text-xs font-black text-slate-800 dark:text-slate-200 uppercase tracking-widest text-left">Lampiran Media Forum</h5>
+                    
+                    <div className="space-y-6">
+                      {/* Video Player (Inline playback only, no download) */}
+                      {media.video && (
+                        <div className="space-y-3 text-left">
+                          <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">🎥 Berkas Video:</span>
+                          <div className="rounded-2xl border border-slate-200 dark:border-white/5 overflow-hidden bg-slate-950 shadow-sm relative">
+                            <video src={media.video} controls className="w-full max-h-72 object-contain" />
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Document Preview & Download Button */}
+                      {media.dokumen && (
+                        <div className="space-y-3 text-left w-full">
+                          <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">📄 Pratinjau Dokumen Resmi:</span>
+                          
+                          {media.dokumen.startsWith("data:application/pdf") ? (
+                            <div className="rounded-2xl border border-slate-200 dark:border-white/5 overflow-hidden shadow-md bg-white">
+                              <iframe src={media.dokumen} className="w-full h-[450px] border-0" />
+                            </div>
+                          ) : media.dokumen.startsWith("data:image/") ? (
+                            <div className="rounded-2xl border border-slate-200 dark:border-white/5 overflow-hidden shadow-md bg-slate-100 dark:bg-slate-950 flex items-center justify-center p-4">
+                              <img src={media.dokumen} alt="Dokumen Preview" className="max-w-full max-h-96 object-contain rounded-xl" />
+                            </div>
+                          ) : (
+                            <div className="p-4 bg-slate-50 dark:bg-slate-950/40 border border-slate-200 dark:border-white/5 rounded-2xl flex items-center gap-3">
+                              <div className="w-10 h-10 rounded-xl bg-emerald-500/10 text-emerald-500 flex items-center justify-center border border-emerald-500/20 shrink-0">
+                                <FileText size={18} />
+                              </div>
+                              <div className="min-w-0 flex-1">
+                                <h6 className="text-xs font-bold text-slate-800 dark:text-slate-200 truncate">{media.dokumenName || "dokumen.pdf"}</h6>
+                                <span className="text-[9px] text-slate-455 dark:text-slate-550 block mt-0.5">Pratinjau langsung tidak tersedia untuk format berkas ini. Silakan unduh dokumen untuk melihat isi berkas.</span>
+                              </div>
+                            </div>
+                          )}
+                          
+                          <div className="pt-2">
+                            <a
+                              href={media.dokumen}
+                              download={media.dokumenName || "dokumen.pdf"}
+                              className="w-full inline-flex items-center justify-center gap-2 px-4 py-3 bg-emerald-500 hover:bg-emerald-400 text-white rounded-2xl text-xs font-extrabold uppercase tracking-wider shadow-[0_4px_12px_rgba(16,185,129,0.2)] transition-all active:scale-[0.98]"
+                            >
+                              Unduh Dokumen ({media.dokumenName || "dokumen.pdf"})
+                            </a>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
               </div>
-            )}
-
-            {/* Content Details */}
-            <div className="p-8 space-y-6">
-              <h2 className="text-xl font-black text-slate-850 dark:text-white uppercase leading-snug tracking-tight text-left">
-                {previewItem.judul}
-              </h2>
-
-              <p className="text-sm text-slate-655 dark:text-slate-350 leading-relaxed font-semibold whitespace-pre-line text-left">
-                {previewItem.konten}
-              </p>
-            </div>
 
             {/* Detail Actions Footer */}
-            <div className="p-6 bg-slate-50/50 dark:bg-slate-950/15 border-t border-slate-150 dark:border-white/5 flex items-center justify-between">
+            <div className="p-6 bg-slate-50/50 dark:bg-slate-955/15 border-t border-slate-150 dark:border-white/5 flex items-center justify-between">
               <div className="text-[10px] text-slate-400 dark:text-slate-550 font-bold uppercase tracking-wider">
                 ID Publikasi: #{previewItem.id}
               </div>
@@ -712,7 +1000,8 @@ export default function KelolaInformasi() {
 
           </div>
         </div>
-      )}
+        );
+      })()}
 
       {/* DELETE CONFIRMATION MODAL */}
       {deleteConfirmId && (
