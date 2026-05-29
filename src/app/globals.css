@@ -1781,3 +1781,58 @@ footer {
     padding: 24px;
   }
 }
+
+/* Custom Premium Social Media Footer Links */
+.footer-social-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  color: #4b5563 !important; /* light mode grey */
+  background-color: #e5e7eb !important; /* light mode bg */
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+html.dark .footer-social-link {
+  color: #9ca3af !important; /* dark mode grey */
+  background-color: #1f2937 !important; /* dark mode bg */
+}
+
+/* Individual Brand Hovers */
+.footer-social-link.instagram:hover {
+  background-color: #E1306C !important;
+  color: #ffffff !important;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(225, 48, 108, 0.35);
+}
+
+.footer-social-link.youtube:hover {
+  background-color: #FF0000 !important;
+  color: #ffffff !important;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(255, 0, 0, 0.35);
+}
+
+.footer-social-link.tiktok:hover {
+  background-color: #000000 !important;
+  color: #ffffff !important;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35);
+}
+
+html.dark .footer-social-link.tiktok:hover {
+  background-color: #ffffff !important;
+  color: #000000 !important;
+  box-shadow: 0 4px 12px rgba(255, 255, 255, 0.25);
+}
+
+.footer-social-link.facebook:hover {
+  background-color: #1877F2 !important;
+  color: #ffffff !important;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(24, 119, 242, 0.35);
+}
+
