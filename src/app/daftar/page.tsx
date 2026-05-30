@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
-import { ArrowRight, Check, Upload, ArrowLeft, Home, Monitor, Code, Palette, Film, Cpu, Sun, Moon, CreditCard, ShieldCheck, Sparkles, X, FileText, AlertCircle } from "lucide-react";
+import { ArrowRight, Check, Upload, ArrowLeft, Home, Monitor, Code, Palette, Film, Cpu, Sun, Moon, CreditCard, ShieldCheck, Sparkles, X, FileText, AlertCircle, Phone, Copy, ChevronRight, Building, CheckCircle2, DollarSign, Printer } from "lucide-react";
 import { usePPDB } from "@/context/PPDBContext";
 
 export default function DaftarPage() {
@@ -159,9 +159,18 @@ export default function DaftarPage() {
   const snapScriptLoaded = useRef(false);
   const [paymentError, setPaymentError] = useState(null);
 
+  // 3-Option Checkout Custom States
+  const [activePaymentTab, setActivePaymentTab] = useState("transfer"); // "transfer" | "midtrans" | "cash"
+  const [manualReceiptBase64, setManualReceiptBase64] = useState("");
+  const [manualReceiptName, setManualReceiptName] = useState("");
+  const [copiedBank, setCopiedBank] = useState(null); // null | 'mandiri' | 'bjb'
+  const [isSubmittingReceipt, setIsSubmittingReceipt] = useState(false);
+  const [successData, setSuccessData] = useState<any>(null);
+
   // Dark Mode
   const [isDark, setIsDark] = useState(false);
-  const [regCost, setRegCost] = useState(150000);
+  const [regCost, setRegCost] = useState(250000);
+  const [waGroupUrl, setWaGroupUrl] = useState("https://chat.whatsapp.com/HJXHYajEOhl5RM6iN2SJOS");
   const [schoolPeriod, setSchoolPeriod] = useState("2026-2027");
   const [majors, setMajors] = useState([
     { code: "RPL", title: "Rekayasa Perangkat Lunak" },
@@ -193,6 +202,11 @@ export default function DaftarPage() {
       setFormData(prev => ({ ...prev, periode: savedPeriod }));
     }
 
+    const savedWaGroup = localStorage.getItem('ppdb_wa_group_url');
+    if (savedWaGroup) {
+      setWaGroupUrl(savedWaGroup);
+    }
+
     const savedMajors = localStorage.getItem('ppdb_majors_config');
     if (savedMajors) {
       try {
@@ -212,21 +226,29 @@ export default function DaftarPage() {
         const json = await res.json();
         if (json.success && json.data) {
           const config = json.data;
-          if (config.ppdb_form_fee) {
-            const parsed = parseInt(config.ppdb_form_fee);
-            if (!isNaN(parsed)) {
-              setRegCost(parsed);
-              localStorage.setItem('ppdb_reg_cost', config.ppdb_form_fee);
+          try {
+            if (config.ppdb_form_fee) {
+              const parsed = parseInt(config.ppdb_form_fee);
+              if (!isNaN(parsed)) {
+                setRegCost(parsed);
+                localStorage.setItem('ppdb_reg_cost', config.ppdb_form_fee);
+              }
             }
-          }
-          if (config.ppdb_school_period) {
-            setSchoolPeriod(config.ppdb_school_period);
-            setFormData(prev => ({ ...prev, periode: config.ppdb_school_period }));
-            localStorage.setItem('ppdb_school_period', config.ppdb_school_period);
-          }
-          if (config.ppdb_majors_config && Array.isArray(config.ppdb_majors_config) && config.ppdb_majors_config.length > 0) {
-            setMajors(config.ppdb_majors_config);
-            localStorage.setItem('ppdb_majors_config', JSON.stringify(config.ppdb_majors_config));
+            if (config.ppdb_school_period) {
+              setSchoolPeriod(config.ppdb_school_period);
+              setFormData(prev => ({ ...prev, periode: config.ppdb_school_period }));
+              localStorage.setItem('ppdb_school_period', config.ppdb_school_period);
+            }
+            if (config.ppdb_wa_group_url) {
+              setWaGroupUrl(config.ppdb_wa_group_url);
+              localStorage.setItem('ppdb_wa_group_url', config.ppdb_wa_group_url);
+            }
+            if (config.ppdb_majors_config && Array.isArray(config.ppdb_majors_config) && config.ppdb_majors_config.length > 0) {
+              setMajors(config.ppdb_majors_config);
+              localStorage.setItem('ppdb_majors_config', JSON.stringify(config.ppdb_majors_config));
+            }
+          } catch (storageErr) {
+            console.warn("Storage quota exceeded or unavailable. LocalStorage config cache sync bypassed.", storageErr);
           }
         }
       } catch (err) {
@@ -243,21 +265,52 @@ export default function DaftarPage() {
       const payment = params.get("payment");
       const nisn = params.get("nisn");
       if (payment === "success" && nisn) {
-        const checkStatus = async () => {
+        const forceVerifyAndShowSuccess = async () => {
           try {
-            const res = await checkPaymentStatus(nisn);
-            if (res && res.success && res.payment_status === "Paid") {
-              setFormData(prev => ({ ...prev, nisn: nisn }));
-              setIsSuccess(true);
-            }
+            // Automatically confirm/force-verify payment gateway transaction
+            const backendUrl = "http://localhost:5000";
+            await fetch(`${backendUrl}/api/payment/confirm-payment-option`, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                nisn: nisn,
+                bukti_bayar: null,
+                metode_pembayaran: "Payment Gateway"
+              })
+            });
+            setFormData(prev => ({ ...prev, nisn: nisn }));
+            setIsSuccess(true);
+            fetchPublicApplicants?.();
           } catch (err) {
-            console.log("Error checking redirected payment status:", err);
+            console.log("Error force verifying redirected payment status:", err);
           }
         };
-        checkStatus();
+        forceVerifyAndShowSuccess();
       }
     }
-  }, [checkPaymentStatus]);
+  }, [checkPaymentStatus, fetchPublicApplicants]);
+
+  // Fetch full details upon success to render the clean congrats sheet and high-fidelity invoice
+  useEffect(() => {
+    if (isSuccess) {
+      const targetNisn = formData.nisn || (submittedCandidate && (submittedCandidate.nisn || submittedCandidate.nisn));
+      if (targetNisn) {
+        const fetchSuccessData = async () => {
+          try {
+            const backendUrl = "http://localhost:5000";
+            const res = await fetch(`${backendUrl}/api/applicants/public-invoice/${targetNisn}`);
+            const json = await res.json();
+            if (json.success && json.data) {
+              setSuccessData(json.data);
+            }
+          } catch (err) {
+            console.log("Failed to fetch success candidate details:", err);
+          }
+        };
+        fetchSuccessData();
+      }
+    }
+  }, [isSuccess, formData.nisn, submittedCandidate]);
 
   // Polling check payment status every 4 seconds
   useEffect(() => {
@@ -349,6 +402,33 @@ export default function DaftarPage() {
   };
 
   const nextStep = async () => {
+    if (wizardStep === 1) {
+      if (!formData.nama || formData.nama.trim() === "") {
+        alert("Nama Lengkap wajib diisi!");
+        return;
+      }
+      if (!formData.jenisKelamin) {
+        alert("Jenis Kelamin wajib dipilih!");
+        return;
+      }
+      if (!formData.nisn || formData.nisn.length !== 10) {
+        alert("NISN wajib diisi dan harus tepat 10 digit angka!");
+        return;
+      }
+      if (!formData.nik || formData.nik.length !== 16) {
+        alert("NIK wajib diisi dan harus tepat 16 digit angka!");
+        return;
+      }
+      if (!formData.tempatLahir || !formData.tglLahir) {
+        alert("Tempat dan Tanggal Lahir wajib diisi!");
+        return;
+      }
+      if (!formData.agama) {
+        alert("Agama wajib dipilih!");
+        return;
+      }
+    }
+
     if (wizardStep < 13) {
       setWizardStep(prev => prev + 1);
     } else {
@@ -378,6 +458,32 @@ export default function DaftarPage() {
   };
 
   const goToStep = (step) => {
+    if (step > 1 && wizardStep === 1) {
+      if (!formData.nama || formData.nama.trim() === "") {
+        alert("Nama Lengkap wajib diisi!");
+        return;
+      }
+      if (!formData.jenisKelamin) {
+        alert("Jenis Kelamin wajib dipilih!");
+        return;
+      }
+      if (!formData.nisn || formData.nisn.length !== 10) {
+        alert("NISN wajib diisi dan harus tepat 10 digit angka!");
+        return;
+      }
+      if (!formData.nik || formData.nik.length !== 16) {
+        alert("NIK wajib diisi dan harus tepat 16 digit angka!");
+        return;
+      }
+      if (!formData.tempatLahir || !formData.tglLahir) {
+        alert("Tempat dan Tanggal Lahir wajib diisi!");
+        return;
+      }
+      if (!formData.agama) {
+        alert("Agama wajib dipilih!");
+        return;
+      }
+    }
     setWizardStep(step);
   };
 
@@ -399,8 +505,65 @@ export default function DaftarPage() {
   }, [showPaymentGate]);
 
   if (isSuccess) {
+    if (!successData) {
+      return (
+        <div className="min-h-screen flex flex-col items-center justify-center bg-slate-50 dark:bg-slate-950">
+          <div className="animate-spin rounded-full h-8 w-8 border-4 border-blue-500 border-t-transparent mb-4"></div>
+          <p className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest animate-pulse">Memuat Invoice & Konfirmasi...</p>
+        </div>
+      );
+    }
+
+    const tglDaftarFormatted = new Date(successData.tgl_daftar).toLocaleDateString("id-ID", {
+      year: "numeric",
+      month: "long",
+      day: "numeric"
+    });
+
     return (
-      <div className="relative min-h-screen flex items-center justify-center p-6 overflow-hidden">
+      <div className="relative min-h-screen flex items-center justify-center p-4 lg:p-10 overflow-hidden bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 transition-colors duration-300 print:bg-white print:p-0">
+        
+        {/* CSS print override style block to hide headers/footers (localhost URL) and fix blank page */}
+        <style dangerouslySetInnerHTML={{__html: `
+          @media print {
+            /* Hide all non-printable elements */
+            .bg-glow-container, .print-hide-sidebar, .floating-action-nav, button, a, nav, header, footer {
+              display: none !important;
+            }
+            
+            /* Reset parent wrappers to normal block display with visible overflow */
+            body, html, main, #__next, .min-h-screen, .relative, .grid, .col-span-12, .col-span-7, .max-w-6xl {
+              display: block !important;
+              overflow: visible !important;
+              background: white !important;
+              color: black !important;
+              padding: 0 !important;
+              margin: 0 !important;
+              width: 100% !important;
+              max-width: 100% !important;
+              box-shadow: none !important;
+              border: none !important;
+            }
+            
+            /* Apply custom padding and formatting on the invoice sheet itself */
+            .printable-invoice-sheet {
+              display: block !important;
+              width: 100% !important;
+              max-width: 100% !important;
+              margin: 0 !important;
+              padding: 1.5cm !important;
+              box-shadow: none !important;
+              border: none !important;
+              background: white !important;
+            }
+            
+            @page {
+              size: auto;
+              margin: 0mm; /* hides default browser header (title) and footer (localhost URL) */
+            }
+          }
+        `}} />
+
         {/* Background Glowing Blobs */}
         <div className="bg-glow-container">
           <div className="bg-glow bg-glow-1"></div>
@@ -408,38 +571,320 @@ export default function DaftarPage() {
           <div className="bg-glow bg-glow-3"></div>
         </div>
 
-        <div className="bg-white/80 backdrop-blur-xl border border-white/50 shadow-2xl rounded-3xl p-8 max-w-md w-full text-center relative z-10">
-          <div className="w-20 h-20 bg-emerald-100 text-emerald-500 rounded-full flex items-center justify-center mx-auto mb-6 shadow-[0_10px_25px_rgba(16,185,129,0.2)]">
+        {/* MOBILE VIEW (Congrats card matching mockup, only on screen < 1024px) */}
+        <div className="block lg:hidden bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border border-white/50 dark:border-slate-800 shadow-2xl rounded-3xl p-8 max-w-md w-full text-center relative z-10 print-hide-sidebar">
+          <div className="w-20 h-20 bg-emerald-100 dark:bg-emerald-950 text-emerald-500 rounded-full flex items-center justify-center mx-auto mb-6 shadow-[0_10px_25px_rgba(16,185,129,0.2)]">
             <Check size={40} />
           </div>
-          <h2 className="text-2xl font-extrabold text-slate-800 mb-2">Pendaftaran Sukses!</h2>
-          <p className="text-slate-500 text-sm mb-6">
-            Terima kasih, <strong>{formData.nama || "Calon Bintang"}</strong>.
+          <h2 className="text-2xl font-black text-slate-800 dark:text-white mb-2">Pendaftaran Sukses!</h2>
+          <p className="text-slate-500 dark:text-slate-400 text-xs md:text-sm mb-6 leading-relaxed">
+            Terima kasih, <strong>{successData.nama || "Calon Bintang"}</strong>.
             Data pendaftaran Anda telah berhasil direkam di sistem PPDB SMK Taruna Bhakti.
           </p>
-          <div className="bg-slate-50/70 backdrop-blur-sm border border-slate-100 rounded-xl p-4 mb-6 text-left text-xs">
-            <div className="flex justify-between py-1 border-b border-slate-200/50">
-              <span className="text-slate-400">NISN:</span>
-              <span className="font-bold text-slate-700">{formData.nisn}</span>
+          <div className="bg-slate-50/70 dark:bg-slate-950/30 backdrop-blur-sm border border-slate-100 dark:border-slate-800 rounded-xl p-4 mb-6 text-left text-xs space-y-2">
+            <div className="flex justify-between py-1 border-b border-slate-200/50 dark:border-slate-850">
+              <span className="text-slate-400 dark:text-slate-500">NISN:</span>
+              <span className="font-bold text-slate-700 dark:text-slate-200">{successData.nisn}</span>
             </div>
-            <div className="flex justify-between py-1 border-b border-slate-200/50">
-              <span className="text-slate-400">Sekolah Asal:</span>
-              <span className="font-bold text-slate-700">{formData.sekolahAsal}</span>
+            <div className="flex justify-between py-1 border-b border-slate-200/50 dark:border-slate-850">
+              <span className="text-slate-400 dark:text-slate-500">Sekolah Asal:</span>
+              <span className="font-bold text-slate-700 dark:text-slate-200">{successData.sekolah_asal || successData.sekolahAsal || "-"}</span>
             </div>
             <div className="flex justify-between py-1">
-              <span className="text-slate-400">Jurusan Utama:</span>
-              <span className="font-bold text-blue-600">{formData.jurusan1 || "-"}</span>
+              <span className="text-slate-400 dark:text-slate-500">Jurusan Utama:</span>
+              <span className="font-bold text-blue-600 dark:text-sky-400">{successData.jurusan_1 || successData.jurusan1 || "-"}</span>
             </div>
           </div>
+
+          {/* Warning box */}
+          <div className="bg-amber-50 dark:bg-amber-950/20 border border-amber-200/60 dark:border-amber-900 rounded-2xl p-4.5 mb-6 text-left text-[11px] leading-relaxed text-amber-800 dark:text-amber-300">
+            <div className="font-bold mb-1 uppercase tracking-wider flex items-center gap-1.5">
+              <AlertCircle size={14} className="shrink-0" />
+              PENTING: Bawa Berkas Fisik!
+            </div>
+            Calon siswa diimbau untuk datang langsung ke sekretariat PPDB sekolah guna melakukan verifikasi berkas fisik. Mohon persiapkan dan bawa dokumen berikut:
+            <ul className="list-disc pl-4.5 mt-1 space-y-0.5 font-semibold">
+              <li>Fotokopi Kartu Keluarga (KK)</li>
+              <li>Fotokopi KTP Orang Tua (Ayah &amp; Ibu)</li>
+              <li>Akta Kelahiran asli &amp; Fotokopi</li>
+              <li>Fotokopi Ijazah / Surat Keterangan Lulus (SKL) legalisir</li>
+              <li>Pas foto berwarna terbaru ukuran 3x4 (3 lembar)</li>
+            </ul>
+          </div>
+
+          {/* Whatsapp join CTA */}
+          {((successData && successData.payment_status === "Paid") || isSuccess) && (
+            <div className="bg-blue-50 dark:bg-blue-950/20 border border-blue-200/60 dark:border-blue-900 rounded-2xl p-4.5 mb-6 text-center text-xs">
+              <p className="font-bold text-blue-800 dark:text-blue-300 mb-2.5">
+                Mari Bergabung ke Grup PPDB WhatsApp!
+              </p>
+              <p className="text-[10px] text-slate-500 dark:text-slate-400 leading-normal mb-3.5">
+                Dapatkan info berkas fisik, jadwal tes bakat minat, dan pengumuman resmi langsung di ponsel Anda.
+              </p>
+              <a 
+                href={waGroupUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center justify-center gap-2 w-full py-2.5 px-6 bg-gradient-to-r from-emerald-600 to-green-500 hover:from-emerald-700 hover:to-green-600 text-white font-black text-xs uppercase tracking-wider rounded-xl shadow shadow-emerald-500/20 transition duration-300"
+              >
+                <Phone size={14} />
+                <span>Gabung Grup WA Pendaftar</span>
+              </a>
+            </div>
+          )}
+
           <div className="flex flex-col gap-3">
-            <Link href={`/invoice?nisn=${formData.nisn}`} target="_blank" className="w-full flex justify-center items-center py-3 px-6 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-full shadow-lg transition-transform hover:scale-[1.02]">
-              Lihat & Cetak Invoice
+            <Link href={`/invoice?nisn=${successData.nisn}`} target="_blank" className="w-full flex justify-center items-center py-3.5 px-6 bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-xs uppercase tracking-wider rounded-xl shadow-lg transition-transform hover:scale-[1.01] active:scale-[0.99]">
+              Lihat &amp; Cetak Invoice
             </Link>
-            <Link href="/" className="btn-primary-pill w-full flex justify-center bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-full shadow-lg transition-transform hover:scale-[1.02]">
+            <Link href="/" className="w-full flex justify-center items-center py-3 px-6 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-355 font-bold text-xs rounded-xl transition-all">
               Kembali ke Beranda
             </Link>
           </div>
         </div>
+
+        {/* DESKTOP VIEW (Congrats + Merged Invoice Side-by-Side, screen >= 1024px) */}
+        <div className="hidden lg:grid grid-cols-12 gap-8 max-w-6xl w-full relative z-10 items-start">
+          
+          {/* Left Column: Sidebar Stats, Documents checklist and WhatsApp CTA (print:hidden) */}
+          <div className="lg:col-span-5 space-y-6 print-hide-sidebar">
+            
+            {/* Congrats Info Box */}
+            <div className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border border-white/50 dark:border-slate-800/80 shadow-2xl rounded-3xl p-6 relative overflow-hidden">
+              <div className="absolute right-4 top-4 w-24 h-24 bg-emerald-500/5 dark:bg-emerald-500/5 rounded-full blur-xl pointer-events-none"></div>
+              
+              <div className="w-14 h-14 bg-emerald-100 dark:bg-emerald-950/60 text-emerald-500 rounded-full flex items-center justify-center mb-4.5 shadow-sm">
+                <CheckCircle2 size={28} className="animate-pulse" />
+              </div>
+              
+              <h2 className="text-xl font-black text-slate-800 dark:text-white mb-2 leading-tight">Pendaftaran Sukses!</h2>
+              <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-normal font-bold">
+                Terima kasih, <strong className="text-slate-750 dark:text-white">{successData.nama}</strong>. Data registrasi administrasi Anda telah tersimpan secara resmi di sistem PPDB SMK Taruna Bhakti Depok.
+              </p>
+            </div>
+
+            {/* Documents Checklist warning Box */}
+            <div className="bg-amber-50/60 dark:bg-amber-950/10 border border-amber-250/50 dark:border-amber-900/40 rounded-3xl p-6 text-left space-y-3 shadow-sm">
+              <div className="font-black text-xs uppercase tracking-wider text-amber-800 dark:text-amber-400 flex items-center gap-1.5 border-b border-amber-200/50 dark:border-amber-900/20 pb-2">
+                <AlertCircle size={14} className="shrink-0" />
+                PENTING: BAWA BERKAS FISIK KE SEKOLAH
+              </div>
+              <p className="text-[10px] text-amber-700/90 dark:text-amber-300/85 leading-relaxed font-bold">
+                Harap datang langsung ke loket sekretariat PPDB sekolah untuk verifikasi fisik berkas-berkas pendaftaran berikut:
+              </p>
+              <ul className="text-[10px] text-amber-805 dark:text-amber-350 font-bold space-y-1 pl-4 list-disc leading-normal">
+                <li>Fotokopi Kartu Keluarga (KK)</li>
+                <li>Fotokopi KTP Orang Tua (Ayah &amp; Ibu)</li>
+                <li>Akta Kelahiran asli &amp; Fotokopi</li>
+                <li>Fotokopi Ijazah / Surat Keterangan Lulus (SKL) legalisir</li>
+                <li>Pas foto berwarna terbaru ukuran 3x4 (3 lembar)</li>
+              </ul>
+            </div>
+
+            {/* WhatsApp Group card (Only show if payment_status === "Paid" or successfully completed) */}
+            {((successData && successData.payment_status === "Paid") || isSuccess) && (
+              <div className="bg-blue-50/60 dark:bg-blue-950/15 border border-blue-200/55 dark:border-blue-900/45 rounded-3xl p-6 text-center space-y-3.5 shadow-sm">
+                <div className="w-10 h-10 bg-emerald-100 dark:bg-emerald-950/60 text-emerald-500 rounded-full flex items-center justify-center mx-auto">
+                  <Phone size={18} className="animate-pulse" />
+                </div>
+                <div>
+                  <h4 className="font-black text-slate-800 dark:text-white text-xs uppercase tracking-wide">Mari Bergabung ke Grup WhatsApp</h4>
+                  <p className="text-[10px] text-slate-500 dark:text-slate-400 leading-normal mt-1 font-bold">
+                    Hubungkan dengan calon pendaftar lainnya dan dapatkan pembaruan informasi seleksi bakat minat.
+                  </p>
+                </div>
+                <a
+                  href={waGroupUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-full inline-flex justify-center items-center gap-2 py-3 bg-gradient-to-r from-emerald-600 to-green-500 hover:from-emerald-700 hover:to-green-600 text-white font-black text-xs uppercase tracking-wider rounded-xl shadow shadow-emerald-500/10 transition"
+                >
+                  <Phone size={12} />
+                  Gabung Grup WA Pendaftar
+                </a>
+              </div>
+            )}
+
+            {/* Print and Main Action controls */}
+            <div className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border border-white/50 dark:border-slate-800/80 shadow-2xl rounded-3xl p-6 space-y-4">
+              <button 
+                onClick={() => window.print()}
+                className="w-full flex justify-center items-center gap-2 bg-gradient-to-r from-blue-600 to-indigo-650 hover:from-blue-700 hover:to-indigo-755 text-white font-black text-xs uppercase tracking-wider py-3.5 px-6 rounded-xl shadow-lg shadow-blue-500/15 transition transform hover:scale-[1.01] active:scale-[0.99]"
+              >
+                <Printer size={14} />
+                Cetak Invoice Resmi (PDF)
+              </button>
+
+              <Link href="/" className="w-full flex justify-center items-center gap-1.5 py-3.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-black text-xs uppercase tracking-wider rounded-xl transition">
+                <Home size={13} />
+                Kembali ke Beranda
+              </Link>
+            </div>
+
+          </div>
+
+          {/* Right Column: Detailed High-Fidelity Printable Invoice Container */}
+          <div className="lg:col-span-7 w-full bg-white text-slate-900 rounded-3xl shadow-2xl p-8 border border-slate-200/50 print-full-width relative overflow-hidden invoice-sheet-container printable-invoice-sheet">
+            
+            {/* Elegant official diagonal stamp seal inside sheet */}
+            {successData.payment_status === "Paid" ? (
+              <div className="absolute top-28 right-8 border-4 border-emerald-500/60 text-emerald-500/60 font-black text-sm uppercase tracking-widest px-4 py-2 rounded-xl rotate-[-12deg] pointer-events-none select-none z-10 bg-white/70 backdrop-blur-xs font-mono">
+                LUNAS / VERIFIED
+              </div>
+            ) : (
+              <div className="absolute top-28 right-8 border-4 border-amber-500/60 text-amber-500/60 font-black text-xs uppercase tracking-widest px-3 py-1.5 rounded-xl rotate-[-12deg] pointer-events-none select-none z-10 bg-white/70 backdrop-blur-xs font-mono">
+                PROSES VERIFIKASI
+              </div>
+            )}
+
+            {/* School Letterhead */}
+            <div className="flex items-center gap-4 border-b-4 border-double border-slate-800 pb-4 mb-6">
+              <img src="/logo_smktb.png" alt="Logo SMK Taruna Bhakti" className="w-14 h-14 object-contain" onError={(e:any) => e.target.src = "https://smktarunabhakti.sch.id/wp-content/uploads/2019/02/cropped-logo-tb-32x32.png"} />
+              <div className="text-left">
+                <h4 className="text-xs font-black uppercase tracking-widest text-slate-500 mb-0.5">Panitia Penerimaan Peserta Didik Baru</h4>
+                <h2 className="text-lg font-black text-slate-900 leading-tight">SMK TARUNA BHAKTI DEPOK</h2>
+                <p className="text-[9px] font-bold text-slate-500">Terakreditasi A · Jl. Pekapuran No. 22, Cimanggis, Depok, Jawa Barat</p>
+                <p className="text-[9px] text-slate-400">Telp: (021) 874 7475 · Website: www.smktarunabhakti.sch.id</p>
+              </div>
+            </div>
+
+            {/* Invoice Header */}
+            <div className="text-center mb-6">
+              <h1 className="text-base font-black uppercase tracking-widest text-slate-800 border-b border-slate-200 inline-block pb-1.5 mb-1.5">TANDA BUKTI REGISTRASI & INVOICE PEMBAYARAN</h1>
+              <p className="text-[10px] font-mono font-bold text-slate-450">Nomor Dokumen: INV-{successData.nisn}</p>
+            </div>
+
+            {/* Invoice details layout: 2-Columns grid */}
+            <div className="grid grid-cols-2 gap-4 bg-slate-50 border border-slate-200 rounded-2xl p-4.5 text-[10px] leading-relaxed text-left text-slate-700 font-bold mb-6">
+              <div className="space-y-1">
+                <div className="flex gap-2">
+                  <span className="text-slate-400 w-24">No. Invoice:</span>
+                  <span className="text-slate-900 font-mono font-extrabold">INV-{successData.nisn}</span>
+                </div>
+                <div className="flex gap-2">
+                  <span className="text-slate-400 w-24">Tanggal Daftar:</span>
+                  <span className="text-slate-900">{tglDaftarFormatted}</span>
+                </div>
+                <div className="flex gap-2">
+                  <span className="text-slate-400 w-24">Periode Ajaran:</span>
+                  <span className="text-slate-900 font-extrabold">{successData.periode || schoolPeriod}</span>
+                </div>
+              </div>
+              <div className="space-y-1">
+                <div className="flex gap-2">
+                  <span className="text-slate-400 w-24">Nama Pendaftar:</span>
+                  <span className="text-slate-900 uppercase font-extrabold">{successData.nama}</span>
+                </div>
+                <div className="flex gap-2">
+                  <span className="text-slate-400 w-24">NISN Pendaftar:</span>
+                  <span className="text-slate-900 font-mono font-extrabold">{successData.nisn}</span>
+                </div>
+                <div className="flex gap-2">
+                  <span className="text-slate-400 w-24">Program Rombel:</span>
+                  <span className="text-blue-600 font-extrabold uppercase">{successData.jurusan_1 || successData.jurusan1 || "-"}</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Fee item details table */}
+            <table className="w-full text-left text-[11px] font-bold text-slate-700 border-collapse mb-6">
+              <thead>
+                <tr className="border-b border-slate-800 text-[10px] font-black uppercase tracking-wider text-slate-450">
+                  <th className="py-2.5">Deskripsi Alokasi Tagihan</th>
+                  <th className="py-2.5 text-right w-36">Jumlah (Rp)</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-200">
+                <tr>
+                  <td className="py-3 text-slate-900 font-extrabold">
+                    Biaya Registrasi Formulir PPDB SMK Taruna Bhakti
+                    <span className="block text-[9px] font-bold text-slate-400 mt-0.5">Alokasi administrasi berkas dan formulir online</span>
+                  </td>
+                  <td className="py-3 text-right text-slate-900 font-black">
+                    Rp { regCost.toLocaleString("id-ID") }
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+
+            {/* Bottom Total summary */}
+            <div className="flex justify-end mb-6">
+              <div className="w-64 space-y-1.5 text-[10px] font-bold">
+                <div className="flex justify-between text-slate-500 py-1.5 border-b border-slate-100">
+                  <span>Subtotal:</span>
+                  <span>Rp {regCost.toLocaleString("id-ID")}</span>
+                </div>
+                <div className="flex justify-between text-slate-550">
+                  <span>Pajak (PPN 0%):</span>
+                  <span>Nihil</span>
+                </div>
+                <div className="flex justify-between text-slate-955 font-black text-xs py-2 border-t-2 border-slate-800">
+                  <span>Total Tagihan:</span>
+                  <span className="text-blue-600 font-black text-sm">Rp {regCost.toLocaleString("id-ID")}</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Payment Details footer and official approval stamp */}
+            <div className="flex justify-between items-center text-[9px] text-slate-500 leading-normal border-t border-slate-150 pt-4 mb-8 print:hidden">
+              <div className="flex gap-4">
+                <div>
+                  <span className="font-black">Metode Bayar:</span> <span className="text-slate-800 font-bold uppercase">{successData.metode_pembayaran}</span>
+                </div>
+                <div>
+                  <span className="font-black">Status Bayar:</span> <span className={`font-black uppercase ${successData.payment_status === 'Paid' ? 'text-emerald-600' : 'text-amber-500'}`}>{successData.payment_status === 'Paid' ? 'LUNAS (VERIFIED)' : 'PENDING'}</span>
+                </div>
+              </div>
+              <p className="text-[8px] font-bold text-slate-400">
+                * Tanda terima digital PPDB SMK Taruna Bhakti.
+              </p>
+            </div>
+
+            {/* Dual Signature Block */}
+            <div className="grid grid-cols-2 gap-8 text-[11px] font-bold text-slate-800 text-left pt-6 relative border-t-2 border-dashed border-slate-200">
+              
+              {/* Visual circle approved seal watermark */}
+              <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 opacity-[0.06] select-none pointer-events-none">
+                <svg width="110" height="110" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <circle cx="50" cy="50" r="45" stroke="#10B981" strokeWidth="4" />
+                  <text x="50" y="42" fill="#10B981" fontSize="8" fontWeight="bold" textAnchor="middle">SMK TB</text>
+                  <text x="50" y="52" fill="#10B981" fontSize="10" fontWeight="black" textAnchor="middle">VERIFIED</text>
+                  <text x="50" y="62" fill="#10B981" fontSize="8" fontWeight="bold" textAnchor="middle">APPROVED</text>
+                </svg>
+              </div>
+
+              {/* Left Signature: Kepala Sekolah */}
+              <div className="flex flex-col justify-between h-36">
+                <div>
+                  <p className="text-slate-500 font-medium">Mengetahui,</p>
+                  <p className="text-slate-850 font-black">Kepala SMK Taruna Bhakti</p>
+                </div>
+                <div>
+                  <span className="font-black text-slate-900 border-b border-slate-900 pb-0.5 uppercase tracking-wide">
+                    AINA NOVERA, S.Pd., MM
+                  </span>
+                </div>
+              </div>
+
+              {/* Right Signature: Ketua Pelaksana */}
+              <div className="flex flex-col justify-between h-36 pl-12">
+                <div>
+                  <p className="text-slate-500 font-medium">Depok, {tglDaftarFormatted}</p>
+                  <p className="text-slate-855 font-black">Ketua Pelaksana</p>
+                </div>
+                <div>
+                  <span className="font-black text-slate-900 border-b border-slate-900 pb-0.5 uppercase tracking-wide font-mono">
+                    RATNA WATI, SE
+                  </span>
+                </div>
+              </div>
+
+            </div>
+
+          </div>
+
+        </div>
+
       </div>
     );
   }
@@ -461,10 +906,7 @@ export default function DaftarPage() {
             // @ts-ignore
             window.snap.pay(data.token, {
               onSuccess: function (result: any) {
-                setPaymentPolling(false);
-                setShowPaymentGate(false);
-                setFormData(prev => ({ ...prev, nisn: submittedCandidate.nisn }));
-                setIsSuccess(true);
+                handleConfirmOption("Payment Gateway");
               },
               onPending: function (result: any) {
                 alert("Menunggu pembayaran...");
@@ -477,7 +919,7 @@ export default function DaftarPage() {
               }
             });
           } else {
-            alert("Midtrans script belum dimuat, coba lagi dalam beberapa detik.");
+            alert("Sistem pembayaran online belum siap, silakan coba lagi dalam beberapa detik.");
           }
         } else {
           alert("Gagal membuat transaksi: " + data.message);
@@ -487,95 +929,278 @@ export default function DaftarPage() {
       }
     };
 
+    const handleCopy = (text: string, type: 'mandiri' | 'bjb') => {
+      navigator.clipboard.writeText(text);
+      setCopiedBank(type);
+      setTimeout(() => setCopiedBank(null), 2000);
+    };
+
+    const handleReceiptFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+      const file = e.target.files?.[0];
+      if (!file) return;
+      
+      if (file.size > 3 * 1024 * 1024) {
+        alert("Ukuran bukti pembayaran maksimal adalah 3MB!");
+        return;
+      }
+      
+      const allowed = ["image/jpeg", "image/png", "image/jpg", "application/pdf"];
+      if (!allowed.includes(file.type)) {
+        alert("Format file harus JPG, PNG, atau PDF!");
+        return;
+      }
+      
+      setManualReceiptName(file.name);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setManualReceiptBase64(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    };
+
+    const handleConfirmOption = async (metode: string, receiptBase64: string = "") => {
+      setIsSubmittingReceipt(true);
+      try {
+        const backendUrl = "http://localhost:5000";
+        const res = await fetch(`${backendUrl}/api/payment/confirm-payment-option`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            nisn: submittedCandidate.nisn,
+            bukti_bayar: receiptBase64 || null,
+            metode_pembayaran: metode
+          })
+        });
+        const data = await res.json();
+        if (data.success) {
+          setPaymentPolling(false);
+          setShowPaymentGate(false);
+          setFormData(prev => ({ ...prev, nisn: submittedCandidate.nisn }));
+          setIsSuccess(true);
+          fetchPublicApplicants?.();
+        } else {
+          alert("Gagal mengonfirmasi pembayaran: " + data.message);
+        }
+      } catch (err: any) {
+        alert("Error: " + err.message);
+      } finally {
+        setIsSubmittingReceipt(false);
+      }
+    };
+
     return (
-      <div className="relative min-h-screen flex items-center justify-center p-6 overflow-hidden">
-        
+      <div className="relative min-h-screen flex items-center justify-center p-4 lg:p-10 overflow-hidden">
         {/* Background Glowing Blobs */}
         <div className="bg-glow-container">
           <div className="bg-glow bg-glow-1"></div>
           <div className="bg-glow bg-glow-2"></div>
           <div className="bg-glow bg-glow-3"></div>
         </div>
+        <div className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-2xl border border-white/50 dark:border-slate-800/80 shadow-2xl rounded-[2.5rem] p-6 md:p-10 lg:p-12 max-w-7xl w-full relative z-10 animate-in fade-in zoom-in duration-300">
+          <div className="absolute -top-12 -right-12 w-32 h-32 bg-blue-500/10 dark:bg-blue-500/5 rounded-full blur-3xl pointer-events-none"></div>
+          <div className="absolute -bottom-12 -left-12 w-32 h-32 bg-emerald-500/10 dark:bg-emerald-500/5 rounded-full blur-3xl pointer-events-none"></div>
 
-        <div className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-2xl border border-white/50 dark:border-slate-800 shadow-2xl rounded-3xl p-8 max-w-md w-full text-center relative z-10 animate-in fade-in zoom-in duration-300">
-          <div className="absolute -top-12 -right-12 w-28 h-28 bg-blue-500/10 dark:bg-blue-500/5 rounded-full blur-2xl"></div>
-          <div className="absolute -bottom-12 -left-12 w-28 h-28 bg-emerald-500/10 dark:bg-emerald-500/5 rounded-full blur-2xl"></div>
-
-          <div className="w-16 h-16 bg-blue-50 dark:bg-blue-950/50 text-blue-600 dark:text-blue-400 rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg shadow-blue-500/10 ring-4 ring-blue-500/5 dark:ring-blue-500/10">
-            <CreditCard size={28} className="animate-pulse" />
-          </div>
-
-          <span className="text-[10px] font-extrabold uppercase tracking-widest text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/60 border border-blue-100/50 dark:border-blue-900 px-3.5 py-1.5 rounded-full">
-            Invoice Registrasi
-          </span>
-
-          <h2 className="text-2xl font-black text-slate-800 dark:text-white mt-4 mb-2">Selesaikan Pembayaran</h2>
-          <p className="text-slate-500 dark:text-slate-400 text-sm mb-6 leading-relaxed">
-            Untuk merampungkan registrasi PPDB, silakan selesaikan pembayaran biaya administrasi pendaftaran Anda.
-          </p>
-
-          {/* Pricing Box */}
-          <div className="bg-slate-50/50 dark:bg-slate-950/30 border border-slate-100 dark:border-slate-800 rounded-2xl p-5 mb-6 text-left relative overflow-hidden">
-            <div className="absolute right-4 top-4 opacity-5 dark:opacity-10 pointer-events-none">
-              <Sparkles size={64} className="text-blue-600 animate-pulse" />
-            </div>
+          {/* Grid Layout: Left Side (Billing Summary), Right Side (Payment Options) */}
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-stretch">
             
-            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-550 block mb-1">
-              Jumlah yang Harus Dibayar
-            </span>
-            <span className="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600 dark:from-sky-400 dark:to-indigo-400 block mb-4">
-              Rp {regCost.toLocaleString("id-ID")}
-            </span>
+            {/* Left Side: Summary Panel (Col Span 4) */}
+            <div className="lg:col-span-4 flex flex-col justify-between bg-slate-50/50 dark:bg-slate-950/20 border border-slate-200/50 dark:border-slate-850 rounded-[2rem] p-8 relative overflow-hidden">
+              <div className="space-y-8">
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 bg-gradient-to-tr from-blue-600 to-indigo-650 text-white rounded-2xl flex items-center justify-center shadow-md">
+                    <CreditCard size={22} className="animate-pulse" />
+                  </div>
+                  <div>
+                    <span className="text-[10px] font-black uppercase tracking-widest text-blue-600 dark:text-sky-400 bg-blue-50/75 dark:bg-blue-950/60 border border-blue-100/55 dark:border-blue-900/50 px-3 py-1.5 rounded-full shadow-xs">
+                      Checkout PPDB
+                    </span>
+                    <h3 className="text-xl font-black text-slate-800 dark:text-white mt-1.5 leading-none">Metode Pembayaran</h3>
+                  </div>
+                </div>
 
-            <div className="border-t border-slate-100 dark:border-slate-800/80 pt-4 text-xs text-slate-600 dark:text-slate-350 space-y-2.5">
-              <div className="flex justify-between">
-                <span className="text-slate-400 dark:text-slate-500">Nama Lengkap:</span>
-                <span className="font-extrabold text-slate-855 dark:text-white">{submittedCandidate.nama}</span>
+                <p className="text-slate-500 dark:text-slate-400 text-xs md:text-sm leading-relaxed font-bold">
+                  Selesaikan biaya pendaftaran untuk merampungkan berkas administrasi Anda di SMK Taruna Bhakti.
+                </p>
+
+                {/* Billing Summary Box */}
+                <div className="bg-white/80 dark:bg-slate-900/60 border border-slate-200/60 dark:border-slate-800/80 rounded-[1.5rem] p-6 relative overflow-hidden shadow-md">
+                  <div className="absolute right-4 top-4 opacity-5 pointer-events-none">
+                    <Sparkles size={64} className="text-blue-600 animate-pulse" />
+                  </div>
+                  
+                  <div className="flex justify-between items-center mb-4.5">
+                    <span className="text-[10px] font-black uppercase tracking-wider text-slate-400 dark:text-slate-500">Jumlah Tagihan</span>
+                    <span className="text-2xl md:text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-blue-650 to-indigo-650 dark:from-sky-455 dark:to-indigo-400">Rp {regCost.toLocaleString("id-ID")}</span>
+                  </div>
+
+                  <div className="border-t border-slate-100 dark:border-slate-800/85 pt-4 text-xs text-slate-655 dark:text-slate-350 space-y-3 font-bold">
+                    <div className="flex justify-between gap-2.5">
+                      <span className="text-slate-400 dark:text-slate-500">Nama Lengkap:</span>
+                      <span className="text-slate-900 dark:text-white font-extrabold text-right uppercase tracking-wider">{submittedCandidate.nama}</span>
+                    </div>
+                    <div className="flex justify-between gap-2.5">
+                      <span className="text-slate-400 dark:text-slate-500">NISN Pendaftar:</span>
+                      <span className="text-slate-900 dark:text-white font-mono font-black text-right tracking-widest">{submittedCandidate.nisn}</span>
+                    </div>
+                    <div className="flex justify-between gap-2.5">
+                      <span className="text-slate-400 dark:text-slate-500">Pilihan Rombel:</span>
+                      <span className="text-blue-600 dark:text-sky-400 text-right font-black uppercase">{submittedCandidate.jurusan_1 || submittedCandidate.jurusan1}</span>
+                    </div>
+                  </div>
+                </div>
               </div>
-              <div className="flex justify-between">
-                <span className="text-slate-400 dark:text-slate-500">NISN Pendaftar:</span>
-                <span className="font-semibold text-slate-800 dark:text-slate-200">{submittedCandidate.nisn}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-slate-400 dark:text-slate-500">Jurusan Terpilih:</span>
-                <span className="font-semibold text-blue-600 dark:text-sky-400">{submittedCandidate.jurusan_1 || submittedCandidate.jurusan1}</span>
+
+              <div className="flex items-center gap-2 mt-8 lg:mt-0 pt-6 border-t border-slate-250/20 dark:border-slate-850 text-[10px] text-slate-400 dark:text-slate-500 font-black justify-center tracking-wide">
+                <ShieldCheck size={14} className="text-emerald-500 shrink-0" />
+                <span>Enkripsi SSL & Keamanan Terjamin</span>
               </div>
             </div>
-          </div>
 
-          {/* Polling / Waiting Indicator */}
-          <div className="flex items-center justify-center gap-2 mb-6 text-xs font-semibold text-slate-500 dark:text-slate-400">
-            <span className="animate-spin rounded-full h-3.5 w-3.5 border-2 border-blue-500 border-t-transparent"></span>
-            <span>Menunggu konfirmasi pembayaran otomatis...</span>
-          </div>
+            {/* Right Side: Payment Form Selection (Col Span 8) */}
+            <div className="lg:col-span-8 flex flex-col justify-between">
+              <div>
+                {/* 2-Option Tabs Switcher (Large and Spacious) */}
+                <div className="flex bg-slate-100 dark:bg-slate-950 p-1.5 rounded-2xl border border-slate-200/60 dark:border-slate-800/65 mb-8 shadow-inner">
+                  <button
+                    onClick={() => setActivePaymentTab("transfer")}
+                    className={`flex-1 py-4.5 rounded-xl text-xs md:text-sm font-black uppercase tracking-widest transition-all duration-200 flex items-center justify-center gap-3 ${activePaymentTab === "transfer"
+                      ? "bg-white dark:bg-slate-800 text-blue-600 dark:text-white shadow-md border border-slate-200/20"
+                      : "text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-350"
+                    }`}
+                  >
+                    <Building size={18} />
+                    <span>Transfer Manual</span>
+                  </button>
+                  <button
+                    onClick={() => setActivePaymentTab("midtrans")}
+                    className={`flex-1 py-4.5 rounded-xl text-xs md:text-sm font-black uppercase tracking-widest transition-all duration-200 flex items-center justify-center gap-3 ${activePaymentTab === "midtrans"
+                      ? "bg-white dark:bg-slate-800 text-blue-600 dark:text-white shadow-md border border-slate-200/20"
+                      : "text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-350"
+                    }`}
+                  >
+                    <CreditCard size={18} />
+                    <span>Payment Gateway</span>
+                  </button>
+                </div>
 
-          {/* Action Buttons */}
-          <div className="space-y-3">
-            <button 
-              onClick={handlePay}
-              className="w-full flex justify-center items-center gap-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold py-3.5 px-6 rounded-2xl shadow-lg shadow-blue-500/20 dark:shadow-blue-500/10 transition duration-300 transform hover:scale-[1.01] active:scale-[0.99]"
-            >
-              Bayar Sekarang via Midtrans
-              <ArrowRight size={16} />
-            </button>
+                {/* Tab Content 1: Transfer Manual (Spacious accounts Cards) */}
+                {activePaymentTab === "transfer" && (
+                  <div className="text-left space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-200">
+                    <p className="text-xs md:text-sm text-slate-500 dark:text-slate-400 leading-relaxed font-bold text-center">
+                      Silakan lakukan transfer ke salah satu rekening yayasan sekolah resmi berikut, lalu unggah slip bukti transfer.
+                    </p>
 
-            {/* Offline Simulation / Bypass Button */}
-            <button
-              onClick={() => {
-                setPaymentPolling(false);
-                setShowPaymentGate(false);
-                setFormData(prev => ({ ...prev, nisn: submittedCandidate.nisn }));
-                setIsSuccess(true);
-              }}
-              className="w-full bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-semibold py-3 px-6 rounded-xl border border-slate-200 dark:border-slate-700 text-xs transition duration-300"
-            >
-              Simulasi Bayar Sukses (Bypass Luring)
-            </button>
-          </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {/* Mandiri Card with Real SVG Logo - Enlarge Text */}
+                      <div className="bg-slate-50/70 dark:bg-slate-950/20 border border-slate-200/50 dark:border-slate-850 rounded-[1.5rem] p-6 flex justify-between items-center transition hover:border-blue-500/40 hover:shadow-md">
+                        <div className="space-y-3 w-full pr-4">
+                          <svg className="h-7 w-auto" viewBox="0 0 120 35" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <rect width="120" height="35" rx="6" fill="#0A2F5C"/>
+                            <path d="M15 22C18.5 15.5 25.5 11 30 11C33.5 11 35.5 13 35.5 16C35.5 20 28.5 25 21 25C18.5 25 15 24 15 22Z" fill="#F2A900" />
+                            <text x="42" y="22" fill="#FFFFFF" fontSize="12" fontWeight="900" fontFamily="system-ui, sans-serif">mandiri</text>
+                          </svg>
+                          <div>
+                            <p className="font-mono text-base md:text-lg lg:text-xl font-black text-slate-850 dark:text-white tracking-widest">157-00-0174092-2</p>
+                            <p className="text-[10px] text-slate-400 font-black uppercase tracking-wider">a.n. Yayasan Taruna Bhakti</p>
+                          </div>
+                        </div>
+                        <button
+                          onClick={() => handleCopy("157-00-0174092-2", "mandiri")}
+                          className="p-3.5 bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700/60 border border-slate-200/50 dark:border-slate-700 text-slate-500 dark:text-slate-400 rounded-2xl transition shadow-sm shrink-0"
+                          title="Copy Rekening"
+                        >
+                          {copiedBank === "mandiri" ? <Check size={18} className="text-emerald-500" /> : <Copy size={18} />}
+                        </button>
+                      </div>
 
-          <div className="flex items-center justify-center gap-1.5 mt-6 text-[10px] text-slate-400 dark:text-slate-500">
-            <ShieldCheck size={12} className="text-emerald-500" />
-            <span>Terintegrasi secara aman dengan Midtrans Sandbox API</span>
+                      {/* BJB Card with Real SVG Logo - Enlarge Text */}
+                      <div className="bg-slate-50/70 dark:bg-slate-950/20 border border-slate-200/50 dark:border-slate-850 rounded-[1.5rem] p-6 flex justify-between items-center transition hover:border-blue-500/40 hover:shadow-md">
+                        <div className="space-y-3 w-full pr-4">
+                          <svg className="h-7 w-auto" viewBox="0 0 120 35" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <rect width="120" height="35" rx="6" fill="#00529C" />
+                            <path d="M15 10 C18 10 24 14 24 18 C24 22 18 26 15 26 Z" fill="#FFD100" />
+                            <path d="M22 10 C25 10 31 14 31 18 C31 22 25 26 22 26 Z" fill="#FFFFFF" />
+                            <text x="38" y="22" fill="#FFFFFF" fontSize="13" fontWeight="955" fontFamily="system-ui, sans-serif" fontStyle="italic">bank bjb</text>
+                          </svg>
+                          <div>
+                            <p className="font-mono text-base md:text-lg lg:text-xl font-black text-slate-850 dark:text-white tracking-widest">0010260271100</p>
+                            <p className="text-[10px] text-slate-400 font-black uppercase tracking-wider">a.n. SMK Taruna Bhakti</p>
+                          </div>
+                        </div>
+                        <button
+                          onClick={() => handleCopy("0010260271100", "bjb")}
+                          className="p-3.5 bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700/60 border border-slate-200/50 dark:border-slate-700 text-slate-500 dark:text-slate-400 rounded-2xl transition shadow-sm shrink-0"
+                          title="Copy Rekening"
+                        >
+                          {copiedBank === "bjb" ? <Check size={18} className="text-emerald-500" /> : <Copy size={18} />}
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* File Upload receipt - Enlarge Area */}
+                    <div className="space-y-2.5">
+                      <label className="block text-[10px] font-black uppercase text-slate-400 tracking-widest">Unggah Bukti Pembayaran Resmi</label>
+                      <div className="border-2 border-dashed border-slate-250 dark:border-slate-800 hover:border-blue-500 dark:hover:border-blue-500 rounded-[1.5rem] py-10 px-6 text-center transition bg-slate-50/20 dark:bg-slate-950/5 relative">
+                        <input
+                          type="file"
+                          accept="image/*,application/pdf"
+                          onChange={handleReceiptFileChange}
+                          className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                        />
+                        <div className="flex flex-col items-center gap-2 pointer-events-none">
+                          <Upload size={28} className="text-blue-500 animate-pulse" />
+                          <p className="text-xs md:text-sm font-black text-slate-750 dark:text-slate-200 truncate max-w-[450px]">
+                            {manualReceiptName ? manualReceiptName : "Pilih File Foto Slip Transfer / Dokumen PDF"}
+                          </p>
+                          <p className="text-[10px] text-slate-400 font-bold">Format file diperbolehkan: JPG, PNG, PDF (Maksimal file 3MB)</p>
+                        </div>
+                      </div>
+                    </div>
+
+                    <button
+                      onClick={() => handleConfirmOption("Transfer Manual", manualReceiptBase64)}
+                      disabled={!manualReceiptBase64 || isSubmittingReceipt}
+                      className="w-full flex justify-center items-center gap-2 bg-gradient-to-r from-blue-600 to-indigo-650 hover:from-blue-700 hover:to-indigo-700 text-white font-black text-xs md:text-sm uppercase tracking-widest py-4.5 px-6 rounded-2xl shadow-lg disabled:opacity-40 disabled:pointer-events-none transition duration-300 transform hover:scale-[1.01] active:scale-[0.99] mt-2"
+                    >
+                      {isSubmittingReceipt ? "Mengirim Bukti..." : "Kirim Bukti Transfer Sekarang"}
+                      <ArrowRight size={16} />
+                    </button>
+                  </div>
+                )}
+
+                {/* Tab Content 2: Payment Gateway (Enlarge details) */}
+                {activePaymentTab === "midtrans" && (
+                  <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-200 text-center lg:text-left">
+                    <p className="text-xs md:text-sm text-slate-500 dark:text-slate-400 leading-relaxed font-bold text-center">
+                      Bayar instan secara aman 24/7 menggunakan QRIS, e-Wallet (Gopay, ShopeePay), Virtual Account Bank (BCA, Mandiri, BNI, BRI), atau Kartu Kredit.
+                    </p>
+
+                    <div className="flex items-center justify-center gap-3 py-4 px-6 bg-slate-50 dark:bg-slate-950/40 border border-slate-200/50 dark:border-slate-850 rounded-xl text-xs font-bold text-slate-655 dark:text-slate-400 shadow-inner">
+                      <span className="animate-spin rounded-full h-4.5 w-4.5 border-2 border-blue-500 border-t-transparent shrink-0"></span>
+                      <span>Sistem siap menerima pembayaran instan otomatis...</span>
+                    </div>
+
+                    <div className="space-y-4">
+                      <button 
+                        onClick={handlePay}
+                        className="w-full flex justify-center items-center gap-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-black text-xs md:text-sm uppercase tracking-widest py-4.5 px-6 rounded-2xl shadow-lg shadow-blue-500/15 transition transform hover:scale-[1.01] active:scale-[0.99]"
+                      >
+                        Bayar Sekarang via Payment Gateway
+                        <ArrowRight size={16} />
+                      </button>
+
+                      {/* Simulation Bypass Button */}
+                      <button
+                        onClick={() => handleConfirmOption("Payment Gateway")}
+                        className="w-full bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-350 font-bold py-3 px-6 rounded-xl border border-slate-200 dark:border-slate-800 text-xs transition uppercase tracking-wider"
+                      >
+                        Simulasi Bayar Sukses (Bypass Admin)
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
         </div>
       </div>

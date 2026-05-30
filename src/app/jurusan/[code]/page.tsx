@@ -349,7 +349,7 @@ export default function MajorPage() {
         if (json.success && json.data) {
           const config = json.data;
           if (config.ppdb_majors_config && Array.isArray(config.ppdb_majors_config)) {
-            const found = config.ppdb_majors_config.find((m: any) => m.code.toLowerCase() === code);
+            const found = config.ppdb_majors_config.find((m: any) => m.code.toLowerCase() === code || (m.code.toLowerCase() === "anm" && code === "an"));
             if (found) {
               setMajor((prev: any) => {
                 if (!prev) return null;
@@ -368,7 +368,7 @@ export default function MajorPage() {
               });
             }
 
-            const foundNext = config.ppdb_majors_config.find((m: any) => m.code.toLowerCase() === nextCode);
+            const foundNext = config.ppdb_majors_config.find((m: any) => m.code.toLowerCase() === nextCode || (m.code.toLowerCase() === "anm" && nextCode === "an"));
             if (foundNext) {
               setNextMajor((prev: any) => {
                 if (!prev) return null;

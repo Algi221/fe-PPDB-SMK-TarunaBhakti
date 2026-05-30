@@ -272,6 +272,8 @@ export default function KelolaUserInterface() {
   const [email, setEmail] = useState("info@smktarunabhakti.sch.id");
   const [address, setAddress] = useState("Jl. Pekapuran Kel. Curug Kec. Cimanggis, Depok, Jawa Barat 16453");
   const [schoolPeriod, setSchoolPeriod] = useState("2026-2027");
+  const [waGroupUrl, setWaGroupUrl] = useState("https://chat.whatsapp.com/HJXHYajEOhl5RM6iN2SJOS");
+  const [waAdmin, setWaAdmin] = useState("6281292244456");
   const [formGuideline, setFormGuideline] = useState("Silakan isi formulir pendaftaran calon siswa dengan lengkap dan benar. Berkas persyaratan wajib diunggah dalam format gambar (PNG/JPG) maksimal 2MB.");
   const [formFee, setFormFee] = useState("250000");
 
@@ -309,6 +311,8 @@ export default function KelolaUserInterface() {
         if (config.ppdb_email) setEmail(config.ppdb_email);
         if (config.ppdb_address) setAddress(config.ppdb_address);
         if (config.ppdb_school_period) setSchoolPeriod(config.ppdb_school_period);
+        if (config.ppdb_wa_group_url) setWaGroupUrl(config.ppdb_wa_group_url);
+        if (config.ppdb_wa_admin) setWaAdmin(config.ppdb_wa_admin);
         if (config.ppdb_form_guideline) setFormGuideline(config.ppdb_form_guideline);
         if (config.ppdb_form_fee) setFormFee(config.ppdb_form_fee);
         
@@ -447,6 +451,14 @@ export default function KelolaUserInterface() {
       setSaving(true);
       setShowConfirmModal(false);
 
+      // Automatically merge active workspace edits from editingMajor into majorsList if the user didn't click "Simpan Detail"
+      let finalMajors = [...majorsList];
+      if (editingMajor) {
+        finalMajors = finalMajors.map(m => m.code === editingMajor.code ? editingMajor : m);
+        setMajorsList(finalMajors);
+        setEditingMajor(null);
+      }
+
       const configsPayload = {
         ppdb_hero_title: heroTitle,
         ppdb_hero_title_sub: heroTitleSub,
@@ -455,10 +467,12 @@ export default function KelolaUserInterface() {
         ppdb_email: email,
         ppdb_address: address,
         ppdb_school_period: schoolPeriod,
+        ppdb_wa_group_url: waGroupUrl,
+        ppdb_wa_admin: waAdmin,
         ppdb_form_guideline: formGuideline,
         ppdb_form_fee: formFee,
         ppdb_alur_config: alurList,
-        ppdb_majors_config: majorsList
+        ppdb_majors_config: finalMajors
       };
 
       const token = adminToken || localStorage.getItem("ppdb_admin_token");
@@ -479,13 +493,19 @@ export default function KelolaUserInterface() {
         showToastMsg("Semua perubahan UI berhasil disimpan dan tercatat.");
         setChangeDescription("");
         
-        localStorage.setItem("ppdb_majors_config", JSON.stringify(majorsList));
-        localStorage.setItem("ppdb_alur_config", JSON.stringify(alurList));
-        localStorage.setItem("ppdb_reg_cost", formFee);
-        localStorage.setItem("ppdb_school_period", schoolPeriod);
-        localStorage.setItem("ppdb_classes_config", JSON.stringify(
-          majorsList.map(m => ({ id: `${m.code}-1`, name: `X ${m.code} 1`, majorCode: m.code, maxCapacity: 100 }))
-        ));
+        try {
+          localStorage.setItem("ppdb_majors_config", JSON.stringify(finalMajors));
+          localStorage.setItem("ppdb_alur_config", JSON.stringify(alurList));
+          localStorage.setItem("ppdb_reg_cost", formFee);
+          localStorage.setItem("ppdb_school_period", schoolPeriod);
+          localStorage.setItem("ppdb_wa_group_url", waGroupUrl);
+          localStorage.setItem("ppdb_wa_admin", waAdmin);
+          localStorage.setItem("ppdb_classes_config", JSON.stringify(
+            finalMajors.map(m => ({ id: `${m.code}-1`, name: `X ${m.code} 1`, majorCode: m.code, maxCapacity: 100 }))
+          ));
+        } catch (storageErr) {
+          console.warn("Storage quota exceeded or unavailable. LocalStorage cache sync bypassed.", storageErr);
+        }
 
         await fetchRevisions();
       } else {
@@ -739,6 +759,28 @@ export default function KelolaUserInterface() {
                       value={address}
                       onChange={(e) => setAddress(e.target.value)}
                       placeholder="Alamat lengkap sekolah..."
+                      className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-950 border border-slate-200/50 dark:border-white/5 rounded-2xl text-slate-800 dark:text-white font-semibold text-xs focus:outline-none focus:border-blue-500"
+                    />
+                  </div>
+
+                  <div className="space-y-2 md:col-span-2">
+                    <label className="text-[9px] uppercase font-bold text-slate-450 tracking-wider">Link Grup WhatsApp PPDB Calon Siswa</label>
+                    <input
+                      type="text"
+                      value={waGroupUrl}
+                      onChange={(e) => setWaGroupUrl(e.target.value)}
+                      placeholder="Contoh: https://chat.whatsapp.com/..."
+                      className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-950 border border-slate-200/50 dark:border-white/5 rounded-2xl text-slate-800 dark:text-white font-semibold text-xs focus:outline-none focus:border-blue-500"
+                    />
+                  </div>
+
+                  <div className="space-y-2 md:col-span-1">
+                    <label className="text-[9px] uppercase font-bold text-slate-450 tracking-wider">Nomor WhatsApp Admin (Konsultasi)</label>
+                    <input
+                      type="text"
+                      value={waAdmin}
+                      onChange={(e) => setWaAdmin(e.target.value)}
+                      placeholder="Contoh: 6281292244456"
                       className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-950 border border-slate-200/50 dark:border-white/5 rounded-2xl text-slate-800 dark:text-white font-semibold text-xs focus:outline-none focus:border-blue-500"
                     />
                   </div>

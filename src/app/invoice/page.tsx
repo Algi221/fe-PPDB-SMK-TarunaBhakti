@@ -2,14 +2,15 @@
 
 import React, { useEffect, useState, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
-import { Printer, CheckCircle, ArrowLeft } from "lucide-react";
+import { Printer, ArrowLeft, Phone } from "lucide-react";
 import Link from "next/link";
 
 function InvoiceContent() {
   const searchParams = useSearchParams();
   const nisn = searchParams.get("nisn");
   const [data, setData] = useState<any>(null);
-  const [regCost, setRegCost] = useState(150000);
+  const [regCost, setRegCost] = useState(250000);
+  const [waGroupUrl, setWaGroupUrl] = useState("https://chat.whatsapp.com/HJXHYajEOhl5RM6iN2SJOS");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -19,16 +20,26 @@ function InvoiceContent() {
       const parsed = parseInt(savedCost);
       if (!isNaN(parsed)) setRegCost(parsed);
     }
+    const savedWaGroup = localStorage.getItem('ppdb_wa_group_url');
+    if (savedWaGroup) {
+      setWaGroupUrl(savedWaGroup);
+    }
 
     const loadLiveCost = async () => {
       try {
         const res = await fetch("http://localhost:5000/api/config");
         const json = await res.json();
-        if (json.success && json.data && json.data.ppdb_form_fee) {
-          const parsed = parseInt(json.data.ppdb_form_fee);
-          if (!isNaN(parsed)) {
-            setRegCost(parsed);
-            localStorage.setItem('ppdb_reg_cost', json.data.ppdb_form_fee);
+        if (json.success && json.data) {
+          if (json.data.ppdb_form_fee) {
+            const parsed = parseInt(json.data.ppdb_form_fee);
+            if (!isNaN(parsed)) {
+              setRegCost(parsed);
+              localStorage.setItem('ppdb_reg_cost', json.data.ppdb_form_fee);
+            }
+          }
+          if (json.data.ppdb_wa_group_url) {
+            setWaGroupUrl(json.data.ppdb_wa_group_url);
+            localStorage.setItem('ppdb_wa_group_url', json.data.ppdb_wa_group_url);
           }
         }
       } catch (err) {
@@ -92,100 +103,430 @@ function InvoiceContent() {
     window.print();
   };
 
+  const tglDaftarFormatted = new Date(data.tgl_daftar).toLocaleDateString("id-ID", {
+    year: "numeric",
+    month: "long",
+    day: "numeric"
+  });
+
   return (
-    <div className="min-h-screen bg-slate-100 py-10 px-4 print:bg-white print:py-0 print:px-0 flex flex-col items-center">
+    <div className="min-h-screen bg-slate-100 py-8 px-4 print-root">
       
-      {/* Controls (Hidden on Print) */}
-      <div className="w-full max-w-2xl flex justify-between items-center mb-6 print:hidden">
-        <Link href="/" className="flex items-center gap-2 text-slate-600 hover:text-slate-900 transition font-medium">
-          <ArrowLeft size={18} />
-          Kembali
-        </Link>
-        <button 
-          onClick={handlePrint}
-          className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-xl shadow-md transition font-bold"
-        >
-          <Printer size={18} />
-          Cetak Invoice
-        </button>
-      </div>
+      {/* Print-only styles */}
+      <style dangerouslySetInnerHTML={{__html: `
+        @media print {
+          @page {
+            size: A4 portrait;
+            margin: 10mm 12mm;
+          }
+          
+          /* Hide everything except the invoice */
+          body, html {
+            background: white !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            overflow: visible !important;
+          }
+          
+          /* Hide non-print elements */
+          .no-print, .action-panel, nav, header, footer, button, a[href] {
+            display: none !important;
+          }
+          
+          /* Reset all wrappers */
+          .print-root,
+          .screen-layout,
+          #__next,
+          main {
+            display: block !important;
+            background: white !important;
+            padding: 0 !important;
+            margin: 0 !important;
+            min-height: auto !important;
+            width: 100% !important;
+            max-width: 100% !important;
+            overflow: visible !important;
+          }
 
-      {/* Invoice Paper */}
-      <div className="bg-white w-full max-w-2xl rounded-2xl shadow-xl overflow-hidden print:shadow-none print:rounded-none">
-        {/* Header */}
-        <div className="bg-slate-900 text-white p-8 flex justify-between items-center print:bg-slate-900 print:text-white">
-          <div>
-            <h1 className="text-2xl font-black mb-1">INVOICE PPDB</h1>
-            <p className="text-slate-400 text-sm print:text-slate-300">SMK Taruna Bhakti Depok</p>
-          </div>
-          <div className="text-right">
-            <p className="text-xs text-slate-400 uppercase tracking-widest font-bold mb-1 print:text-slate-300">No. Invoice</p>
-            <p className="font-mono text-lg font-bold">INV-{data.nisn}</p>
-          </div>
-        </div>
+          .invoice-sheet {
+            box-shadow: none !important;
+            border: none !important;
+            border-radius: 0 !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            max-width: 100% !important;
+            width: 100% !important;
+            overflow: visible !important;
+          }
+          
+          .invoice-inner {
+            padding: 0 !important;
+          }
 
-        {/* Content */}
-        <div className="p-8">
-          <div className="flex justify-between items-start border-b border-slate-200 pb-8 mb-8">
-            <div>
-              <p className="text-xs text-slate-400 uppercase font-bold tracking-wider mb-2">Tagihan Kepada:</p>
-              <h2 className="text-xl font-bold text-slate-800 mb-1">{data.nama}</h2>
-              <p className="text-sm text-slate-600 mb-1">NISN: {data.nisn}</p>
-              <p className="text-sm text-slate-600">Jurusan: {data.jurusan_1}</p>
+          /* Preserve colors in print */
+          * {
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+          }
+          
+          /* Prevent page breaks inside content */
+          .invoice-sheet, .invoice-inner {
+            page-break-inside: avoid;
+          }
+        }
+        
+        /* Screen layout */
+        @media screen {
+          .screen-layout {
+            display: flex;
+            gap: 2rem;
+            max-width: 72rem;
+            margin: 0 auto;
+            align-items: flex-start;
+          }
+          
+          .invoice-sheet {
+            flex: 1;
+            min-width: 0;
+          }
+          
+          .action-panel {
+            width: 280px;
+            flex-shrink: 0;
+          }
+          
+          @media (max-width: 1023px) {
+            .screen-layout {
+              flex-direction: column;
+            }
+            .action-panel {
+              width: 100%;
+            }
+          }
+        }
+      `}} />
+
+      <div className="screen-layout">
+        
+        {/* ===== INVOICE SHEET ===== */}
+        <div className="invoice-sheet bg-white rounded-2xl shadow-xl border border-slate-200/50 overflow-hidden" style={{ position: 'relative' }}>
+          
+          {/* Stamp */}
+          {data.payment_status === "Paid" ? (
+            <div style={{
+              position: 'absolute', top: '120px', right: '32px',
+              border: '3px solid rgba(16,185,129,0.5)',
+              color: 'rgba(16,185,129,0.5)',
+              fontWeight: 900, fontSize: '12px',
+              textTransform: 'uppercase', letterSpacing: '0.15em',
+              padding: '6px 14px', borderRadius: '10px',
+              transform: 'rotate(-12deg)',
+              pointerEvents: 'none', userSelect: 'none',
+              zIndex: 10, background: 'rgba(255,255,255,0.7)',
+              fontFamily: 'monospace'
+            }}>
+              LUNAS / VERIFIED
             </div>
-            <div className="text-right">
-              <p className="text-xs text-slate-400 uppercase font-bold tracking-wider mb-2">Tanggal:</p>
-              <p className="text-sm font-semibold text-slate-800">
-                {new Date(data.tgl_daftar).toLocaleDateString("id-ID", {
-                  year: "numeric",
-                  month: "long",
-                  day: "numeric"
-                })}
+          ) : (
+            <div style={{
+              position: 'absolute', top: '120px', right: '32px',
+              border: '3px solid rgba(245,158,11,0.5)',
+              color: 'rgba(245,158,11,0.5)',
+              fontWeight: 900, fontSize: '11px',
+              textTransform: 'uppercase', letterSpacing: '0.15em',
+              padding: '5px 12px', borderRadius: '10px',
+              transform: 'rotate(-12deg)',
+              pointerEvents: 'none', userSelect: 'none',
+              zIndex: 10, background: 'rgba(255,255,255,0.7)',
+              fontFamily: 'monospace'
+            }}>
+              PROSES VERIFIKASI
+            </div>
+          )}
+
+          <div className="invoice-inner" style={{ padding: '32px' }}>
+            
+            {/* ── KOPSURAT / LETTERHEAD ── */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '14px', borderBottom: '3px double #1e293b', paddingBottom: '14px', marginBottom: '20px' }}>
+              <img 
+                src="/logo_smktb.png" 
+                alt="Logo SMK Taruna Bhakti" 
+                style={{ width: '52px', height: '52px', objectFit: 'contain' }}
+                onError={(e:any) => e.target.src = "https://smktarunabhakti.sch.id/wp-content/uploads/2019/02/cropped-logo-tb-32x32.png"}
+              />
+              <div>
+                <p style={{ fontSize: '10px', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.12em', color: '#64748b', margin: '0 0 2px 0' }}>
+                  Panitia Penerimaan Peserta Didik Baru
+                </p>
+                <h2 style={{ fontSize: '17px', fontWeight: 900, color: '#0f172a', margin: '0 0 2px 0', lineHeight: 1.2 }}>
+                  SMK TARUNA BHAKTI DEPOK
+                </h2>
+                <p style={{ fontSize: '9px', fontWeight: 600, color: '#64748b', margin: 0 }}>
+                  Terakreditasi A · Jl. Pekapuran No. 22, Cimanggis, Depok, Jawa Barat
+                </p>
+                <p style={{ fontSize: '9px', color: '#94a3b8', margin: 0 }}>
+                  Telp: (021) 874 7475 · Website: www.smktarunabhakti.sch.id
+                </p>
+              </div>
+            </div>
+
+            {/* ── JUDUL DOKUMEN ── */}
+            <div style={{ textAlign: 'center', marginBottom: '20px' }}>
+              <h1 style={{ fontSize: '14px', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.15em', color: '#1e293b', margin: '0 0 6px 0', borderBottom: '1px solid #e2e8f0', display: 'inline-block', paddingBottom: '6px' }}>
+                TANDA BUKTI REGISTRASI & INVOICE PEMBAYARAN
+              </h1>
+              <p style={{ fontSize: '10px', fontFamily: 'monospace', fontWeight: 700, color: '#64748b', margin: 0 }}>
+                Nomor Dokumen: INV-{data.nisn}
               </p>
             </div>
-          </div>
 
-          {/* Table */}
-          <table className="w-full mb-8">
-            <thead>
-              <tr className="border-b-2 border-slate-200">
-                <th className="text-left py-3 text-sm text-slate-500 font-bold uppercase">Deskripsi</th>
-                <th className="text-right py-3 text-sm text-slate-500 font-bold uppercase">Jumlah</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr className="border-b border-slate-100">
-                <td className="py-4 text-slate-800 font-medium">Biaya Registrasi PPDB {data.periode || "2026-2027"}</td>
-                <td className="py-4 text-right text-slate-800 font-bold">Rp {regCost.toLocaleString("id-ID")}</td>
-              </tr>
-            </tbody>
-          </table>
-
-          {/* Total & Status */}
-          <div className="flex justify-end mb-12">
-            <div className="w-1/2">
-              <div className="flex justify-between py-2 border-b border-slate-200">
-                <span className="text-slate-500 font-semibold">Subtotal</span>
-                <span className="text-slate-800 font-bold">Rp {regCost.toLocaleString("id-ID")}</span>
+            {/* ── DATA PENDAFTAR (2 columns) ── */}
+            <div style={{ 
+              display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px',
+              background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '12px',
+              padding: '14px 16px', marginBottom: '20px',
+              fontSize: '11px', lineHeight: 1.8, fontWeight: 600, color: '#475569'
+            }}>
+              <div>
+                <div style={{ display: 'flex', gap: '8px' }}>
+                  <span style={{ color: '#94a3b8', width: '110px', flexShrink: 0 }}>No. Invoice</span>
+                  <span style={{ color: '#0f172a', fontFamily: 'monospace', fontWeight: 800 }}>: INV-{data.nisn}</span>
+                </div>
+                <div style={{ display: 'flex', gap: '8px' }}>
+                  <span style={{ color: '#94a3b8', width: '110px', flexShrink: 0 }}>Tanggal Daftar</span>
+                  <span style={{ color: '#0f172a' }}>: {tglDaftarFormatted}</span>
+                </div>
+                <div style={{ display: 'flex', gap: '8px' }}>
+                  <span style={{ color: '#94a3b8', width: '110px', flexShrink: 0 }}>Periode Ajaran</span>
+                  <span style={{ color: '#0f172a', fontWeight: 800 }}>: {data.periode || "2026-2027"}</span>
+                </div>
               </div>
-              <div className="flex justify-between py-3 border-b-2 border-slate-800">
-                <span className="text-slate-800 font-black text-lg">Total</span>
-                <span className="text-blue-600 font-black text-xl">Rp {regCost.toLocaleString("id-ID")}</span>
+              <div>
+                <div style={{ display: 'flex', gap: '8px' }}>
+                  <span style={{ color: '#94a3b8', width: '110px', flexShrink: 0 }}>Nama Pendaftar</span>
+                  <span style={{ color: '#0f172a', fontWeight: 800, textTransform: 'uppercase' }}>: {data.nama}</span>
+                </div>
+                <div style={{ display: 'flex', gap: '8px' }}>
+                  <span style={{ color: '#94a3b8', width: '110px', flexShrink: 0 }}>NISN Pendaftar</span>
+                  <span style={{ color: '#0f172a', fontFamily: 'monospace', fontWeight: 800 }}>: {data.nisn}</span>
+                </div>
+                <div style={{ display: 'flex', gap: '8px' }}>
+                  <span style={{ color: '#94a3b8', width: '110px', flexShrink: 0 }}>Program Rombel</span>
+                  <span style={{ color: '#2563eb', fontWeight: 800, textTransform: 'uppercase' }}>: {data.jurusan_1 || "-"}</span>
+                </div>
               </div>
             </div>
-          </div>
 
-          <div className="bg-emerald-50 border border-emerald-100 rounded-xl p-6 flex flex-col items-center justify-center print:border-2 print:border-emerald-500">
-            <CheckCircle size={48} className="text-emerald-500 mb-3" />
-            <h3 className="text-xl font-black text-emerald-600 uppercase tracking-widest">Lunas</h3>
-            <p className="text-emerald-600/80 text-sm mt-1 text-center">Pembayaran telah berhasil diverifikasi oleh sistem.</p>
-          </div>
+            {/* ── TABEL TAGIHAN ── */}
+            <table style={{ width: '100%', borderCollapse: 'collapse', marginBottom: '16px', fontSize: '12px', fontWeight: 600, color: '#334155' }}>
+              <thead>
+                <tr style={{ borderBottom: '2px solid #1e293b' }}>
+                  <th style={{ padding: '8px 0', textAlign: 'left', fontSize: '10px', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.1em', color: '#64748b' }}>
+                    No.
+                  </th>
+                  <th style={{ padding: '8px 0', textAlign: 'left', fontSize: '10px', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.1em', color: '#64748b' }}>
+                    Deskripsi Alokasi Tagihan
+                  </th>
+                  <th style={{ padding: '8px 0', textAlign: 'right', fontSize: '10px', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.1em', color: '#64748b', width: '140px' }}>
+                    Jumlah (Rp)
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr style={{ borderBottom: '1px solid #e2e8f0' }}>
+                  <td style={{ padding: '10px 0', color: '#0f172a' }}>1</td>
+                  <td style={{ padding: '10px 0', color: '#0f172a', fontWeight: 700 }}>
+                    Biaya Registrasi Formulir PPDB SMK Taruna Bhakti
+                    <span style={{ display: 'block', fontSize: '9px', fontWeight: 600, color: '#94a3b8', marginTop: '2px' }}>
+                      Alokasi administrasi berkas dan formulir online
+                    </span>
+                  </td>
+                  <td style={{ padding: '10px 0', textAlign: 'right', color: '#0f172a', fontWeight: 800 }}>
+                    Rp {regCost.toLocaleString("id-ID")}
+                  </td>
+                </tr>
+              </tbody>
+            </table>
 
+            {/* ── TOTAL ── */}
+            <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '20px' }}>
+              <div style={{ width: '260px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', fontWeight: 600, color: '#64748b', padding: '6px 0', borderBottom: '1px solid #f1f5f9' }}>
+                  <span>Subtotal</span>
+                  <span>Rp {regCost.toLocaleString("id-ID")}</span>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', fontWeight: 600, color: '#64748b', padding: '6px 0' }}>
+                  <span>Pajak (PPN 0%)</span>
+                  <span>Nihil</span>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px', fontWeight: 900, color: '#0f172a', padding: '8px 0', borderTop: '2px solid #1e293b' }}>
+                  <span>Total Tagihan</span>
+                  <span style={{ color: '#2563eb', fontWeight: 900 }}>Rp {regCost.toLocaleString("id-ID")}</span>
+                </div>
+              </div>
+            </div>
+
+            {/* ── INFO PEMBAYARAN (screen only) ── */}
+            <div className="no-print" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '10px', color: '#64748b', borderTop: '1px solid #e2e8f0', paddingTop: '12px', marginBottom: '24px' }}>
+              <div style={{ display: 'flex', gap: '16px' }}>
+                <div>
+                  <span style={{ fontWeight: 800 }}>Metode Bayar: </span>
+                  <span style={{ color: '#0f172a', fontWeight: 700, textTransform: 'uppercase' }}>{data.metode_pembayaran}</span>
+                </div>
+                <div>
+                  <span style={{ fontWeight: 800 }}>Status Bayar: </span>
+                  <span style={{ fontWeight: 800, textTransform: 'uppercase', color: data.payment_status === 'Paid' ? '#059669' : '#d97706' }}>
+                    {data.payment_status === 'Paid' ? 'LUNAS (VERIFIED)' : 'PENDING'}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* ── TANDA TANGAN (2 kolom, rapi sejajar) ── */}
+            <div style={{ borderTop: '2px dashed #e2e8f0', paddingTop: '20px', position: 'relative' }}>
+              
+              {/* Watermark seal */}
+              <div style={{
+                position: 'absolute', left: '50%', top: '50%',
+                transform: 'translate(-50%, -50%)',
+                opacity: 0.05, pointerEvents: 'none', userSelect: 'none'
+              }}>
+                <svg width="100" height="100" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <circle cx="50" cy="50" r="45" stroke="#10B981" strokeWidth="4" />
+                  <text x="50" y="42" fill="#10B981" fontSize="8" fontWeight="bold" textAnchor="middle">SMK TB</text>
+                  <text x="50" y="54" fill="#10B981" fontSize="11" fontWeight="900" textAnchor="middle">VERIFIED</text>
+                  <text x="50" y="64" fill="#10B981" fontSize="8" fontWeight="bold" textAnchor="middle">APPROVED</text>
+                </svg>
+              </div>
+
+              <div style={{ 
+                display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '40px',
+                fontSize: '11px', fontWeight: 600, color: '#1e293b'
+              }}>
+                {/* Kiri: Kepala Sekolah */}
+                <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', height: '120px' }}>
+                  <div>
+                    <p style={{ margin: '0 0 2px 0', color: '#64748b', fontWeight: 500, fontSize: '11px' }}>Mengetahui,</p>
+                    <p style={{ margin: 0, fontWeight: 800, fontSize: '11px', color: '#1e293b' }}>Kepala SMK Taruna Bhakti</p>
+                  </div>
+                  <div>
+                    <p style={{ 
+                      margin: 0, fontWeight: 900, fontSize: '12px', color: '#0f172a',
+                      borderBottom: '2px solid #0f172a', paddingBottom: '3px',
+                      textTransform: 'uppercase', letterSpacing: '0.05em',
+                      display: 'inline-block'
+                    }}>
+                      AINA NOVERA, S.Pd., MM
+                    </p>
+                  </div>
+                </div>
+
+                {/* Kanan: Ketua Pelaksana */}
+                <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', height: '120px', textAlign: 'right' }}>
+                  <div>
+                    <p style={{ margin: '0 0 2px 0', color: '#64748b', fontWeight: 500, fontSize: '11px' }}>Depok, {tglDaftarFormatted}</p>
+                    <p style={{ margin: 0, fontWeight: 800, fontSize: '11px', color: '#1e293b' }}>Ketua Pelaksana PPDB</p>
+                  </div>
+                  <div>
+                    <p style={{ 
+                      margin: 0, fontWeight: 900, fontSize: '12px', color: '#0f172a',
+                      borderBottom: '2px solid #0f172a', paddingBottom: '3px',
+                      textTransform: 'uppercase', letterSpacing: '0.05em',
+                      display: 'inline-block'
+                    }}>
+                      RATNA WATI, SE
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* ── FOOTER NOTE (print only) ── */}
+            <p style={{ marginTop: '16px', fontSize: '8px', color: '#94a3b8', textAlign: 'center', fontWeight: 500 }}>
+              Dokumen ini dicetak otomatis oleh Sistem PPDB SMK Taruna Bhakti Depok dan sah sebagai bukti registrasi.
+            </p>
+
+          </div>
         </div>
-        
-        {/* Footer */}
-        <div className="bg-slate-50 p-6 text-center text-xs text-slate-400 border-t border-slate-100">
-          Dokumen ini dicetak otomatis oleh Sistem PPDB SMK Taruna Bhakti Depok dan sah sebagai bukti pembayaran.
+
+        {/* ===== ACTION PANEL (screen only) ===== */}
+        <div className="action-panel no-print" style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+          
+          {/* Print & Return */}
+          <div style={{ background: 'white', border: '1px solid rgba(226,232,240,0.6)', borderRadius: '20px', padding: '24px', boxShadow: '0 4px 12px rgba(0,0,0,0.06)' }}>
+            <h3 style={{ fontWeight: 900, fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.1em', color: '#334155', marginBottom: '12px', paddingBottom: '8px', borderBottom: '1px solid #f1f5f9' }}>
+              Tindakan Nota
+            </h3>
+            
+            <button 
+              onClick={handlePrint}
+              style={{
+                width: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '8px',
+                background: 'linear-gradient(135deg, #2563eb, #4338ca)',
+                color: 'white', fontWeight: 900, fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.1em',
+                padding: '14px 20px', borderRadius: '14px', border: 'none', cursor: 'pointer',
+                boxShadow: '0 2px 8px rgba(37,99,235,0.2)',
+                transition: 'all 0.2s'
+              }}
+              onMouseEnter={e => { e.currentTarget.style.transform = 'scale(1.02)'; e.currentTarget.style.boxShadow = '0 4px 16px rgba(37,99,235,0.3)'; }}
+              onMouseLeave={e => { e.currentTarget.style.transform = 'scale(1)'; e.currentTarget.style.boxShadow = '0 2px 8px rgba(37,99,235,0.2)'; }}
+            >
+              <Printer size={15} />
+              Cetak / Simpan PDF
+            </button>
+
+            <Link href="/" style={{
+              width: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '8px',
+              background: '#f1f5f9', color: '#475569', fontWeight: 900, fontSize: '11px',
+              textTransform: 'uppercase', letterSpacing: '0.1em',
+              padding: '12px 20px', borderRadius: '14px', textDecoration: 'none',
+              marginTop: '10px', transition: 'background 0.2s'
+            }}>
+              <ArrowLeft size={13} />
+              Kembali ke Beranda
+            </Link>
+          </div>
+
+          {/* WhatsApp Group (only if Paid) */}
+          {data.payment_status === "Paid" && (
+            <div style={{
+              background: 'linear-gradient(135deg, #eff6ff, #eef2ff)',
+              border: '1px solid rgba(191,219,254,0.5)', borderRadius: '20px',
+              padding: '24px', boxShadow: '0 4px 12px rgba(0,0,0,0.04)',
+              textAlign: 'center'
+            }}>
+              <div style={{
+                width: '44px', height: '44px', background: '#d1fae5', color: '#059669',
+                borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                margin: '0 auto 12px'
+              }}>
+                <Phone size={18} />
+              </div>
+              <h4 style={{ fontWeight: 900, fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.1em', color: '#334155', margin: '0 0 8px 0' }}>
+                Gabung Grup WhatsApp
+              </h4>
+              <p style={{ fontSize: '10px', color: '#64748b', lineHeight: 1.6, margin: '0 0 14px 0' }}>
+                Hubungkan dengan pendaftar PPDB lainnya, berkas fisik, dan info jadwal tes seleksi.
+              </p>
+              <a
+                href={waGroupUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{
+                  width: '100%', display: 'inline-flex', justifyContent: 'center', alignItems: 'center', gap: '8px',
+                  padding: '12px 20px', background: 'linear-gradient(135deg, #059669, #22c55e)',
+                  color: 'white', fontWeight: 900, fontSize: '11px', textTransform: 'uppercase',
+                  letterSpacing: '0.1em', borderRadius: '14px', textDecoration: 'none',
+                  boxShadow: '0 2px 8px rgba(5,150,105,0.2)',
+                  transition: 'all 0.2s'
+                }}
+              >
+                <Phone size={12} />
+                Gabung WhatsApp
+              </a>
+            </div>
+          )}
+
         </div>
       </div>
     </div>

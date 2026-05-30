@@ -99,6 +99,14 @@ export default function Home() {
   const [selectedNews, setSelectedNews] = useState<InformasiItem | null>(null);
 
   // Dynamic Landing Page Config States
+  const [waGroupUrl, setWaGroupUrl] = useState("https://chat.whatsapp.com/HJXHYajEOhl5RM6iN2SJOS");
+  const [waAdmin, setWaAdmin] = useState("6281292244456");
+  const [activeFaq, setActiveFaq] = useState<number | null>(null);
+
+  const toggleFaq = (idx: number) => {
+    setActiveFaq(activeFaq === idx ? null : idx);
+  };
+
   const [heroTitle, setHeroTitle] = useState("Penerimaan Siswa Baru");
   const [heroTitleSub, setHeroTitleSub] = useState("Portal PPDB SMK Taruna Bhakti");
   const [heroSubtitle, setHeroSubtitle] = useState("Mulai langkah awal wujudkan masa depan cemerlang di bidang teknologi informasi. Proses pendaftaran online yang mudah, transparan, dan terintegrasi penuh.");
@@ -265,6 +273,8 @@ export default function Home() {
           if (config.ppdb_email) setEmail(config.ppdb_email);
           if (config.ppdb_address) setAddress(config.ppdb_address);
           if (config.ppdb_school_period) setSchoolPeriod(config.ppdb_school_period);
+          if (config.ppdb_wa_group_url) setWaGroupUrl(config.ppdb_wa_group_url);
+          if (config.ppdb_wa_admin) setWaAdmin(config.ppdb_wa_admin);
           if (config.ppdb_alur_config) setAlurList(config.ppdb_alur_config);
           
           if (config.ppdb_majors_config && Array.isArray(config.ppdb_majors_config)) {
@@ -1087,6 +1097,90 @@ export default function Home() {
                 </a>
               ));
             })()}
+          </div>
+        </div>
+      </section>
+
+      {/* FAQ SECTION */}
+      <section id="faq" className="py-24 bg-white dark:bg-slate-950 relative z-10 border-t border-slate-200/50 dark:border-slate-900 transition-colors duration-300">
+        <div className="max-w-4xl mx-auto px-6">
+          <div className="text-center mb-16">
+            <span className="text-blue-600 dark:text-sky-400 font-bold text-xs uppercase tracking-wider bg-blue-50 dark:bg-blue-950/50 border border-blue-100/50 dark:border-blue-900/30 px-3.5 py-1.5 rounded-full">FAQ PPDB</span>
+            <h2 className="text-3xl md:text-5xl font-black text-slate-800 dark:text-white mt-4 mb-4 drop-shadow-sm">Pertanyaan yang Sering Diajukan</h2>
+            <p className="text-slate-500 dark:text-slate-400 max-w-xl mx-auto text-sm md:text-base leading-relaxed font-medium">
+              Temukan jawaban cepat untuk kendala dan pertanyaan umum seputar proses penerimaan siswa baru SMK Taruna Bhakti.
+            </p>
+          </div>
+
+          <div className="space-y-4">
+            {[
+              {
+                q: "Bagaimana cara melakukan pembayaran biaya pendaftaran?",
+                a: "Pembayaran administrasi pendaftaran dapat diselesaikan secara online melalui Virtual Account transfer bank, QRIS, kartu kredit, atau e-wallet menggunakan gerbang pembayaran otomatis (Payment Gateway) yang sudah terintegrasi. Sistem juga menyediakan opsi Transfer Manual dengan mengunggah bukti transfer."
+              },
+              {
+                q: "Apa saja berkas persyaratan fisik yang wajib dibawa ke sekolah?",
+                a: "Calon peserta didik baru diimbau membawa berkas asli dan fotokopi berupa: 1) Kartu Keluarga (KK), 2) KTP Orang Tua (Ayah & Ibu), 3) Akta Kelahiran, 4) Ijazah SMP/sederajat atau Surat Keterangan Lulus (SKL) resmi dilegalisir, dan 5) Pas foto berwarna terbaru ukuran 3x4 sebanyak 3 lembar."
+              },
+              {
+                q: "Apakah ada batasan kuota pendaftaran untuk masing-masing jurusan?",
+                a: "Ya, setiap program kompetensi keahlian memiliki batas kuota tampung maksimal yang diselaraskan dengan ketersediaan fasilitas laboratorium praktikum (misal 100 siswa per jurusan). Pendaftaran untuk jurusan tertentu akan ditutup otomatis ketika kuota terpenuhi. Selesaikan pembayaran segera untuk mengamankan kuota Anda."
+              },
+              {
+                q: "Bagaimana jika saya mengalami kendala teknis saat mengunggah berkas pendaftaran?",
+                a: "Pastikan berkas KK, KTP, Akta, Ijazah, dan Foto yang Anda unggah bertipe gambar (PNG, JPG, atau JPEG) dengan ukuran maksimal masing-masing 2MB. Jika unggahan terus mengalami kegagalan, pastikan koneksi internet Anda stabil, bersihkan cache browser, atau langsung konsultasikan ke tim IT panitia PPDB kami."
+              }
+            ].map((faq, idx) => {
+              const isOpen = activeFaq === idx;
+              return (
+                <div 
+                  key={idx}
+                  className="bg-slate-50 dark:bg-slate-900/40 border border-slate-200/60 dark:border-slate-800/80 rounded-3xl overflow-hidden transition-all duration-300 shadow-sm"
+                >
+                  <button
+                    onClick={() => toggleFaq(idx)}
+                    className="w-full px-6 py-5 flex items-center justify-between text-left font-black text-sm md:text-base text-slate-800 dark:text-white focus:outline-none"
+                  >
+                    <span>{faq.q}</span>
+                    <span className={`text-blue-500 transform transition-transform duration-300 ${isOpen ? "rotate-180" : ""}`}>
+                      <ChevronRight size={20} className="rotate-90" />
+                    </span>
+                  </button>
+                  <div 
+                    className={`transition-all duration-300 ease-in-out overflow-hidden ${
+                      isOpen ? "max-h-60 border-t border-slate-200/50 dark:border-slate-800/50" : "max-h-0"
+                    }`}
+                  >
+                    <p className="px-6 py-5 text-xs md:text-sm text-slate-500 dark:text-slate-400 leading-relaxed font-semibold">
+                      {faq.a}
+                    </p>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          <div className="mt-12 bg-blue-50/50 dark:bg-blue-950/20 border border-blue-150/40 dark:border-blue-900 rounded-[2.5rem] p-8 text-center relative overflow-hidden">
+            <div className="absolute right-4 top-4 opacity-5 dark:opacity-10 pointer-events-none">
+              <HelpCircle size={96} className="text-blue-600 animate-pulse" />
+            </div>
+            
+            <h3 className="text-lg font-black text-slate-800 dark:text-white mb-2">Masih Mengalami Kendala atau Pertanyaan Lain?</h3>
+            <p className="text-xs md:text-sm text-slate-500 dark:text-slate-400 mb-6 max-w-lg mx-auto leading-relaxed">
+              Tim panitia PPDB SMK Taruna Bhakti siap membantu Anda secara langsung. Klik tombol di bawah untuk konsultasi via WhatsApp.
+            </p>
+            
+            <a 
+              href={`https://wa.me/${waAdmin.replace(/[^0-9]/g, '')}?text=${encodeURIComponent(
+                "Halo Admin PPDB SMK Taruna Bhakti, saya calon pendaftar PPDB TP 2026/2027. Saya ingin berkonsultasi mengenai proses pendaftaran karena mengalami kendala teknis."
+              )}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 bg-gradient-to-r from-emerald-600 to-green-500 hover:from-emerald-700 hover:to-green-600 text-white font-extrabold text-xs uppercase tracking-wider py-3.5 px-8 rounded-full shadow-lg shadow-emerald-500/20 transition-all duration-300 transform hover:scale-[1.02] active:scale-[0.98]"
+            >
+              <Phone size={14} />
+              <span>Konsultasi Lewat WA Admin</span>
+            </a>
           </div>
         </div>
       </section>
