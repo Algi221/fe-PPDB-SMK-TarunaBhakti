@@ -56,9 +56,9 @@ interface AlurItem {
 }
 
 const DEFAULT_ALUR: AlurItem[] = [
-  { id: 1, title: "Pendaftaran Online", desc: "Calon peserta didik mendaftar secara online melalui portal wizard PPDB dan mengisi data lengkap." },
-  { id: 2, title: "Simulasi / Gateway Pembayaran", desc: "Melakukan pembayaran administrasi pendaftaran sebesar Rp 150.000" },
-  { id: 3, title: "Verifikasi & Konfirmasi", desc: "Konfirmasi data pendaftaran otomatis secara real-time via WhatsApp di 08119892324." },
+  { id: 1, title: "Pendaftaran Online", desc: "Calon peserta didik mendaftar secara online melalui website smktarunabhakti.net dan mengisi data lengkap." },
+  { id: 2, title: "Simulasi / Gateway Pembayaran", desc: "Melakukan pembayaran administrasi pendaftaran sebesar Rp 250.000" },
+  { id: 3, title: "Verifikasi & Konfirmasi", desc: "Konfirmasi data pendaftaran otomatis via WhatsApp" },
   { id: 4, title: "Pemberkasan & Seragam", desc: "Datang langsung ke sekolah untuk verifikasi berkas asli fisik dan ukur seragam siswa baru." },
   { id: 5, title: "Uji Kelayakan (Tes Seleksi)", desc: "Mengikuti serangkaian tes bakat minat, wawancara kepribadian, serta tes kesehatan/fisik dasar calon siswa." },
   { id: 6, title: "Pengumuman & Kelulusan", desc: "Pengumuman kelulusan resmi dan status penerimaan calon peserta didik baru melalui web smktarunabhakti.net." }
@@ -1106,7 +1106,8 @@ export default function Home() {
               </div>
               <p className="text-xs leading-relaxed font-medium">
                 Pionir pendidikan kejuruan teknologi informasi dan industri kreatif. Membina talenta unggul berkarakter mulia dan berdaya saing global sejak 1987.
-              </p>              <div className="flex items-center gap-3 pt-2">
+              </p>
+              <div className="flex items-center gap-3 pt-2">
                 <a
                   href="https://www.instagram.com/starbhak.official"
                   target="_blank"

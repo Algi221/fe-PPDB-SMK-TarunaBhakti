@@ -163,16 +163,16 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           </Link>
 
           <Link
-            href="/dashboard/landing-page"
+            href="/dashboard/kelola-ui"
             className={`flex items-center ${isCollapsed ? "justify-center px-2 py-3" : "gap-3 px-4 py-3"} rounded-2xl text-xs font-bold uppercase tracking-wider transition-all border ${
-              pathname === "/dashboard/landing-page"
+              pathname === "/dashboard/kelola-ui"
                 ? "bg-blue-50/70 dark:bg-blue-950/40 border-blue-100/80 dark:border-blue-900/40 text-blue-600 dark:text-blue-400 font-extrabold"
                 : "border-transparent text-slate-500 dark:text-slate-400 hover:text-blue-500 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-slate-800/60"
             }`}
-            title={isCollapsed ? "Kelola Landing & Form" : undefined}
+            title={isCollapsed ? "Kelola User Interface" : undefined}
           >
             <Palette size={18} className="shrink-0" />
-            {!isCollapsed && <span className="animate-in fade-in duration-300 text-left">Kelola Landing</span>}
+            {!isCollapsed && <span className="animate-in fade-in duration-300 text-left">Kelola UI</span>}
           </Link>
 
           <Link
@@ -257,8 +257,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               ? "Daftar Siswa Aktif"
               : pathname === "/dashboard/informasi"
               ? "Kelola Informasi & Pengumuman"
-              : pathname === "/dashboard/landing-page"
-              ? "Kelola Landing & Form"
+              : pathname === "/dashboard/kelola-ui"
+              ? "Kelola User Interface"
               : pathname === "/dashboard/pembagian-kelas"
               ? "Manajemen Pembagian Kelas"
               : "Konfigurasi & Simulasi"}

@@ -180,6 +180,7 @@ export default function DaftarPage() {
       setIsDark(true);
     }
 
+    // Load initial fast values from localStorage if available
     const savedCost = localStorage.getItem('ppdb_reg_cost');
     if (savedCost) {
       const parsed = parseInt(savedCost);
@@ -203,6 +204,36 @@ export default function DaftarPage() {
         console.log("Failed to parse custom majors config:", e);
       }
     }
+
+    // Fetch live config dynamically from backend config endpoint
+    const loadLiveConfig = async () => {
+      try {
+        const res = await fetch("http://localhost:5000/api/config");
+        const json = await res.json();
+        if (json.success && json.data) {
+          const config = json.data;
+          if (config.ppdb_form_fee) {
+            const parsed = parseInt(config.ppdb_form_fee);
+            if (!isNaN(parsed)) {
+              setRegCost(parsed);
+              localStorage.setItem('ppdb_reg_cost', config.ppdb_form_fee);
+            }
+          }
+          if (config.ppdb_school_period) {
+            setSchoolPeriod(config.ppdb_school_period);
+            setFormData(prev => ({ ...prev, periode: config.ppdb_school_period }));
+            localStorage.setItem('ppdb_school_period', config.ppdb_school_period);
+          }
+          if (config.ppdb_majors_config && Array.isArray(config.ppdb_majors_config) && config.ppdb_majors_config.length > 0) {
+            setMajors(config.ppdb_majors_config);
+            localStorage.setItem('ppdb_majors_config', JSON.stringify(config.ppdb_majors_config));
+          }
+        }
+      } catch (err) {
+        console.log("Failed to fetch live config on registration page, using local storage fallback:", err);
+      }
+    };
+    loadLiveConfig();
   }, []);
 
   // Read URL query params for payment success/failure redirects

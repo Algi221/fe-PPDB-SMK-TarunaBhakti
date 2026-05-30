@@ -19,6 +19,23 @@ function InvoiceContent() {
       const parsed = parseInt(savedCost);
       if (!isNaN(parsed)) setRegCost(parsed);
     }
+
+    const loadLiveCost = async () => {
+      try {
+        const res = await fetch("http://localhost:5000/api/config");
+        const json = await res.json();
+        if (json.success && json.data && json.data.ppdb_form_fee) {
+          const parsed = parseInt(json.data.ppdb_form_fee);
+          if (!isNaN(parsed)) {
+            setRegCost(parsed);
+            localStorage.setItem('ppdb_reg_cost', json.data.ppdb_form_fee);
+          }
+        }
+      } catch (err) {
+        console.log("Failed to fetch live config for invoice:", err);
+      }
+    };
+    loadLiveCost();
   }, []);
 
   useEffect(() => {

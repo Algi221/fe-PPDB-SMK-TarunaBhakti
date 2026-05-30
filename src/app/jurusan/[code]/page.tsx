@@ -314,13 +314,12 @@ const majorsData: Record<string, MajorDetail> = {
 export default function MajorPage() {
   const params = useParams();
   const code = params?.code ? params.code.toString().toLowerCase() : "";
-  const major = majorsData[code];
-
   const majorKeys = ["rpl", "tjkt", "dkv", "bc", "an", "te"];
   const currentIndex = majorKeys.indexOf(code);
   const nextCode = currentIndex !== -1 ? majorKeys[(currentIndex + 1) % majorKeys.length] : "rpl";
-  const nextMajor = majorsData[nextCode];
 
+  const [major, setMajor] = useState<any>(null);
+  const [nextMajor, setNextMajor] = useState<any>(null);
   const [isDark, setIsDark] = useState(false);
 
   useEffect(() => {
@@ -330,6 +329,68 @@ export default function MajorPage() {
       setIsDark(true);
     }
   }, []);
+
+  // Sync static default data first
+  useEffect(() => {
+    if (code && majorsData[code]) {
+      setMajor({ ...majorsData[code] });
+    }
+    if (nextCode && majorsData[nextCode]) {
+      setNextMajor({ ...majorsData[nextCode] });
+    }
+  }, [code, nextCode]);
+
+  // Load dynamic changes from database API
+  useEffect(() => {
+    const loadDynamicConfig = async () => {
+      try {
+        const res = await fetch("http://localhost:5000/api/config");
+        const json = await res.json();
+        if (json.success && json.data) {
+          const config = json.data;
+          if (config.ppdb_majors_config && Array.isArray(config.ppdb_majors_config)) {
+            const found = config.ppdb_majors_config.find((m: any) => m.code.toLowerCase() === code);
+            if (found) {
+              setMajor((prev: any) => {
+                if (!prev) return null;
+                return {
+                  ...prev,
+                  title: found.title || prev.title,
+                  desc: found.desc || prev.desc,
+                  accentColor: found.color || prev.accentColor,
+                  logo: found.logo || prev.logo,
+                  banner: found.banner || prev.banner,
+                  video: found.video || prev.video,
+                  careers: Array.isArray(found.careers) ? found.careers : prev.careers,
+                  facilities: Array.isArray(found.facilities) ? found.facilities : prev.facilities,
+                  gallery: Array.isArray(found.gallery) ? found.gallery : prev.gallery
+                };
+              });
+            }
+
+            const foundNext = config.ppdb_majors_config.find((m: any) => m.code.toLowerCase() === nextCode);
+            if (foundNext) {
+              setNextMajor((prev: any) => {
+                if (!prev) return null;
+                return {
+                  ...prev,
+                  title: foundNext.title || prev.title,
+                  desc: foundNext.desc || prev.desc,
+                  accentColor: foundNext.color || prev.accentColor,
+                  logo: foundNext.logo || prev.logo
+                };
+              });
+            }
+          }
+        }
+      } catch (err) {
+        console.error("Gagal mengambil konfigurasi dinamis jurusan:", err);
+      }
+    };
+    if (code) {
+      loadDynamicConfig();
+    }
+  }, [code, nextCode]);
 
   const toggleDark = () => {
     const next = !isDark;
@@ -467,6 +528,45 @@ export default function MajorPage() {
         </div>
 
       </section>
+
+      {/* PROFILE VIDEO SECTION - Rendered only if video exists */}
+      {major.video && (
+        <section className="py-12 px-6 max-w-5xl mx-auto w-full relative z-10 animate-in fade-in duration-700">
+          <div className="bg-white/60 dark:bg-slate-900/60 backdrop-blur-2xl border border-slate-200/50 dark:border-slate-850 p-6 md:p-10 rounded-[3rem] shadow-xl relative overflow-hidden flex flex-col items-center text-center space-y-6">
+            <div className={`absolute -right-24 -top-24 w-80 h-80 rounded-full bg-gradient-to-r ${major.color} opacity-10 dark:opacity-25 blur-3xl pointer-events-none`}></div>
+            
+            <div className="space-y-2">
+              <span className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-black uppercase tracking-wider ${major.bgAccent} ${major.textAccent}`}>
+                <Video size={12} className="animate-pulse" />
+                Video Profil &amp; Pengenalan Jurusan
+              </span>
+              <h2 className="text-2xl md:text-3xl font-extrabold text-slate-800 dark:text-white">
+                Saksikan Video Dokumenter {major.alias}
+              </h2>
+              <p className="text-slate-500 dark:text-slate-450 text-xs md:text-sm max-w-lg mx-auto leading-relaxed">
+                Tonton video penjelasan ruang laboratorium praktikum, kompetensi dasar, hasil karya proyek lulusan, serta suasana kolaborasi siswa {major.title} di SMK Taruna Bhakti.
+              </p>
+            </div>
+
+            <div className="relative w-full aspect-video rounded-3xl overflow-hidden bg-slate-950 border border-slate-200/30 dark:border-slate-800 shadow-2xl flex items-center justify-center p-2">
+              {major.video.startsWith("data:video") || major.video.includes(".mp4") || major.video.startsWith("blob:") ? (
+                <video 
+                  src={major.video} 
+                  controls 
+                  className="w-full h-full object-cover rounded-[20px]"
+                />
+              ) : (
+                <iframe
+                  src={major.video}
+                  className="w-full h-full rounded-[20px] border-0"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                />
+              )}
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* CORE SYLLABUS & CURRICULUM SECTION */}
       <section className="py-20 bg-slate-100/50 dark:bg-slate-900/30 relative border-y border-slate-200/50 dark:border-slate-800">
