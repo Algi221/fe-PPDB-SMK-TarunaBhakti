@@ -62,12 +62,43 @@ interface RevisionLog {
   created_at: string;
 }
 
+interface FaqItem {
+  q: string;
+  a: string;
+}
+
 const formatRupiah = (value: string) => {
   if (!value) return "Rp ";
   const clean = value.replace(/[^0-9]/g, "");
   if (!clean) return "Rp ";
   const num = parseInt(clean, 10);
   return "Rp " + num.toLocaleString("id-ID");
+};
+
+const formatPhoneNumber = (value: string) => {
+  if (!value) return "";
+  
+  // Clean all characters except digits and plus (+)
+  let clean = value.replace(/[^\d+]/g, "");
+  
+  // If it starts with '0', replace with '+62'
+  if (clean.startsWith("0")) {
+    clean = "+62" + clean.slice(1);
+  }
+  // If it starts with '62', prepend '+'
+  else if (clean.startsWith("62")) {
+    clean = "+" + clean;
+  }
+  // If it doesn't start with '+62' and isn't empty, prepend '+62'
+  else if (clean && !clean.startsWith("+62")) {
+    if (clean.startsWith("+")) {
+      clean = "+62" + clean.slice(1);
+    } else {
+      clean = "+62" + clean;
+    }
+  }
+  
+  return clean;
 };
 
 const DEFAULT_ALUR: AlurItem[] = [
@@ -77,6 +108,25 @@ const DEFAULT_ALUR: AlurItem[] = [
   { id: 4, title: "Pemberkasan & Seragam", desc: "Datang langsung ke sekolah untuk verifikasi berkas asli fisik dan ukur seragam siswa baru." },
   { id: 5, title: "Uji Kelayakan (Tes Seleksi)", desc: "Mengikuti serangkaian tes bakat minat, wawancara kepribadian, serta tes kesehatan/fisik dasar calon siswa." },
   { id: 6, title: "Pengumuman & Kelulusan", desc: "Pengumuman kelulusan resmi dan status penerimaan calon peserta didik baru melalui web smktarunabhakti.net." }
+];
+
+const DEFAULT_FAQ: FaqItem[] = [
+  {
+    q: "Bagaimana cara melakukan pembayaran biaya pendaftaran?",
+    a: "Pembayaran administrasi pendaftaran dapat diselesaikan secara online melalui Virtual Account transfer bank, QRIS, kartu kredit, atau e-wallet menggunakan gerbang pembayaran otomatis (Payment Gateway) yang sudah terintegrasi. Sistem juga menyediakan opsi Transfer Manual dengan mengunggah bukti transfer."
+  },
+  {
+    q: "Apa saja berkas persyaratan fisik yang wajib dibawa ke sekolah?",
+    a: "Calon peserta didik baru diimbau membawa berkas asli dan fotokopi berupa: 1) Kartu Keluarga (KK), 2) KTP Orang Tua (Ayah & Ibu), 3) Akta Kelahiran, 4) Ijazah SMP/sederajat atau Surat Keterangan Lulus (SKL) resmi dilegalisir, dan 5) Pas foto berwarna terbaru ukuran 3x4 sebanyak 3 lembar."
+  },
+  {
+    q: "Apakah ada batasan kuota pendaftaran untuk masing-masing jurusan?",
+    a: "Ya, setiap program kompetensi keahlian memiliki batas kuota tampung maksimal yang diselaraskan dengan ketersediaan fasilitas laboratorium praktikum (misal 100 siswa per jurusan). Pendaftaran untuk jurusan tertentu akan ditutup otomatis ketika kuota terpenuhi. Selesaikan pembayaran segera untuk mengamankan kuota Anda."
+  },
+  {
+    q: "Apakah ada tes seleksi masuk di SMK Taruna Bhakti?",
+    a: "Ya, calon peserta didik baru akan mengikuti seleksi potensi akademik, tes minat bakat, serta wawancara kompetensi keahlian secara terjadwal setelah menyelesaikan pengisian formulir pendaftaran dan pembayaran biaya administrasi."
+  }
 ];
 
 const DEFAULT_MAJORS: MajorItem[] = [
@@ -253,7 +303,7 @@ const DEFAULT_MAJORS: MajorItem[] = [
 export default function KelolaUserInterface() {
   const { adminToken } = usePPDB();
   const [mounted, setMounted] = useState(false);
-  const [activeTab, setActiveTab] = useState<"hero" | "majors" | "alur" | "form" | "revisions">("hero");
+  const [activeTab, setActiveTab] = useState<"hero" | "majors" | "alur" | "form" | "faq" | "revisions">("hero");
   
   // Loading & Action overlays
   const [loading, setLoading] = useState(true);
@@ -281,6 +331,7 @@ export default function KelolaUserInterface() {
   const [alurList, setAlurList] = useState<AlurItem[]>(DEFAULT_ALUR);
   const [majorsList, setMajorsList] = useState<MajorItem[]>(DEFAULT_MAJORS);
   const [revisions, setRevisions] = useState<RevisionLog[]>([]);
+  const [faqList, setFaqList] = useState<FaqItem[]>([]);
 
   // Editing Major Inline State Workspace
   const [editingMajor, setEditingMajor] = useState<MajorItem | null>(null);
@@ -307,17 +358,22 @@ export default function KelolaUserInterface() {
         if (config.ppdb_hero_title) setHeroTitle(config.ppdb_hero_title);
         if (config.ppdb_hero_title_sub) setHeroTitleSub(config.ppdb_hero_title_sub);
         if (config.ppdb_hero_subtitle) setHeroSubtitle(config.ppdb_hero_subtitle);
-        if (config.ppdb_phone) setPhone(config.ppdb_phone);
+        if (config.ppdb_phone) setPhone(formatPhoneNumber(config.ppdb_phone));
         if (config.ppdb_email) setEmail(config.ppdb_email);
         if (config.ppdb_address) setAddress(config.ppdb_address);
         if (config.ppdb_school_period) setSchoolPeriod(config.ppdb_school_period);
         if (config.ppdb_wa_group_url) setWaGroupUrl(config.ppdb_wa_group_url);
-        if (config.ppdb_wa_admin) setWaAdmin(config.ppdb_wa_admin);
+        if (config.ppdb_wa_admin) setWaAdmin(formatPhoneNumber(config.ppdb_wa_admin));
         if (config.ppdb_form_guideline) setFormGuideline(config.ppdb_form_guideline);
         if (config.ppdb_form_fee) setFormFee(config.ppdb_form_fee);
         
         if (config.ppdb_alur_config && Array.isArray(config.ppdb_alur_config)) {
           setAlurList(config.ppdb_alur_config);
+        }
+        if (config.ppdb_faq_config && Array.isArray(config.ppdb_faq_config)) {
+          setFaqList(config.ppdb_faq_config);
+        } else {
+          setFaqList(DEFAULT_FAQ);
         }
         if (config.ppdb_majors_config && Array.isArray(config.ppdb_majors_config)) {
           // Sync existing majors configurations with defaults to ensure full structure
@@ -439,6 +495,31 @@ export default function KelolaUserInterface() {
     setAlurList(reordered);
   };
 
+  // FAQ Handlers
+  const handleAddFaq = () => {
+    setFaqList([...faqList, { q: "Pertanyaan Baru?", a: "Tuliskan jawaban di sini." }]);
+  };
+
+  const handleUpdateFaq = (index: number, key: keyof FaqItem, val: string) => {
+    setFaqList(faqList.map((f, i) => i === index ? { ...f, [key]: val } : f));
+  };
+
+  const handleRemoveFaq = (index: number) => {
+    setFaqList(faqList.filter((_, i) => i !== index));
+  };
+
+  const handleMoveFaq = (index: number, direction: "up" | "down") => {
+    if (direction === "up" && index === 0) return;
+    if (direction === "down" && index === faqList.length - 1) return;
+
+    const targetIdx = direction === "up" ? index - 1 : index + 1;
+    const copy = [...faqList];
+    const temp = copy[index];
+    copy[index] = copy[targetIdx];
+    copy[targetIdx] = temp;
+    setFaqList(copy);
+  };
+
   // Submit All Changes to production
   const handleSaveAll = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -472,7 +553,8 @@ export default function KelolaUserInterface() {
         ppdb_form_guideline: formGuideline,
         ppdb_form_fee: formFee,
         ppdb_alur_config: alurList,
-        ppdb_majors_config: finalMajors
+        ppdb_majors_config: finalMajors,
+        ppdb_faq_config: faqList
       };
 
       const token = adminToken || localStorage.getItem("ppdb_admin_token");
@@ -496,6 +578,7 @@ export default function KelolaUserInterface() {
         try {
           localStorage.setItem("ppdb_majors_config", JSON.stringify(finalMajors));
           localStorage.setItem("ppdb_alur_config", JSON.stringify(alurList));
+          localStorage.setItem("ppdb_faq_config", JSON.stringify(faqList));
           localStorage.setItem("ppdb_reg_cost", formFee);
           localStorage.setItem("ppdb_school_period", schoolPeriod);
           localStorage.setItem("ppdb_wa_group_url", waGroupUrl);
@@ -631,6 +714,7 @@ export default function KelolaUserInterface() {
           { id: "majors", label: "Program Keahlian (Jurusan)", icon: GraduationCap },
           { id: "alur", label: "Alur Pendaftaran", icon: Settings },
           { id: "form", label: "Form & Panduan", icon: Info },
+          { id: "faq", label: "Pertanyaan (FAQ)", icon: HelpCircle },
           { id: "revisions", label: "Riwayat Perubahan", icon: Clock }
         ].map((tab) => {
           const Icon = tab.icon;
@@ -724,8 +808,8 @@ export default function KelolaUserInterface() {
                     <input
                       type="text"
                       value={phone}
-                      onChange={(e) => setPhone(e.target.value)}
-                      placeholder="Contoh: (021) 8740756"
+                      onChange={(e) => setPhone(formatPhoneNumber(e.target.value))}
+                      placeholder="Contoh: +62218740756"
                       className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-white/5 rounded-2xl text-slate-800 dark:text-white font-semibold text-xs focus:outline-none focus:border-blue-500"
                     />
                   </div>
@@ -775,12 +859,12 @@ export default function KelolaUserInterface() {
                   </div>
 
                   <div className="space-y-2 md:col-span-1">
-                    <label className="text-[9px] uppercase font-bold text-slate-450 tracking-wider">Nomor WhatsApp Admin (Konsultasi)</label>
+                    <label className="text-[9px] uppercase font-bold text-slate-450 tracking-wider">Nomor WhatsApp Tim PPDB (Konsultasi)</label>
                     <input
                       type="text"
                       value={waAdmin}
-                      onChange={(e) => setWaAdmin(e.target.value)}
-                      placeholder="Contoh: 6281292244456"
+                      onChange={(e) => setWaAdmin(formatPhoneNumber(e.target.value))}
+                      placeholder="Contoh: +6281292244456"
                       className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-950 border border-slate-200/50 dark:border-white/5 rounded-2xl text-slate-800 dark:text-white font-semibold text-xs focus:outline-none focus:border-blue-500"
                     />
                   </div>
@@ -1420,6 +1504,99 @@ export default function KelolaUserInterface() {
                       className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-white/5 rounded-2xl text-slate-800 dark:text-white font-semibold text-xs focus:outline-none focus:border-blue-500 resize-y"
                     />
                   </div>
+                </div>
+              </div>
+            )}
+
+            {/* TAB: FAQ Management */}
+            {activeTab === "faq" && (
+              <div className="space-y-6">
+                <div className="flex items-center justify-between border-b border-slate-100 dark:border-white/5 pb-4 mb-4">
+                  <div>
+                    <h3 className="text-sm font-black uppercase text-slate-850 dark:text-white tracking-wider flex items-center gap-2">
+                      <HelpCircle size={16} className="text-blue-500" />
+                      <span>Daftar Pertanyaan Yang Sering Diajukan (FAQ)</span>
+                    </h3>
+                    <p className="text-[10px] text-slate-400 font-bold uppercase mt-1">Ubah, tambah, urutkan, atau hapus tanya-jawab FAQ untuk halaman utama</p>
+                  </div>
+
+                  <button
+                    onClick={handleAddFaq}
+                    className="flex items-center gap-1.5 px-4.5 py-2.5 rounded-xl bg-slate-50 hover:bg-slate-100 dark:bg-slate-950 border border-slate-200 dark:border-white/5 text-[10px] uppercase font-bold text-slate-700 dark:text-slate-300 transition-all shadow-sm"
+                  >
+                    <Plus size={14} />
+                    <span>Pertanyaan Baru</span>
+                  </button>
+                </div>
+
+                <div className="space-y-4">
+                  {faqList.map((item, idx) => (
+                    <div 
+                      key={idx}
+                      className="bg-slate-50 dark:bg-slate-950/40 border border-slate-200/60 dark:border-white/5 rounded-3xl p-5 flex items-start gap-4 transition-all"
+                    >
+                      <div className="w-10 h-10 rounded-full bg-blue-500 text-white font-extrabold flex items-center justify-center text-xs shrink-0 shadow shadow-blue-500/10">
+                        {idx + 1}
+                      </div>
+
+                      <div className="flex-1 grid grid-cols-1 gap-4">
+                        <div className="space-y-1.5">
+                          <label className="text-[8px] uppercase font-black text-slate-450 tracking-wider">Pertanyaan (Question)</label>
+                          <input
+                            type="text"
+                            value={item.q}
+                            onChange={(e) => handleUpdateFaq(idx, "q", e.target.value)}
+                            className="w-full px-4 py-2.5 bg-white dark:bg-slate-900 border border-slate-250 dark:border-white/5 rounded-xl text-slate-850 dark:text-white font-bold text-xs focus:outline-none"
+                          />
+                        </div>
+
+                        <div className="space-y-1.5">
+                          <label className="text-[8px] uppercase font-black text-slate-450 tracking-wider">Jawaban (Answer)</label>
+                          <textarea
+                            value={item.a}
+                            onChange={(e) => handleUpdateFaq(idx, "a", e.target.value)}
+                            rows={3}
+                            className="w-full px-4 py-2.5 bg-white dark:bg-slate-900 border border-slate-250 dark:border-white/5 rounded-xl text-slate-850 dark:text-white font-semibold text-xs focus:outline-none resize-y"
+                          />
+                        </div>
+                      </div>
+
+                      {/* Sorting & Control Actions */}
+                      <div className="flex items-center gap-1.5 shrink-0 self-center">
+                        <button
+                          onClick={() => handleMoveFaq(idx, "up")}
+                          disabled={idx === 0}
+                          className={`p-1.5 rounded-lg border border-slate-200 hover:bg-slate-100 dark:border-white/5 dark:hover:bg-slate-900 transition-all ${
+                            idx === 0 ? "opacity-30 cursor-not-allowed" : ""
+                          }`}
+                        >
+                          <ChevronUp size={14} />
+                        </button>
+                        <button
+                          onClick={() => handleMoveFaq(idx, "down")}
+                          disabled={idx === faqList.length - 1}
+                          className={`p-1.5 rounded-lg border border-slate-200 hover:bg-slate-100 dark:border-white/5 dark:hover:bg-slate-900 transition-all ${
+                            idx === faqList.length - 1 ? "opacity-30 cursor-not-allowed" : ""
+                          }`}
+                        >
+                          <ChevronDown size={14} />
+                        </button>
+                        <button
+                          onClick={() => handleRemoveFaq(idx)}
+                          className="p-1.5 text-rose-500 hover:bg-rose-500/10 rounded-lg transition-all"
+                        >
+                          <Trash2 size={14} />
+                        </button>
+                      </div>
+
+                    </div>
+                  ))}
+
+                  {faqList.length === 0 && (
+                    <div className="text-center py-10 border-2 border-dashed border-slate-200 dark:border-slate-800 rounded-3xl text-slate-400 font-bold uppercase text-[10px] tracking-wider">
+                      Belum ada tanya-jawab FAQ. Tambah pertanyaan baru dengan tombol diatas.
+                    </div>
+                  )}
                 </div>
               </div>
             )}

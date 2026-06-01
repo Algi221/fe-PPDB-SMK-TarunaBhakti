@@ -18,7 +18,7 @@ export const metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="id" className={`${plusJakarta.variable} h-full antialiased`}>
+    <html lang="id" className={`${plusJakarta.variable} h-full antialiased`} data-scroll-behavior="smooth">
       <body suppressHydrationWarning className="min-h-full flex flex-col bg-slate-50 text-slate-900">
         <PPDBProvider>
           {children}

@@ -99,11 +99,42 @@ export function PPDBProvider({ children }: { children: React.ReactNode }) {
 
   // Add toast notification
   const addToast = useCallback((title: string, message: string, type = "info") => {
-    const id = Date.now() + Math.random().toString(36).substr(2, 9);
-    setToasts((prev) => [...prev, { id, title, message, type }]);
-    setTimeout(() => {
-      setToasts((prev) => prev.filter((t) => t.id !== id));
-    }, 5000);
+    setToasts((prev) => {
+      // Deduplicate: remove any active toast that has the exact same message
+      // or refers to the same student name or ID.
+      const getStudentKey = (msg: string) => {
+        const idMatch = msg.match(/#\d+/);
+        if (idMatch) return idMatch[0];
+        
+        const nameLabelMatch = msg.match(/Nama:\s*([^·\n]+)/);
+        if (nameLabelMatch) return nameLabelMatch[1].trim().toLowerCase();
+
+        const capWordMatch = msg.match(/[A-Z][a-z]+(?:\s+[A-Z][a-z]+)+/);
+        if (capWordMatch) return capWordMatch[0].trim().toLowerCase();
+        
+        return null;
+      };
+
+      const newKey = getStudentKey(message);
+      
+      const filtered = prev.filter((t) => {
+        if (t.message === message) return false;
+        
+        if (newKey) {
+          const oldKey = getStudentKey(t.message);
+          if (oldKey && oldKey === newKey) return false;
+        }
+        
+        return true;
+      });
+
+      const id = Date.now() + Math.random().toString(36).substr(2, 9);
+      setTimeout(() => {
+        setToasts((curr) => curr.filter((t) => t.id !== id));
+      }, 5000);
+
+      return [...filtered, { id, title, message, type }];
+    });
     playNotificationSound();
   }, [playNotificationSound]);
 
@@ -602,6 +633,16 @@ export function PPDBProvider({ children }: { children: React.ReactNode }) {
               <h4 className="text-xs font-extrabold uppercase tracking-wider mb-0.5">{toast.title}</h4>
               <p className="text-xs font-medium leading-relaxed opacity-90">{toast.message}</p>
             </div>
+            {/* Close Button */}
+            <button
+              onClick={() => setToasts((prev) => prev.filter((t) => t.id !== toast.id))}
+              className="shrink-0 p-1 rounded-lg hover:bg-black/5 dark:hover:bg-white/10 text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-white transition-colors"
+              aria-label="Close notification"
+            >
+              <svg className="w-4.5 h-4.5" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
           </div>
         ))}
       </div>

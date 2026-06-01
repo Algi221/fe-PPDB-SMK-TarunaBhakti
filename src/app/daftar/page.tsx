@@ -371,7 +371,15 @@ export default function DaftarPage() {
     }
 
     if (name === "whatsapp" || name === "teleponOrtu") {
-      const cleanValue = value.replace(/\D/g, "").slice(0, 15);
+      let cleanValue = value.replace(/\D/g, "");
+      if (cleanValue.startsWith("0")) {
+        cleanValue = "+62" + cleanValue.slice(1);
+      } else if (cleanValue.startsWith("62")) {
+        cleanValue = "+" + cleanValue;
+      } else if (cleanValue && !cleanValue.startsWith("+62")) {
+        cleanValue = "+62" + cleanValue;
+      }
+      cleanValue = cleanValue.slice(0, 16);
       setFormData(prev => ({ ...prev, [name]: cleanValue }));
       return;
     }
@@ -906,7 +914,29 @@ export default function DaftarPage() {
             // @ts-ignore
             window.snap.pay(data.token, {
               onSuccess: function (result: any) {
-                handleConfirmOption("Payment Gateway");
+                console.log("Midtrans payment result:", result);
+                let detail = "Payment Gateway";
+                if (result) {
+                  const paymentChannel = result.payment_type || 'Midtrans';
+                  let channelDetail = paymentChannel;
+                  if (paymentChannel === 'bank_transfer' && result.va_numbers?.[0]) {
+                    channelDetail = `Bank Transfer (${result.va_numbers[0].bank?.toUpperCase()})`;
+                  } else if (paymentChannel === 'bank_transfer' && result.permata_va_number) {
+                    channelDetail = `Bank Transfer (PERMATA)`;
+                  } else if (paymentChannel === 'credit_card') {
+                    channelDetail = `Credit Card`;
+                  } else if (paymentChannel === 'cstore') {
+                    channelDetail = `Retail Store (${result.store?.toUpperCase() || ''})`;
+                  } else if (paymentChannel === 'qris') {
+                    channelDetail = `QRIS`;
+                  } else if (paymentChannel === 'gopay') {
+                    channelDetail = `GoPay`;
+                  } else if (paymentChannel === 'shopeepay') {
+                    channelDetail = `ShopeePay`;
+                  }
+                  detail = `Payment Gateway (Midtrans - ${channelDetail})`;
+                }
+                handleConfirmOption(detail);
               },
               onPending: function (result: any) {
                 alert("Menunggu pembayaran...");
@@ -1381,7 +1411,7 @@ export default function DaftarPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
               <div className="form-group">
                 <label className="block text-xs font-bold text-slate-600 mb-1.5">Nomor Telepon / Handphone (HP)</label>
-                <input type="text" inputMode="numeric" pattern="[0-9]*" name="whatsapp" className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all" placeholder="Contoh: 081234567890" value={formData.whatsapp} onChange={handleInputChange} />
+                <input type="text" inputMode="tel" name="whatsapp" className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all" placeholder="Contoh: 081234567890" value={formData.whatsapp} onChange={handleInputChange} />
               </div>
               <div className="form-group">
                 <label className="block text-xs font-bold text-slate-600 mb-1.5">Electronic Mail (E-mail) Pribadi</label>
@@ -2013,7 +2043,7 @@ export default function DaftarPage() {
                 </div>
                 <div className="form-group">
                   <label className="block text-xs font-bold text-slate-600 mb-1.5">Nomor Telepon (Ayah/Ibu/Wali)</label>
-                  <input type="text" inputMode="numeric" pattern="[0-9]*" name="teleponOrtu" className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all" placeholder="Nomor yang mudah dihubungi" value={formData.teleponOrtu} onChange={handleInputChange} />
+                  <input type="text" inputMode="tel" name="teleponOrtu" className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all" placeholder="Nomor yang mudah dihubungi" value={formData.teleponOrtu} onChange={handleInputChange} />
                 </div>
               </div>
 

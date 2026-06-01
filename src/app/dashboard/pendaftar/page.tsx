@@ -1286,6 +1286,27 @@ export default function ApplicantsDirectory() {
                     </div>
                   </div>
 
+                  {/* Invoice Resmi Pembayaran Section */}
+                  {selectedApplicant.payment_status === "Paid" && (
+                    <div className="p-5 bg-blue-50/50 dark:bg-blue-950/20 border border-blue-200/40 dark:border-blue-900/50 rounded-3xl flex flex-col md:flex-row items-center justify-between gap-4">
+                      <div className="text-left">
+                        <span className="text-blue-600 dark:text-sky-400 font-black uppercase tracking-widest text-[9px] block">Invoice Resmi Pembayaran</span>
+                        <p className="text-[11px] text-slate-500 dark:text-slate-455 font-bold mt-1 leading-relaxed">
+                          Invoice pendaftaran resmi telah diterbitkan dan diverifikasi untuk calon siswa ini. Klik tombol di bawah untuk melihat, mencetak, atau menyimpannya sebagai file PDF.
+                        </p>
+                      </div>
+                      <button
+                        onClick={() => window.open(`/invoice?nisn=${selectedApplicant.nisn}`, '_blank')}
+                        className="px-5 py-3 bg-gradient-to-tr from-blue-600 to-indigo-500 hover:from-blue-500 hover:to-indigo-400 text-white rounded-xl text-xs font-black uppercase tracking-wider shadow shadow-blue-500/20 hover:shadow-blue-500/40 transition-all flex items-center gap-2 shrink-0 animate-pulse"
+                      >
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+                        </svg>
+                        <span>Cetak / Unduh Invoice</span>
+                      </button>
+                    </div>
+                  )}
+
                   {/* Manual receipt slip visual display */}
                   <div className="bg-slate-50 dark:bg-slate-950 border border-slate-200/50 dark:border-white/5 rounded-2xl p-5 space-y-4">
                     <span className="text-slate-400 dark:text-slate-555 block font-bold uppercase text-[9px] tracking-wider">

@@ -127,9 +127,9 @@ export default function DataPendaftarTable() {
         </div>
 
         {/* Premium Flexing Card */}
-        <div className="flex-1 flex flex-col items-center justify-center py-1.5 overflow-hidden">
+        <div className="flex-1 w-full flex flex-col items-center py-4 overflow-y-auto scrollbar-none">
           
-          <div className="w-full max-w-xl md:max-w-2xl bg-gradient-to-br from-white via-slate-50/50 to-blue-50/20 dark:from-slate-950 dark:via-slate-900/90 dark:to-indigo-950/30 border border-slate-200 dark:border-blue-500/20 rounded-[24px] p-5 shadow-2xl relative overflow-hidden flex flex-col justify-between transition-colors duration-300">
+          <div className="w-full max-w-xl md:max-w-2xl bg-gradient-to-br from-white via-slate-50/50 to-blue-50/20 dark:from-slate-950 dark:via-slate-900/90 dark:to-indigo-950/30 border border-slate-200 dark:border-blue-500/20 rounded-[24px] p-5 shadow-2xl relative overflow-hidden flex flex-col justify-between transition-colors duration-300 shrink-0 mb-6">
             {/* Ambient Background Lights - Dark Mode Only */}
             <div className="absolute top-0 right-0 w-48 h-48 bg-blue-500/10 dark:bg-blue-500/15 rounded-full blur-[80px] pointer-events-none" />
             <div className="absolute -bottom-10 -left-10 w-48 h-48 bg-indigo-600/10 dark:bg-indigo-650/15 rounded-full blur-[80px] pointer-events-none" />
@@ -233,11 +233,18 @@ export default function DataPendaftarTable() {
                   <div className="absolute bottom-1.5 left-1.5 w-3 h-3 border-b-2 border-l-2 border-blue-600 dark:border-blue-400 rounded-bl" />
                   <div className="absolute bottom-1.5 right-1.5 w-3 h-3 border-b-2 border-r-2 border-blue-600 dark:border-blue-400 rounded-br" />
                   
-                  <img 
-                    src={`https://api.qrserver.com/v1/create-qr-code/?size=350x350&data=https://ppdb.smktarunabhakti.sch.id/verify/${selectedStudent.id}`} 
-                    alt="Verification QR" 
-                    className="w-40 h-40 object-contain rounded-xl"
-                  />
+                  {(() => {
+                    const verifyUrl = typeof window !== 'undefined' 
+                      ? `${window.location.origin}/verify/${selectedStudent.id}` 
+                      : `http://localhost:3000/verify/${selectedStudent.id}`;
+                    return (
+                      <img 
+                        src={`https://api.qrserver.com/v1/create-qr-code/?size=350x350&data=${encodeURIComponent(verifyUrl)}`} 
+                        alt="Verification QR" 
+                        className="w-36 h-36 object-contain rounded-xl"
+                      />
+                    );
+                  })()}
                 </div>
                 <div className="space-y-0.5">
                   <span className="text-[9px] font-black text-blue-600 dark:text-blue-400 tracking-widest uppercase block animate-pulse">SCAN VERIFIKASI</span>
@@ -253,17 +260,6 @@ export default function DataPendaftarTable() {
               <span className="text-slate-500 font-black">TP. 2026/2027</span>
             </div>
 
-          </div>
-
-          {/* Screenshot instruction */}
-          <div className="mt-3.5 text-center max-w-md px-4">
-            <span className="text-[10px] text-blue-600 dark:text-blue-400 font-black uppercase tracking-wider block mb-0.5 flex items-center justify-center gap-1">
-              <Sparkles size={12} className="text-amber-500 animate-spin" />
-              <span>📷 Screenshot &amp; Flexing Kelulusanmu!</span>
-            </span>
-            <p className="text-[8.5px] text-slate-450 dark:text-slate-500 font-semibold leading-relaxed">
-              Tangkap layar (screenshot) kartu bukti pendaftaran ini dan bagikan di media sosialmu untuk memperlihatkan pencapaianmu masuk SMK Taruna Bhakti!
-            </p>
           </div>
         </div>
 

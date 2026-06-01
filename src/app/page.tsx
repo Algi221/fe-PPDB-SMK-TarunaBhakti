@@ -55,6 +55,30 @@ interface AlurItem {
   desc: string;
 }
 
+interface FaqItem {
+  q: string;
+  a: string;
+}
+
+const DEFAULT_FAQ: FaqItem[] = [
+  {
+    q: "Bagaimana cara melakukan pembayaran biaya pendaftaran?",
+    a: "Pembayaran administrasi pendaftaran dapat diselesaikan secara online melalui Virtual Account transfer bank, QRIS, kartu kredit, atau e-wallet menggunakan gerbang pembayaran otomatis (Payment Gateway) yang sudah terintegrasi. Sistem juga menyediakan opsi Transfer Manual dengan mengunggah bukti transfer."
+  },
+  {
+    q: "Apa saja berkas persyaratan fisik yang wajib dibawa ke sekolah?",
+    a: "Calon peserta didik baru diimbau membawa berkas asli dan fotokopi berupa: 1) Kartu Keluarga (KK), 2) KTP Orang Tua (Ayah & Ibu), 3) Akta Kelahiran, 4) Ijazah SMP/sederajat atau Surat Keterangan Lulus (SKL) resmi dilegalisir, dan 5) Pas foto berwarna terbaru ukuran 3x4 sebanyak 3 lembar."
+  },
+  {
+    q: "Apakah ada batasan kuota pendaftaran untuk masing-masing jurusan?",
+    a: "Ya, setiap program kompetensi keahlian memiliki batas kuota tampung maksimal yang diselaraskan dengan ketersediaan fasilitas laboratorium praktikum (misal 100 siswa per jurusan). Pendaftaran untuk jurusan tertentu akan ditutup otomatis ketika kuota terpenuhi. Selesaikan pembayaran segera untuk mengamankan kuota Anda."
+  },
+  {
+    q: "Apakah ada tes seleksi masuk di SMK Taruna Bhakti?",
+    a: "Ya, calon peserta didik baru akan mengikuti seleksi potensi akademik, tes minat bakat, serta wawancara kompetensi keahlian secara terjadwal setelah menyelesaikan pengisian formulir pendaftaran dan pembayaran biaya administrasi."
+  }
+];
+
 const DEFAULT_ALUR: AlurItem[] = [
   { id: 1, title: "Pendaftaran Online", desc: "Calon peserta didik mendaftar secara online melalui website smktarunabhakti.net dan mengisi data lengkap." },
   { id: 2, title: "Simulasi / Gateway Pembayaran", desc: "Melakukan pembayaran administrasi pendaftaran sebesar Rp 250.000" },
@@ -102,6 +126,7 @@ export default function Home() {
   const [waGroupUrl, setWaGroupUrl] = useState("https://chat.whatsapp.com/HJXHYajEOhl5RM6iN2SJOS");
   const [waAdmin, setWaAdmin] = useState("6281292244456");
   const [activeFaq, setActiveFaq] = useState<number | null>(null);
+  const [faqList, setFaqList] = useState<FaqItem[]>(DEFAULT_FAQ);
 
   const toggleFaq = (idx: number) => {
     setActiveFaq(activeFaq === idx ? null : idx);
@@ -261,6 +286,15 @@ export default function Home() {
           }
         }
 
+        const localFaq = localStorage.getItem("ppdb_faq_config");
+        if (localFaq) {
+          try {
+            setFaqList(JSON.parse(localFaq));
+          } catch (e) {
+            console.error("Gagal parse FAQ dari localStorage", e);
+          }
+        }
+
         const res = await fetch("http://localhost:5000/api/config");
         const data = await res.json();
         
@@ -276,6 +310,7 @@ export default function Home() {
           if (config.ppdb_wa_group_url) setWaGroupUrl(config.ppdb_wa_group_url);
           if (config.ppdb_wa_admin) setWaAdmin(config.ppdb_wa_admin);
           if (config.ppdb_alur_config) setAlurList(config.ppdb_alur_config);
+          if (config.ppdb_faq_config) setFaqList(config.ppdb_faq_config);
           
           if (config.ppdb_majors_config && Array.isArray(config.ppdb_majors_config)) {
             const iconMap: Record<string, any> = {
@@ -1113,24 +1148,7 @@ export default function Home() {
           </div>
 
           <div className="space-y-4">
-            {[
-              {
-                q: "Bagaimana cara melakukan pembayaran biaya pendaftaran?",
-                a: "Pembayaran administrasi pendaftaran dapat diselesaikan secara online melalui Virtual Account transfer bank, QRIS, kartu kredit, atau e-wallet menggunakan gerbang pembayaran otomatis (Payment Gateway) yang sudah terintegrasi. Sistem juga menyediakan opsi Transfer Manual dengan mengunggah bukti transfer."
-              },
-              {
-                q: "Apa saja berkas persyaratan fisik yang wajib dibawa ke sekolah?",
-                a: "Calon peserta didik baru diimbau membawa berkas asli dan fotokopi berupa: 1) Kartu Keluarga (KK), 2) KTP Orang Tua (Ayah & Ibu), 3) Akta Kelahiran, 4) Ijazah SMP/sederajat atau Surat Keterangan Lulus (SKL) resmi dilegalisir, dan 5) Pas foto berwarna terbaru ukuran 3x4 sebanyak 3 lembar."
-              },
-              {
-                q: "Apakah ada batasan kuota pendaftaran untuk masing-masing jurusan?",
-                a: "Ya, setiap program kompetensi keahlian memiliki batas kuota tampung maksimal yang diselaraskan dengan ketersediaan fasilitas laboratorium praktikum (misal 100 siswa per jurusan). Pendaftaran untuk jurusan tertentu akan ditutup otomatis ketika kuota terpenuhi. Selesaikan pembayaran segera untuk mengamankan kuota Anda."
-              },
-              {
-                q: "Bagaimana jika saya mengalami kendala teknis saat mengunggah berkas pendaftaran?",
-                a: "Pastikan berkas KK, KTP, Akta, Ijazah, dan Foto yang Anda unggah bertipe gambar (PNG, JPG, atau JPEG) dengan ukuran maksimal masing-masing 2MB. Jika unggahan terus mengalami kegagalan, pastikan koneksi internet Anda stabil, bersihkan cache browser, atau langsung konsultasikan ke tim IT panitia PPDB kami."
-              }
-            ].map((faq, idx) => {
+            {faqList.map((faq, idx) => {
               const isOpen = activeFaq === idx;
               return (
                 <div 

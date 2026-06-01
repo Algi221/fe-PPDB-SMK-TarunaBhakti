@@ -214,11 +214,43 @@ export default function ClassDivisionManagement() {
 
       const selectedMajorName = majorNameMap[selectedMajor] || selectedMajor;
       
-      const isMajorMatch = 
-        maj1.includes(selectedMajor) || 
-        maj1.includes(selectedMajorName) ||
-        (selectedMajor === "BC" && (maj1.includes("BROADCASTING") || maj1.includes("PERFILMAN"))) ||
-        (selectedMajor === "TJKT" && (maj1.includes("JARINGAN") || maj1.includes("TELEKOMUNIKASI")));
+      let isMajorMatch = false;
+      if (selectedMajor === "RPL") {
+        isMajorMatch = 
+          maj1 === "RPL" || 
+          maj1 === "PPLG" || 
+          maj1.includes("REKAYASA PERANGKAT LUNAK") || 
+          maj1.includes("PENGEMBANGAN PERANGKAT LUNAK");
+      } else if (selectedMajor === "TJKT") {
+        isMajorMatch = 
+          maj1 === "TJKT" || 
+          maj1 === "TKJ" || 
+          maj1.includes("JARINGAN") || 
+          maj1.includes("TELEKOMUNIKASI") || 
+          maj1.includes("TJKT");
+      } else if (selectedMajor === "DKV") {
+        isMajorMatch = 
+          maj1 === "DKV" || 
+          maj1.includes("DESAIN KOMUNIKASI VISUAL");
+      } else if (selectedMajor === "BC") {
+        isMajorMatch = 
+          maj1 === "BC" || 
+          maj1.includes("BROADCASTING") || 
+          maj1.includes("PERFILMAN");
+      } else if (selectedMajor === "ANM") {
+        isMajorMatch = 
+          maj1 === "ANM" || 
+          maj1.includes("ANIMASI");
+      } else if (selectedMajor === "TE") {
+        isMajorMatch = 
+          maj1 === "TE" || 
+          maj1 === "TEI" || 
+          maj1 === "TEKNIK ELEKTRONIKA" || 
+          maj1.includes("ELEKTRONIKA") || 
+          maj1.includes("TEI");
+      } else {
+        isMajorMatch = maj1 === selectedMajor || maj1 === selectedMajorName;
+      }
 
       return isMajorMatch;
     });
