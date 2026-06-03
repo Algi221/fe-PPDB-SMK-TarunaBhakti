@@ -657,8 +657,8 @@ export default function ApplicantsDirectory() {
                   >
                     <td className="py-4 px-6 pl-8">
                       <div className="font-extrabold text-slate-850 dark:text-white text-sm">{a.nama}</div>
-                      <span className="text-[9px] text-slate-400 dark:text-slate-550 font-bold tracking-wide uppercase mt-0.5 block">
-                        Daftar: {new Date(a.tgl_daftar || a.createdAt || Date.now()).toLocaleDateString("id-ID")} · Lahir: {a.tempat_lahir || a.tempatLahir || "-"}, {a.tgl_lahir || a.tglLahir || "-"}
+                      <span className="text-[9px] text-slate-400 dark:text-slate-555 font-bold tracking-wide uppercase mt-0.5 block">
+                        Daftar: {new Date(a.tgl_daftar || a.createdAt || Date.now()).toLocaleDateString("id-ID")} · {a.gelombang || "Gelombang 1"} · Lahir: {a.tempat_lahir || a.tempatLahir || "-"}, {a.tgl_lahir || a.tglLahir || "-"}
                       </span>
                     </td>
                     <td className="py-4 px-6 text-slate-600 dark:text-slate-400 font-semibold">{a.sekolah_asal || a.sekolahAsal}</td>
@@ -1516,6 +1516,7 @@ export default function ApplicantsDirectory() {
                   section: "Akademik & Jurusan", icon: <Layers size={14} />, fields: [
                     { label: "Sekolah Asal", key: "sekolah_asal" },
                     { label: "Tanggal Lulus", key: "tgl_lulus", type: "date" },
+                    { label: "Gelombang", key: "gelombang", type: "select", options: ["Gelombang 1", "Gelombang 2"] },
                     { label: "Jurusan Pilihan 1", key: "jurusan_1", type: "select", options: ["Rekayasa Perangkat Lunak", "Teknik Jaringan Komputer & Telekomunikasi", "Desain Komunikasi Visual", "Broadcasting & Perfilman", "Teknik Elektronika", "Animasi"] },
                     { label: "Jurusan Pilihan 2", key: "jurusan_2", type: "select", options: ["Rekayasa Perangkat Lunak", "Teknik Jaringan Komputer & Telekomunikasi", "Desain Komunikasi Visual", "Broadcasting & Perfilman", "Teknik Elektronika", "Animasi"] },
                     { label: "Alasan Memilih", key: "alasan_memilih" },

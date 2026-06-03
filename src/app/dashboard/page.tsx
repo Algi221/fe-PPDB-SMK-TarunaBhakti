@@ -15,6 +15,7 @@ interface MajorItem {
 export default function DashboardOverview() {
   const { applicants } = usePPDB();
   const [hoveredSegment, setHoveredSegment] = useState<number | null>(null);
+  const [chartType, setChartType] = useState<"donut" | "bar">("donut");
 
   // Compute metrics
   const totalCount = applicants.length;
@@ -361,61 +362,104 @@ export default function DashboardOverview() {
           </div>
         </div>
 
-        {/* Major Distribution Donut Chart */}
+        {/* Major Distribution Donut & Bar Chart */}
         <div className="bg-white dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800/40 rounded-3xl p-6 shadow-[0_2px_12px_rgba(0,0,0,0.02)] flex flex-col justify-between transition-colors duration-300">
-          <div>
-            <h3 className="text-xs font-black text-slate-800 dark:text-white tracking-wider uppercase">Sebaran Jurusan</h3>
-            <p className="text-[11px] text-slate-400 dark:text-slate-500 font-bold">Perbandingan minat pilihan program keahlian utama</p>
-          </div>
-
-          <div className="flex items-center justify-center my-6 relative">
-            <svg width="140" height="140" viewBox="0 0 42 42" className="transform -rotate-90">
-              <circle cx="21" cy="21" r="15.915" fill="transparent" stroke="currentColor" className="text-slate-50 dark:text-slate-800/40" strokeWidth="4" />
-              {donutData.map((d, idx) => {
-                if (d.percent === 0) return null;
-                const strokeDashValue = `${d.percent} ${100 - d.percent}`;
-                const strokeDashOffset = 100 - d.startPercent;
-                return (
-                  <circle
-                    key={idx}
-                    cx="21"
-                    cy="21"
-                    r="15.915"
-                    fill="transparent"
-                    stroke={d.color}
-                    strokeWidth={hoveredSegment === idx ? 5 : 4}
-                    strokeDasharray={strokeDashValue}
-                    strokeDashoffset={strokeDashOffset}
-                    className="transition-all duration-300 cursor-pointer"
-                    onMouseEnter={() => setHoveredSegment(idx)}
-                    onMouseLeave={() => setHoveredSegment(null)}
-                  />
-                );
-              })}
-            </svg>
-            <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-              <span className="text-[9px] text-slate-400 dark:text-slate-500 font-bold uppercase tracking-wider">Total</span>
-              <span className="text-2xl font-black text-slate-800 dark:text-white leading-none mt-0.5">{totalCount}</span>
+          <div className="flex justify-between items-start mb-4">
+            <div>
+              <h3 className="text-xs font-black text-slate-800 dark:text-white tracking-wider uppercase">Sebaran Jurusan</h3>
+              <p className="text-[11px] text-slate-400 dark:text-slate-550 font-bold">Perbandingan minat pilihan program keahlian utama</p>
+            </div>
+            
+            {/* Toggle Donut / Bar Chart */}
+            <div className="flex bg-slate-100 dark:bg-slate-950 p-1 rounded-xl border border-slate-200/45 dark:border-white/5 shrink-0 shadow-inner">
+              {(["donut", "bar"] as const).map((type) => (
+                <button
+                  key={type}
+                  onClick={() => setChartType(type)}
+                  className={`px-2 py-1 rounded-lg text-[8px] font-black uppercase tracking-wider transition-all ${
+                    chartType === type
+                      ? "bg-white dark:bg-slate-900 text-blue-600 dark:text-white shadow-sm border border-slate-200/20"
+                      : "text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white"
+                  }`}
+                >
+                  {type === "donut" ? "Donut" : "Batang"}
+                </button>
+              ))}
             </div>
           </div>
 
-          {/* Color Legend list */}
-          <div className="grid grid-cols-2 gap-1 text-xs font-bold">
-            {donutData.map((d, idx) => (
-              <div
-                key={idx}
-                className={`flex items-center gap-2 p-1 rounded-xl border border-transparent transition-all ${
-                  hoveredSegment === idx ? "bg-slate-50 dark:bg-white/5" : ""
-                }`}
-                onMouseEnter={() => setHoveredSegment(idx)}
-                onMouseLeave={() => setHoveredSegment(null)}
-              >
-                <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: d.color }} />
-                <span className="text-slate-500 dark:text-slate-400 text-[10px] truncate flex-1 font-semibold">{d.name}</span>
-                <span className="text-slate-800 dark:text-white text-[10px] font-extrabold pr-1">{d.percent}%</span>
+          {chartType === "donut" ? (
+            <>
+              <div className="flex items-center justify-center my-6 relative">
+                <svg width="140" height="140" viewBox="0 0 42 42" className="transform -rotate-90">
+                  <circle cx="21" cy="21" r="15.915" fill="transparent" stroke="currentColor" className="text-slate-50 dark:text-slate-800/40" strokeWidth="4" />
+                  {donutData.map((d, idx) => {
+                    if (d.percent === 0) return null;
+                    const strokeDashValue = `${d.percent} ${100 - d.percent}`;
+                    const strokeDashOffset = 100 - d.startPercent;
+                    return (
+                      <circle
+                        key={idx}
+                        cx="21"
+                        cy="21"
+                        r="15.915"
+                        fill="transparent"
+                        stroke={d.color}
+                        strokeWidth={hoveredSegment === idx ? 5 : 4}
+                        strokeDasharray={strokeDashValue}
+                        strokeDashoffset={strokeDashOffset}
+                        className="transition-all duration-300 cursor-pointer"
+                        onMouseEnter={() => setHoveredSegment(idx)}
+                        onMouseLeave={() => setHoveredSegment(null)}
+                      />
+                    );
+                  })}
+                </svg>
+                <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+                  <span className="text-[9px] text-slate-400 dark:text-slate-500 font-bold uppercase tracking-wider">Total</span>
+                  <span className="text-2xl font-black text-slate-800 dark:text-white leading-none mt-0.5">{totalCount}</span>
+                </div>
               </div>
-            ))}
-          </div>
+
+              {/* Color Legend list */}
+              <div className="grid grid-cols-2 gap-1 text-xs font-bold">
+                {donutData.map((d, idx) => (
+                  <div
+                    key={idx}
+                    className={`flex items-center gap-2 p-1 rounded-xl border border-transparent transition-all ${
+                      hoveredSegment === idx ? "bg-slate-50 dark:bg-white/5" : ""
+                    }`}
+                    onMouseEnter={() => setHoveredSegment(idx)}
+                    onMouseLeave={() => setHoveredSegment(null)}
+                  >
+                    <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: d.color }} />
+                    <span className="text-slate-500 dark:text-slate-400 text-[10px] truncate flex-1 font-semibold">{d.name}</span>
+                    <span className="text-slate-800 dark:text-white text-[10px] font-extrabold pr-1">{d.percent}%</span>
+                  </div>
+                ))}
+              </div>
+            </>
+          ) : (
+            <div className="space-y-4 my-6 flex-1 flex flex-col justify-center">
+              {donutData.map((d, idx) => (
+                <div key={idx} className="space-y-1 text-left">
+                  <div className="flex justify-between text-[10px] font-bold uppercase tracking-wider">
+                    <span className="text-slate-700 dark:text-slate-350">{d.name}</span>
+                    <span className="text-slate-500 dark:text-slate-400">{d.count} Siswa ({d.percent}%)</span>
+                  </div>
+                  <div className="w-full bg-slate-100 dark:bg-slate-800 h-2.5 rounded-full overflow-hidden relative border border-slate-200/40 dark:border-white/5">
+                    <div 
+                      className="h-full rounded-full transition-all duration-500 ease-out" 
+                      style={{ 
+                        width: `${d.percent}%`,
+                        backgroundColor: d.color 
+                      }} 
+                    />
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
 
       </div>

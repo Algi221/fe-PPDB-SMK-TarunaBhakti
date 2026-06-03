@@ -15,8 +15,10 @@ import {
   ShieldCheck,
   Eye,
   EyeOff,
-  ShieldAlert
+  ShieldAlert,
+  Calendar
 } from "lucide-react";
+import DateRangeCalendar from "@/components/DateRangeCalendar";
 
 export default function SimulationSettings() {
   const { 
@@ -40,10 +42,82 @@ export default function SimulationSettings() {
   const [isChangingPassword, setIsChangingPassword] = useState(false);
   const [passwordError, setPasswordError] = useState("");
 
+  // PPDB Gelombang Config state
+  const [gelombangConfig, setGelombangConfig] = useState<{
+    gelombang1: { start: string; end: string };
+    gelombang2: { start: string; end: string };
+  }>({
+    gelombang1: { start: "", end: "" },
+    gelombang2: { start: "", end: "" }
+  });
+  const [g1Error, setG1Error] = useState<string | null>(null);
+  const [g2Error, setG2Error] = useState<string | null>(null);
+  const [isSavingGelombang, setIsSavingGelombang] = useState(false);
+
   // Load preferences on mount
   useEffect(() => {
     setMounted(true);
+    fetchGelombangConfig();
   }, []);
+
+  const fetchGelombangConfig = async () => {
+    try {
+      const BACKEND_URL = typeof window !== 'undefined' ? `http://${window.location.hostname}:5000` : "http://localhost:5000";
+      const res = await fetch(`${BACKEND_URL}/api/config`);
+      const json = await res.json();
+      if (json.success && json.data && json.data.ppdb_gelombang_config) {
+        const conf = json.data.ppdb_gelombang_config;
+        setGelombangConfig({
+          gelombang1: conf.gelombang1 || { start: "", end: "" },
+          gelombang2: conf.gelombang2 || { start: "", end: "" }
+        });
+      }
+    } catch (e) {
+      console.error("Gagal mengambil konfigurasi gelombang:", e);
+    }
+  };
+
+  const handleSaveGelombang = async () => {
+    setIsSavingGelombang(true);
+    try {
+      const BACKEND_URL = typeof window !== 'undefined' ? `http://${window.location.hostname}:5000` : "http://localhost:5000";
+      const token = adminToken || localStorage.getItem("ppdb_admin_token");
+      
+      const res = await fetch(`${BACKEND_URL}/api/config`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          key: "ppdb_gelombang_config",
+          value: gelombangConfig
+        })
+      });
+
+      const data = await res.json();
+      if (res.ok && data.success) {
+        if (typeof addToast === "function") {
+          addToast(
+            "Konfigurasi Disimpan",
+            "Pengaturan rentang tanggal gelombang berhasil disimpan.",
+            "success"
+          );
+        }
+      } else {
+        if (typeof addToast === "function") {
+          addToast("Gagal", data.message || "Gagal menyimpan konfigurasi gelombang.", "warning");
+        }
+      }
+    } catch (err) {
+      console.error(err);
+      if (typeof addToast === "function") {
+        addToast("Error", "Gagal menghubungi server backend.", "danger");
+      }
+    } finally {
+      setIsSavingGelombang(false);
+    }
+  };
 
   const handleSimulate = async () => {
     try {
@@ -327,7 +401,7 @@ export default function SimulationSettings() {
               </div>
 
               {/* Warning / Tips alert */}
-              <div className="p-4 rounded-2xl bg-amber-500/5 dark:bg-amber-500/10 border border-amber-500/20 text-slate-700 dark:text-amber-350 text-xs font-semibold leading-relaxed">
+              <div className="p-4 rounded-2xl bg-amber-500/5 dark:bg-amber-500/10 border border-amber-500/20 text-slate-700 dark:text-amber-355 text-xs font-semibold leading-relaxed">
                 <h5 className="font-extrabold text-[10px] uppercase tracking-wider mb-2 flex items-center gap-1.5 text-amber-600 dark:text-amber-400">
                   💡 Informasi Tips Pengujian
                 </h5>
@@ -339,6 +413,83 @@ export default function SimulationSettings() {
                   <li>Cobalah tolak berkas pendaftar tersebut di dashboard admin, dan Anda akan melihat baris nama siswa tersebut di beranda utama <strong className="text-rose-500 dark:text-white font-bold">seketika memudar dan menghilang (fade-out) secara halus!</strong></li>
                 </ul>
               </div>
+            </div>
+          </div>
+
+          {/* Pengaturan Gelombang Pendaftaran Card */}
+          <div className="bg-white dark:bg-slate-900 border border-slate-200/85 dark:border-slate-800/60 rounded-3xl p-6 md:p-8 shadow-[0_4px_20px_rgba(0,0,0,0.02)] transition-colors duration-300 relative overflow-hidden">
+            <div className="absolute top-[-10%] right-[-10%] w-[250px] h-[250px] rounded-full bg-blue-500/5 blur-[80px] pointer-events-none"></div>
+
+            <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800/60 pb-5 mb-6">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-2xl bg-blue-50 dark:bg-blue-950/40 border border-blue-100 dark:border-blue-900/35 flex items-center justify-center text-blue-600 dark:text-blue-450 shrink-0">
+                  <Calendar size={20} />
+                </div>
+                <div>
+                  <h3 className="text-base font-extrabold text-slate-850 dark:text-white tracking-tight">
+                    Pengaturan Gelombang Pendaftaran
+                  </h3>
+                  <p className="text-xs text-slate-455 font-semibold mt-0.5">
+                    Atur rentang tanggal pendaftaran untuk Gelombang 1 dan Gelombang 2
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Gelombang 1 */}
+              <DateRangeCalendar
+                label="Gelombang 1"
+                startValue={gelombangConfig.gelombang1.start}
+                endValue={gelombangConfig.gelombang1.end}
+                onSelectRange={(start, end) => {
+                  setGelombangConfig(prev => ({
+                    ...prev,
+                    gelombang1: { start, end }
+                  }));
+                }}
+                excludeRange={gelombangConfig.gelombang2.start && gelombangConfig.gelombang2.end ? gelombangConfig.gelombang2 : null}
+                error={g1Error}
+                setError={setG1Error}
+              />
+
+              {/* Gelombang 2 */}
+              <DateRangeCalendar
+                label="Gelombang 2"
+                startValue={gelombangConfig.gelombang2.start}
+                endValue={gelombangConfig.gelombang2.end}
+                onSelectRange={(start, end) => {
+                  setGelombangConfig(prev => ({
+                    ...prev,
+                    gelombang2: { start, end }
+                  }));
+                }}
+                excludeRange={gelombangConfig.gelombang1.start && gelombangConfig.gelombang1.end ? gelombangConfig.gelombang1 : null}
+                error={g2Error}
+                setError={setG2Error}
+              />
+            </div>
+
+            {/* Save Button */}
+            <div className="pt-6 border-t border-slate-100 dark:border-slate-800/60 mt-6 flex justify-end">
+              <button
+                type="button"
+                onClick={handleSaveGelombang}
+                disabled={isSavingGelombang || !!g1Error || !!g2Error}
+                className="px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-500 hover:brightness-110 text-white rounded-2xl text-xs font-bold tracking-wider uppercase transition-all shadow-[0_4px_15_rgba(59,130,246,0.15)] hover:shadow-[0_4px_20_rgba(59,130,246,0.25)] active:scale-[0.98] disabled:opacity-50 flex items-center gap-2 cursor-pointer font-black"
+              >
+                {isSavingGelombang ? (
+                  <>
+                    <RefreshCw size={14} className="animate-spin" />
+                    Menyimpan...
+                  </>
+                ) : (
+                  <>
+                    <Calendar size={14} />
+                    Simpan Rentang Gelombang
+                  </>
+                )}
+              </button>
             </div>
           </div>
 

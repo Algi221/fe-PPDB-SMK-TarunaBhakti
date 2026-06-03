@@ -92,29 +92,9 @@ const DEFAULT_ALUR: AlurItem[] = [
 
 export default function Home() {
   const { publicApplicants, wsStatus } = usePPDB();
-  const [rosterSearch, setRosterSearch] = useState("");
-  const [selectedRosterClass, setSelectedRosterClass] = useState("Semua");
-  const [rosterPage, setRosterPage] = useState(1);
-
-  useEffect(() => {
-    setRosterPage(1);
-  }, [selectedRosterClass, rosterSearch]);
-
   // Navigation & UI States
   const [isNavbarScrolled, setIsNavbarScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [isClassDropdownOpen, setIsClassDropdownOpen] = useState(false);
-  const dropdownRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    function handleClickOutside(event: MouseEvent) {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
-        setIsClassDropdownOpen(false);
-      }
-    }
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
 
   // Modals
   const [activeModal, setActiveModal] = useState<string | null>(null);
@@ -381,150 +361,7 @@ export default function Home() {
     };
   }, []);
 
-  // ============================================================
-  // Binary Search Tree (BST) Implementation
-  // Search fields: inisial nama, jurusan, asal sekolah, kelas
-  // ============================================================
-  interface BSTNode {
-    key: string;       // composite sort key
-    id: number;
-    left: BSTNode | null;
-    right: BSTNode | null;
-  }
 
-  function bstInsert(root: BSTNode | null, node: BSTNode): BSTNode {
-    if (!root) return node;
-    if (node.key < root.key) root.left = bstInsert(root.left, node);
-    else root.right = bstInsert(root.right, node);
-    return root;
-  }
-
-  // In-order traversal collecting ids whose key contains the query prefix
-  function bstSearch(root: BSTNode | null, query: string, results: number[]): void {
-    if (!root) return;
-    bstSearch(root.left, query, results);
-    if (root.key.includes(query)) results.push(root.id);
-    bstSearch(root.right, query, results);
-  }
-
-  // Memoized Roster filters & unique class list
-  const [uniqueRosterClasses, setUniqueRosterClasses] = useState<string[]>([]);
-
-  useEffect(() => {
-    const classesSet = new Set<string>();
-
-    // 1. Pre-populate with standard SMK classes
-    const standardClasses = [
-      "X RPL 1", "X RPL 2", "X RPL 3",
-      "X TJKT 1", "X TJKT 2", "X TJKT 3",
-      "X DKV 1", "X DKV 2", "X DKV 3",
-      "X BC 1", "X BC 2",
-      "X TE 1", "X TE 2",
-      "X ANM 1", "X ANM 2"
-    ];
-    standardClasses.forEach(c => classesSet.add(c));
-
-    // 2. Load from localStorage (classes created by admin)
-    const savedClasses = localStorage.getItem("ppdb_classes_config");
-    if (savedClasses) {
-      try {
-        const parsed = JSON.parse(savedClasses);
-        if (Array.isArray(parsed)) {
-          parsed.forEach((c: any) => classesSet.add(c.name));
-        }
-      } catch (e) {
-        // Ignore JSON error
-      }
-    }
-
-    // 3. Extract dynamically assigned classes
-    publicApplicants.forEach((a: any) => {
-      const cls = a.diterima_kelas || a.diterimaKelas;
-      if (cls) classesSet.add(cls);
-    });
-
-    const merged = Array.from(classesSet)
-      .filter(name => name && name.trim().length > 2) // Filter out garbage like "X"
-      .sort();
-
-    setUniqueRosterClasses(merged);
-  }, [publicApplicants]);
-
-  const groupedClasses = useMemo(() => {
-    const groups: { [key: string]: string[] } = {};
-
-    uniqueRosterClasses.forEach(cls => {
-      // Extract major code, usually the second word (e.g. "X RPL 1" -> "RPL")
-      const parts = cls.split(" ");
-      let groupName = "Lainnya";
-
-      if (parts.length >= 2) {
-        const code = parts[1];
-        // Match with majors
-        const foundMajor = majors.find(m => m.code === code);
-        groupName = foundMajor ? foundMajor.title : code;
-      }
-
-      if (!groups[groupName]) groups[groupName] = [];
-      groups[groupName].push(cls);
-    });
-
-    return groups;
-  }, [uniqueRosterClasses, majors]);
-
-  const filteredRosterStudents = useMemo(() => {
-    // Helper untuk membuat kunci pencarian BST
-    const buildKey = (a: any) => {
-      const nama = (a.nama || "").toLowerCase();
-      const initial = nama.charAt(0);
-      const jurusan = (a.jurusan_1 || a.jurusan1 || "").toLowerCase();
-      const sekolah = (a.sekolah_asal || a.sekolahAsal || "").toLowerCase();
-      const kelas = (a.diterima_kelas || a.diterimaKelas || "").toLowerCase();
-      return `${initial}|${jurusan}|${sekolah}|${kelas}`;
-    };
-
-    const validApplicants = publicApplicants.filter((a: any) => {
-      const hasClass = a.diterima_kelas || a.diterimaKelas;
-      const isApproved = a.status === "Approved";
-      return isApproved && hasClass;
-    });
-
-    let bstRoot: BSTNode | null = null;
-    validApplicants.forEach((a: any) => {
-      bstRoot = bstInsert(bstRoot, {
-        key: buildKey(a),
-        id: a.id,
-        left: null,
-        right: null,
-      });
-    });
-
-    const query = rosterSearch.toLowerCase().trim();
-    let matchedIds = new Set<number>();
-
-    if (query) {
-      const results: number[] = [];
-      bstSearch(bstRoot, query, results);
-      matchedIds = new Set(results);
-    }
-
-    return validApplicants.filter((a: any) => {
-      const matchesSearch = !query || matchedIds.has(a.id);
-
-      if (selectedRosterClass === "Semua") return matchesSearch;
-
-      const cls = a.diterima_kelas || a.diterimaKelas || "";
-      return matchesSearch && cls === selectedRosterClass;
-    });
-  }, [publicApplicants, rosterSearch, selectedRosterClass]);
-
-  const itemsPerPage = 10;
-  const paginatedRosterStudents = useMemo(() => {
-    const start = (rosterPage - 1) * itemsPerPage;
-    return filteredRosterStudents.slice(start, start + itemsPerPage);
-  }, [filteredRosterStudents, rosterPage]);
-
-  const totalRosterPages = Math.ceil(filteredRosterStudents.length / itemsPerPage) || 1;
 
   // majors is now a dynamic state variable loaded from localStorage on mount.
 
@@ -920,6 +757,8 @@ export default function Home() {
           </div>
         </ScrollFloat>
       </section>
+
+
 
       {/* KEMITRAAN INDUSTRI */}
       <section id="kemitraan" className="py-24 max-w-6xl mx-auto px-6 relative z-10 border-t border-slate-200/30">

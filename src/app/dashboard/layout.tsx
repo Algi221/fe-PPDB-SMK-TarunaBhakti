@@ -96,154 +96,257 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           onClick={() => setIsMobileMenuOpen(false)}
         />
       )}
-      <aside className={`${isCollapsed ? "w-20" : "w-64"} fixed inset-y-0 left-0 z-50 md:sticky md:top-0 h-screen bg-white dark:bg-slate-900 border-r border-slate-200/60 dark:border-slate-800/40 flex flex-col shrink-0 transition-transform duration-300 ${isMobileMenuOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"}`}>
+      <aside className={`fixed inset-y-0 left-0 z-50 md:sticky md:top-0 h-screen bg-white dark:bg-slate-900 border-r border-slate-200/60 dark:border-slate-800/40 flex flex-col shrink-0 transition-all duration-300 ease-in-out ${
+        isCollapsed ? "w-20" : "w-64"
+      } ${
+        isMobileMenuOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"
+      }`}>
+        {/* Toggle Collapse Button (Desktop Only) */}
+        <button
+          onClick={handleToggleCollapse}
+          className="hidden md:flex absolute top-[24px] -right-4 w-8 h-8 rounded-full border border-slate-200 dark:border-slate-800/80 bg-white dark:bg-slate-900 text-slate-500 hover:text-blue-500 dark:text-slate-400 dark:hover:text-blue-400 items-center justify-center transition-all duration-300 shadow-sm z-50 hover:scale-110 cursor-pointer"
+          title={isCollapsed ? "Perluas Sidebar" : "Sembunyikan Sidebar"}
+        >
+          {isCollapsed ? <ChevronRight size={16} /> : <ChevronLeft size={16} />}
+        </button>
+
         {/* Brand Header */}
-        <div className={`p-4 ${isCollapsed ? "flex flex-col items-center gap-3" : "flex items-center justify-between"} border-b border-slate-200/80 dark:border-slate-800/60 min-h-[73px]`}>
-          <Link href="/dashboard" className="flex items-center gap-3 group justify-center">
+        <div className={`py-4 flex items-center border-b border-slate-200/80 dark:border-slate-800/60 min-h-[73px] transition-all duration-300 ${
+          isCollapsed ? "px-[22px]" : "px-4"
+        }`}>
+          <Link href="/dashboard" className="flex items-center group">
             <img
               src="/logo_smktb.png"
               alt="Logo SMK Taruna Bhakti"
               className="w-9 h-9 object-contain shrink-0 transition-transform duration-300 group-hover:scale-105"
             />
-            {!isCollapsed && (
-              <div className="animate-in fade-in duration-300">
-                <h2 className="text-sm font-black tracking-wider leading-none text-slate-800 dark:text-white uppercase">SMK TB</h2>
-                <span className="text-[10px] text-blue-600 dark:text-blue-400 font-bold uppercase tracking-widest mt-1 block">PPDB Admin Portal</span>
-              </div>
-            )}
+            <div className={`transition-all duration-300 ease-in-out overflow-hidden flex flex-col min-w-0 ${
+              isCollapsed ? "max-w-0 opacity-0 ml-0" : "max-w-[150px] opacity-100 ml-3"
+            }`}>
+              <h2 className="text-sm font-black tracking-wider leading-none text-slate-800 dark:text-white uppercase whitespace-nowrap">SMK TB</h2>
+              <span className="text-[10px] text-blue-600 dark:text-blue-400 font-bold uppercase tracking-widest mt-1 block whitespace-nowrap">PPDB Admin Portal</span>
+            </div>
           </Link>
-          <button
-            onClick={handleToggleCollapse}
-            className="w-7 h-7 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-blue-50 dark:hover:bg-blue-900/40 text-slate-500 dark:text-slate-400 flex items-center justify-center transition-colors"
-          >
-            {isCollapsed ? <ChevronRight size={14} /> : <ChevronLeft size={14} />}
-          </button>
         </div>
 
         {/* Navigation Links */}
-        <nav className={`flex-1 ${isCollapsed ? "px-2" : "px-4"} py-6 space-y-1.5 overflow-y-auto`}>
+        <nav className={`flex-1 py-6 space-y-1.5 overflow-y-auto transition-all duration-300 ${
+          isCollapsed ? "px-2" : "px-4"
+        }`}>
+          {/* KATEGORI 1: MANAJEMEN SISWA */}
+          <div className="flex items-center py-2 overflow-hidden min-h-[32px]">
+            <div className={`flex items-center w-full transition-all duration-300 ${isCollapsed ? "justify-center px-0" : "px-4 gap-2"}`}>
+              <span className={`text-[10px] font-black text-slate-400 dark:text-slate-555 uppercase tracking-widest select-none transition-all duration-300 ease-in-out overflow-hidden whitespace-nowrap ${
+                isCollapsed ? "max-w-0 opacity-0" : "max-w-[150px] opacity-100"
+              }`}>
+                Manajemen Siswa
+              </span>
+              <div className={`h-px bg-slate-200 dark:bg-slate-800/60 transition-all duration-300 ${isCollapsed ? "w-8" : "flex-1"}`} />
+            </div>
+          </div>
+          
           <Link
             href="/dashboard"
-            className={`flex items-center ${isCollapsed ? "justify-center px-2 py-3" : "gap-3 px-4 py-3"} rounded-2xl text-xs font-bold uppercase tracking-wider transition-all border ${pathname === "/dashboard"
+            className={`flex items-center rounded-2xl text-xs font-bold uppercase tracking-wider transition-all duration-300 border ${
+              isCollapsed ? "px-[31px] py-3" : "px-4 py-3"
+            } ${pathname === "/dashboard"
                 ? "bg-blue-50/70 dark:bg-blue-950/40 border-blue-100/80 dark:border-blue-900/40 text-blue-600 dark:text-blue-400 font-extrabold"
                 : "border-transparent text-slate-500 dark:text-slate-400 hover:text-blue-500 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-slate-800/60"
               }`}
             title={isCollapsed ? "Ringkasan" : undefined}
           >
             <LayoutDashboard size={18} className="shrink-0" />
-            {!isCollapsed && <span className="animate-in fade-in duration-300">Ringkasan</span>}
+            <span className={`transition-all duration-300 ease-in-out overflow-hidden whitespace-nowrap ${
+              isCollapsed ? "max-w-0 opacity-0 ml-0" : "max-w-[200px] opacity-100 ml-3"
+            }`}>
+              Ringkasan
+            </span>
           </Link>
-
+ 
           <Link
             href="/dashboard/pendaftar"
-            className={`flex items-center ${isCollapsed ? "justify-center px-2 py-3" : "gap-3 px-4 py-3"} rounded-2xl text-xs font-bold uppercase tracking-wider transition-all border ${pathname === "/dashboard/pendaftar"
+            className={`flex items-center rounded-2xl text-xs font-bold uppercase tracking-wider transition-all duration-300 border ${
+              isCollapsed ? "px-[31px] py-3" : "px-4 py-3"
+            } ${pathname === "/dashboard/pendaftar"
                 ? "bg-blue-50/70 dark:bg-blue-950/40 border-blue-100/80 dark:border-blue-900/40 text-blue-600 dark:text-blue-400 font-extrabold"
                 : "border-transparent text-slate-500 dark:text-slate-400 hover:text-blue-500 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-slate-800/60"
               }`}
             title={isCollapsed ? "Data Calon Siswa" : undefined}
           >
             <Users size={18} className="shrink-0" />
-            {!isCollapsed && <span className="animate-in fade-in duration-300 text-left">Data Calon Siswa</span>}
-          </Link>
-
-          <Link
-            href="/dashboard/siswa-aktif"
-            className={`flex items-center ${isCollapsed ? "justify-center px-2 py-3" : "gap-3 px-4 py-3"} rounded-2xl text-xs font-bold uppercase tracking-wider transition-all border ${pathname === "/dashboard/siswa-aktif"
-                ? "bg-blue-50/70 dark:bg-blue-950/40 border-blue-100/80 dark:border-blue-900/40 text-blue-600 dark:text-blue-400 font-extrabold"
-                : "border-transparent text-slate-500 dark:text-slate-400 hover:text-blue-500 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-slate-800/60"
-              }`}
-            title={isCollapsed ? "Siswa Aktif" : undefined}
-          >
-            <GraduationCap size={18} className="shrink-0" />
-            {!isCollapsed && <span className="animate-in fade-in duration-300 text-left">Siswa Aktif</span>}
-          </Link>
-
-          <Link
-            href="/dashboard/informasi"
-            className={`flex items-center ${isCollapsed ? "justify-center px-2 py-3" : "gap-3 px-4 py-3"} rounded-2xl text-xs font-bold uppercase tracking-wider transition-all border ${pathname === "/dashboard/informasi"
-                ? "bg-blue-50/70 dark:bg-blue-950/40 border-blue-100/80 dark:border-blue-900/40 text-blue-600 dark:text-blue-400 font-extrabold"
-                : "border-transparent text-slate-500 dark:text-slate-400 hover:text-blue-500 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-slate-800/60"
-              }`}
-            title={isCollapsed ? "Kelola Informasi" : undefined}
-          >
-            <Megaphone size={18} className="shrink-0" />
-            {!isCollapsed && <span className="animate-in fade-in duration-300 text-left">Kelola Informasi</span>}
-          </Link>
-
-          <Link
-            href="/dashboard/kelola-ui"
-            className={`flex items-center ${isCollapsed ? "justify-center px-2 py-3" : "gap-3 px-4 py-3"} rounded-2xl text-xs font-bold uppercase tracking-wider transition-all border ${pathname === "/dashboard/kelola-ui"
-                ? "bg-blue-50/70 dark:bg-blue-950/40 border-blue-100/80 dark:border-blue-900/40 text-blue-600 dark:text-blue-400 font-extrabold"
-                : "border-transparent text-slate-500 dark:text-slate-400 hover:text-blue-500 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-slate-800/60"
-              }`}
-            title={isCollapsed ? "Kelola User Interface" : undefined}
-          >
-            <Palette size={18} className="shrink-0" />
-            {!isCollapsed && <span className="animate-in fade-in duration-300 text-left">Kelola UI</span>}
+            <span className={`transition-all duration-300 ease-in-out overflow-hidden whitespace-nowrap ${
+              isCollapsed ? "max-w-0 opacity-0 ml-0" : "max-w-[200px] opacity-100 ml-3"
+            }`}>
+              Data Calon Siswa
+            </span>
           </Link>
 
           <Link
             href="/dashboard/pembagian-kelas"
-            className={`flex items-center ${isCollapsed ? "justify-center px-2 py-3" : "gap-3 px-4 py-3"} rounded-2xl text-xs font-bold uppercase tracking-wider transition-all border ${pathname === "/dashboard/pembagian-kelas"
+            className={`flex items-center rounded-2xl text-xs font-bold uppercase tracking-wider transition-all duration-300 border ${
+              isCollapsed ? "px-[31px] py-3" : "px-4 py-3"
+            } ${pathname === "/dashboard/pembagian-kelas"
                 ? "bg-blue-50/70 dark:bg-blue-950/40 border-blue-100/80 dark:border-blue-900/40 text-blue-600 dark:text-blue-400 font-extrabold"
                 : "border-transparent text-slate-500 dark:text-slate-400 hover:text-blue-500 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-slate-800/60"
               }`}
             title={isCollapsed ? "Pembagian Kelas" : undefined}
           >
             <Layers size={18} className="shrink-0" />
-            {!isCollapsed && <span className="animate-in fade-in duration-300 text-left">Pembagian Kelas</span>}
+            <span className={`transition-all duration-300 ease-in-out overflow-hidden whitespace-nowrap ${
+              isCollapsed ? "max-w-0 opacity-0 ml-0" : "max-w-[200px] opacity-100 ml-3"
+            }`}>
+              Pembagian Kelas
+            </span>
+          </Link>
+ 
+          <Link
+            href="/dashboard/siswa-aktif"
+            className={`flex items-center rounded-2xl text-xs font-bold uppercase tracking-wider transition-all duration-300 border ${
+              isCollapsed ? "px-[31px] py-3" : "px-4 py-3"
+            } ${pathname === "/dashboard/siswa-aktif"
+                ? "bg-blue-50/70 dark:bg-blue-950/40 border-blue-100/80 dark:border-blue-900/40 text-blue-600 dark:text-blue-400 font-extrabold"
+                : "border-transparent text-slate-500 dark:text-slate-400 hover:text-blue-500 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-slate-800/60"
+              }`}
+            title={isCollapsed ? "Siswa Aktif" : undefined}
+          >
+            <GraduationCap size={18} className="shrink-0" />
+            <span className={`transition-all duration-300 ease-in-out overflow-hidden whitespace-nowrap ${
+              isCollapsed ? "max-w-0 opacity-0 ml-0" : "max-w-[200px] opacity-100 ml-3"
+            }`}>
+              Siswa Aktif
+            </span>
           </Link>
 
+          {/* KATEGORI 2: KONTEN PORTAL */}
+          <div className="flex items-center py-2 overflow-hidden min-h-[32px]">
+            <div className={`flex items-center w-full transition-all duration-300 ${isCollapsed ? "justify-center px-0" : "px-4 gap-2"}`}>
+              <span className={`text-[10px] font-black text-slate-400 dark:text-slate-550 uppercase tracking-widest select-none transition-all duration-300 ease-in-out overflow-hidden whitespace-nowrap ${
+                isCollapsed ? "max-w-0 opacity-0" : "max-w-[150px] opacity-100"
+              }`}>
+                Konten Portal
+              </span>
+              <div className={`h-px bg-slate-200 dark:bg-slate-800/60 transition-all duration-300 ${isCollapsed ? "w-8" : "flex-1"}`} />
+            </div>
+          </div>
+ 
+          <Link
+            href="/dashboard/informasi"
+            className={`flex items-center rounded-2xl text-xs font-bold uppercase tracking-wider transition-all duration-300 border ${
+              isCollapsed ? "px-[31px] py-3" : "px-4 py-3"
+            } ${pathname === "/dashboard/informasi"
+                ? "bg-blue-50/70 dark:bg-blue-950/40 border-blue-100/80 dark:border-blue-900/40 text-blue-600 dark:text-blue-400 font-extrabold"
+                : "border-transparent text-slate-500 dark:text-slate-400 hover:text-blue-500 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-slate-800/60"
+              }`}
+            title={isCollapsed ? "Kelola Informasi" : undefined}
+          >
+            <Megaphone size={18} className="shrink-0" />
+            <span className={`transition-all duration-300 ease-in-out overflow-hidden whitespace-nowrap ${
+              isCollapsed ? "max-w-0 opacity-0 ml-0" : "max-w-[200px] opacity-100 ml-3"
+            }`}>
+              Kelola Informasi
+            </span>
+          </Link>
+ 
+          <Link
+            href="/dashboard/kelola-ui"
+            className={`flex items-center rounded-2xl text-xs font-bold uppercase tracking-wider transition-all duration-300 border ${
+              isCollapsed ? "px-[31px] py-3" : "px-4 py-3"
+            } ${pathname === "/dashboard/kelola-ui"
+                ? "bg-blue-50/70 dark:bg-blue-950/40 border-blue-100/80 dark:border-blue-900/40 text-blue-600 dark:text-blue-400 font-extrabold"
+                : "border-transparent text-slate-500 dark:text-slate-400 hover:text-blue-500 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-slate-800/60"
+              }`}
+            title={isCollapsed ? "Kelola User Interface" : undefined}
+          >
+            <Palette size={18} className="shrink-0" />
+            <span className={`transition-all duration-300 ease-in-out overflow-hidden whitespace-nowrap ${
+              isCollapsed ? "max-w-0 opacity-0 ml-0" : "max-w-[200px] opacity-100 ml-3"
+            }`}>
+              Kelola UI
+            </span>
+          </Link>
+
+          {/* KATEGORI 3: SISTEM & PENGATURAN */}
+          <div className="flex items-center py-2 overflow-hidden min-h-[32px]">
+            <div className={`flex items-center w-full transition-all duration-300 ${isCollapsed ? "justify-center px-0" : "px-4 gap-2"}`}>
+              <span className={`text-[10px] font-black text-slate-400 dark:text-slate-555 uppercase tracking-widest select-none transition-all duration-300 ease-in-out overflow-hidden whitespace-nowrap ${
+                isCollapsed ? "max-w-0 opacity-0" : "max-w-[150px] opacity-100"
+              }`}>
+                Pengaturan Sistem
+              </span>
+              <div className={`h-px bg-slate-200 dark:bg-slate-800/60 transition-all duration-300 ${isCollapsed ? "w-8" : "flex-1"}`} />
+            </div>
+          </div>
+ 
           {adminUser?.role === 'superadmin' && (
             <Link
               href="/dashboard/admin"
-              className={`flex items-center ${isCollapsed ? "justify-center px-2 py-3" : "gap-3 px-4 py-3"} rounded-2xl text-xs font-bold uppercase tracking-wider transition-all border ${pathname === "/dashboard/admin"
+              className={`flex items-center rounded-2xl text-xs font-bold uppercase tracking-wider transition-all duration-300 border ${
+                isCollapsed ? "px-[31px] py-3" : "px-4 py-3"
+              } ${pathname === "/dashboard/admin"
                   ? "bg-blue-50/70 dark:bg-blue-950/40 border-blue-100/80 dark:border-blue-900/40 text-blue-600 dark:text-blue-400 font-extrabold"
                   : "border-transparent text-slate-500 dark:text-slate-400 hover:text-blue-500 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-slate-800/60"
                 }`}
               title={isCollapsed ? "Manajemen Admin" : undefined}
             >
               <Shield size={18} className="shrink-0" />
-              {!isCollapsed && <span className="animate-in fade-in duration-300 text-left">Manajemen Admin</span>}
+              <span className={`transition-all duration-300 ease-in-out overflow-hidden whitespace-nowrap ${
+                isCollapsed ? "max-w-0 opacity-0 ml-0" : "max-w-[200px] opacity-100 ml-3"
+              }`}>
+                Manajemen Admin
+              </span>
             </Link>
           )}
-
+ 
           <Link
             href="/dashboard/settings"
-            className={`flex items-center ${isCollapsed ? "justify-center px-2 py-3" : "gap-3 px-4 py-3"} rounded-2xl text-xs font-bold uppercase tracking-wider transition-all border ${pathname === "/dashboard/settings"
+            className={`flex items-center rounded-2xl text-xs font-bold uppercase tracking-wider transition-all duration-300 border ${
+              isCollapsed ? "px-[31px] py-3" : "px-4 py-3"
+            } ${pathname === "/dashboard/settings"
                 ? "bg-blue-50/70 dark:bg-blue-950/40 border-blue-100/80 dark:border-blue-900/40 text-blue-600 dark:text-blue-400 font-extrabold"
                 : "border-transparent text-slate-500 dark:text-slate-400 hover:text-blue-500 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-slate-800/60"
               }`}
             title={isCollapsed ? "Pengaturan" : undefined}
           >
             <Settings size={18} className="shrink-0" />
-            {!isCollapsed && <span className="animate-in fade-in duration-300 text-left">Pengaturan</span>}
+            <span className={`transition-all duration-300 ease-in-out overflow-hidden whitespace-nowrap ${
+              isCollapsed ? "max-w-0 opacity-0 ml-0" : "max-w-[200px] opacity-100 ml-3"
+            }`}>
+              Pengaturan
+            </span>
           </Link>
         </nav>
 
         {/* Sidebar Footer (Admin Profile) */}
-        <div className={`p-4 border-t border-slate-200/60 dark:border-slate-800/40 bg-[#f7f7f7]/40 dark:bg-slate-950/20 flex flex-col gap-3 ${isCollapsed ? "items-center" : ""}`}>
-          <div className={`flex items-center gap-3 ${isCollapsed ? "justify-center" : ""}`}>
+        <div className={`py-4 border-t border-slate-200/60 dark:border-slate-800/40 bg-[#f7f7f7]/40 dark:bg-slate-950/20 flex flex-col gap-3 transition-all duration-300 ${
+          isCollapsed ? "px-[20px] items-center" : "px-4 items-stretch"
+        }`}>
+          <div className="flex items-center transition-all duration-300 w-full">
             <div
               className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-indigo-500/80 to-sky-400/80 flex items-center justify-center font-black text-white shrink-0 shadow-sm"
               title={adminUser?.nama || "Admin TB"}
             >
               {adminUser?.nama ? adminUser.nama.charAt(0).toUpperCase() : "A"}
             </div>
-            {!isCollapsed && (
-              <div className="min-w-0 flex-1 animate-in fade-in duration-300">
-                <h4 className="text-xs font-bold text-slate-800 dark:text-white truncate leading-snug">{adminUser?.nama || "Admin TB"}</h4>
-                <span className="text-[10px] text-slate-400 dark:text-slate-550 font-bold truncate leading-none uppercase tracking-wider block mt-0.5">@{adminUser?.username || "admin_tb"}</span>
-              </div>
-            )}
+            <div className={`transition-all duration-300 ease-in-out overflow-hidden flex flex-col min-w-0 ${
+              isCollapsed ? "max-w-0 opacity-0 ml-0" : "max-w-[150px] opacity-100 ml-3"
+            }`}>
+              <h4 className="text-xs font-bold text-slate-800 dark:text-white truncate leading-snug whitespace-nowrap">{adminUser?.nama || "Admin TB"}</h4>
+              <span className="text-[10px] text-slate-400 dark:text-slate-550 font-bold truncate leading-none uppercase tracking-wider block mt-0.5 whitespace-nowrap">@{adminUser?.username || "admin_tb"}</span>
+            </div>
           </div>
           <button
             onClick={handleLogout}
-            className={`w-full py-2.5 ${isCollapsed ? "px-1.5" : "px-3"} bg-slate-50 hover:bg-rose-500/10 hover:text-rose-600 dark:bg-white/5 dark:hover:bg-rose-500/10 dark:hover:text-rose-300 text-slate-500 dark:text-slate-400 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 border border-slate-200/60 dark:border-white/5 hover:border-rose-500/20`}
+            className={`py-2.5 bg-slate-50 hover:bg-rose-500/10 hover:text-rose-600 dark:bg-white/5 dark:hover:bg-rose-500/10 dark:hover:text-rose-300 text-slate-500 dark:text-slate-400 rounded-xl text-xs font-bold transition-all duration-300 flex items-center justify-center border border-slate-200/60 dark:border-white/5 hover:border-rose-500/20 ${
+              isCollapsed ? "w-10 h-10 px-0" : "w-full px-3"
+            }`}
             title={isCollapsed ? "Keluar Sesi" : undefined}
           >
             <LogOut size={14} className="shrink-0" />
-            {!isCollapsed && <span className="animate-in fade-in duration-300">Keluar Sesi</span>}
+            <span className={`transition-all duration-300 ease-in-out overflow-hidden whitespace-nowrap ${
+              isCollapsed ? "max-w-0 opacity-0 ml-0" : "max-w-[150px] opacity-100 ml-2"
+            }`}>
+              Keluar Sesi
+            </span>
           </button>
         </div>
       </aside>

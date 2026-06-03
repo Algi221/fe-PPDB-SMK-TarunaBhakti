@@ -188,9 +188,9 @@ export default function ActiveStudentsDirectory() {
     }
   }, [selectedApplicant]);
 
-  // 1. Filter applicants who are active/approved
+  // 1. Filter applicants who are active/approved AND have a class assigned
   const activeApplicants = useMemo(() => {
-    return applicants.filter((a: Applicant) => a.status === "Approved");
+    return applicants.filter((a: Applicant) => a.status === "Approved" && !!(a.diterima_kelas || a.diterimaKelas));
   }, [applicants]);
 
   // 2. Apply search and major filters

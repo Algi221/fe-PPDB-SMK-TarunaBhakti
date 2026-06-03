@@ -89,12 +89,30 @@ export default function ClassDivisionManagement() {
 
   // Core filter states
   const [selectedMajor, setSelectedMajor] = useState<string>("RPL");
+  const [selectedGrade, setSelectedGrade] = useState<10 | 11 | 12>(10);
+  const [schoolPeriod, setSchoolPeriod] = useState("2026-2027");
   const [searchTerm, setSearchTerm] = useState("");
   const [assignmentFilter, setAssignmentFilter] = useState<"ALL" | "UNASSIGNED" | "ASSIGNED">("ALL");
 
   // Selection states
   const [selectedStudentIds, setSelectedStudentIds] = useState<number[]>([]);
   const [targetClass, setTargetClass] = useState<string>("");
+
+  // Load school active period on mount
+  useEffect(() => {
+    const fetchConfig = async () => {
+      try {
+        const res = await fetch("http://localhost:5000/api/config");
+        const json = await res.json();
+        if (json.success && json.data && json.data.ppdb_school_period) {
+          setSchoolPeriod(json.data.ppdb_school_period);
+        }
+      } catch (e) {
+        console.error("Gagal mengambil periode akademik:", e);
+      }
+    };
+    fetchConfig();
+  }, []);
 
   // UI state overlays
   const [isLoading, setIsLoading] = useState(false);
@@ -163,22 +181,60 @@ export default function ClassDivisionManagement() {
     }
   }, []);
 
+  const getStudentGrade = (student: Applicant): number => {
+    const studentPeriod = student.periode || "2026-2027";
+    const currentPeriod = schoolPeriod || "2026-2027";
+    
+    try {
+      const studentStart = parseInt(studentPeriod.split("-")[0]);
+      const currentStart = parseInt(currentPeriod.split("-")[0]);
+      if (isNaN(studentStart) || isNaN(currentStart)) return 10;
+      
+      const diff = currentStart - studentStart;
+      if (diff === 0) return 10;
+      if (diff === 1) return 11;
+      if (diff === 2) return 12;
+      if (diff >= 3) return 99; // Lulus
+      return 10;
+    } catch (e) {
+      return 10;
+    }
+  };
+
+  const getStudentCurrentClass = (student: Applicant): string | null => {
+    const baseClass = student.diterima_kelas || student.diterimaKelas;
+    if (!baseClass) return null;
+    
+    const grade = getStudentGrade(student);
+    let cleanClass = baseClass.replace(/^(XII|XI|X)\s+/i, ""); // strip prefix
+    
+    if (grade === 10) return `X ${cleanClass}`;
+    if (grade === 11) return `XI ${cleanClass}`;
+    if (grade === 12) return `XII ${cleanClass}`;
+    if (grade === 99) return `LULUS (${cleanClass})`;
+    return baseClass;
+  };
+
+  const getClassGrade = (className: string): number => {
+    const upper = className.toUpperCase().trim();
+    if (upper.startsWith("XII")) return 12;
+    if (upper.startsWith("XI")) return 11;
+    if (upper.startsWith("X")) return 10;
+    return 10;
+  };
+
   const generateDefaultClasses = (): ClassItem[] => {
     const defaultList: ClassItem[] = [];
     majors.forEach(m => {
-      // e.g. X RPL 1, X RPL 2
-      defaultList.push({
-        id: `${m.code}-1`,
-        name: `X ${m.code} 1`,
-        majorCode: m.code,
-        maxCapacity: 100 // Set high, practically unlimited
-      });
-      defaultList.push({
-        id: `${m.code}-2`,
-        name: `X ${m.code} 2`,
-        majorCode: m.code,
-        maxCapacity: 100
-      });
+      // Grade 10
+      defaultList.push({ id: `X-${m.code}-1`, name: `X ${m.code} 1`, majorCode: m.code, maxCapacity: 100 });
+      defaultList.push({ id: `X-${m.code}-2`, name: `X ${m.code} 2`, majorCode: m.code, maxCapacity: 100 });
+      // Grade 11
+      defaultList.push({ id: `XI-${m.code}-1`, name: `XI ${m.code} 1`, majorCode: m.code, maxCapacity: 100 });
+      defaultList.push({ id: `XI-${m.code}-2`, name: `XI ${m.code} 2`, majorCode: m.code, maxCapacity: 100 });
+      // Grade 12
+      defaultList.push({ id: `XII-${m.code}-1`, name: `XII ${m.code} 1`, majorCode: m.code, maxCapacity: 100 });
+      defaultList.push({ id: `XII-${m.code}-2`, name: `XII ${m.code} 2`, majorCode: m.code, maxCapacity: 100 });
     });
     return defaultList;
   };
@@ -256,14 +312,18 @@ export default function ClassDivisionManagement() {
     });
   }, [applicants, selectedMajor]);
 
-  // Apply Search and Class Assignment Filters
+  // Apply Search, Grade, and Class Assignment Filters
   const filteredStudents = useMemo(() => {
     return approvedApplicantsOfMajor.filter((a: Applicant) => {
+      // Filter by dynamic Grade level
+      const grade = getStudentGrade(a);
+      if (grade !== selectedGrade) return false;
+
       const nameMatch = (a.nama || "").toLowerCase().includes(searchTerm.toLowerCase());
       const nisnMatch = (a.nisn || "").includes(searchTerm);
       const searchMatch = nameMatch || nisnMatch;
 
-      const currentClass = a.diterima_kelas || a.diterimaKelas;
+      const currentClass = getStudentCurrentClass(a);
 
       if (assignmentFilter === "UNASSIGNED") {
         return searchMatch && !currentClass;
@@ -273,14 +333,14 @@ export default function ClassDivisionManagement() {
       }
       return searchMatch;
     });
-  }, [approvedApplicantsOfMajor, searchTerm, assignmentFilter]);
+  }, [approvedApplicantsOfMajor, searchTerm, assignmentFilter, selectedGrade, schoolPeriod]);
 
-  // Group classes by the currently selected major
+  // Group classes by the currently selected major and active grade
   const classesOfSelectedMajor = useMemo(() => {
-    return classes.filter(c => c.majorCode === selectedMajor);
-  }, [classes, selectedMajor]);
+    return classes.filter(c => c.majorCode === selectedMajor && getClassGrade(c.name) === selectedGrade);
+  }, [classes, selectedMajor, selectedGrade]);
 
-  // Compute student count in each class dynamically
+  // Compute student count in each class dynamically based on dynamic class names
   const classEnrollments = useMemo(() => {
     const enrollmentCounts: Record<string, number> = {};
     
@@ -291,14 +351,14 @@ export default function ClassDivisionManagement() {
 
     // Populate
     applicants.forEach((a: Applicant) => {
-      const cls = a.diterima_kelas || a.diterimaKelas;
+      const cls = getStudentCurrentClass(a);
       if (cls && enrollmentCounts[cls] !== undefined) {
         enrollmentCounts[cls]++;
       }
     });
 
     return enrollmentCounts;
-  }, [applicants, classesOfSelectedMajor]);
+  }, [applicants, classesOfSelectedMajor, schoolPeriod]);
 
   // Total summary of assigned classes in selected major
   const totalClassesFilled = useMemo(() => {
@@ -309,7 +369,7 @@ export default function ClassDivisionManagement() {
   const enrolledStudentsInDetail = useMemo(() => {
     if (!selectedClassDetail) return [];
     return applicants.filter((a: Applicant) => {
-      const cls = a.diterima_kelas || a.diterimaKelas;
+      const cls = getStudentCurrentClass(a);
       const isClassMatch = cls === selectedClassDetail.name;
       if (!isClassMatch) return false;
 
@@ -317,7 +377,7 @@ export default function ClassDivisionManagement() {
                             (a.nisn || "").includes(classSearchTerm);
       return matchesSearch;
     });
-  }, [applicants, selectedClassDetail, classSearchTerm]);
+  }, [applicants, selectedClassDetail, classSearchTerm, schoolPeriod]);
 
   // Selection helpers
   const handleSelectAll = () => {
@@ -467,7 +527,14 @@ export default function ClassDivisionManagement() {
       return;
     }
 
-    const cleanName = newClassName.trim().toUpperCase();
+    let prefix = "X";
+    if (selectedGrade === 11) prefix = "XI";
+    if (selectedGrade === 12) prefix = "XII";
+
+    let cleanName = newClassName.trim().toUpperCase();
+    if (!cleanName.startsWith(prefix + " ")) {
+      cleanName = `${prefix} ${cleanName}`;
+    }
 
     // Check duplicate class name
     if (classes.some(c => c.name === cleanName)) {
@@ -523,7 +590,7 @@ export default function ClassDivisionManagement() {
   // Export Class Roster Excel (ExcelJS)
   const handleExportClassCSV = async (className: string) => {
     const classStudents = applicants.filter((a: Applicant) => {
-      const cls = a.diterima_kelas || a.diterimaKelas;
+      const cls = getStudentCurrentClass(a);
       return cls === className;
     });
 
@@ -607,6 +674,143 @@ export default function ClassDivisionManagement() {
     saveAs(blob, `Roster_Kelas_${className.replace(/\s+/g, "_")}_${Date.now()}.xlsx`);
   };
 
+  // Export ALL Classes of Selected Major
+  const handleExportAllClasses = async () => {
+    const classesToExport = classesOfSelectedMajor;
+    if (classesToExport.length === 0) {
+      showToast("Tidak ada kelas untuk diekspor.", "error");
+      return;
+    }
+
+    const workbook = new ExcelJS.Workbook();
+    let totalStudentsExported = 0;
+
+    classesToExport.forEach((c) => {
+      const classStudents = applicants.filter((a: Applicant) => {
+        return getStudentCurrentClass(a) === c.name;
+      });
+
+      // Create a sheet for each class (Excel limit sheet name to 31 chars)
+      const sheetName = c.name.replace(/\s+/g, "_").substring(0, 30);
+      const worksheet = workbook.addWorksheet(sheetName);
+
+      // Add Header rows
+      worksheet.mergeCells('A1:G1');
+      worksheet.mergeCells('A2:G2');
+      worksheet.mergeCells('A3:G3');
+      worksheet.mergeCells('A4:G4');
+
+      worksheet.getCell('A1').value = 'DAFTAR PESERTA DIDIK (ROSTER)';
+      worksheet.getCell('A2').value = `JURUSAN: ${activeMajors.find(m => m.code === selectedMajor)?.name.toUpperCase() || selectedMajor}`;
+      worksheet.getCell('A3').value = `PERIODE AKADEMIK: ${schoolPeriod || '2026-2027'}`;
+      worksheet.getCell('A4').value = `KELAS: ${c.name}`;
+
+      // Style Title block
+      ['A1', 'A2', 'A3', 'A4'].forEach((cellId, idx) => {
+        const cell = worksheet.getCell(cellId);
+        cell.alignment = { horizontal: 'center', vertical: 'middle' };
+        cell.font = {
+          bold: true,
+          name: 'Arial',
+          size: idx === 0 ? 14 : 11,
+          color: { argb: 'FF1F497D' } // Navy blue
+        };
+      });
+
+      worksheet.getRow(1).height = 25;
+      worksheet.getRow(2).height = 20;
+      worksheet.getRow(3).height = 20;
+      worksheet.getRow(4).height = 20;
+      worksheet.getRow(5).height = 10; // blank separator row
+
+      // Table Headers
+      const headerRowIndex = 6;
+      const headerRow = worksheet.getRow(headerRowIndex);
+      headerRow.height = 28;
+
+      const columns = [
+        { header: 'No.', key: 'no', width: 8 },
+        { header: 'Nama Lengkap', key: 'nama', width: 35 },
+        { header: 'NISN', key: 'nisn', width: 18 },
+        { header: 'Sekolah Asal', key: 'sekolah', width: 30 },
+        { header: 'No. WhatsApp', key: 'whatsapp', width: 20 },
+        { header: 'Email', key: 'email', width: 30 },
+        { header: 'Tanggal Masuk Kelas', key: 'tanggal', width: 22 }
+      ];
+
+      worksheet.columns = columns;
+
+      // Write column headers at row 6
+      columns.forEach((col, colIdx) => {
+        const cell = worksheet.getCell(headerRowIndex, colIdx + 1);
+        cell.value = col.header;
+        cell.font = { bold: true, color: { argb: 'FFFFFFFF' } };
+        cell.fill = {
+          type: 'pattern',
+          pattern: 'solid',
+          fgColor: { argb: 'FF366092' } // Slate steel blue
+        };
+        cell.alignment = { vertical: 'middle', horizontal: 'center' };
+        cell.border = {
+          top: { style: 'medium' },
+          bottom: { style: 'medium' },
+          left: { style: 'thin' },
+          right: { style: 'thin' }
+        };
+      });
+
+      // Add data rows starting from row 7
+      classStudents.forEach((s: Applicant, index: number) => {
+        worksheet.addRow({
+          no: index + 1,
+          nama: s.nama || "",
+          nisn: s.nisn || "",
+          sekolah: s.sekolah_asal || s.sekolahAsal || "",
+          whatsapp: s.whatsapp || "",
+          email: s.email || "",
+          tanggal: s.diterima_tanggal || s.diterimaTanggal || ""
+        });
+        totalStudentsExported++;
+      });
+
+      // Style data rows
+      const totalRows = classStudents.length;
+      for (let r = 7; r < 7 + totalRows; r++) {
+        const row = worksheet.getRow(r);
+        row.height = 22;
+        row.eachCell((cell, colIdx) => {
+          cell.border = {
+            top: { style: 'thin' },
+            bottom: { style: 'thin' },
+            left: { style: 'thin' },
+            right: { style: 'thin' }
+          };
+          cell.font = { name: 'Arial', size: 10 };
+          
+          // Alternating row background (zebra striping)
+          if (r % 2 === 0) {
+            cell.fill = {
+              type: 'pattern',
+              pattern: 'solid',
+              fgColor: { argb: 'FFF2F5F9' } // very light blue/gray
+            };
+          }
+
+          if ([1, 3, 5, 7].includes(colIdx)) {
+            cell.alignment = { vertical: 'middle', horizontal: 'center' };
+          } else {
+            cell.alignment = { vertical: 'middle', horizontal: 'left', indent: 1 };
+          }
+        });
+      }
+    });
+
+    const buffer = await workbook.xlsx.writeBuffer();
+    const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+    saveAs(blob, `Roster_Semua_Kelas_${selectedMajor}_${schoolPeriod || '2026-2027'}.xlsx`);
+    showToast(`Berhasil mengekspor semua kelas jurusan ${selectedMajor} (${totalStudentsExported} siswa)!`, "success");
+  };
+
   if (!mounted) return null;
 
   return (
@@ -661,14 +865,14 @@ export default function ClassDivisionManagement() {
 
         {/* Metric 1: Total Classes */}
         <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800/60 rounded-3xl p-6 shadow-[0_2px_12px_rgba(0,0,0,0.02)] flex flex-col justify-center transition-colors duration-300 text-left">
-          <span className="text-[9px] text-slate-400 dark:text-slate-500 font-black uppercase tracking-widest">Rombel Terbentuk (X {selectedMajor})</span>
-          <span className="text-2xl font-black text-slate-800 dark:text-white mt-1">{classesOfSelectedMajor.length} <span className="text-xs text-slate-450 font-bold">Kelas</span></span>
+          <span className="text-[9px] text-slate-400 dark:text-slate-550 font-black uppercase tracking-widest">Rombel Terbentuk (Kelas {selectedGrade} {selectedMajor})</span>
+          <span className="text-2xl font-black text-slate-800 dark:text-white mt-1">{classesOfSelectedMajor.length} <span className="text-xs text-slate-455 font-bold">Kelas</span></span>
         </div>
 
         {/* Metric 2: Filled Classes */}
         <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800/60 rounded-3xl p-6 shadow-[0_2px_12px_rgba(0,0,0,0.02)] flex flex-col justify-center transition-colors duration-300 text-left">
           <span className="text-[9px] text-slate-400 dark:text-slate-550 font-black uppercase tracking-widest">Jumlah Kelas Terisi Siswa</span>
-          <span className="text-2xl font-black text-emerald-600 dark:text-emerald-400 mt-1">{totalClassesFilled} <span className="text-xs text-slate-450 font-bold">Terisi</span></span>
+          <span className="text-2xl font-black text-emerald-600 dark:text-emerald-400 mt-1">{totalClassesFilled} <span className="text-xs text-slate-455 font-bold">Terisi</span></span>
         </div>
 
       </div>
@@ -686,7 +890,7 @@ export default function ClassDivisionManagement() {
             className={`flex flex-col items-center justify-center text-center p-6 rounded-3xl transition-all border duration-300 hover:scale-[1.03] group ${
               selectedMajor === m.code
                 ? "bg-blue-500 border-blue-600 text-white shadow-lg shadow-blue-500/20"
-                : "bg-white border-slate-200 hover:border-blue-500/40 hover:bg-slate-50/50 dark:bg-slate-900 dark:border-slate-800 dark:text-slate-400 dark:hover:text-white shadow-sm"
+                : "bg-white border-slate-200 hover:border-blue-500/40 hover:bg-slate-50/50 dark:bg-slate-900 dark:border-slate-800 dark:text-slate-450 dark:hover:text-white shadow-sm"
             }`}
           >
             {getMajorLogo(m.code, "w-12 h-12 shadow-md")}
@@ -704,21 +908,51 @@ export default function ClassDivisionManagement() {
         ))}
       </div>
 
+      {/* Pilihan Tingkat Kelas (Grade Tabs) */}
+      <div className="flex bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800/60 p-1.5 rounded-2xl shadow-sm justify-start gap-2 max-w-lg transition-colors duration-300">
+        {([10, 11, 12] as const).map((g) => (
+          <button
+            key={g}
+            type="button"
+            onClick={() => {
+              setSelectedGrade(g);
+              setSelectedStudentIds([]);
+            }}
+            className={`flex-1 py-2.5 px-4 rounded-xl text-xs font-black uppercase tracking-wider transition-all duration-300 ${
+              selectedGrade === g
+                ? "bg-blue-500 text-white shadow-md shadow-blue-500/20"
+                : "text-slate-500 hover:text-slate-850 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-slate-800/50"
+            }`}
+          >
+            Kelas {g} {g === 10 ? "(Baru Masuk)" : ""}
+          </button>
+        ))}
+      </div>
+
       {/* Classes capacity indicators and list */}
       <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800/60 rounded-3xl p-6 shadow-[0_2px_12px_rgba(0,0,0,0.02)] transition-colors duration-300">
         <div className="flex items-center justify-between border-b border-slate-100 dark:border-white/5 pb-4 mb-5">
           <div className="flex items-center gap-2">
             <Layers size={14} className="text-slate-400" />
-            <h3 className="text-xs font-black uppercase tracking-wider text-slate-800 dark:text-white">Daftar Kelas Aktif (Jurusan {selectedMajor})</h3>
+            <h3 className="text-xs font-black uppercase tracking-wider text-slate-800 dark:text-white">Daftar Kelas Aktif (Tingkat {selectedGrade} Jurusan {selectedMajor})</h3>
           </div>
 
-          <button
-            onClick={() => setIsAddingClass(!isAddingClass)}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-50 hover:bg-slate-100 dark:bg-slate-950/30 border border-slate-250 dark:border-white/5 text-[10px] uppercase font-bold text-slate-655 dark:text-slate-350 dark:hover:text-white transition-all shadow-sm"
-          >
-            {isAddingClass ? <X size={12} /> : <Plus size={12} />}
-            <span>{isAddingClass ? "Tutup Form" : "Buat Kelas Baru"}</span>
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={handleExportAllClasses}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-950/30 border border-emerald-250 dark:border-white/5 text-[10px] uppercase font-bold text-emerald-600 dark:text-emerald-400 transition-all shadow-sm cursor-pointer"
+            >
+              <Download size={12} />
+              <span>Ekspor Semua Kelas ({selectedMajor})</span>
+            </button>
+            <button
+              onClick={() => setIsAddingClass(!isAddingClass)}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-50 hover:bg-slate-100 dark:bg-slate-950/30 border border-slate-250 dark:border-white/5 text-[10px] uppercase font-bold text-slate-655 dark:text-slate-350 dark:hover:text-white transition-all shadow-sm cursor-pointer"
+            >
+              {isAddingClass ? <X size={12} /> : <Plus size={12} />}
+              <span>{isAddingClass ? "Tutup Form" : "Buat Kelas Baru"}</span>
+            </button>
+          </div>
         </div>
 
         {/* Create Class Inline Form */}
@@ -873,7 +1107,7 @@ export default function ClassDivisionManagement() {
             <tbody className="divide-y divide-slate-100 dark:divide-white/5">
               {filteredStudents.map((student) => {
                 const isSelected = selectedStudentIds.includes(student.id);
-                const assignedClass = student.diterima_kelas || student.diterimaKelas;
+                const assignedClass = getStudentCurrentClass(student);
 
                 return (
                   <tr
@@ -897,7 +1131,7 @@ export default function ClassDivisionManagement() {
                     <td className="py-3 px-4">
                       <div className="font-extrabold text-slate-850 dark:text-white text-sm">{student.nama}</div>
                       <span className="text-[9px] text-slate-400 font-bold uppercase tracking-wider block mt-0.5">
-                        Lahir: {student.tempat_lahir || student.tempatLahir || "-"}, {student.tgl_lahir || student.tglLahir || "-"}
+                        Lahir: {student.tempat_lahir || student.tempatLahir || "-"}, {student.tgl_lahir || student.tglLahir || "-"} · Periode Daftar: {student.periode || "2026-2027"}
                       </span>
                     </td>
 
