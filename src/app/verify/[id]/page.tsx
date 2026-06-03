@@ -160,7 +160,7 @@ export default function VerificationPage() {
           <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-center relative z-10">
             
             {/* Left Side: Student Info */}
-            <div className="md:col-span-8 pr-0 md:pr-4 border-r-0 md:border-r md:border-dashed border-slate-200 dark:border-slate-800/80 space-y-4">
+            <div className="md:col-span-8 pr-0 md:pr-2 space-y-4">
               <div>
                 <span className="text-[8px] font-extrabold text-slate-400 dark:text-slate-550 uppercase tracking-widest block mb-0.5">Calon Peserta Didik Baru</span>
                 <h2 className="text-xl md:text-2xl font-black text-slate-850 dark:text-transparent dark:bg-clip-text dark:bg-gradient-to-r dark:from-white dark:via-blue-100 dark:to-sky-200 uppercase tracking-tight leading-snug truncate">
@@ -169,7 +169,7 @@ export default function VerificationPage() {
                 <div className="w-12 h-0.5 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-full mt-2" />
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 gap-4">
                 <div className="bg-slate-50/80 dark:bg-white/5 border border-slate-150 dark:border-white/5 rounded-2xl p-3 transition-colors flex items-start gap-2.5">
                   <div className="w-8 h-8 rounded-xl bg-blue-500/10 dark:bg-blue-500/20 text-blue-600 dark:text-blue-400 flex items-center justify-center shrink-0 mt-0.5">
                     <MapPin size={15} />
@@ -178,42 +178,6 @@ export default function VerificationPage() {
                     <span className="text-[8px] font-black text-slate-400 dark:text-slate-550 uppercase tracking-widest block mb-0.5">Sekolah Asal</span>
                     <div className="text-xs font-black text-slate-700 dark:text-slate-200 truncate">
                       {data.sekolah_asal || "-"}
-                    </div>
-                  </div>
-                </div>
-
-                <div className="bg-slate-50/80 dark:bg-white/5 border border-slate-150 dark:border-white/5 rounded-2xl p-3 transition-colors flex items-start gap-2.5">
-                  <div className="w-8 h-8 rounded-xl bg-purple-500/10 dark:bg-purple-500/20 text-purple-600 dark:text-purple-400 flex items-center justify-center shrink-0 mt-0.5">
-                    <User size={15} />
-                  </div>
-                  <div>
-                    <span className="text-[8px] font-black text-slate-400 dark:text-slate-550 uppercase tracking-widest block mb-0.5">Jenis Kelamin</span>
-                    <div className="text-xs font-black text-slate-700 dark:text-slate-200">
-                      {getGenderLabel(data.jenis_kelamin)}
-                    </div>
-                  </div>
-                </div>
-
-                <div className="bg-slate-50/80 dark:bg-white/5 border border-slate-150 dark:border-white/5 rounded-2xl p-3 transition-colors flex items-start gap-2.5">
-                  <div className="w-8 h-8 rounded-xl bg-amber-500/10 dark:bg-amber-500/20 text-amber-500 dark:text-amber-400 flex items-center justify-center shrink-0 mt-0.5">
-                    <Calendar size={15} />
-                  </div>
-                  <div className="overflow-hidden">
-                    <span className="text-[8px] font-black text-slate-400 dark:text-slate-550 uppercase tracking-widest block mb-0.5">Tanggal Lahir</span>
-                    <div className="text-xs font-black text-slate-700 dark:text-slate-200 truncate">
-                      {getFormattedDate(data.tgl_lahir)}
-                    </div>
-                  </div>
-                </div>
-
-                <div className="bg-slate-50/80 dark:bg-white/5 border border-slate-150 dark:border-white/5 rounded-2xl p-3 transition-colors flex items-start gap-2.5">
-                  <div className="w-8 h-8 rounded-xl bg-indigo-500/10 dark:bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 flex items-center justify-center shrink-0 mt-0.5">
-                    <Award size={15} />
-                  </div>
-                  <div>
-                    <span className="text-[8px] font-black text-slate-400 dark:text-slate-555 uppercase tracking-widest block mb-0.5">No Registrasi</span>
-                    <div className="text-xs font-black text-slate-700 dark:text-slate-200">
-                      TB-{data.id}-{data.nisn ? data.nisn.substring(0, 4) : "2026"}
                     </div>
                   </div>
                 </div>
@@ -235,7 +199,7 @@ export default function VerificationPage() {
 
           {/* Ticket Footer */}
           <div className="border-t border-slate-150 dark:border-white/5 pt-3.5 mt-4 flex flex-col sm:flex-row items-center justify-between gap-2 text-[9px] font-bold text-slate-450 dark:text-slate-400 tracking-wider transition-colors">
-            <span className="uppercase">REGISTERED NO: TB-{data.id}-{data.jenis_kelamin || "L"}-{data.nisn ? data.nisn.substring(0, 4) : "2026"}</span>
+            <div></div>
             <span className="text-slate-500 font-black">TERVERIFIKASI SISTEM PPDB</span>
           </div>
 

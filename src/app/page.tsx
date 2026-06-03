@@ -39,6 +39,8 @@ import {
 } from "lucide-react";
 
 import DataPendaftarTable from "../components/DataPendaftarTable";
+import ShinyText from "../components/ShinyText";
+import ScrollFloat from "../components/ScrollFloat";
 import { usePPDB } from "@/context/PPDBContext";
 
 interface InformasiItem {
@@ -201,7 +203,7 @@ export default function Home() {
       facilities: "Robotics Design Lab, IoT Smart-Home Prototype Sandbox, Microcontroller Lab"
     }
   ]);
-  
+
   // Alur Config
   const [alurList, setAlurList] = useState<AlurItem[]>(DEFAULT_ALUR);
 
@@ -297,7 +299,7 @@ export default function Home() {
 
         const res = await fetch("http://localhost:5000/api/config");
         const data = await res.json();
-        
+
         if (data.success && data.data) {
           const config = data.data;
           if (config.ppdb_hero_title) setHeroTitle(config.ppdb_hero_title);
@@ -311,7 +313,6 @@ export default function Home() {
           if (config.ppdb_wa_admin) setWaAdmin(config.ppdb_wa_admin);
           if (config.ppdb_alur_config) setAlurList(config.ppdb_alur_config);
           if (config.ppdb_faq_config) setFaqList(config.ppdb_faq_config);
-          
           if (config.ppdb_majors_config && Array.isArray(config.ppdb_majors_config)) {
             const iconMap: Record<string, any> = {
               RPL: Cpu,
@@ -451,23 +452,23 @@ export default function Home() {
 
   const groupedClasses = useMemo(() => {
     const groups: { [key: string]: string[] } = {};
-    
+
     uniqueRosterClasses.forEach(cls => {
       // Extract major code, usually the second word (e.g. "X RPL 1" -> "RPL")
       const parts = cls.split(" ");
       let groupName = "Lainnya";
-      
+
       if (parts.length >= 2) {
         const code = parts[1];
         // Match with majors
         const foundMajor = majors.find(m => m.code === code);
         groupName = foundMajor ? foundMajor.title : code;
       }
-      
+
       if (!groups[groupName]) groups[groupName] = [];
       groups[groupName].push(cls);
     });
-    
+
     return groups;
   }, [uniqueRosterClasses, majors]);
 
@@ -509,9 +510,9 @@ export default function Home() {
 
     return validApplicants.filter((a: any) => {
       const matchesSearch = !query || matchedIds.has(a.id);
-      
+
       if (selectedRosterClass === "Semua") return matchesSearch;
-      
+
       const cls = a.diterima_kelas || a.diterimaKelas || "";
       return matchesSearch && cls === selectedRosterClass;
     });
@@ -583,30 +584,30 @@ export default function Home() {
               <img src="/logo_smktb.png" alt="Logo SMK TB" className="w-12 h-12 object-contain" />
               <span className="text-2xl font-black text-slate-800 dark:text-white">PPDB <span className="text-blue-600 dark:text-blue-400">SMK TB</span></span>
             </Link>
-            
-            <a 
-              href="#alur" 
+
+            <a
+              href="#alur"
               onClick={() => setMobileMenuOpen(false)}
               className="text-lg font-extrabold text-slate-800 dark:text-white hover:text-blue-600 dark:hover:text-blue-400 transition-colors py-3 border-b border-slate-100 dark:border-slate-800/60 w-full"
             >
               Alur Pendaftaran
             </a>
-            <a 
-              href="#majors" 
+            <a
+              href="#majors"
               onClick={() => setMobileMenuOpen(false)}
               className="text-lg font-extrabold text-slate-800 dark:text-white hover:text-blue-600 dark:hover:text-blue-400 transition-colors py-3 border-b border-slate-100 dark:border-slate-800/60 w-full"
             >
               Jurusan
             </a>
-            <Link 
-              href="/forum" 
+            <Link
+              href="/forum"
               onClick={() => setMobileMenuOpen(false)}
               className="text-lg font-extrabold text-slate-800 dark:text-white hover:text-blue-600 dark:hover:text-blue-400 transition-colors py-3 border-b border-slate-100 dark:border-slate-800/60 w-full"
             >
               Forum Informasi
             </Link>
-            <a 
-              href="#kemitraan" 
+            <a
+              href="#kemitraan"
               onClick={() => setMobileMenuOpen(false)}
               className="text-lg font-extrabold text-slate-800 dark:text-white hover:text-blue-600 dark:hover:text-blue-400 transition-colors py-3 border-b border-slate-100 dark:border-slate-800/60 w-full"
             >
@@ -614,14 +615,14 @@ export default function Home() {
             </a>
 
             <div className="w-full flex flex-col gap-3 mt-8">
-              <Link 
-                href="/daftar" 
+              <Link
+                href="/daftar"
                 onClick={() => setMobileMenuOpen(false)}
                 className="w-full py-4 text-center text-sm font-black uppercase tracking-wider rounded-2xl bg-blue-600 hover:bg-blue-700 text-white shadow-lg shadow-blue-500/25 transition-all active:scale-[0.98]"
               >
                 Daftar Sekarang
               </Link>
-              <button 
+              <button
                 onClick={() => { toggleDark(); setMobileMenuOpen(false); }}
                 className="w-full py-4 text-center text-sm font-black uppercase tracking-wider rounded-2xl border border-slate-200 dark:border-slate-700/80 text-slate-750 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"
               >
@@ -713,7 +714,14 @@ export default function Home() {
 
           <h1 className="hero-title relative z-10">
             {heroTitle} <br />
-            <span>{heroTitleSub}</span>
+            <ShinyText 
+              text={heroTitleSub} 
+              speed={3} 
+              delay={1} 
+              color="var(--primary)" 
+              shineColor="#0ea5e9" 
+              spread={135} 
+            />
           </h1>
 
           <p className="hero-subtitle relative z-10">
@@ -756,21 +764,47 @@ export default function Home() {
       <section id="alur" className="py-24 bg-slate-50 dark:bg-slate-900/60 relative z-10 border-y border-slate-200/50 dark:border-slate-800">
         <div className="max-w-5xl mx-auto px-6">
           <div className="text-center mb-20">
-            <span className="text-blue-600 dark:text-blue-400 font-bold text-xs uppercase tracking-wider bg-blue-50 dark:bg-blue-950/50 border border-blue-100/50 dark:border-blue-900/30 px-3.5 py-1.5 rounded-full">Proses Mudah &amp; Transparan · TP. {schoolPeriod}</span>
-            <h2 className="text-3xl md:text-5xl font-black text-slate-800 dark:text-white mt-4 mb-4 drop-shadow-sm">Alur Pendaftaran PPDB</h2>
-            <p className="text-slate-500 dark:text-slate-400 max-w-xl mx-auto text-sm md:text-base leading-relaxed font-medium">
+            <ScrollFloat
+              containerClassName="inline-block mb-2"
+              textClassName="text-blue-600 dark:text-blue-400 font-bold text-xs uppercase tracking-wider bg-blue-50 dark:bg-blue-950/50 border border-blue-100/50 dark:border-blue-900/30 px-3.5 py-1.5 rounded-full"
+              animationDuration={1}
+              ease='back.inOut(2)'
+              scrollStart='top 90%'
+              scrollEnd='bottom bottom-=40%'
+              stagger={0.02}
+            >
+              Proses Mudah &amp; Transparan · TP. {schoolPeriod}
+            </ScrollFloat>
+            <ScrollFloat
+              containerClassName="text-3xl md:text-5xl font-black text-slate-800 dark:text-white mt-4 mb-4 drop-shadow-sm"
+              animationDuration={1}
+              ease='back.inOut(2)'
+              scrollStart='top 90%'
+              scrollEnd='bottom bottom-=40%'
+              stagger={0.03}
+            >
+              Alur Pendaftaran PPDB
+            </ScrollFloat>
+            <ScrollFloat
+              containerClassName="text-slate-500 dark:text-slate-400 max-w-xl mx-auto text-sm md:text-base leading-relaxed font-medium"
+              animationDuration={1}
+              ease='back.inOut(2)'
+              scrollStart='top 90%'
+              scrollEnd='bottom bottom-=40%'
+              stagger={0.01}
+            >
               Ikuti 6 langkah sederhana berikut untuk menjadi bagian dari SMK Taruna Bhakti Depok.
-            </p>
+            </ScrollFloat>
           </div>
 
           <div className="relative">
             <div className="absolute left-[32px] md:left-1/2 top-0 bottom-0 w-1 bg-gradient-to-b from-blue-500 via-sky-400 to-indigo-500 transform -translate-x-1/2 z-0 rounded-full opacity-70"></div>
             <div className="absolute left-[32px] md:left-1/2 top-0 bottom-0 w-1 border-l-2 border-dashed border-white/40 dark:border-slate-950/40 transform -translate-x-1/2 z-0"></div>
 
-            <div className="space-y-16 relative z-10">
+            <ScrollFloat containerClassName="space-y-16 relative z-10 w-full" textClassName="w-full" textMode={false}>
               {alurList.map((item, index) => {
                 const isLeft = index % 2 === 0;
-                
+
                 // Define distinct styles for up to 6 steps
                 const styles = [
                   { color: "blue", bg: "bg-blue-600", text: "text-blue-500 dark:text-blue-400", bgLight: "bg-blue-50 dark:bg-blue-950/60", shadow: "shadow-[0_0_20px_rgba(37,99,235,0.4)]", borderHover: "hover:border-blue-500/20", icon: FileText },
@@ -780,7 +814,7 @@ export default function Home() {
                   { color: "indigo", bg: "bg-indigo-600", text: "text-indigo-500 dark:text-indigo-400", bgLight: "bg-indigo-50 dark:bg-indigo-950/60", shadow: "shadow-[0_0_20px_rgba(79,70,229,0.4)]", borderHover: "hover:border-indigo-500/20", icon: Award },
                   { color: "emerald", bg: "bg-emerald-500", text: "text-emerald-500 dark:text-emerald-400", bgLight: "bg-emerald-50 dark:bg-emerald-950/60", shadow: "shadow-[0_0_20px_rgba(16,185,129,0.4)]", borderHover: "hover:border-emerald-500/20", icon: ShieldCheck },
                 ];
-                
+
                 // Fallback to blue if index exceeds the defined styles
                 const stepStyle = styles[index % styles.length];
                 const Icon = stepStyle.icon;
@@ -816,7 +850,7 @@ export default function Home() {
                   </div>
                 );
               })}
-            </div>
+            </ScrollFloat>
           </div>
         </div>
       </section>
@@ -824,11 +858,30 @@ export default function Home() {
       {/* PROGRAM KEAHLIAN / JURUSAN GRID */}
       <section id="majors" className="py-24 max-w-6xl mx-auto px-6 relative z-10">
         <div className={`text-center mb-16 transform transition-all duration-1000 ${isMajorsVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"}`}>
-          <h2 className="text-3xl md:text-4xl font-extrabold text-slate-800 mb-4">Program Kompetensi Keahlian</h2>
-          <p className="text-slate-500 max-w-xl mx-auto text-sm md:text-base leading-relaxed">Tersedia 6 jurusan unggulan dengan kurikulum berstandar industri nasional maupun internasional.</p>
+          <ScrollFloat
+            containerClassName="text-3xl md:text-4xl font-extrabold text-slate-800 mb-4"
+            animationDuration={1}
+            ease='back.inOut(2)'
+            scrollStart='center bottom+=50%'
+            scrollEnd='bottom bottom-=40%'
+            stagger={0.03}
+          >
+            Program Kompetensi Keahlian
+          </ScrollFloat>
+          <ScrollFloat
+            containerClassName="text-slate-500 max-w-xl mx-auto text-sm md:text-base leading-relaxed"
+            animationDuration={1}
+            ease='back.inOut(2)'
+            scrollStart='center bottom+=50%'
+            scrollEnd='bottom bottom-=40%'
+            stagger={0.01}
+          >
+            Tersedia 6 jurusan unggulan dengan kurikulum berstandar industri nasional maupun internasional.
+          </ScrollFloat>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <ScrollFloat containerClassName="w-full" textClassName="w-full" textMode={false}>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {majors.map((major, index) => {
             return (
               <Link
@@ -864,226 +917,47 @@ export default function Home() {
               </Link>
             );
           })}
-        </div>
-      </section>
-
-      {/* SEKSI DAFTAR ROMBEL SISWA RESMI (WEB SOCKET LIVE SYNC) */}
-      <section className="py-24 max-w-6xl mx-auto px-6 relative z-10 border-t border-slate-200/30">
-        <div className="text-center mb-12">
-          <div className="flex items-center justify-center gap-2 mb-4">
-            <span className="text-blue-600 dark:text-blue-400 font-bold text-[10px] uppercase tracking-widest bg-blue-50 dark:bg-blue-950/40 px-3 py-1.5 rounded-full flex items-center gap-2 border border-blue-100 dark:border-blue-900/30">
-              <span className={`w-2 h-2 rounded-full ${wsStatus === "CONNECTED" ? "bg-emerald-500 animate-pulse shadow-[0_0_8px_rgba(16,185,129,0.5)]" : "bg-rose-500 animate-pulse"}`} />
-              <span className="tracking-widest font-black uppercase">LIVE WS SYNC</span>
-            </span>
           </div>
-          <h2 className="text-3xl md:text-4xl font-extrabold text-slate-800 dark:text-white mt-1 mb-4">
-            Daftar Peserta Didik Baru
-          </h2>
-          <p className="text-slate-500 dark:text-slate-400 max-w-2xl mx-auto text-sm md:text-base leading-relaxed">
-            Daftar resmi peserta didik baru SMK Taruna Bhakti periode {schoolPeriod} yang telah diverifikasi kelulusannya dan secara resmi dialokasikan ke dalam kelas masing-masing.
-          </p>
-        </div>
-
-        {/* Toolbar & Search */}
-        <div className="relative z-30 bg-white/70 dark:bg-slate-900/60 backdrop-blur-xl border border-slate-200/60 dark:border-slate-800/60 rounded-3xl p-6 mb-8 shadow-sm flex flex-col md:flex-row gap-4 items-center justify-between">
-          {/* Search bar */}
-          <div className="relative w-full md:max-w-md">
-            <span className="absolute inset-y-0 left-0 pl-4 flex items-center text-slate-400">
-              <Search size={16} />
-            </span>
-            <input
-              type="text"
-              value={rosterSearch}
-              onChange={(e) => setRosterSearch(e.target.value)}
-              placeholder="BST Search: inisial nama, jurusan, sekolah, kelas..."
-              className="w-full pl-11 pr-4 py-3 bg-slate-50 dark:bg-slate-950/40 border border-slate-200 dark:border-white/5 rounded-2xl text-slate-850 dark:text-white placeholder-slate-400 text-sm focus:outline-none focus:border-blue-500 transition-all font-semibold"
-            />
-          </div>
-
-          {/* Beautiful Custom Class Filter Dropdown */}
-          <div className="relative" ref={dropdownRef}>
-            <button
-              onClick={() => setIsClassDropdownOpen(!isClassDropdownOpen)}
-              className="flex items-center justify-between gap-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 hover:border-blue-500/50 dark:hover:border-blue-500/50 rounded-2xl px-5 py-3 shrink-0 shadow-sm md:min-w-[220px] w-full transition-all group"
-            >
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-full bg-blue-50 dark:bg-blue-500/10 flex items-center justify-center text-blue-600 dark:text-blue-400">
-                  <School size={14} />
-                </div>
-                <div className="flex flex-col items-start">
-                  <span className="text-[9px] uppercase font-bold text-slate-400 tracking-widest">Filter Rombel</span>
-                  <span className="text-sm font-black text-slate-700 dark:text-slate-200 uppercase tracking-wide">
-                    {selectedRosterClass === "Semua" ? "Semua Kelas" : selectedRosterClass}
-                  </span>
-                </div>
-              </div>
-              <ChevronRight size={16} className={`text-slate-400 transition-transform duration-300 ${isClassDropdownOpen ? "rotate-90" : ""}`} />
-            </button>
-
-            {/* Dropdown Menu */}
-            {isClassDropdownOpen && (
-              <div className="absolute top-full right-0 md:left-0 mt-3 w-full md:w-[320px] bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-white/10 rounded-2xl shadow-2xl shadow-blue-900/5 overflow-hidden z-[100] animate-in slide-in-from-top-2 fade-in duration-200">
-                <div className="max-h-[380px] overflow-y-auto scrollbar-thin scrollbar-thumb-slate-200 dark:scrollbar-thumb-slate-800 p-2">
-                  
-                  <button
-                    onClick={() => { setSelectedRosterClass("Semua"); setIsClassDropdownOpen(false); }}
-                    className={`w-full text-left px-4 py-3 rounded-xl text-sm font-bold transition-all flex items-center justify-between mb-2 ${
-                      selectedRosterClass === "Semua" 
-                        ? "bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400" 
-                        : "hover:bg-slate-50 dark:hover:bg-slate-800/50 text-slate-700 dark:text-slate-300"
-                    }`}
-                  >
-                    <span>Semua Kelas</span>
-                    {selectedRosterClass === "Semua" && <Check size={14} className="text-blue-600 dark:text-blue-400" />}
-                  </button>
-
-                  {Object.entries(groupedClasses).map(([groupName, classes]) => (
-                    <div key={groupName} className="mb-2 last:mb-0">
-                      <div className="px-4 py-2 flex items-center gap-2">
-                        <div className="w-1 h-3 rounded-full bg-blue-500/40"></div>
-                        <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">{groupName}</span>
-                      </div>
-                      <div className="grid grid-cols-2 gap-1 px-2">
-                        {classes.map(clsName => (
-                          <button
-                            key={clsName}
-                            onClick={() => { setSelectedRosterClass(clsName); setIsClassDropdownOpen(false); }}
-                            className={`text-left px-3 py-2 rounded-lg text-xs font-bold transition-all flex items-center justify-between ${
-                              selectedRosterClass === clsName 
-                                ? "bg-blue-500 text-white shadow-md shadow-blue-500/20" 
-                                : "hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-400"
-                            }`}
-                          >
-                            <span>{clsName}</span>
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                  ))}
-
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
-        {/* Large Table Container */}
-        <div className="bg-white/70 dark:bg-slate-900/60 backdrop-blur-xl border border-slate-200/60 dark:border-slate-800/60 rounded-3xl overflow-hidden shadow-md">
-          <div className="max-h-[500px] overflow-y-auto scrollbar-none">
-            <table className="w-full text-left text-xs font-bold text-slate-655 dark:text-slate-350 border-collapse">
-              <thead>
-                <tr className="border-b border-slate-150 dark:border-white/5 text-slate-400 dark:text-slate-500 font-black text-[9px] uppercase tracking-widest bg-slate-50/50 dark:bg-slate-950/20 sticky top-0 backdrop-blur-xl z-20">
-                  <th className="py-4 px-6 text-left w-16">No</th>
-                  <th className="py-4 px-6">Nama Lengkap Siswa</th>
-                  <th className="py-4 px-6">Asal Sekolah SMP</th>
-                  <th className="py-4 px-6">Kompetensi Keahlian</th>
-                  <th className="py-4 px-6 text-center">Rombongan Belajar</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100 dark:divide-white/5">
-                {paginatedRosterStudents.map((student: any, idx: number) => {
-                  const assignedClass = student.diterima_kelas || student.diterimaKelas;
-                  const globalIdx = (rosterPage - 1) * itemsPerPage + idx + 1;
-                  
-                  return (
-                    <tr 
-                      key={student.id} 
-                      className="hover:bg-slate-50/50 dark:hover:bg-slate-950/20 transition-all"
-                    >
-                      <td className="py-3.5 px-6 font-mono text-slate-400">{globalIdx}</td>
-                      <td className="py-3.5 px-6 font-extrabold text-slate-850 dark:text-white uppercase tracking-wider">{student.nama}</td>
-                      <td className="py-3.5 px-6 uppercase text-slate-550 dark:text-slate-400 font-semibold">{student.sekolah_asal || student.sekolahAsal || "-"}</td>
-                      <td className="py-3.5 px-6">
-                        <span className="text-blue-600 dark:text-blue-400 font-extrabold uppercase text-[10px]">
-                          {student.jurusan_1 || student.jurusan1}
-                        </span>
-                      </td>
-                      <td className="py-3.5 px-6 text-center">
-                        <span className="inline-flex px-3 py-1 rounded-full bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-250 dark:border-emerald-900/40 text-emerald-600 dark:text-emerald-400 text-[10px] font-black uppercase tracking-wider">
-                          {assignedClass}
-                        </span>
-                      </td>
-                    </tr>
-                  );
-                })}
-
-                {filteredRosterStudents.length === 0 && (
-                  <tr>
-                    <td colSpan={5} className="text-center py-16 text-slate-400 font-bold uppercase tracking-wider">
-                      {selectedRosterClass === "Semua" 
-                        ? "Belum ada data pendaftar resmi yang dibagi ke dalam kelas." 
-                        : `Belum ada siswa terdaftar di rombel kelas ${selectedRosterClass}.`}
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
-          </div>
-
-          {/* Roster Pagination Controls */}
-          {filteredRosterStudents.length > 0 && (
-            <div className="p-4 border-t border-slate-150 dark:border-white/5 bg-slate-50/50 dark:bg-slate-950/20 flex flex-col sm:flex-row items-center justify-between gap-4">
-              <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">
-                Menampilkan {Math.min(filteredRosterStudents.length, (rosterPage - 1) * itemsPerPage + 1)} - {Math.min(filteredRosterStudents.length, rosterPage * itemsPerPage)} Dari {filteredRosterStudents.length} Siswa
-              </span>
-
-              <div className="flex items-center gap-1">
-                <button
-                  onClick={() => setRosterPage(p => Math.max(1, p - 1))}
-                  disabled={rosterPage === 1}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-black uppercase tracking-wider transition-all border ${
-                    rosterPage === 1
-                      ? "bg-slate-100/50 border-slate-200/30 text-slate-400 cursor-not-allowed opacity-50 dark:bg-slate-800/40 dark:border-slate-700/30"
-                      : "bg-white border-slate-200 hover:bg-slate-50 dark:bg-slate-800 dark:border-slate-700 text-slate-655 dark:text-slate-355"
-                  }`}
-                >
-                  Sebelumnya
-                </button>
-
-                {Array.from({ length: totalRosterPages }).map((_, i) => {
-                  const pageNum = i + 1;
-                  return (
-                    <button
-                      key={pageNum}
-                      onClick={() => setRosterPage(pageNum)}
-                      className={`w-8 h-8 rounded-lg text-xs font-black transition-all border ${
-                        rosterPage === pageNum
-                          ? "bg-blue-600 border-blue-700 text-white shadow-sm shadow-blue-500/10"
-                          : "bg-white border-slate-200 hover:bg-slate-50 dark:bg-slate-800 dark:border-slate-700 text-slate-655 dark:text-slate-355"
-                      }`}
-                    >
-                      {pageNum}
-                    </button>
-                  );
-                })}
-
-                <button
-                  onClick={() => setRosterPage(p => Math.min(totalRosterPages, p + 1))}
-                  disabled={rosterPage === totalRosterPages}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-black uppercase tracking-wider transition-all border ${
-                    rosterPage === totalRosterPages
-                      ? "bg-slate-100/50 border-slate-200/30 text-slate-400 cursor-not-allowed opacity-50 dark:bg-slate-800/40 dark:border-slate-700/30"
-                      : "bg-white border-slate-200 hover:bg-slate-50 dark:bg-slate-800 dark:border-slate-700 text-slate-655 dark:text-slate-355"
-                  }`}
-                >
-                  Selanjutnya
-                </button>
-              </div>
-            </div>
-          )}
-        </div>
+        </ScrollFloat>
       </section>
 
       {/* KEMITRAAN INDUSTRI */}
       <section id="kemitraan" className="py-24 max-w-6xl mx-auto px-6 relative z-10 border-t border-slate-200/30">
         <div className="text-center mb-16">
-          <span className="text-blue-600 font-bold text-xs uppercase tracking-wider bg-blue-50 px-3 py-1.5 rounded-full">Kemitraan Industri</span>
-          <h2 className="text-3xl md:text-4xl font-extrabold text-slate-800 mt-4 mb-4">Gerbang Karir Global Taruna Bhakti</h2>
-          <p className="text-slate-500 max-w-xl mx-auto text-sm md:text-base leading-relaxed">
+          <ScrollFloat
+            containerClassName="inline-block mb-2"
+            textClassName="text-blue-600 font-bold text-xs uppercase tracking-wider bg-blue-50 px-3 py-1.5 rounded-full"
+            animationDuration={1}
+            ease='back.inOut(2)'
+            scrollStart='center bottom+=50%'
+            scrollEnd='bottom bottom-=40%'
+            stagger={0.02}
+          >
+            Kemitraan Industri
+          </ScrollFloat>
+          <ScrollFloat
+            containerClassName="text-3xl md:text-4xl font-extrabold text-slate-800 mt-4 mb-4"
+            animationDuration={1}
+            ease='back.inOut(2)'
+            scrollStart='center bottom+=50%'
+            scrollEnd='bottom bottom-=40%'
+            stagger={0.03}
+          >
+            Gerbang Karir Global Taruna Bhakti
+          </ScrollFloat>
+          <ScrollFloat
+            containerClassName="text-slate-500 max-w-xl mx-auto text-sm md:text-base leading-relaxed"
+            animationDuration={1}
+            ease='back.inOut(2)'
+            scrollStart='center bottom+=50%'
+            scrollEnd='bottom bottom-=40%'
+            stagger={0.01}
+          >
             Kurikulum berstandar internasional yang diselaraskan langsung dengan raksasa teknologi dunia, menghasilkan lulusan berdaya saing tinggi.
-          </p>
+          </ScrollFloat>
         </div>
 
-        <div className="bg-white/50 dark:bg-slate-900/40 backdrop-blur-md border border-slate-100 dark:border-slate-800/60 rounded-3xl p-8 mb-12 shadow-sm">
+        <ScrollFloat containerClassName="bg-white/50 dark:bg-slate-900/40 backdrop-blur-md border border-slate-100 dark:border-slate-800/60 rounded-3xl p-8 mb-12 shadow-sm w-full" textClassName="w-full" textMode={false}>
           <p className="text-center text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-8">
             Partner Industri Utama &amp; Sertifikasi Internasional &middot;
           </p>
@@ -1133,21 +1007,47 @@ export default function Home() {
               ));
             })()}
           </div>
-        </div>
+        </ScrollFloat>
       </section>
 
       {/* FAQ SECTION */}
       <section id="faq" className="py-24 bg-white dark:bg-slate-950 relative z-10 border-t border-slate-200/50 dark:border-slate-900 transition-colors duration-300">
         <div className="max-w-4xl mx-auto px-6">
           <div className="text-center mb-16">
-            <span className="text-blue-600 dark:text-sky-400 font-bold text-xs uppercase tracking-wider bg-blue-50 dark:bg-blue-950/50 border border-blue-100/50 dark:border-blue-900/30 px-3.5 py-1.5 rounded-full">FAQ PPDB</span>
-            <h2 className="text-3xl md:text-5xl font-black text-slate-800 dark:text-white mt-4 mb-4 drop-shadow-sm">Pertanyaan yang Sering Diajukan</h2>
-            <p className="text-slate-500 dark:text-slate-400 max-w-xl mx-auto text-sm md:text-base leading-relaxed font-medium">
+            <ScrollFloat
+              containerClassName="inline-block mb-2"
+              textClassName="text-blue-600 dark:text-sky-400 font-bold text-xs uppercase tracking-wider bg-blue-50 dark:bg-blue-950/50 border border-blue-100/50 dark:border-blue-900/30 px-3.5 py-1.5 rounded-full"
+              animationDuration={1}
+              ease='back.inOut(2)'
+              scrollStart='top 90%'
+              scrollEnd='bottom bottom-=40%'
+              stagger={0.02}
+            >
+              FAQ PPDB
+            </ScrollFloat>
+            <ScrollFloat
+            containerClassName="text-3xl md:text-5xl font-black text-slate-800 dark:text-white mt-4 mb-4 drop-shadow-sm"
+            animationDuration={1}
+            ease='back.inOut(2)'
+            scrollStart='center bottom+=50%'
+            scrollEnd='bottom bottom-=40%'
+            stagger={0.03}
+          >
+            Pertanyaan yang Sering Diajukan
+          </ScrollFloat>
+            <ScrollFloat
+              containerClassName="text-slate-500 dark:text-slate-400 max-w-xl mx-auto text-sm md:text-base leading-relaxed font-medium"
+              animationDuration={1}
+              ease='back.inOut(2)'
+              scrollStart='top 90%'
+              scrollEnd='bottom bottom-=40%'
+              stagger={0.01}
+            >
               Temukan jawaban cepat untuk kendala dan pertanyaan umum seputar proses penerimaan siswa baru SMK Taruna Bhakti.
-            </p>
+            </ScrollFloat>
           </div>
 
-          <div className="space-y-4">
+          <ScrollFloat containerClassName="space-y-4 w-full" textClassName="w-full" textMode={false}>
             {faqList.map((faq, idx) => {
               const isOpen = activeFaq === idx;
               return (
@@ -1176,7 +1076,7 @@ export default function Home() {
                 </div>
               );
             })}
-          </div>
+          </ScrollFloat>
 
           <div className="mt-12 bg-blue-50/50 dark:bg-blue-950/20 border border-blue-150/40 dark:border-blue-900 rounded-[2.5rem] p-8 text-center relative overflow-hidden">
             <div className="absolute right-4 top-4 opacity-5 dark:opacity-10 pointer-events-none">

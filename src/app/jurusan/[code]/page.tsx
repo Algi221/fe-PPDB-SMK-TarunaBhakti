@@ -769,7 +769,7 @@ export default function MajorPage() {
             </p>
 
             <div className="pt-4 flex flex-col sm:flex-row justify-center items-center gap-4">
-              <Link href="/daftar" className="bg-white text-slate-900 hover:bg-slate-100 text-sm font-extrabold px-8 py-4 rounded-2xl shadow-xl hover:shadow-2xl transition duration-300 w-full sm:w-auto">
+              <Link href="/daftar" className="bg-[#ffffff] text-slate-900 hover:bg-[#f8fafc] text-sm font-extrabold px-8 py-4 rounded-2xl shadow-xl hover:shadow-2xl transition duration-300 w-full sm:w-auto">
                 Daftar Jurusan Ini
               </Link>
               <Link href="/" className="border border-white/30 bg-white/10 hover:bg-white/20 text-sm font-semibold px-8 py-4 rounded-2xl backdrop-blur-md transition duration-300 w-full sm:w-auto">
