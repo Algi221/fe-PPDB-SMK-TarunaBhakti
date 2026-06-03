@@ -4,7 +4,7 @@ import React, { useEffect, useState } from "react";
 import { usePPDB } from "@/context/PPDBContext";
 import { useRouter, usePathname } from "next/navigation";
 import Link from "next/link";
-import { Sun, Moon, LogOut, LayoutDashboard, Users, Settings, Globe, Megaphone, GraduationCap, ChevronLeft, ChevronRight, Palette, Layers, Shield } from "lucide-react";
+import { Sun, Moon, LogOut, LayoutDashboard, Users, Settings, Globe, Megaphone, GraduationCap, ChevronLeft, ChevronRight, Palette, Layers, Shield, Menu } from "lucide-react";
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const { adminToken, adminUser, logoutAdmin, wsStatus } = usePPDB();
@@ -13,6 +13,11 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const [mounted, setMounted] = useState(false);
   const [isDark, setIsDark] = useState(false);
   const [isCollapsed, setIsCollapsed] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+  useEffect(() => {
+    setIsMobileMenuOpen(false);
+  }, [pathname]);
 
   useEffect(() => {
     setMounted(true);
@@ -84,14 +89,21 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   return (
     <div className="h-screen bg-[#f7f7f7] dark:bg-[#0b0f19] text-slate-800 dark:text-slate-100 flex font-sans overflow-hidden transition-colors duration-300">
       {/* Sidebar Navigation */}
-      <aside className={`${isCollapsed ? "w-20" : "w-64"} sticky top-0 h-screen bg-white dark:bg-slate-900 border-r border-slate-200/60 dark:border-slate-800/40 flex flex-col shrink-0 transition-all duration-300 z-50`}>
+      {/* Mobile Overlay */}
+      {isMobileMenuOpen && (
+        <div 
+          className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-40 md:hidden"
+          onClick={() => setIsMobileMenuOpen(false)}
+        />
+      )}
+      <aside className={`${isCollapsed ? "w-20" : "w-64"} fixed inset-y-0 left-0 z-50 md:sticky md:top-0 h-screen bg-white dark:bg-slate-900 border-r border-slate-200/60 dark:border-slate-800/40 flex flex-col shrink-0 transition-transform duration-300 ${isMobileMenuOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"}`}>
         {/* Brand Header */}
         <div className={`p-4 ${isCollapsed ? "flex flex-col items-center gap-3" : "flex items-center justify-between"} border-b border-slate-200/80 dark:border-slate-800/60 min-h-[73px]`}>
           <Link href="/dashboard" className="flex items-center gap-3 group justify-center">
-            <img 
-              src="/logo_smktb.png" 
-              alt="Logo SMK Taruna Bhakti" 
-              className="w-9 h-9 object-contain shrink-0 transition-transform duration-300 group-hover:scale-105" 
+            <img
+              src="/logo_smktb.png"
+              alt="Logo SMK Taruna Bhakti"
+              className="w-9 h-9 object-contain shrink-0 transition-transform duration-300 group-hover:scale-105"
             />
             {!isCollapsed && (
               <div className="animate-in fade-in duration-300">
@@ -100,7 +112,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               </div>
             )}
           </Link>
-          <button 
+          <button
             onClick={handleToggleCollapse}
             className="w-7 h-7 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-blue-50 dark:hover:bg-blue-900/40 text-slate-500 dark:text-slate-400 flex items-center justify-center transition-colors"
           >
@@ -112,11 +124,10 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         <nav className={`flex-1 ${isCollapsed ? "px-2" : "px-4"} py-6 space-y-1.5 overflow-y-auto`}>
           <Link
             href="/dashboard"
-            className={`flex items-center ${isCollapsed ? "justify-center px-2 py-3" : "gap-3 px-4 py-3"} rounded-2xl text-xs font-bold uppercase tracking-wider transition-all border ${
-              pathname === "/dashboard"
+            className={`flex items-center ${isCollapsed ? "justify-center px-2 py-3" : "gap-3 px-4 py-3"} rounded-2xl text-xs font-bold uppercase tracking-wider transition-all border ${pathname === "/dashboard"
                 ? "bg-blue-50/70 dark:bg-blue-950/40 border-blue-100/80 dark:border-blue-900/40 text-blue-600 dark:text-blue-400 font-extrabold"
                 : "border-transparent text-slate-500 dark:text-slate-400 hover:text-blue-500 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-slate-800/60"
-            }`}
+              }`}
             title={isCollapsed ? "Ringkasan" : undefined}
           >
             <LayoutDashboard size={18} className="shrink-0" />
@@ -125,11 +136,10 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
           <Link
             href="/dashboard/pendaftar"
-            className={`flex items-center ${isCollapsed ? "justify-center px-2 py-3" : "gap-3 px-4 py-3"} rounded-2xl text-xs font-bold uppercase tracking-wider transition-all border ${
-              pathname === "/dashboard/pendaftar"
+            className={`flex items-center ${isCollapsed ? "justify-center px-2 py-3" : "gap-3 px-4 py-3"} rounded-2xl text-xs font-bold uppercase tracking-wider transition-all border ${pathname === "/dashboard/pendaftar"
                 ? "bg-blue-50/70 dark:bg-blue-950/40 border-blue-100/80 dark:border-blue-900/40 text-blue-600 dark:text-blue-400 font-extrabold"
                 : "border-transparent text-slate-500 dark:text-slate-400 hover:text-blue-500 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-slate-800/60"
-            }`}
+              }`}
             title={isCollapsed ? "Data Calon Siswa" : undefined}
           >
             <Users size={18} className="shrink-0" />
@@ -138,11 +148,10 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
           <Link
             href="/dashboard/siswa-aktif"
-            className={`flex items-center ${isCollapsed ? "justify-center px-2 py-3" : "gap-3 px-4 py-3"} rounded-2xl text-xs font-bold uppercase tracking-wider transition-all border ${
-              pathname === "/dashboard/siswa-aktif"
+            className={`flex items-center ${isCollapsed ? "justify-center px-2 py-3" : "gap-3 px-4 py-3"} rounded-2xl text-xs font-bold uppercase tracking-wider transition-all border ${pathname === "/dashboard/siswa-aktif"
                 ? "bg-blue-50/70 dark:bg-blue-950/40 border-blue-100/80 dark:border-blue-900/40 text-blue-600 dark:text-blue-400 font-extrabold"
                 : "border-transparent text-slate-500 dark:text-slate-400 hover:text-blue-500 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-slate-800/60"
-            }`}
+              }`}
             title={isCollapsed ? "Siswa Aktif" : undefined}
           >
             <GraduationCap size={18} className="shrink-0" />
@@ -151,11 +160,10 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
           <Link
             href="/dashboard/informasi"
-            className={`flex items-center ${isCollapsed ? "justify-center px-2 py-3" : "gap-3 px-4 py-3"} rounded-2xl text-xs font-bold uppercase tracking-wider transition-all border ${
-              pathname === "/dashboard/informasi"
+            className={`flex items-center ${isCollapsed ? "justify-center px-2 py-3" : "gap-3 px-4 py-3"} rounded-2xl text-xs font-bold uppercase tracking-wider transition-all border ${pathname === "/dashboard/informasi"
                 ? "bg-blue-50/70 dark:bg-blue-950/40 border-blue-100/80 dark:border-blue-900/40 text-blue-600 dark:text-blue-400 font-extrabold"
                 : "border-transparent text-slate-500 dark:text-slate-400 hover:text-blue-500 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-slate-800/60"
-            }`}
+              }`}
             title={isCollapsed ? "Kelola Informasi" : undefined}
           >
             <Megaphone size={18} className="shrink-0" />
@@ -164,11 +172,10 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
           <Link
             href="/dashboard/kelola-ui"
-            className={`flex items-center ${isCollapsed ? "justify-center px-2 py-3" : "gap-3 px-4 py-3"} rounded-2xl text-xs font-bold uppercase tracking-wider transition-all border ${
-              pathname === "/dashboard/kelola-ui"
+            className={`flex items-center ${isCollapsed ? "justify-center px-2 py-3" : "gap-3 px-4 py-3"} rounded-2xl text-xs font-bold uppercase tracking-wider transition-all border ${pathname === "/dashboard/kelola-ui"
                 ? "bg-blue-50/70 dark:bg-blue-950/40 border-blue-100/80 dark:border-blue-900/40 text-blue-600 dark:text-blue-400 font-extrabold"
                 : "border-transparent text-slate-500 dark:text-slate-400 hover:text-blue-500 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-slate-800/60"
-            }`}
+              }`}
             title={isCollapsed ? "Kelola User Interface" : undefined}
           >
             <Palette size={18} className="shrink-0" />
@@ -177,11 +184,10 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
           <Link
             href="/dashboard/pembagian-kelas"
-            className={`flex items-center ${isCollapsed ? "justify-center px-2 py-3" : "gap-3 px-4 py-3"} rounded-2xl text-xs font-bold uppercase tracking-wider transition-all border ${
-              pathname === "/dashboard/pembagian-kelas"
+            className={`flex items-center ${isCollapsed ? "justify-center px-2 py-3" : "gap-3 px-4 py-3"} rounded-2xl text-xs font-bold uppercase tracking-wider transition-all border ${pathname === "/dashboard/pembagian-kelas"
                 ? "bg-blue-50/70 dark:bg-blue-950/40 border-blue-100/80 dark:border-blue-900/40 text-blue-600 dark:text-blue-400 font-extrabold"
                 : "border-transparent text-slate-500 dark:text-slate-400 hover:text-blue-500 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-slate-800/60"
-            }`}
+              }`}
             title={isCollapsed ? "Pembagian Kelas" : undefined}
           >
             <Layers size={18} className="shrink-0" />
@@ -191,11 +197,10 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           {adminUser?.role === 'superadmin' && (
             <Link
               href="/dashboard/admin"
-              className={`flex items-center ${isCollapsed ? "justify-center px-2 py-3" : "gap-3 px-4 py-3"} rounded-2xl text-xs font-bold uppercase tracking-wider transition-all border ${
-                pathname === "/dashboard/admin"
+              className={`flex items-center ${isCollapsed ? "justify-center px-2 py-3" : "gap-3 px-4 py-3"} rounded-2xl text-xs font-bold uppercase tracking-wider transition-all border ${pathname === "/dashboard/admin"
                   ? "bg-blue-50/70 dark:bg-blue-950/40 border-blue-100/80 dark:border-blue-900/40 text-blue-600 dark:text-blue-400 font-extrabold"
                   : "border-transparent text-slate-500 dark:text-slate-400 hover:text-blue-500 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-slate-800/60"
-              }`}
+                }`}
               title={isCollapsed ? "Manajemen Admin" : undefined}
             >
               <Shield size={18} className="shrink-0" />
@@ -205,11 +210,10 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
           <Link
             href="/dashboard/settings"
-            className={`flex items-center ${isCollapsed ? "justify-center px-2 py-3" : "gap-3 px-4 py-3"} rounded-2xl text-xs font-bold uppercase tracking-wider transition-all border ${
-              pathname === "/dashboard/settings"
+            className={`flex items-center ${isCollapsed ? "justify-center px-2 py-3" : "gap-3 px-4 py-3"} rounded-2xl text-xs font-bold uppercase tracking-wider transition-all border ${pathname === "/dashboard/settings"
                 ? "bg-blue-50/70 dark:bg-blue-950/40 border-blue-100/80 dark:border-blue-900/40 text-blue-600 dark:text-blue-400 font-extrabold"
                 : "border-transparent text-slate-500 dark:text-slate-400 hover:text-blue-500 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-slate-800/60"
-            }`}
+              }`}
             title={isCollapsed ? "Pengaturan" : undefined}
           >
             <Settings size={18} className="shrink-0" />
@@ -220,7 +224,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         {/* Sidebar Footer (Admin Profile) */}
         <div className={`p-4 border-t border-slate-200/60 dark:border-slate-800/40 bg-[#f7f7f7]/40 dark:bg-slate-950/20 flex flex-col gap-3 ${isCollapsed ? "items-center" : ""}`}>
           <div className={`flex items-center gap-3 ${isCollapsed ? "justify-center" : ""}`}>
-            <div 
+            <div
               className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-indigo-500/80 to-sky-400/80 flex items-center justify-center font-black text-white shrink-0 shadow-sm"
               title={adminUser?.nama || "Admin TB"}
             >
@@ -247,22 +251,30 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       {/* Main Panel Area */}
       <div className="flex-1 flex flex-col min-w-0 relative overflow-hidden">
         {/* Top Header Panel */}
-        <header className="h-16 border-b border-slate-200/80 dark:border-slate-800/60 bg-white/70 dark:bg-slate-900/60 backdrop-blur-xl flex items-center justify-between px-8 shrink-0 z-40 sticky top-0 transition-colors duration-300">
-          <h1 className="text-sm font-black text-slate-800 dark:text-white leading-none uppercase tracking-wider">
-            {pathname === "/dashboard" 
-              ? "Ringkasan Eksekutif" 
-              : pathname === "/dashboard/pendaftar" 
-              ? "Direktori Calon Siswa" 
-              : pathname === "/dashboard/siswa-aktif"
-              ? "Daftar Siswa Aktif"
-              : pathname === "/dashboard/informasi"
-              ? "Kelola Informasi & Pengumuman"
-              : pathname === "/dashboard/kelola-ui"
-              ? "Kelola User Interface"
-              : pathname === "/dashboard/pembagian-kelas"
-              ? "Manajemen Pembagian Kelas"
-              : "Konfigurasi & Simulasi"}
-          </h1>
+        <header className="h-16 border-b border-slate-200/80 dark:border-slate-800/60 bg-white/70 dark:bg-slate-900/60 backdrop-blur-xl flex items-center justify-between px-4 md:px-8 shrink-0 z-40 sticky top-0 transition-colors duration-300">
+          <div className="flex items-center gap-3">
+            <button 
+              className="md:hidden p-1.5 -ml-1 text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors"
+              onClick={() => setIsMobileMenuOpen(true)}
+            >
+              <Menu size={20} />
+            </button>
+            <h1 className="text-sm font-black text-slate-800 dark:text-white leading-none uppercase tracking-wider hidden sm:block">
+            {pathname === "/dashboard"
+              ? "Ringkasan Eksekutif"
+              : pathname === "/dashboard/pendaftar"
+                ? "Direktori Calon Siswa"
+                : pathname === "/dashboard/siswa-aktif"
+                  ? "Daftar Siswa Aktif"
+                  : pathname === "/dashboard/informasi"
+                    ? "Kelola Informasi & Pengumuman"
+                    : pathname === "/dashboard/kelola-ui"
+                      ? "Kelola User Interface"
+                      : pathname === "/dashboard/pembagian-kelas"
+                        ? "Manajemen Pembagian Kelas"
+                        : "Konfigurasi & Simulasi"}
+            </h1>
+          </div>
 
           <div className="flex items-center gap-3">
             {/* WebSocket Status Indicator */}
@@ -283,7 +295,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               {isDark ? <Sun size={16} /> : <Moon size={16} />}
             </button>
             <div className="h-6 w-px bg-slate-200/80 dark:bg-slate-800/60 mx-1"></div>
-            <Link 
+            <Link
               href="/"
               target="_blank"
               className="px-3.5 py-2 bg-gradient-to-tr from-blue-600 to-indigo-500 hover:from-blue-500 hover:to-indigo-400 text-white rounded-xl text-xs font-bold shadow shadow-blue-500/20 hover:shadow-blue-500/40 transition-all flex items-center gap-2 tracking-wide uppercase"

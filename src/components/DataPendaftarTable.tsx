@@ -129,99 +129,148 @@ export default function DataPendaftarTable() {
         {/* Premium Flexing Card */}
         <div className="flex-1 w-full flex flex-col items-center py-4 overflow-y-auto scrollbar-none">
           
-          <div className="w-full max-w-xl md:max-w-2xl bg-gradient-to-br from-white via-slate-50/50 to-blue-50/20 dark:from-slate-950 dark:via-slate-900/90 dark:to-indigo-950/30 border border-slate-200 dark:border-blue-500/20 rounded-[24px] p-5 shadow-2xl relative overflow-hidden flex flex-col justify-between transition-colors duration-300 shrink-0 mb-6">
-            {/* Ambient Background Lights - Dark Mode Only */}
-            <div className="absolute top-0 right-0 w-48 h-48 bg-blue-500/10 dark:bg-blue-500/15 rounded-full blur-[80px] pointer-events-none" />
-            <div className="absolute -bottom-10 -left-10 w-48 h-48 bg-indigo-600/10 dark:bg-indigo-650/15 rounded-full blur-[80px] pointer-events-none" />
+          <div className="w-full max-w-xl md:max-w-2xl bg-gradient-to-br from-white via-slate-50 to-blue-50/50 dark:from-slate-950 dark:via-slate-900 dark:to-indigo-950/40 border border-slate-200/80 dark:border-blue-500/30 rounded-[32px] p-6 sm:p-8 shadow-2xl relative overflow-hidden flex flex-col justify-between transition-all duration-500 shrink-0 mb-6 group hover:shadow-[0_20px_60px_-15px_rgba(59,130,246,0.2)] dark:hover:shadow-[0_20px_60px_-15px_rgba(59,130,246,0.3)] hover:border-blue-300 dark:hover:border-blue-500/60">
+            <style>{`
+              @keyframes scan {
+                0%, 100% { top: 0%; opacity: 0; }
+                10%, 90% { opacity: 1; }
+                50% { top: 100%; opacity: 1; }
+              }
+              .scanner-line {
+                animation: scan 2.5s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+              }
+            `}</style>
 
-            {/* Perforated Ticket Notches (Desktop Only) */}
-            <div className="hidden md:block absolute -top-3 left-[58.33%] -translate-x-1/2 w-6 h-6 rounded-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 z-20 transition-colors" />
-            <div className="hidden md:block absolute -bottom-3 left-[58.33%] -translate-x-1/2 w-6 h-6 rounded-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 z-20 transition-colors" />
+            {/* Subtle Ambient Orbs for Web Theme */}
+            <div className="absolute -top-20 -right-20 w-80 h-80 bg-blue-500/10 dark:bg-blue-600/15 rounded-full blur-[80px] pointer-events-none group-hover:bg-blue-500/20 transition-colors duration-1000" />
+            <div className="absolute -bottom-20 -left-20 w-80 h-80 bg-indigo-500/10 dark:bg-indigo-600/15 rounded-full blur-[80px] pointer-events-none group-hover:bg-indigo-500/20 transition-colors duration-1000" />
+            
+            {/* Holographic grid lines - subtle */}
+            <div className="absolute inset-0 bg-[linear-gradient(rgba(59,130,246,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(59,130,246,0.03)_1px,transparent_1px)] bg-[size:30px_30px] pointer-events-none opacity-50 dark:bg-[linear-gradient(rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.02)_1px,transparent_1px)]" />
+
+            {/* Faint rotating background logo */}
+            <img src="/logo_smktb.png" alt="" className="absolute -right-10 -bottom-10 w-72 h-72 object-contain opacity-[0.03] dark:opacity-[0.05] grayscale animate-[spin_80s_linear_infinite] pointer-events-none" />
 
             {/* Card Header */}
-            <div className="flex justify-between items-center border-b border-slate-150 dark:border-white/5 pb-3 mb-4 transition-colors">
-              <div className="flex items-center gap-2.5">
-                <img src="/logo_smktb.png" alt="Logo TB" className="w-8 h-8 object-contain animate-pulse" />
+            <div className="flex justify-between items-center border-b border-slate-200 dark:border-white/10 pb-4 mb-6 relative z-10">
+              <div className="flex items-center gap-3">
+                <div className="relative">
+                  <div className="absolute inset-0 bg-blue-500/20 dark:bg-blue-500/50 blur-md rounded-full animate-pulse" />
+                  <img src="/logo_smktb.png" alt="Logo TB" className="w-10 h-10 object-contain relative z-10 drop-shadow-sm" />
+                </div>
                 <div>
-                  <h4 className="text-[11px] font-black text-slate-800 dark:text-white uppercase tracking-wider leading-none">SMK Taruna Bhakti</h4>
-                  <span className="text-[7.5px] font-extrabold text-blue-600 dark:text-blue-400 uppercase tracking-widest block mt-0.5">PPDB ONLINE 2026/2027</span>
+                  <h4 className="text-[13px] font-black text-slate-800 dark:text-white uppercase tracking-[0.2em] leading-none">SMK Taruna Bhakti</h4>
+                  <span className="text-[9px] font-black text-blue-600 dark:text-blue-400 uppercase tracking-[0.3em] block mt-1">PPDB ONLINE 2026</span>
                 </div>
               </div>
               <div>
                 {selectedStudent.status === "Approved" ? (
-                  <span className="px-2 py-0.5 bg-emerald-500/10 border border-emerald-500/30 text-emerald-600 dark:text-emerald-400 text-[8.5px] font-black uppercase tracking-widest rounded-md animate-pulse">
-                    Terverifikasi
-                  </span>
+                  <div className="relative group/badge cursor-default">
+                    <div className="absolute inset-0 bg-emerald-500/20 dark:bg-emerald-500/40 blur-md opacity-0 group-hover/badge:opacity-100 transition-opacity rounded-full" />
+                    <span className="relative px-4 py-1.5 bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-200 dark:border-emerald-500/30 text-emerald-600 dark:text-emerald-400 text-[10px] font-black uppercase tracking-[0.2em] rounded-full flex items-center gap-2 shadow-sm backdrop-blur-md">
+                      <Sparkles size={12} className="text-emerald-500 animate-pulse" /> TERVERIFIKASI
+                    </span>
+                  </div>
                 ) : (
-                  <span className="px-2 py-0.5 bg-amber-500/10 border border-amber-500/30 text-amber-500 dark:text-amber-400 text-[8.5px] font-black uppercase tracking-widest rounded-md animate-pulse">
-                    Dalam Proses
-                  </span>
+                  <div className="relative group/badge cursor-default">
+                    <div className="absolute inset-0 bg-amber-500/20 dark:bg-amber-500/40 blur-md opacity-0 group-hover/badge:opacity-100 transition-opacity rounded-full" />
+                    <span className="relative px-4 py-1.5 bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/30 text-amber-600 dark:text-amber-400 text-[10px] font-black uppercase tracking-[0.2em] rounded-full flex items-center gap-2 shadow-sm backdrop-blur-md">
+                      <Clock size={12} className="text-amber-500" /> DALAM PROSES
+                    </span>
+                  </div>
                 )}
               </div>
             </div>
 
             {/* Card Grid Body */}
-            <div className="grid grid-cols-1 md:grid-cols-12 gap-5 items-center relative z-10">
+            <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-center relative z-10">
               
               {/* Left Side: Student Info */}
-              <div className="md:col-span-7 pr-0 md:pr-2 space-y-3.5">
-                <div>
-                  <span className="text-[7.5px] font-extrabold text-slate-400 dark:text-slate-550 uppercase tracking-widest block mb-0.5">Calon Peserta Didik Baru</span>
-                  <h2 className="text-lg md:text-xl font-black text-slate-850 dark:text-transparent dark:bg-clip-text dark:bg-gradient-to-r dark:from-white dark:via-blue-100 dark:to-sky-200 uppercase tracking-tight leading-snug truncate">
-                    {selectedStudent.nama}
-                  </h2>
-                  <div className="w-8 h-0.5 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-full mt-1.5" />
-                </div>
-
-                <div className="grid grid-cols-1 gap-3">
-                  <div className="bg-slate-50/80 dark:bg-white/5 border border-slate-150 dark:border-white/5 rounded-xl p-2.5 transition-colors flex items-start gap-2">
-                    <div className="w-6.5 h-6.5 rounded-lg bg-blue-500/10 dark:bg-blue-500/20 text-blue-600 dark:text-blue-400 flex items-center justify-center shrink-0 mt-0.5">
-                      <MapPin size={13} />
-                    </div>
-                    <div className="overflow-hidden">
-                      <span className="text-[7px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest block mb-0.5">Sekolah Asal</span>
-                      <div className="text-[10px] font-black text-slate-700 dark:text-slate-200 truncate">
-                        {selectedStudent.sekolah_asal || selectedStudent.sekolahAsal || "-"}
-                      </div>
-                    </div>
+              <div className="md:col-span-7 flex flex-col justify-center py-2 relative">
+                <div className="flex items-center gap-2.5 mb-3">
+                  <div className="w-8 h-8 rounded-xl bg-blue-50 dark:bg-blue-500/10 flex items-center justify-center border border-blue-100 dark:border-blue-500/20 shadow-sm">
+                    <User size={14} className="text-blue-600 dark:text-blue-400" />
                   </div>
+                  <span className="text-[10px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-[0.3em] bg-slate-100 dark:bg-slate-800/50 px-3 py-1 rounded-full border border-slate-200 dark:border-slate-700/50">Calon Peserta Didik</span>
+                </div>
+                
+                <h2 className="text-3xl md:text-5xl font-black text-slate-800 dark:text-transparent dark:bg-clip-text dark:bg-gradient-to-br dark:from-slate-800 dark:via-blue-600 dark:to-indigo-500 dark:dark:from-white dark:dark:via-blue-100 dark:dark:to-indigo-300 uppercase tracking-tighter leading-tight break-words whitespace-normal mb-5 group-hover:scale-[1.02] origin-left transition-transform duration-300 cursor-default">
+                  {selectedStudent.nama}
+                </h2>
+                
+                {/* Sekolah Asal Details - Clean dynamic card */}
+                <div className="flex items-center gap-4 bg-white/60 dark:bg-slate-900/40 border border-slate-200/80 dark:border-slate-700/50 rounded-2xl p-4 backdrop-blur-md hover:bg-white dark:hover:bg-slate-800/80 transition-all duration-300 group/school w-fit shadow-sm hover:shadow-md hover:border-blue-300 dark:hover:border-blue-500/40">
+                   <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white shrink-0 shadow-lg shadow-blue-500/20 group-hover/school:scale-110 group-hover/school:rotate-3 transition-transform duration-500">
+                      <MapPin size={18} />
+                   </div>
+                   <div>
+                      <span className="text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-[0.3em] block mb-1">Asal Sekolah</span>
+                      <span className="text-sm font-bold text-slate-700 dark:text-slate-200 uppercase tracking-wider group-hover/school:text-blue-600 dark:group-hover/school:text-blue-400 transition-colors">
+                        {selectedStudent.sekolah_asal || selectedStudent.sekolahAsal || "-"}
+                      </span>
+                   </div>
                 </div>
               </div>
 
-              {/* Right Side: QR Code Verification Badge (Large) */}
-              <div className="md:col-span-5 flex flex-col items-center justify-center text-center space-y-2.5 pl-0 md:pl-2">
-                <div className="relative p-2 bg-white dark:bg-slate-800 rounded-2xl shadow-xl border border-blue-500/20 dark:border-blue-500/40 group hover:scale-[1.02] transition-transform duration-300">
-                  {/* Viewfinder corner lines */}
-                  <div className="absolute top-1.5 left-1.5 w-3 h-3 border-t-2 border-l-2 border-blue-600 dark:border-blue-400 rounded-tl" />
-                  <div className="absolute top-1.5 right-1.5 w-3 h-3 border-t-2 border-r-2 border-blue-600 dark:border-blue-400 rounded-tr" />
-                  <div className="absolute bottom-1.5 left-1.5 w-3 h-3 border-b-2 border-l-2 border-blue-600 dark:border-blue-400 rounded-bl" />
-                  <div className="absolute bottom-1.5 right-1.5 w-3 h-3 border-b-2 border-r-2 border-blue-600 dark:border-blue-400 rounded-br" />
+              {/* Right Side: QR Code Verification Badge (Clean Modern Scanner) */}
+              <div className="md:col-span-5 flex flex-col items-center justify-center text-center space-y-4">
+                <div className="relative p-2.5 bg-white dark:bg-slate-900 rounded-3xl shadow-lg border border-slate-200 dark:border-slate-700 group/qr hover:shadow-xl transition-all duration-500 hover:border-blue-400 dark:hover:border-blue-500/50">
+                  
+                  {/* Modern scanner corners */}
+                  <div className="absolute -top-1.5 -left-1.5 w-5 h-5 border-t-4 border-l-4 border-blue-500 rounded-tl-xl opacity-0 group-hover/qr:opacity-100 transition-opacity duration-300" />
+                  <div className="absolute -top-1.5 -right-1.5 w-5 h-5 border-t-4 border-r-4 border-blue-500 rounded-tr-xl opacity-0 group-hover/qr:opacity-100 transition-opacity duration-300" />
+                  <div className="absolute -bottom-1.5 -left-1.5 w-5 h-5 border-b-4 border-l-4 border-blue-500 rounded-bl-xl opacity-0 group-hover/qr:opacity-100 transition-opacity duration-300" />
+                  <div className="absolute -bottom-1.5 -right-1.5 w-5 h-5 border-b-4 border-r-4 border-blue-500 rounded-br-xl opacity-0 group-hover/qr:opacity-100 transition-opacity duration-300" />
+                  
+                  {/* Scanner line (animated laser) */}
+                  <div className="absolute left-0 w-full h-[2px] bg-blue-500 shadow-[0_0_12px_3px_rgba(59,130,246,0.5)] z-20 scanner-line pointer-events-none rounded-full hidden group-hover/qr:block" />
                   
                   {(() => {
                     const verifyUrl = typeof window !== 'undefined' 
                       ? `${window.location.origin}/verify/${selectedStudent.id}` 
                       : `http://localhost:3000/verify/${selectedStudent.id}`;
                     return (
-                      <img 
-                        src={`https://api.qrserver.com/v1/create-qr-code/?size=350x350&data=${encodeURIComponent(verifyUrl)}`} 
-                        alt="Verification QR" 
-                        className="w-36 h-36 object-contain rounded-xl"
-                      />
+                      <div className="bg-white p-1.5 rounded-2xl relative z-10">
+                        <img 
+                          src={`https://api.qrserver.com/v1/create-qr-code/?size=400x400&data=${encodeURIComponent(verifyUrl)}&color=0f172a`} 
+                          alt="Verification QR" 
+                          className="w-32 h-32 md:w-40 md:h-40 object-contain rounded-xl"
+                        />
+                      </div>
                     );
                   })()}
                 </div>
-                <div className="space-y-0.5">
-                  <span className="text-[9px] font-black text-blue-600 dark:text-blue-400 tracking-widest uppercase block animate-pulse">SCAN VERIFIKASI</span>
-                  <span className="text-[7px] text-slate-400 dark:text-slate-500 font-extrabold uppercase block tracking-wider">PANITIA PPDB SMK TB</span>
+                
+                <div className="space-y-1.5 relative z-10 bg-slate-50 dark:bg-slate-800/80 px-5 py-2 rounded-full border border-slate-200 dark:border-slate-700 backdrop-blur-md group-hover:border-blue-200 dark:group-hover:border-blue-900/50 transition-colors">
+                  <span className="text-[11px] font-black text-blue-600 dark:text-blue-400 tracking-[0.3em] uppercase block animate-pulse">
+                    VERIFIKASI DIGITAL
+                  </span>
+                  <span className="text-[8px] text-slate-400 dark:text-slate-500 font-extrabold uppercase block tracking-widest">SISTEM PPDB TERINTEGRASI</span>
                 </div>
               </div>
 
             </div>
 
             {/* Card Footer */}
-            <div className="border-t border-slate-150 dark:border-white/5 pt-3 mt-4 flex flex-col sm:flex-row items-center justify-between gap-2 text-[8px] font-bold text-slate-450 dark:text-slate-400 tracking-wider transition-colors">
-              <div></div>
-              <span className="text-slate-500 font-black">TP. 2026/2027</span>
+            <div className="border-t border-slate-200 dark:border-white/10 pt-5 mt-8 flex flex-col sm:flex-row items-center justify-between gap-3 text-[10px] font-bold text-slate-400 dark:text-white/40 tracking-[0.2em] relative z-10">
+              <div className="flex items-center gap-2.5">
+                <div className="relative flex items-center justify-center">
+                  <div className="w-2.5 h-2.5 rounded-full bg-emerald-500 absolute animate-ping opacity-75" />
+                  <div className="w-2 h-2 rounded-full bg-emerald-500 dark:bg-emerald-400 relative" />
+                </div>
+                <span>LIVE ENCRYPTED TICKET</span>
+              </div>
+              <div className="flex items-center gap-2">
+                {selectedStudent.status === "Approved" ? (
+                  <span className="text-emerald-500 dark:text-emerald-400 font-black text-[9px] uppercase tracking-wider">
+                    VERIFIKASI SUKSES - BUKTI PENDAFTARAN SAH
+                  </span>
+                ) : (
+                  <span className="text-amber-500 dark:text-amber-400 font-black text-[9px] uppercase tracking-wider">
+                    MASIH PROSES VERIFIKASI MOHON MENUNGGU DARI ADMIN DULU
+                  </span>
+                )}
+              </div>
             </div>
 
           </div>

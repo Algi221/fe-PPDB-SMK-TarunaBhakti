@@ -157,41 +157,53 @@ export default function VerificationPage() {
           </div>
 
           {/* Card Body */}
-          <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-center relative z-10">
+          <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-center relative z-10 py-2">
             
             {/* Left Side: Student Info */}
-            <div className="md:col-span-8 pr-0 md:pr-2 space-y-4">
-              <div>
-                <span className="text-[8px] font-extrabold text-slate-400 dark:text-slate-550 uppercase tracking-widest block mb-0.5">Calon Peserta Didik Baru</span>
-                <h2 className="text-xl md:text-2xl font-black text-slate-850 dark:text-transparent dark:bg-clip-text dark:bg-gradient-to-r dark:from-white dark:via-blue-100 dark:to-sky-200 uppercase tracking-tight leading-snug truncate">
-                  {data.nama}
-                </h2>
-                <div className="w-12 h-0.5 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-full mt-2" />
-              </div>
-
-              <div className="grid grid-cols-1 gap-4">
-                <div className="bg-slate-50/80 dark:bg-white/5 border border-slate-150 dark:border-white/5 rounded-2xl p-3 transition-colors flex items-start gap-2.5">
-                  <div className="w-8 h-8 rounded-xl bg-blue-500/10 dark:bg-blue-500/20 text-blue-600 dark:text-blue-400 flex items-center justify-center shrink-0 mt-0.5">
-                    <MapPin size={15} />
-                  </div>
-                  <div className="overflow-hidden">
-                    <span className="text-[8px] font-black text-slate-400 dark:text-slate-550 uppercase tracking-widest block mb-0.5">Sekolah Asal</span>
-                    <div className="text-xs font-black text-slate-700 dark:text-slate-200 truncate">
-                      {data.sekolah_asal || "-"}
-                    </div>
-                  </div>
+            <div className="md:col-span-7 flex flex-col justify-center py-2">
+              <div className="flex items-center gap-2 mb-3">
+                <div className="w-7 h-7 rounded-lg bg-blue-100 dark:bg-blue-500/20 flex items-center justify-center border border-blue-200 dark:border-blue-500/30">
+                  <User size={14} className="text-blue-700 dark:text-blue-400" />
                 </div>
+                <span className="text-[10px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-[0.2em]">Calon Peserta Didik Baru</span>
+              </div>
+              
+              <h2 className="text-3xl md:text-4xl font-black text-slate-850 dark:text-transparent dark:bg-clip-text dark:bg-gradient-to-r dark:from-white dark:via-blue-100 dark:to-indigo-200 uppercase tracking-tight leading-tight truncate mb-4">
+                {data.nama}
+              </h2>
+              
+              {/* Sekolah Asal Details - Clean & borderless */}
+              <div className="flex items-center gap-3">
+                 <div className="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-800/80 flex items-center justify-center text-blue-600 dark:text-blue-400 shrink-0">
+                    <MapPin size={16} />
+                 </div>
+                 <div>
+                    <span className="text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-[0.15em] block mb-0.5">Asal Sekolah</span>
+                    <span className="text-sm font-bold text-slate-700 dark:text-slate-200 uppercase tracking-wide">
+                      {data.sekolah_asal || "-"}
+                    </span>
+                 </div>
               </div>
             </div>
 
             {/* Right Side: Major selection */}
-            <div className="md:col-span-4 flex flex-col items-center justify-center text-center pl-0 md:pl-2">
-              <div className="w-full bg-slate-50/80 dark:bg-white/5 border border-slate-150 dark:border-white/5 rounded-2xl p-4 transition-colors">
-                <span className="text-[8px] font-black text-slate-400 dark:text-slate-500 tracking-widest uppercase block mb-1">PROGRAM KEAHLIAN</span>
-                <span className="text-sm font-black text-blue-600 dark:text-blue-400 uppercase block tracking-wider leading-tight">
+            <div className="md:col-span-5 flex flex-col justify-center h-full">
+              <div className="relative w-full h-full min-h-[140px] bg-gradient-to-br from-slate-50 to-blue-50/50 dark:from-slate-900/80 dark:to-indigo-950/40 border border-slate-200/80 dark:border-blue-500/20 rounded-[24px] p-6 transition-all flex flex-col items-center justify-center overflow-hidden group hover:border-blue-400/50 dark:hover:border-blue-400/50 hover:shadow-xl hover:shadow-blue-500/10">
+                {/* Decorative background circle */}
+                <div className="absolute -top-8 -right-8 w-32 h-32 bg-blue-500/5 dark:bg-blue-500/10 rounded-full blur-2xl group-hover:bg-blue-500/15 transition-colors duration-500" />
+                <div className="absolute -bottom-8 -left-8 w-32 h-32 bg-indigo-500/5 dark:bg-indigo-500/10 rounded-full blur-2xl group-hover:bg-indigo-500/15 transition-colors duration-500" />
+                
+                <div className="w-12 h-12 rounded-full bg-blue-100 dark:bg-blue-900/40 flex items-center justify-center mb-4 relative z-10 shadow-inner border border-blue-200 dark:border-blue-800">
+                  <Award size={20} className="text-blue-600 dark:text-blue-400" />
+                </div>
+                
+                <span className="text-[9px] font-black text-slate-400 dark:text-slate-500 tracking-[0.2em] uppercase block mb-2 relative z-10 text-center">Program Keahlian</span>
+                <span className="text-base md:text-lg font-black text-slate-800 dark:text-white uppercase block tracking-wider leading-tight text-center relative z-10">
                   {data.jurusan_1}
                 </span>
-                <span className="text-[8.5px] font-extrabold text-slate-400 dark:text-slate-550 block mt-2 uppercase">SMK TARUNA BHAKTI</span>
+                <div className="mt-4 inline-block px-4 py-1.5 bg-white/80 dark:bg-slate-950/50 rounded-full border border-slate-200 dark:border-white/10 relative z-10 shadow-sm">
+                  <span className="text-[9px] font-extrabold text-blue-600 dark:text-blue-400 uppercase tracking-widest block">SMK Taruna Bhakti</span>
+                </div>
               </div>
             </div>
 
