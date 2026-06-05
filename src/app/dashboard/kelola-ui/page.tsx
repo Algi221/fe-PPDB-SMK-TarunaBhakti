@@ -1796,9 +1796,8 @@ export default function KelolaUserInterface() {
                             type="text"
                             value={bank.bankName}
                             onChange={(e) => {
-                              const updated = [...bankConfigList];
-                              updated[idx].bankName = e.target.value;
-                              setBankConfigList(updated);
+                              const val = e.target.value;
+                              setBankConfigList(prev => prev.map((item, i) => i === idx ? { ...item, bankName: val } : item));
                             }}
                             placeholder="Contoh: Bank Mandiri, BCA, BJB..."
                             className="w-full px-4 py-2.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/5 rounded-2xl text-slate-800 dark:text-white font-semibold text-xs focus:outline-none focus:border-blue-500"
@@ -1812,9 +1811,8 @@ export default function KelolaUserInterface() {
                               type="text"
                               value={bank.accountNumber}
                               onChange={(e) => {
-                                const updated = [...bankConfigList];
-                                updated[idx].accountNumber = e.target.value;
-                                setBankConfigList(updated);
+                                const val = e.target.value;
+                                setBankConfigList(prev => prev.map((item, i) => i === idx ? { ...item, accountNumber: val } : item));
                               }}
                               placeholder="Contoh: 157-00-0174092-2"
                               className="w-full px-4 py-2.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/5 rounded-2xl text-slate-800 dark:text-white font-semibold text-xs focus:outline-none focus:border-blue-500"
@@ -1827,9 +1825,8 @@ export default function KelolaUserInterface() {
                               type="text"
                               value={bank.accountHolder}
                               onChange={(e) => {
-                                const updated = [...bankConfigList];
-                                updated[idx].accountHolder = e.target.value;
-                                setBankConfigList(updated);
+                                const val = e.target.value;
+                                setBankConfigList(prev => prev.map((item, i) => i === idx ? { ...item, accountHolder: val } : item));
                               }}
                               placeholder="Contoh: Yayasan Taruna Bhakti"
                               className="w-full px-4 py-2.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/5 rounded-2xl text-slate-800 dark:text-white font-semibold text-xs focus:outline-none focus:border-blue-500"

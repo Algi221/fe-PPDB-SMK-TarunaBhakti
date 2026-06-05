@@ -493,7 +493,7 @@ export default function ClassDivisionManagement() {
     dragGhost.style.position = "absolute";
     dragGhost.style.top = "-1000px";
     dragGhost.style.boxShadow = "0 8px 30px rgba(59, 130, 246, 0.4)";
-    dragGhost.innerText = `📦 Memindahkan ${dragIds.length} Siswa TB`;
+    dragGhost.textContent = `📦 Memindahkan ${Number(dragIds.length)} Siswa TB`;
     document.body.appendChild(dragGhost);
     e.dataTransfer.setDragImage(dragGhost, 0, 0);
     setTimeout(() => {

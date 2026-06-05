@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { usePPDB } from "@/context/PPDBContext";
+import { sanitizeUrl, sanitizeSrc } from "@/utils/security";
 import { 
   Megaphone, 
   Plus, 
@@ -569,7 +570,7 @@ export default function KelolaInformasi() {
                   <div className="h-48 bg-slate-100 dark:bg-slate-955 overflow-hidden relative border-b border-slate-150 dark:border-white/5">
                     {media.foto ? (
                       <img 
-                        src={media.foto} 
+                        src={sanitizeSrc(media.foto)} 
                         alt={item.judul}
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                       />
@@ -707,7 +708,7 @@ export default function KelolaInformasi() {
                   
                   {fotoUrl ? (
                     <div className="relative rounded-2xl border border-slate-200 dark:border-white/5 overflow-hidden h-52 bg-slate-100 dark:bg-slate-950 group">
-                      <img src={fotoUrl} alt="Preview" className="w-full h-full object-cover" />
+                      <img src={sanitizeSrc(fotoUrl)} alt="Preview" className="w-full h-full object-cover" />
                       <div className="absolute inset-0 bg-black/40 backdrop-blur-[2px] opacity-0 group-hover:opacity-100 flex items-center justify-center gap-3 transition-opacity duration-200">
                         <button
                           type="button"
@@ -874,7 +875,7 @@ export default function KelolaInformasi() {
               {/* Poster Header */}
               {media.foto ? (
                 <div className="h-80 relative border-b border-slate-150 dark:border-white/5">
-                  <img src={media.foto} alt={previewItem.judul} className="w-full h-full object-cover" />
+                  <img src={sanitizeSrc(media.foto)} alt={previewItem.judul} className="w-full h-full object-cover" />
                   <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-transparent to-transparent" />
                   
                   {/* Floating Date Over Image */}
@@ -926,7 +927,7 @@ export default function KelolaInformasi() {
                         <div className="space-y-3 text-left">
                           <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">🎥 Berkas Video:</span>
                           <div className="rounded-2xl border border-slate-200 dark:border-white/5 overflow-hidden bg-slate-950 shadow-sm relative">
-                            <video src={media.video} controls className="w-full max-h-72 object-contain" />
+                            <video src={sanitizeSrc(media.video)} controls className="w-full max-h-72 object-contain" />
                           </div>
                         </div>
                       )}
@@ -938,11 +939,11 @@ export default function KelolaInformasi() {
                           
                           {media.dokumen.startsWith("data:application/pdf") ? (
                             <div className="rounded-2xl border border-slate-200 dark:border-white/5 overflow-hidden shadow-md bg-white">
-                              <iframe src={media.dokumen} className="w-full h-[450px] border-0" />
+                              <iframe src={sanitizeSrc(media.dokumen)} className="w-full h-[450px] border-0" />
                             </div>
                           ) : media.dokumen.startsWith("data:image/") ? (
                             <div className="rounded-2xl border border-slate-200 dark:border-white/5 overflow-hidden shadow-md bg-slate-100 dark:bg-slate-950 flex items-center justify-center p-4">
-                              <img src={media.dokumen} alt="Dokumen Preview" className="max-w-full max-h-96 object-contain rounded-xl" />
+                              <img src={sanitizeSrc(media.dokumen)} alt="Dokumen Preview" className="max-w-full max-h-96 object-contain rounded-xl" />
                             </div>
                           ) : (
                             <div className="p-4 bg-slate-50 dark:bg-slate-950/40 border border-slate-200 dark:border-white/5 rounded-2xl flex items-center gap-3">
@@ -958,7 +959,7 @@ export default function KelolaInformasi() {
                           
                           <div className="pt-2">
                             <a
-                              href={media.dokumen}
+                              href={sanitizeUrl(media.dokumen)}
                               download={media.dokumenName || "dokumen.pdf"}
                               className="w-full inline-flex items-center justify-center gap-2 px-4 py-3 bg-emerald-500 hover:bg-emerald-400 text-white rounded-2xl text-xs font-extrabold uppercase tracking-wider shadow-[0_4px_12px_rgba(16,185,129,0.2)] transition-all active:scale-[0.98]"
                             >

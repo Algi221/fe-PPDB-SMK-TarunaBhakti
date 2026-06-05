@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { usePPDB } from "@/context/PPDBContext";
+import { sanitizeUrl, sanitizeSrc } from "@/utils/security";
 import ExcelJS from 'exceljs';
 import { saveAs } from 'file-saver';
 import {
@@ -202,13 +203,12 @@ function bstSearch(root: BSTNode | null, query: string, results: number[]): void
   bstSearch(root.right, query, results);
 }
 
-// Build composite key: "<initial>|<jurusan>|<sekolah>|<kelas>"
+// Build composite key: "<initial>|<jurusan>|<sekolah>"
 function buildKey(a: Applicant): string {
   const initial = (a.nama || "").trim().charAt(0).toLowerCase();
   const jurusan = (a.jurusan_1 || a.jurusan1 || "").toLowerCase();
   const sekolah = (a.sekolah_asal || a.sekolahAsal || "").toLowerCase();
-  const kelas   = (a.diterima_kelas || a.diterimaKelas || "").toLowerCase();
-  return `${initial}|${jurusan}|${sekolah}|${kelas}`;
+  return `${initial}|${jurusan}|${sekolah}`;
 }
 
 export default function ApplicantsDirectory() {
@@ -216,48 +216,7 @@ export default function ApplicantsDirectory() {
   const [searchTerm, setSearchTerm] = useState<string>("");
   const [statusFilter, setStatusFilter] = useState<string>("ALL");
   const [majorFilter, setMajorFilter] = useState<string>("ALL");
-  const [classFilter, setClassFilter] = useState<string>("ALL");
-  const [classes, setClasses] = useState<any[]>([]);
-
-  useEffect(() => {
-    const savedClasses = localStorage.getItem("ppdb_classes_config");
-    let baseClasses: any[] = [];
-    if (savedClasses) {
-      try {
-        baseClasses = JSON.parse(savedClasses);
-      } catch (e) {
-        console.error("Gagal memuat konfigurasi kelas:", e);
-      }
-    }
-
-    // Extract unique classes dynamically assigned to applicants
-    const dynamicClassesSet = new Set<string>();
-    applicants.forEach(a => {
-      const assigned = a.diterima_kelas || a.diterimaKelas;
-      if (assigned) dynamicClassesSet.add(assigned);
-    });
-
-    // Pre-populate with standard SMK classes so it's never empty
-    const standardClasses = [
-      "X RPL 1", "X RPL 2", "X RPL 3",
-      "X TJKT 1", "X TJKT 2", "X TJKT 3",
-      "X DKV 1", "X DKV 2", "X DKV 3",
-      "X BC 1", "X BC 2",
-      "X TE 1", "X TE 2",
-      "X ANM 1", "X ANM 2"
-    ];
-    standardClasses.forEach(c => dynamicClassesSet.add(c));
-    
-    // Merge localStorage configs and dynamic classes
-    baseClasses.forEach(c => dynamicClassesSet.add(c.name));
-
-    const mergedClasses = Array.from(dynamicClassesSet)
-      .filter(name => name && name.trim().length > 2) // Filter out garbage like "X"
-      .sort()
-      .map(name => ({ name }));
-
-    setClasses(mergedClasses);
-  }, [applicants]);
+  const [gelombangFilter, setGelombangFilter] = useState<string>("ALL");
 
   const [selectedApplicant, setSelectedApplicant] = useState<Applicant | null>(null);
   const [activeTab, setActiveTab] = useState<string>("biodata");
@@ -360,9 +319,9 @@ export default function ApplicantsDirectory() {
     return new Set(ids);
   }, [bstRoot, searchTerm]);
 
-  // Filtering Logic — BST gates the search, dropdowns gate status/major/class
+  // Filtering Logic — BST gates the search, dropdowns gate status/major/gelombang
   const filteredApplicants = applicants.filter((a: Applicant) => {
-    // BST search: match against inisial nama, jurusan, asal sekolah, kelas
+    // BST search: match against inisial nama, jurusan, asal sekolah
     const matchesSearch = bstMatchedIds === null || bstMatchedIds.has(a.id);
 
     const matchesStatus =
@@ -375,13 +334,11 @@ export default function ApplicantsDirectory() {
       a.jurusan_1 === majorFilter ||
       a.jurusan1 === majorFilter;
 
-    const currentClass = a.diterima_kelas || a.diterimaKelas;
-    const matchesClass =
-      classFilter === "ALL" ||
-      (classFilter === "UNASSIGNED" && !currentClass) ||
-      (currentClass === classFilter);
+    const matchesGelombang =
+      gelombangFilter === "ALL" ||
+      (a.gelombang || "Gelombang 1") === gelombangFilter;
 
-    return matchesSearch && matchesStatus && matchesMajor && matchesClass;
+    return matchesSearch && matchesStatus && matchesMajor && matchesGelombang;
   });
 
   const [currentPage, setCurrentPage] = useState<number>(1);
@@ -390,7 +347,7 @@ export default function ApplicantsDirectory() {
   // Reset page to 1 when filters change
   useEffect(() => {
     setCurrentPage(1);
-  }, [searchTerm, statusFilter, majorFilter, classFilter]);
+  }, [searchTerm, statusFilter, majorFilter, gelombangFilter]);
 
   const totalPages = Math.max(1, Math.ceil(filteredApplicants.length / itemsPerPage));
   const paginatedApplicants = filteredApplicants.slice(
@@ -437,7 +394,6 @@ export default function ApplicantsDirectory() {
       { header: 'NISN', key: 'nisn', width: 25 },
       { header: 'NIK', key: 'nik', width: 25 },
       { header: 'Asal Sekolah', key: 'sekolah', width: 35 },
-      { header: 'Rombel Kelas', key: 'kelas', width: 20 },
       { header: 'Program Studi Pilihan 1', key: 'jurusan1', width: 35 },
       { header: 'Program Studi Pilihan 2', key: 'jurusan2', width: 35 },
       { header: 'No. WhatsApp', key: 'whatsapp', width: 25 },
@@ -474,7 +430,6 @@ export default function ApplicantsDirectory() {
         nisn: a.nisn || "",
         nik: a.nik || "",
         sekolah: a.sekolah_asal || a.sekolahAsal || "",
-        kelas: a.diterima_kelas || a.diterimaKelas || "Belum Diatur",
         jurusan1: a.jurusan_1 || a.jurusan1 || "",
         jurusan2: a.jurusan_2 || a.jurusan2 || "",
         whatsapp: a.whatsapp || "",
@@ -535,7 +490,7 @@ export default function ApplicantsDirectory() {
             type="text"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            placeholder="Search: inisial nama, jurusan, sekolah, kelas..."
+            placeholder="Cari: nama, jurusan, sekolah, gelombang..."
             className="w-full pl-11 pr-4 py-3 bg-slate-50 dark:bg-slate-950/40 border border-slate-200 dark:border-white/5 rounded-2xl text-slate-850 dark:text-white placeholder-slate-400 dark:placeholder-slate-655 text-sm focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 dark:focus:ring-blue-500/15 transition-all font-semibold"
           />
         </div>
@@ -574,22 +529,26 @@ export default function ApplicantsDirectory() {
             </select>
           </div>
 
-          {/* Class Filter */}
-          <div className="flex items-center gap-2 bg-slate-50 dark:bg-slate-950/40 border border-slate-200 dark:border-white/5 rounded-2xl px-3 py-1.5 shrink-0">
-            <School size={13} className="text-slate-400" />
-            <select
-              value={classFilter}
-              onChange={(e) => setClassFilter(e.target.value)}
-              className="bg-transparent text-slate-600 dark:text-slate-350 text-xs focus:outline-none transition-all font-extrabold uppercase tracking-wide cursor-pointer max-w-[160px]"
-            >
-              <option value="ALL">Semua Rombel</option>
-              <option value="UNASSIGNED">Belum Dapat Kelas</option>
-              {classes.map((c, idx) => (
-                <option key={idx} value={c.name}>
-                  {c.name}
-                </option>
-              ))}
-            </select>
+          {/* Gelombang Filter Buttons */}
+          <div className="flex bg-slate-100 dark:bg-slate-955 p-1 rounded-2xl border border-slate-200/50 dark:border-white/5 shrink-0 shadow-inner">
+            {[
+              { id: "ALL", label: "Semua Gelombang" },
+              { id: "Gelombang 1", label: "Gelombang 1" },
+              { id: "Gelombang 2", label: "Gelombang 2" }
+            ].map((g) => (
+              <button
+                key={g.id}
+                type="button"
+                onClick={() => setGelombangFilter(g.id)}
+                className={`px-3 py-1.5 rounded-xl text-xs font-black uppercase tracking-wider transition-all ${
+                  gelombangFilter === g.id
+                    ? "bg-white dark:bg-slate-900 text-blue-600 dark:text-white shadow-sm border border-slate-200/40 dark:border-white/5"
+                    : "text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white"
+                }`}
+              >
+                {g.label}
+              </button>
+            ))}
           </div>
 
 
@@ -637,13 +596,12 @@ export default function ApplicantsDirectory() {
         {!isSpreadsheetMode ? (
           /* STANDARD TABLE VIEW */
           <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs font-bold text-slate-650 dark:text-slate-350">
+            <table className="w-full text-left text-xs font-bold text-slate-650 dark:text-slate-355">
               <thead>
                 <tr className="border-b border-slate-100 dark:border-white/5 text-slate-400 dark:text-slate-500 font-black text-[9px] uppercase tracking-widest bg-slate-50/50 dark:bg-slate-950/15">
                   <th className="py-4 px-6 pl-8">Nama Calon Siswa</th>
                   <th className="py-4 px-6">Asal Sekolah</th>
                   <th className="py-4 px-6">Pilihan Jurusan Utama</th>
-                  <th className="py-4 px-6 text-center">Kelas</th>
                   <th className="py-4 px-6 text-center">Status</th>
                   <th className="py-4 px-6 text-right pr-8">Aksi Administrasi</th>
                 </tr>
@@ -666,17 +624,6 @@ export default function ApplicantsDirectory() {
                       <span className="px-2.5 py-1 rounded-full bg-blue-50/70 dark:bg-blue-950/40 text-blue-550 dark:text-blue-400 border border-blue-100/80 dark:border-blue-900/40 font-extrabold text-[9px] uppercase tracking-wide">
                         {a.jurusan_1 || a.jurusan1}
                       </span>
-                    </td>
-                    <td className="py-4 px-6 text-center">
-                      {(a.diterima_kelas || a.diterimaKelas) ? (
-                        <span className="inline-flex px-2.5 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-900/40 text-emerald-600 dark:text-emerald-400 text-[9px] font-black uppercase tracking-wider">
-                          {a.diterima_kelas || a.diterimaKelas}
-                        </span>
-                      ) : (
-                        <span className="inline-flex px-2.5 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800/60 border border-slate-200 dark:border-white/5 text-slate-400 dark:text-slate-500 text-[9px] font-bold uppercase tracking-wider">
-                          —
-                        </span>
-                      )}
                     </td>
                     <td className="py-4 px-6 text-center">
                       <span
@@ -1319,7 +1266,7 @@ export default function ApplicantsDirectory() {
                             <FileText size={48} className="text-blue-500 mb-2" />
                             <p className="text-xs font-bold text-slate-700 dark:text-slate-350">Dokumen PDF Bukti Transfer</p>
                             <a
-                              href={selectedApplicant.bukti_bayar}
+                              href={sanitizeUrl(selectedApplicant.bukti_bayar)}
                               target="_blank"
                               rel="noopener noreferrer"
                               className="mt-4 px-4 py-2 bg-blue-600 hover:bg-blue-750 text-white rounded-lg text-xs font-black uppercase tracking-wider shadow animate-bounce"
@@ -1330,13 +1277,13 @@ export default function ApplicantsDirectory() {
                         ) : (
                           <div className="relative group max-w-sm rounded-xl overflow-hidden border dark:border-white/5 shadow-md">
                             <img
-                              src={selectedApplicant.bukti_bayar}
+                              src={sanitizeSrc(selectedApplicant.bukti_bayar)}
                               alt="Bukti Transfer Manual"
                               className="max-h-64 object-contain mx-auto bg-white rounded-lg"
                             />
                             <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition flex items-center justify-center pointer-events-none rounded-lg">
                               <a
-                                href={selectedApplicant.bukti_bayar}
+                                href={sanitizeUrl(selectedApplicant.bukti_bayar)}
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 className="pointer-events-auto px-4 py-2 bg-white text-slate-800 font-extrabold text-xs rounded-lg uppercase shadow"
@@ -1411,8 +1358,7 @@ export default function ApplicantsDirectory() {
             </div>
 
             {/* Modal Action Controls Footer */}
-            <div className="p-6 border-t border-slate-100 dark:border-white/5 bg-slate-50/50 dark:bg-slate-950/15 flex items-center justify-between shrink-0">
-              <span className="text-slate-400 dark:text-slate-500 text-[10px] font-mono font-bold uppercase tracking-wider">ID_SISWA: #{selectedApplicant.id}</span>
+            <div className="p-6 border-t border-slate-100 dark:border-white/5 bg-slate-50/50 dark:bg-slate-950/15 flex items-center justify-end shrink-0">
               <div className="flex items-center gap-2.5">
                 <button
                   onClick={() => setSelectedApplicant(null)}
@@ -1468,8 +1414,6 @@ export default function ApplicantsDirectory() {
                   </h3>
                   <p className="text-xs text-slate-400 font-bold uppercase tracking-wider mt-1.5 flex items-center gap-2">
                     <span className="text-blue-500">NISN:</span> {editApplicant.nisn}
-                    <span className="text-slate-300 dark:text-slate-700">•</span> 
-                    <span className="text-blue-500">ID:</span> #{editApplicant.id}
                   </p>
                 </div>
               </div>

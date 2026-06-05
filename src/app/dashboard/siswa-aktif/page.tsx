@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useMemo } from "react";
 import { usePPDB } from "@/context/PPDBContext";
+import { sanitizeUrl, sanitizeSrc } from "@/utils/security";
 import { motion, AnimatePresence } from "framer-motion";
 import ExcelJS from 'exceljs';
 import { saveAs } from 'file-saver';
@@ -1006,7 +1007,7 @@ export default function ActiveStudentsDirectory() {
                         
                         <div className="flex items-center gap-2">
                           <a 
-                            href={selectedApplicant[selectedDoc]}
+                            href={sanitizeUrl(selectedApplicant[selectedDoc])}
                             download={`berkas_${selectedDoc}_${selectedApplicant.nisn}.png`}
                             target="_blank"
                             rel="noreferrer"
@@ -1028,13 +1029,13 @@ export default function ActiveStudentsDirectory() {
                       <div className="flex justify-center items-center bg-slate-100 dark:bg-slate-900/60 border border-slate-200/50 dark:border-white/5 rounded-2xl min-h-[300px] max-h-[500px] overflow-auto p-4">
                         {selectedApplicant[selectedDoc].startsWith("data:application/pdf") ? (
                           <iframe 
-                            src={selectedApplicant[selectedDoc]} 
+                            src={sanitizeSrc(selectedApplicant[selectedDoc])} 
                             className="w-full h-[400px] rounded-xl border border-slate-200 dark:border-white/5"
                             title="Pratinjau PDF"
                           />
                         ) : selectedApplicant[selectedDoc].startsWith("data:image/") || selectedApplicant[selectedDoc].startsWith("/") || selectedApplicant[selectedDoc].includes("base64") || selectedApplicant[selectedDoc].startsWith("http") ? (
                           <img 
-                            src={selectedApplicant[selectedDoc].includes("Mock_Data_Base64") ? "/logo_smktb.png" : selectedApplicant[selectedDoc]} 
+                            src={selectedApplicant[selectedDoc].includes("Mock_Data_Base64") ? "/logo_smktb.png" : sanitizeSrc(selectedApplicant[selectedDoc])} 
                             alt="Pratinjau Dokumen" 
                             className="max-w-full max-h-[400px] object-contain rounded-xl shadow-sm animate-in fade-in"
                             onError={(e) => {
@@ -1066,10 +1067,7 @@ export default function ActiveStudentsDirectory() {
             </div>
 
             {/* Modal Action Controls Footer */}
-            <div className="px-8 py-5 border-t border-slate-100 flex items-center justify-between bg-white shrink-0">
-              <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
-                ID_SISWA: #{selectedApplicant.id}
-              </div>
+            <div className="px-8 py-5 border-t border-slate-100 flex items-center justify-end bg-white shrink-0">
               <div className="flex items-center gap-3">
                 <button
                   onClick={() => setSelectedApplicant(null)}

@@ -120,10 +120,6 @@ export default function DataPendaftarTable() {
             <ChevronLeft size={16} />
             <span>Kembali ke Daftar</span>
           </button>
-          
-          <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">
-            ID: #TB-{selectedStudent.id}
-          </span>
         </div>
 
         {/* Premium Flexing Card */}

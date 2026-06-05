@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import BlurText from '../../components/BlurText';
+import { sanitizeUrl, sanitizeSrc } from '@/utils/security';
 
 const BACKEND_URL = "http://localhost:5000";
 
@@ -238,7 +239,7 @@ export default function ForumPage() {
                     <div className="flex flex-col sm:flex-row gap-5 mb-4">
                       {media.foto && (
                         <div className="w-full sm:w-48 h-48 sm:h-32 shrink-0 rounded-xl overflow-hidden bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-sm">
-                          <img src={media.foto} alt={item.judul || "Pengumuman"} className="w-full h-full object-cover group-hover:scale-102 transition-transform duration-350" />
+                           <img src={sanitizeSrc(media.foto)} alt={item.judul || "Pengumuman"} className="w-full h-full object-cover group-hover:scale-102 transition-transform duration-350" />
                         </div>
                       )}
                       <div className="flex-1 min-w-0">
@@ -360,7 +361,7 @@ export default function ForumPage() {
             >
               {media.foto && (
                 <div className="h-64 relative border-b border-slate-100 dark:border-white/5">
-                  <img src={media.foto} alt={selectedPost.judul} className="w-full h-full object-cover" />
+                  <img src={sanitizeSrc(media.foto)} alt={selectedPost.judul} className="w-full h-full object-cover" />
                   <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-transparent to-transparent" />
                 </div>
               )}
@@ -372,7 +373,7 @@ export default function ForumPage() {
                 </div>
                 <button
                   onClick={() => setSelectedPost(null)}
-                  className="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 dark:bg-white/5 dark:hover:bg-white/10 text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white flex items-center justify-center transition-all font-bold"
+                  className="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 dark:bg-white/5 dark:hover:bg-white/10 text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:white flex items-center justify-center transition-all font-bold"
                 >
                   ✕
                 </button>
@@ -395,7 +396,7 @@ export default function ForumPage() {
                         <div className="space-y-3 text-left">
                           <span className="text-[10px] font-bold text-slate-400 dark:text-slate-550 uppercase tracking-wider block">🎥 Video Lampiran:</span>
                           <div className="rounded-2xl border border-slate-200 dark:border-slate-800 overflow-hidden bg-slate-950 shadow-md">
-                            <video src={media.video} controls className="w-full max-h-72 object-contain" />
+                            <video src={sanitizeSrc(media.video)} controls className="w-full max-h-72 object-contain" />
                           </div>
                         </div>
                       )}
@@ -407,11 +408,11 @@ export default function ForumPage() {
                           
                           {media.dokumen.startsWith("data:application/pdf") ? (
                             <div className="rounded-2xl border border-slate-200 dark:border-slate-800 overflow-hidden shadow-md bg-white">
-                              <iframe src={media.dokumen} className="w-full h-[450px] border-0" />
+                              <iframe src={sanitizeSrc(media.dokumen)} className="w-full h-[450px] border-0" />
                             </div>
                           ) : media.dokumen.startsWith("data:image/") ? (
                             <div className="rounded-2xl border border-slate-200 dark:border-slate-800 overflow-hidden shadow-md bg-slate-100 dark:bg-slate-900 flex items-center justify-center p-4">
-                              <img src={media.dokumen} alt="Dokumen Preview" className="max-w-full max-h-96 object-contain rounded-xl" />
+                              <img src={sanitizeSrc(media.dokumen)} alt="Dokumen Preview" className="max-w-full max-h-96 object-contain rounded-xl" />
                             </div>
                           ) : (
                             <div className="p-4 bg-slate-50 dark:bg-slate-900/40 border border-slate-200 dark:border-slate-800 rounded-2xl flex items-center gap-3">
@@ -427,7 +428,7 @@ export default function ForumPage() {
                           
                           <div className="pt-2">
                             <a
-                              href={media.dokumen}
+                              href={sanitizeUrl(media.dokumen)}
                               download={media.dokumenName || "lampiran_dokumen.pdf"}
                               className="w-full inline-flex items-center justify-center gap-2 px-5 py-3.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-extrabold uppercase tracking-wider shadow-[0_4px_12px_rgba(16,185,129,0.2)] transition-all active:scale-[0.98]"
                             >

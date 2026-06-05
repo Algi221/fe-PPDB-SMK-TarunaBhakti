@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
+import { sanitizeUrl, sanitizeSrc } from "@/utils/security";
 import { 
   ArrowLeft, 
   Sun, 
@@ -471,13 +472,28 @@ export default function MajorPage() {
           <div className="flex items-center gap-4">
             <div className="w-16 h-16 rounded-2xl overflow-hidden flex items-center justify-center bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-md">
               <img 
-                src={major.logo} 
+                src={sanitizeSrc(major.logo)} 
                 alt={`Logo ${major.code}`} 
                 className="w-14 h-14 object-contain drop-shadow-sm"
                 onError={(e: any) => { 
                   e.target.style.display = "none"; 
-                  e.target.parentElement.classList.add("bg-gradient-to-r", major.color); 
-                  e.target.parentElement.innerHTML = `<div style="color:white;display:flex;align-items:center;justify-content:center;width:100%;height:100%;font-weight:800;font-size:16px">${major.alias}</div>`; 
+                  const parent = e.target.parentElement;
+                  if (parent) {
+                    parent.classList.add("bg-gradient-to-r", ...major.color.split(" "));
+                    parent.querySelectorAll('.fallback-alias').forEach((el: any) => el.remove());
+                    const fallbackDiv = document.createElement('div');
+                    fallbackDiv.style.color = 'white';
+                    fallbackDiv.style.display = 'flex';
+                    fallbackDiv.style.alignItems = 'center';
+                    fallbackDiv.style.justifyContent = 'center';
+                    fallbackDiv.style.width = '100%';
+                    fallbackDiv.style.height = '100%';
+                    fallbackDiv.style.fontWeight = '800';
+                    fallbackDiv.style.fontSize = '16px';
+                    fallbackDiv.textContent = major.alias;
+                    fallbackDiv.classList.add('fallback-alias');
+                    parent.appendChild(fallbackDiv);
+                  }
                 }}
               />
             </div>
@@ -520,7 +536,7 @@ export default function MajorPage() {
           
           <div className="relative bg-white dark:bg-slate-900 rounded-[32px] p-3 border border-slate-200/40 dark:border-slate-800/40 shadow-2xl overflow-hidden aspect-video flex items-center justify-center">
             <img 
-              src={major.banner} 
+              src={sanitizeSrc(major.banner)} 
               alt={`${major.title} Banner`}
               className="w-full h-full object-cover rounded-[24px] transform group-hover:scale-[1.02] transition duration-700" 
             />
@@ -551,13 +567,13 @@ export default function MajorPage() {
             <div className="relative w-full aspect-video rounded-3xl overflow-hidden bg-slate-950 border border-slate-200/30 dark:border-slate-800 shadow-2xl flex items-center justify-center p-2">
               {major.video.startsWith("data:video") || major.video.includes(".mp4") || major.video.startsWith("blob:") ? (
                 <video 
-                  src={major.video} 
+                  src={sanitizeSrc(major.video)} 
                   controls 
                   className="w-full h-full object-cover rounded-[20px]"
                 />
               ) : (
                 <iframe
-                  src={major.video}
+                  src={sanitizeSrc(major.video)}
                   className="w-full h-full rounded-[20px] border-0"
                   allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                   allowFullScreen

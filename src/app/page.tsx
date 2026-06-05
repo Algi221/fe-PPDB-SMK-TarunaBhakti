@@ -42,6 +42,7 @@ import DataPendaftarTable from "../components/DataPendaftarTable";
 import ShinyText from "../components/ShinyText";
 import ScrollFloat from "../components/ScrollFloat";
 import { usePPDB } from "@/context/PPDBContext";
+import { sanitizeUrl, sanitizeSrc } from "@/utils/security";
 
 interface InformasiItem {
   id: number;
@@ -849,13 +850,28 @@ export default function Home() {
                 <div className="relative z-10">
                   <div className="w-16 h-16 rounded-2xl overflow-hidden mb-6 flex items-center justify-center group-hover:scale-110 group-hover:rotate-3 transition-all duration-500 bg-white border border-slate-100 shadow-md group-hover:shadow-xl group-hover:shadow-blue-500/20">
                     <img
-                      src={major.logo}
+                      src={sanitizeSrc(major.logo)}
                       alt={`Logo ${major.code}`}
                       className="w-14 h-14 object-contain drop-shadow-sm"
                       onError={(e: any) => {
                         e.target.style.display = 'none';
-                        e.target.parentElement.classList.add('bg-blue-50');
-                        e.target.parentElement.innerHTML = `<div style="color:#0066ff;display:flex;align-items:center;justify-content:center;width:100%;height:100%;font-weight:800;font-size:11px">${major.code}</div>`;
+                        const parent = e.target.parentElement;
+                        if (parent) {
+                          parent.classList.add('bg-blue-50');
+                          parent.querySelectorAll('.fallback-code').forEach((el: any) => el.remove());
+                          const fallbackDiv = document.createElement('div');
+                          fallbackDiv.style.color = '#0066ff';
+                          fallbackDiv.style.display = 'flex';
+                          fallbackDiv.style.alignItems = 'center';
+                          fallbackDiv.style.justifyContent = 'center';
+                          fallbackDiv.style.width = '100%';
+                          fallbackDiv.style.height = '100%';
+                          fallbackDiv.style.fontWeight = '800';
+                          fallbackDiv.style.fontSize = '11px';
+                          fallbackDiv.textContent = major.code;
+                          fallbackDiv.classList.add('fallback-code');
+                          parent.appendChild(fallbackDiv);
+                        }
                       }}
                     />
                   </div>
@@ -1050,9 +1066,9 @@ export default function Home() {
             </p>
             
             <a 
-              href={`https://wa.me/${waAdmin.replace(/[^0-9]/g, '')}?text=${encodeURIComponent(
+              href={sanitizeUrl(`https://wa.me/${waAdmin.replace(/[^0-9]/g, '')}?text=${encodeURIComponent(
                 "Halo Admin PPDB SMK Taruna Bhakti, saya calon pendaftar PPDB TP 2026/2027. Saya ingin berkonsultasi mengenai proses pendaftaran karena mengalami kendala teknis."
-              )}`}
+              )}`)}
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center gap-2 bg-gradient-to-r from-emerald-600 to-green-500 hover:from-emerald-700 hover:to-green-600 text-white font-extrabold text-xs uppercase tracking-wider py-3.5 px-8 rounded-full shadow-lg shadow-emerald-500/20 transition-all duration-300 transform hover:scale-[1.02] active:scale-[0.98]"

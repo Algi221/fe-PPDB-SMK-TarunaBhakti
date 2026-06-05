@@ -4,6 +4,7 @@ import React, { useEffect, useState, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { Printer, ArrowLeft, Phone } from "lucide-react";
 import Link from "next/link";
+import { sanitizeUrl } from "@/utils/security";
 
 function InvoiceContent() {
   const searchParams = useSearchParams();
@@ -509,7 +510,7 @@ function InvoiceContent() {
                 Hubungkan dengan pendaftar PPDB lainnya, berkas fisik, dan info jadwal tes seleksi.
               </p>
               <a
-                href={waGroupUrl}
+                href={sanitizeUrl(waGroupUrl)}
                 target="_blank"
                 rel="noopener noreferrer"
                 style={{
