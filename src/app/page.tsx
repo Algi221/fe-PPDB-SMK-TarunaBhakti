@@ -150,7 +150,7 @@ export default function Home() {
       code: "RPL",
       title: "Rekayasa Perangkat Lunak",
       icon: Cpu,
-      logo: "/jurusan/pplg.jpeg",
+      logo: "/jurusan/pplg.png",
       desc: "Belajar pemrograman web, aplikasi mobile, game development, cloud computing, serta kecerdasan buatan (AI) dengan teknologi mutakhir.",
       color: "#0066ff",
       careers: "Software Engineer, Web Developer, Mobile Developer, Game Designer, AI Specialist",
@@ -160,7 +160,7 @@ export default function Home() {
       code: "TJKT",
       title: "Teknik Jaringan Komputer & Telekomunikasi",
       icon: Layers,
-      logo: "/jurusan/tjkt.jpeg",
+      logo: "/jurusan/tjkt.png",
       desc: "Fokus pada perancangan jaringan, administrasi server Linux & Windows, keamanan cyber, infrastruktur cloud, dan sertifikasi CISCO.",
       color: "#0ea5e9",
       careers: "Network Engineer, Cloud Administrator, Cybersecurity Analyst, System Administrator",
@@ -170,7 +170,7 @@ export default function Home() {
       code: "DKV",
       title: "Desain Komunikasi Visual",
       icon: BookOpen,
-      logo: "/jurusan/dkv.jpeg",
+      logo: "/jurusan/dkv.png",
       desc: "Ekspresikan kreativitas lewat UI/UX design, desain grafis, ilustrasi digital, videografi, fotografi komersil, serta branding korporat.",
       color: "#6366f1",
       careers: "UI/UX Designer, Graphic Designer, Illustrator, Creative Director, Brand Specialist",
@@ -190,7 +190,7 @@ export default function Home() {
       code: "ANM",
       title: "Animasi",
       icon: Palette,
-      logo: "/jurusan/animasijpeg.jpeg",
+      logo: "/jurusan/animasi.png",
       desc: "Kuasai seni pemodelan 2D/3D, karakter rigging, rendering, digital sculpting, storyboard, serta visual effects (VFX) standar industri perfilman.",
       color: "#ec4899",
       careers: "3D Animator, 2D Animator, 3D Modeler, Storyboard Artist, VFX Compositor, Character Designer",
@@ -200,7 +200,7 @@ export default function Home() {
       code: "TE",
       title: "Teknik Elektronika",
       icon: Cpu,
-      logo: "/jurusan/te.jpeg",
+      logo: "/jurusan/te.png",
       desc: "Pelajari teknologi mikroprosesor, Internet of Things (IoT), robotika cerdas, automasi industri, dan smart home system.",
       color: "#10b981",
       careers: "IoT Engineer, Robotics Technician, Automation Programmer, Hardware Specialist",
@@ -517,7 +517,7 @@ export default function Home() {
           {/* Floating elements representing major names as requested */}
           <Link href="/jurusan/rpl" className="floating-badge badge-aset">
             <div className="badge-icon overflow-hidden" style={{ background: 'transparent' }}>
-              <img src="/jurusan/pplg.jpeg" alt="RPL" className="w-full h-full object-cover rounded-full" />
+              <img src="/jurusan/pplg.png" alt="RPL" className="w-full h-full object-cover rounded-full" />
             </div>
             <div className="badge-info">
               <span>PPLG</span>
@@ -526,7 +526,7 @@ export default function Home() {
 
           <Link href="/jurusan/tjkt" className="floating-badge badge-peminjaman">
             <div className="badge-icon overflow-hidden" style={{ background: 'transparent' }}>
-              <img src="/jurusan/tjkt.jpeg" alt="TJKT" className="w-full h-full object-cover rounded-full" />
+              <img src="/jurusan/tjkt.png" alt="TJKT" className="w-full h-full object-cover rounded-full" />
             </div>
             <div className="badge-info">
               <span>TJKT</span>
@@ -535,7 +535,7 @@ export default function Home() {
 
           <Link href="/jurusan/te" className="floating-badge badge-te">
             <div className="badge-icon overflow-hidden" style={{ background: 'transparent' }}>
-              <img src="/jurusan/te.jpeg" alt="TE" className="w-full h-full object-cover rounded-full" />
+              <img src="/jurusan/te.png" alt="TE" className="w-full h-full object-cover rounded-full" />
             </div>
             <div className="badge-info">
               <span>TE</span>
@@ -544,7 +544,7 @@ export default function Home() {
 
           <Link href="/jurusan/dkv" className="floating-badge badge-laporan">
             <div className="badge-icon overflow-hidden" style={{ background: 'transparent' }}>
-              <img src="/jurusan/dkv.jpeg" alt="DKV" className="w-full h-full object-cover rounded-full" />
+              <img src="/jurusan/dkv.png" alt="DKV" className="w-full h-full object-cover rounded-full" />
             </div>
             <div className="badge-info">
               <span>DKV</span>
@@ -553,7 +553,7 @@ export default function Home() {
 
           <Link href="/jurusan/an" className="floating-badge badge-animasi">
             <div className="badge-icon overflow-hidden" style={{ background: 'transparent' }}>
-              <img src="/jurusan/animasijpeg.jpeg" alt="Animasi" className="w-full h-full object-cover rounded-full" />
+              <img src="/jurusan/animasi.png" alt="Animasi" className="w-full h-full object-cover rounded-full" />
             </div>
             <div className="badge-info">
               <span>Animasi</span>

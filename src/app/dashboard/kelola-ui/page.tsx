@@ -151,7 +151,7 @@ const DEFAULT_MAJORS: MajorItem[] = [
       "AWS Cloud Academy Learning Station",
       "Google Developer Partner Studio Lab"
     ],
-    logo: "/jurusan/pplg.jpeg",
+    logo: "/jurusan/pplg.png",
     banner: "https://images.unsplash.com/photo-1555066931-4365d14bab8c?q=80&w=1200&auto=format&fit=crop",
     video: "",
     gallery: [
@@ -179,7 +179,7 @@ const DEFAULT_MAJORS: MajorItem[] = [
       "FTTH & Fiber Optic Splicing Lab",
       "Virtualization & Private Cloud Server Sandbox"
     ],
-    logo: "/jurusan/tjkt.jpeg",
+    logo: "/jurusan/tjkt.png",
     banner: "https://images.unsplash.com/photo-1544197150-b99a580bb7a8?q=80&w=1200&auto=format&fit=crop",
     video: "",
     gallery: [
@@ -207,7 +207,7 @@ const DEFAULT_MAJORS: MajorItem[] = [
       "Adobe Certified Professional Lab",
       "Large-Format Digital Printing Center"
     ],
-    logo: "/jurusan/dkv.jpeg",
+    logo: "/jurusan/dkv.png",
     banner: "https://images.unsplash.com/photo-1561070791-26c113006238?q=80&w=1200&auto=format&fit=crop",
     video: "",
     gallery: [
@@ -263,7 +263,7 @@ const DEFAULT_MAJORS: MajorItem[] = [
       "Professional Sound Dubbing & Sound FX Studio",
       "VFX Processing & Rendering Farm Node Cluster"
     ],
-    logo: "/jurusan/animasijpeg.jpeg",
+    logo: "/jurusan/animasi.png",
     banner: "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=1200&auto=format&fit=crop",
     video: "",
     gallery: [
@@ -291,7 +291,7 @@ const DEFAULT_MAJORS: MajorItem[] = [
       "Precision Soldering & Osciloscope Lab Station",
       "Microcontroller sandbox environment"
     ],
-    logo: "/jurusan/te.jpeg",
+    logo: "/jurusan/te.png",
     banner: "https://images.unsplash.com/photo-1517055726410-dcbbb989d595?q=80&w=1200&auto=format&fit=crop",
     video: "",
     gallery: [

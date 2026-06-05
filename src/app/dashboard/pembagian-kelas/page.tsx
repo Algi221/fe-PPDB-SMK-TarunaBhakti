@@ -60,17 +60,17 @@ export default function ClassDivisionManagement() {
   const getMajorLogoUrl = (code: string) => {
     switch (code.toUpperCase()) {
       case "RPL":
-        return "/jurusan/pplg.jpeg";
+        return "/jurusan/pplg.png";
       case "TJKT":
-        return "/jurusan/tjkt.jpeg";
+        return "/jurusan/tjkt.png";
       case "DKV":
-        return "/jurusan/dkv.jpeg";
+        return "/jurusan/dkv.png";
       case "BC":
         return "/jurusan/bc.jpeg";
       case "ANM":
-        return "/jurusan/animasijpeg.jpeg";
+        return "/jurusan/animasi.png";
       case "TE":
-        return "/jurusan/te.jpeg";
+        return "/jurusan/te.png";
       default:
         return "/logo_smktb.png";
     }

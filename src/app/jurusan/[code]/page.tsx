@@ -70,7 +70,7 @@ const majorsData: Record<string, MajorDetail> = {
     bgAccent: "bg-blue-500/10 dark:bg-blue-500/20",
     textAccent: "text-blue-600 dark:text-blue-400",
     glowColor: "rgba(0,102,255,0.15)",
-    logo: "/jurusan/pplg.jpeg",
+    logo: "/jurusan/pplg.png",
     banner: "https://images.unsplash.com/photo-1555066931-4365d14bab8c?q=80&w=1200&auto=format&fit=crop",
     syllabus: [
       { subject: "Modern Web Programming", desc: "HTML5, CSS3, ES6+ JavaScript, TailwindCSS, React.js, Next.js, Node.js, RESTful API." },
@@ -112,7 +112,7 @@ const majorsData: Record<string, MajorDetail> = {
     bgAccent: "bg-sky-500/10 dark:bg-sky-500/20",
     textAccent: "text-sky-600 dark:text-sky-400",
     glowColor: "rgba(14,165,233,0.15)",
-    logo: "/jurusan/tjkt.jpeg",
+    logo: "/jurusan/tjkt.png",
     banner: "https://images.unsplash.com/photo-1544197150-b99a580bb7a8?q=80&w=1200&auto=format&fit=crop",
     syllabus: [
       { subject: "Enterprise Network Design", desc: "Kurikulum CISCO CCNA & MikroTik MTCNA, routing, switching, VLAN, OSPF." },
@@ -154,7 +154,7 @@ const majorsData: Record<string, MajorDetail> = {
     bgAccent: "bg-indigo-500/10 dark:bg-indigo-500/20",
     textAccent: "text-indigo-600 dark:text-indigo-400",
     glowColor: "rgba(99,102,241,0.15)",
-    logo: "/jurusan/dkv.jpeg",
+    logo: "/jurusan/dkv.png",
     banner: "https://images.unsplash.com/photo-1561070791-26c113006238?q=80&w=1200&auto=format&fit=crop",
     syllabus: [
       { subject: "UI/UX & Web Interaction", desc: "Design system Figma, low/high-fidelity wireframes, interactive prototyping, user flow." },
@@ -238,7 +238,7 @@ const majorsData: Record<string, MajorDetail> = {
     bgAccent: "bg-pink-500/10 dark:bg-pink-500/20",
     textAccent: "text-pink-600 dark:text-pink-400",
     glowColor: "rgba(236,72,153,0.15)",
-    logo: "/jurusan/animasijpeg.jpeg",
+    logo: "/jurusan/animasi.png",
     banner: "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=1200&auto=format&fit=crop",
     syllabus: [
       { subject: "3D Assets Modeling", desc: "ZBrush sculpting, Blender/Autodesk Maya 3D polygon structures, texturing." },
@@ -280,7 +280,7 @@ const majorsData: Record<string, MajorDetail> = {
     bgAccent: "bg-emerald-500/10 dark:bg-emerald-500/20",
     textAccent: "text-emerald-600 dark:text-emerald-400",
     glowColor: "rgba(16,185,129,0.15)",
-    logo: "/jurusan/te.jpeg",
+    logo: "/jurusan/te.png",
     banner: "https://images.unsplash.com/photo-1517055726410-dcbbb989d595?q=80&w=1200&auto=format&fit=crop",
     syllabus: [
       { subject: "IoT & Embedded System", desc: "Arduino IDE, Python script, sensor calibration, wireless transceivers (LoRa, Zigbee, Wi-Fi)." },
