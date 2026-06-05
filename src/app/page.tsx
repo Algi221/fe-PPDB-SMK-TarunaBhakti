@@ -664,10 +664,6 @@ export default function Home() {
                       </span>
                     </div>
                   </div>
-
-                  <div className="text-[11px] leading-relaxed text-slate-500 dark:text-slate-400 font-medium pl-1">
-                    Gelombang 1 ditujukan bagi calon siswa lulusan berprestasi maupun reguler yang ingin mendaftar lebih awal dengan prioritas seleksi tinggi.
-                  </div>
                 </div>
               </div>
             );
@@ -701,10 +697,6 @@ export default function Home() {
                         {gelombangConfig.gelombang2.start ? formatDate(gelombangConfig.gelombang2.start) : "Belum diatur"} - {gelombangConfig.gelombang2.end ? formatDate(gelombangConfig.gelombang2.end) : "Belum diatur"}
                       </span>
                     </div>
-                  </div>
-
-                  <div className="text-[11px] leading-relaxed text-slate-500 dark:text-slate-400 font-medium pl-1">
-                    Gelombang 2 dibuka apabila kuota tampung laboratorium jurusan belum terpenuhi secara penuh. Pantau status kuota secara berkala.
                   </div>
                 </div>
               </div>
@@ -1155,8 +1147,8 @@ export default function Home() {
               <ul className="space-y-2 text-xs font-semibold">
                 <li><a href="#" className="hover:text-blue-600 dark:hover:text-sky-400 transition-colors">Brosur PPDB {schoolPeriod.split("-")[0]}</a></li>
                 <li><a href="#" className="hover:text-blue-600 dark:hover:text-sky-400 transition-colors">Syarat Pendaftaran</a></li>
-                <li><a href="#" className="hover:text-blue-600 dark:hover:text-sky-400 transition-colors">Simulasi Mock Payment</a></li>
-                <li><a href="#" className="hover:text-blue-600 dark:hover:text-sky-400 transition-colors">Dasbor Admin Verifikator</a></li>
+                <li><Link href="/forum" className="hover:text-blue-600 dark:hover:text-sky-400 transition-colors">Forum Informasi</Link></li>
+                <li><a href="https://smktarunabhakti.sch.id/" target="_blank" rel="noopener noreferrer" className="hover:text-blue-600 dark:hover:text-sky-400 transition-colors">Company Profil Sekolah</a></li>
               </ul>
             </div>
 

@@ -160,11 +160,17 @@ export default function DaftarPage() {
   const [copied, setCopied] = useState(false);
   const [isSubmittingReceipt, setIsSubmittingReceipt] = useState(false);
   const [successData, setSuccessData] = useState<any>(null);
-  const [bankConfig, setBankConfig] = useState({
-    bankName: "Bank Mandiri",
-    accountNumber: "157-00-0174092-2",
-    accountHolder: "Yayasan Taruna Bhakti"
-  });
+  const [bankConfigList, setBankConfigList] = useState<Array<{
+    bankName: string;
+    accountNumber: string;
+    accountHolder: string;
+  }>>([
+    {
+      bankName: "Bank Mandiri",
+      accountNumber: "157-00-0174092-2",
+      accountHolder: "Yayasan Taruna Bhakti"
+    }
+  ]);
 
   // Dark Mode
   const [isDark, setIsDark] = useState(false);
@@ -221,7 +227,12 @@ export default function DaftarPage() {
     const savedBank = localStorage.getItem('ppdb_bank_config');
     if (savedBank) {
       try {
-        setBankConfig(JSON.parse(savedBank));
+        const parsed = JSON.parse(savedBank);
+        if (Array.isArray(parsed)) {
+          setBankConfigList(parsed);
+        } else if (parsed && typeof parsed === 'object') {
+          setBankConfigList([parsed]);
+        }
       } catch (e) {
         console.log("Failed to parse custom bank config:", e);
       }
@@ -257,8 +268,17 @@ export default function DaftarPage() {
               localStorage.setItem('ppdb_majors_config', JSON.stringify(config.ppdb_majors_config));
             }
             if (config.ppdb_bank_config) {
-              setBankConfig(config.ppdb_bank_config);
-              localStorage.setItem('ppdb_bank_config', JSON.stringify(config.ppdb_bank_config));
+              const bankData = config.ppdb_bank_config;
+              let finalBanks = [];
+              if (Array.isArray(bankData)) {
+                finalBanks = bankData;
+              } else if (bankData && typeof bankData === "object") {
+                finalBanks = [bankData];
+              }
+              if (finalBanks.length > 0) {
+                setBankConfigList(finalBanks);
+                localStorage.setItem('ppdb_bank_config', JSON.stringify(finalBanks));
+              }
             }
           } catch (storageErr) {
             console.warn("Storage quota exceeded or unavailable. LocalStorage config cache sync bypassed.", storageErr);
@@ -1015,70 +1035,73 @@ export default function DaftarPage() {
                   </p>
                 </div>
 
-                {/* Premium Bank Card Mockup */}
-                <div className="relative overflow-hidden rounded-[2rem] bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-900 p-6 md:p-8 text-white shadow-2xl border border-white/10 max-w-md mx-auto w-full transition-all duration-300 hover:scale-[1.02] hover:shadow-indigo-500/10">
-                  {/* Decorative Elements */}
-                  <div className="absolute right-[-10%] top-[-20%] w-48 h-48 rounded-full bg-gradient-to-tr from-blue-500/20 to-indigo-500/20 blur-2xl pointer-events-none"></div>
-                  <div className="absolute left-[-5%] bottom-[-10%] w-32 h-32 rounded-full bg-emerald-500/10 blur-xl pointer-events-none"></div>
-                  
-                  {/* Card Header */}
-                  <div className="flex justify-between items-start mb-10">
-                    <div className="space-y-1">
-                      <span className="text-[10px] font-black uppercase tracking-widest text-indigo-400">Official Payment Card</span>
-                      <h4 className="text-lg md:text-xl font-black tracking-wider uppercase text-slate-100">{bankConfig.bankName || "BANK TRANSFER"}</h4>
-                    </div>
-                    {/* Simulated contactless and chip */}
-                    <div className="flex items-center gap-2">
-                      <div className="w-10 h-7 rounded bg-amber-400/80 border border-amber-300/35 relative overflow-hidden flex items-center justify-center">
-                        <div className="absolute inset-x-1.5 inset-y-1 border border-slate-900/10 grid grid-cols-3 gap-0.5 opacity-40">
-                          <div className="border-r border-b border-slate-900/20"></div>
-                          <div className="border-r border-b border-slate-900/20"></div>
-                          <div className="border-b border-slate-900/20"></div>
-                          <div className="border-r border-slate-900/20"></div>
-                          <div className="border-r border-slate-900/20"></div>
-                          <div></div>
+                {/* Premium Bank Cards List */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-2xl mx-auto w-full">
+                  {bankConfigList.map((bank, index) => {
+                    return (
+                      <div 
+                        key={index} 
+                        className="relative overflow-hidden rounded-[2rem] bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-900 p-6 text-white shadow-2xl border border-white/10 w-full transition-all duration-300 hover:scale-[1.02]"
+                      >
+                        {/* Elemen Dekoratif */}
+                        <div className="absolute right-[-10%] top-[-20%] w-48 h-48 rounded-full bg-gradient-to-tr from-blue-500/10 to-indigo-500/10 blur-2xl pointer-events-none"></div>
+                        
+                        {/* Header Kartu */}
+                        <div className="flex justify-between items-start mb-6">
+                          <div className="space-y-1">
+                            <span className="text-[9px] font-black uppercase tracking-widest text-indigo-400">Pilihan #{index + 1}</span>
+                            <h4 className="text-sm md:text-base font-black tracking-wider uppercase text-slate-100">{bank.bankName || "BANK TRANSFER"}</h4>
+                          </div>
+                          <div className="flex items-center gap-1.5">
+                            <div className="w-8 h-5 rounded bg-amber-400/80 border border-amber-300/35 relative overflow-hidden flex items-center justify-center">
+                              <div className="absolute inset-x-1 inset-y-0.5 border border-slate-900/10 grid grid-cols-3 gap-0.5 opacity-40">
+                                <div className="border-r border-b border-slate-900/20"></div>
+                                <div className="border-r border-b border-slate-900/20"></div>
+                                <div className="border-b border-slate-900/20"></div>
+                                <div className="border-r border-slate-900/20"></div>
+                                <div className="border-r border-slate-900/20"></div>
+                                <div></div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Nomor Rekening */}
+                        <div className="space-y-1 mb-6">
+                          <span className="text-[8px] font-black uppercase tracking-widest text-slate-400/70">Nomor Rekening</span>
+                          <div className="flex items-center justify-between gap-3 bg-white/5 border border-white/10 rounded-2xl py-2 px-3 backdrop-blur-sm">
+                            <span className="font-mono text-xs md:text-sm font-black tracking-wider text-slate-100 select-all">
+                              {bank.accountNumber || "157-00-0174092-2"}
+                            </span>
+                            <button
+                              type="button"
+                              onClick={() => handleCopy(bank.accountNumber || "157-00-0174092-2")}
+                              className="p-1.5 bg-white/10 hover:bg-white/20 border border-white/15 text-slate-350 hover:text-white rounded-lg transition duration-150 active:scale-95 cursor-pointer"
+                              title="Salin Nomor Rekening"
+                            >
+                              {copied ? <Check size={12} className="text-emerald-400" /> : <Copy size={12} />}
+                            </button>
+                          </div>
+                        </div>
+
+                        {/* Footer Kartu */}
+                        <div className="flex justify-between items-end">
+                          <div className="space-y-0.5">
+                            <span className="text-[8px] font-black uppercase tracking-widest text-slate-400/70">Atas Nama (A.N.)</span>
+                            <p className="text-[10px] font-extrabold tracking-wide uppercase text-slate-200">
+                              {bank.accountHolder || "YAYASAN TARUNA BHAKTI"}
+                            </p>
+                          </div>
+                          <div className="text-right">
+                            <p className="text-[8px] font-black text-emerald-400 uppercase flex items-center gap-1">
+                              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-ping"></span>
+                              Aktif
+                            </p>
+                          </div>
                         </div>
                       </div>
-                      <svg className="w-6 h-6 text-slate-400/80" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M13 10V3L4 14h7v7l9-11h-7z" />
-                      </svg>
-                    </div>
-                  </div>
-
-                  {/* Card Body - Account Number */}
-                  <div className="space-y-1 mb-8">
-                    <span className="text-[8px] font-black uppercase tracking-widest text-slate-400/70">Nomor Rekening Tujuan</span>
-                    <div className="flex items-center justify-between gap-3 bg-white/5 border border-white/10 rounded-2xl py-3 px-4 backdrop-blur-sm">
-                      <span className="font-mono text-base md:text-lg lg:text-xl font-black tracking-widest text-slate-100 select-all">
-                        {bankConfig.accountNumber || "157-00-0174092-2"}
-                      </span>
-                      <button
-                        type="button"
-                        onClick={() => handleCopy(bankConfig.accountNumber || "157-00-0174092-2")}
-                        className="p-2 bg-white/10 hover:bg-white/20 border border-white/15 text-slate-350 hover:text-white rounded-xl transition duration-150 active:scale-95 cursor-pointer"
-                        title="Salin Nomor Rekening"
-                      >
-                        {copied ? <Check size={16} className="text-emerald-400" /> : <Copy size={16} />}
-                      </button>
-                    </div>
-                  </div>
-
-                  {/* Card Footer */}
-                  <div className="flex justify-between items-end">
-                    <div className="space-y-0.5">
-                      <span className="text-[8px] font-black uppercase tracking-widest text-slate-400/70">Atas Nama (A.N.)</span>
-                      <p className="text-xs md:text-sm font-extrabold tracking-wide uppercase text-slate-200">
-                        {bankConfig.accountHolder || "YAYASAN TARUNA BHAKTI"}
-                      </p>
-                    </div>
-                    <div className="text-right">
-                      <span className="text-[8px] font-black uppercase tracking-widest text-slate-400/70">Status</span>
-                      <p className="text-[10px] font-black text-emerald-400 uppercase flex items-center gap-1">
-                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-ping"></span>
-                        Aktif
-                      </p>
-                    </div>
-                  </div>
+                    );
+                  })}
                 </div>
 
                 {/* Upload Receipt Section */}
