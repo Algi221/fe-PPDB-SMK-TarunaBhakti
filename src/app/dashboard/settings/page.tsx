@@ -54,10 +54,19 @@ export default function SimulationSettings() {
   const [g2Error, setG2Error] = useState<string | null>(null);
   const [isSavingGelombang, setIsSavingGelombang] = useState(false);
 
+  // Bank Account Config state
+  const [bankConfig, setBankConfig] = useState({
+    bankName: "",
+    accountNumber: "",
+    accountHolder: ""
+  });
+  const [isSavingBank, setIsSavingBank] = useState(false);
+
   // Load preferences on mount
   useEffect(() => {
     setMounted(true);
     fetchGelombangConfig();
+    fetchBankConfig();
   }, []);
 
   const fetchGelombangConfig = async () => {
@@ -74,6 +83,58 @@ export default function SimulationSettings() {
       }
     } catch (e) {
       console.error("Gagal mengambil konfigurasi gelombang:", e);
+    }
+  };
+
+  const fetchBankConfig = async () => {
+    try {
+      const BACKEND_URL = typeof window !== 'undefined' ? `http://${window.location.hostname}:5000` : "http://localhost:5000";
+      const res = await fetch(`${BACKEND_URL}/api/config`);
+      const json = await res.json();
+      if (json.success && json.data && json.data.ppdb_bank_config) {
+        setBankConfig(json.data.ppdb_bank_config);
+      }
+    } catch (e) {
+      console.error("Gagal mengambil konfigurasi bank:", e);
+    }
+  };
+
+  const handleSaveBank = async () => {
+    setIsSavingBank(true);
+    try {
+      const BACKEND_URL = typeof window !== 'undefined' ? `http://${window.location.hostname}:5000` : "http://localhost:5000";
+      const token = adminToken || localStorage.getItem("ppdb_admin_token");
+      
+      const res = await fetch(`${BACKEND_URL}/api/config`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          key: "ppdb_bank_config",
+          value: bankConfig
+        })
+      });
+
+      const data = await res.json();
+      if (res.ok && data.success) {
+        if (typeof addToast === "function") {
+          addToast("Konfigurasi Disimpan", "Pengaturan rekening bank berhasil disimpan.", "success");
+        }
+        localStorage.setItem("ppdb_bank_config", JSON.stringify(bankConfig));
+      } else {
+        if (typeof addToast === "function") {
+          addToast("Gagal", data.message || "Gagal menyimpan konfigurasi bank.", "warning");
+        }
+      }
+    } catch (err) {
+      console.error(err);
+      if (typeof addToast === "function") {
+        addToast("Error", "Gagal menghubungi server backend.", "danger");
+      }
+    } finally {
+      setIsSavingBank(false);
     }
   };
 
@@ -487,6 +548,92 @@ export default function SimulationSettings() {
                   <>
                     <Calendar size={14} />
                     Simpan Rentang Gelombang
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+
+          {/* Pengaturan Rekening Bank Sekolah Card */}
+          <div className="bg-white dark:bg-slate-900 border border-slate-200/85 dark:border-slate-800/60 rounded-3xl p-6 md:p-8 shadow-[0_4px_20px_rgba(0,0,0,0.02)] transition-colors duration-300 relative overflow-hidden">
+            <div className="absolute top-[-10%] right-[-10%] w-[250px] h-[250px] rounded-full bg-emerald-500/5 blur-[80px] pointer-events-none"></div>
+
+            <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800/60 pb-5 mb-6">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-2xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-100 dark:border-emerald-900/35 flex items-center justify-center text-emerald-600 dark:text-emerald-450 shrink-0">
+                  <Database size={20} />
+                </div>
+                <div>
+                  <h3 className="text-base font-extrabold text-slate-850 dark:text-white tracking-tight">
+                    Pengaturan Rekening Bank Sekolah
+                  </h3>
+                  <p className="text-xs text-slate-455 font-semibold mt-0.5">
+                    Konfigurasikan informasi rekening bank sekolah untuk transfer manual pendaftaran
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <label className="text-xs font-black uppercase tracking-wider text-slate-500 dark:text-slate-455">
+                  Nama Bank
+                </label>
+                <input
+                  type="text"
+                  value={bankConfig.bankName}
+                  onChange={(e) => setBankConfig(prev => ({ ...prev, bankName: e.target.value }))}
+                  placeholder="Contoh: Bank Mandiri, BCA, BJB..."
+                  className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-950/30 border border-slate-200 dark:border-slate-800 rounded-2xl text-slate-800 dark:text-white placeholder-slate-400 dark:placeholder-slate-600 text-xs focus:outline-none focus:border-blue-500 transition-all font-semibold"
+                />
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <label className="text-xs font-black uppercase tracking-wider text-slate-500 dark:text-slate-455">
+                    Nomor Rekening
+                  </label>
+                  <input
+                    type="text"
+                    value={bankConfig.accountNumber}
+                    onChange={(e) => setBankConfig(prev => ({ ...prev, accountNumber: e.target.value }))}
+                    placeholder="Contoh: 157-00-0174092-2"
+                    className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-950/30 border border-slate-200 dark:border-slate-800 rounded-2xl text-slate-800 dark:text-white placeholder-slate-400 dark:placeholder-slate-600 text-xs focus:outline-none focus:border-blue-500 transition-all font-semibold"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-xs font-black uppercase tracking-wider text-slate-500 dark:text-slate-455">
+                    Nama Pemilik Rekening (A.N.)
+                  </label>
+                  <input
+                    type="text"
+                    value={bankConfig.accountHolder}
+                    onChange={(e) => setBankConfig(prev => ({ ...prev, accountHolder: e.target.value }))}
+                    placeholder="Contoh: SMK Taruna Bhakti"
+                    className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-950/30 border border-slate-200 dark:border-slate-800 rounded-2xl text-slate-800 dark:text-white placeholder-slate-400 dark:placeholder-slate-600 text-xs focus:outline-none focus:border-blue-500 transition-all font-semibold"
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Save Button */}
+            <div className="pt-6 border-t border-slate-100 dark:border-slate-800/60 mt-6 flex justify-end">
+              <button
+                type="button"
+                onClick={handleSaveBank}
+                disabled={isSavingBank || !bankConfig.bankName || !bankConfig.accountNumber || !bankConfig.accountHolder}
+                className="px-6 py-3 bg-gradient-to-r from-emerald-600 to-green-500 hover:brightness-110 text-white rounded-2xl text-xs font-bold tracking-wider uppercase transition-all shadow-[0_4px_15_rgba(16,185,129,0.15)] hover:shadow-[0_4px_20_rgba(16,185,129,0.25)] active:scale-[0.98] disabled:opacity-50 flex items-center gap-2 cursor-pointer font-black"
+              >
+                {isSavingBank ? (
+                  <>
+                    <RefreshCw size={14} className="animate-spin" />
+                    Menyimpan...
+                  </>
+                ) : (
+                  <>
+                    <CheckCircle size={14} />
+                    Simpan Rekening Bank
                   </>
                 )}
               </button>

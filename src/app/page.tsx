@@ -65,7 +65,7 @@ interface FaqItem {
 const DEFAULT_FAQ: FaqItem[] = [
   {
     q: "Bagaimana cara melakukan pembayaran biaya pendaftaran?",
-    a: "Pembayaran administrasi pendaftaran dapat diselesaikan secara online melalui Virtual Account transfer bank, QRIS, kartu kredit, atau e-wallet menggunakan gerbang pembayaran otomatis (Payment Gateway) yang sudah terintegrasi. Sistem juga menyediakan opsi Transfer Manual dengan mengunggah bukti transfer."
+    a: "Pembayaran administrasi pendaftaran dapat diselesaikan melalui Transfer Bank Manual ke rekening resmi yayasan sekolah. Setelah melakukan transfer, harap unggah bukti transfer di portal pendaftaran untuk divalidasi oleh panitia."
   },
   {
     q: "Apa saja berkas persyaratan fisik yang wajib dibawa ke sekolah?",
@@ -83,7 +83,7 @@ const DEFAULT_FAQ: FaqItem[] = [
 
 const DEFAULT_ALUR: AlurItem[] = [
   { id: 1, title: "Pendaftaran Online", desc: "Calon peserta didik mendaftar secara online melalui website smktarunabhakti.net dan mengisi data lengkap." },
-  { id: 2, title: "Simulasi / Gateway Pembayaran", desc: "Melakukan pembayaran administrasi pendaftaran sebesar Rp 250.000" },
+  { id: 2, title: "Pembayaran Formulir", desc: "Melakukan pembayaran administrasi pendaftaran sebesar Rp 250.000 via Transfer Bank." },
   { id: 3, title: "Verifikasi & Konfirmasi", desc: "Konfirmasi data pendaftaran otomatis via WhatsApp" },
   { id: 4, title: "Pemberkasan & Seragam", desc: "Datang langsung ke sekolah untuk verifikasi berkas asli fisik dan ukur seragam siswa baru." },
   { id: 5, title: "Uji Kelayakan (Tes Seleksi)", desc: "Mengikuti serangkaian tes bakat minat, wawancara kepribadian, serta tes kesehatan/fisik dasar calon siswa." },

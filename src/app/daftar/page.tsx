@@ -6,7 +6,7 @@ import { ArrowRight, Check, Upload, ArrowLeft, Home, Monitor, Code, Palette, Fil
 import { usePPDB } from "@/context/PPDBContext";
 
 export default function DaftarPage() {
-  const { registerApplicant, checkPaymentStatus, fetchPublicApplicants } = usePPDB();
+  const { registerApplicant, checkPaymentStatus, fetchPublicApplicants, addToast } = usePPDB();
   const [wizardStep, setWizardStep] = useState(1);
   const [isSuccess, setIsSuccess] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -155,17 +155,16 @@ export default function DaftarPage() {
   // Billing and Payment States
   const [showPaymentGate, setShowPaymentGate] = useState(false);
   const [submittedCandidate, setSubmittedCandidate] = useState(null);
-  const [paymentPolling, setPaymentPolling] = useState(false);
-  const snapScriptLoaded = useRef(false);
-  const [paymentError, setPaymentError] = useState(null);
-
-  // 3-Option Checkout Custom States
-  const [activePaymentTab, setActivePaymentTab] = useState("transfer"); // "transfer" | "midtrans" | "cash"
   const [manualReceiptBase64, setManualReceiptBase64] = useState("");
   const [manualReceiptName, setManualReceiptName] = useState("");
-  const [copiedBank, setCopiedBank] = useState(null); // null | 'mandiri' | 'bjb'
+  const [copied, setCopied] = useState(false);
   const [isSubmittingReceipt, setIsSubmittingReceipt] = useState(false);
   const [successData, setSuccessData] = useState<any>(null);
+  const [bankConfig, setBankConfig] = useState({
+    bankName: "Bank Mandiri",
+    accountNumber: "157-00-0174092-2",
+    accountHolder: "Yayasan Taruna Bhakti"
+  });
 
   // Dark Mode
   const [isDark, setIsDark] = useState(false);
@@ -219,10 +218,20 @@ export default function DaftarPage() {
       }
     }
 
+    const savedBank = localStorage.getItem('ppdb_bank_config');
+    if (savedBank) {
+      try {
+        setBankConfig(JSON.parse(savedBank));
+      } catch (e) {
+        console.log("Failed to parse custom bank config:", e);
+      }
+    }
+
     // Fetch live config dynamically from backend config endpoint
     const loadLiveConfig = async () => {
       try {
-        const res = await fetch("http://localhost:5000/api/config");
+        const BACKEND_URL = typeof window !== 'undefined' ? `http://${window.location.hostname}:5000` : "http://localhost:5000";
+        const res = await fetch(`${BACKEND_URL}/api/config`);
         const json = await res.json();
         if (json.success && json.data) {
           const config = json.data;
@@ -246,6 +255,10 @@ export default function DaftarPage() {
             if (config.ppdb_majors_config && Array.isArray(config.ppdb_majors_config) && config.ppdb_majors_config.length > 0) {
               setMajors(config.ppdb_majors_config);
               localStorage.setItem('ppdb_majors_config', JSON.stringify(config.ppdb_majors_config));
+            }
+            if (config.ppdb_bank_config) {
+              setBankConfig(config.ppdb_bank_config);
+              localStorage.setItem('ppdb_bank_config', JSON.stringify(config.ppdb_bank_config));
             }
           } catch (storageErr) {
             console.warn("Storage quota exceeded or unavailable. LocalStorage config cache sync bypassed.", storageErr);
@@ -312,28 +325,7 @@ export default function DaftarPage() {
     }
   }, [isSuccess, formData.nisn, submittedCandidate]);
 
-  // Polling check payment status every 4 seconds
-  useEffect(() => {
-    let intervalId;
-    if (paymentPolling && submittedCandidate?.nisn) {
-      intervalId = setInterval(async () => {
-        try {
-          const res = await checkPaymentStatus(submittedCandidate.nisn);
-          if (res && res.success && res.payment_status === "Paid") {
-            setPaymentPolling(false);
-            setShowPaymentGate(false);
-            setIsSuccess(true);
-            fetchPublicApplicants?.();
-          }
-        } catch (err) {
-          console.log("Polling payment status error:", err);
-        }
-      }, 4000);
-    }
-    return () => {
-      if (intervalId) clearInterval(intervalId);
-    };
-  }, [paymentPolling, submittedCandidate, checkPaymentStatus, fetchPublicApplicants]);
+  // Polling check payment status removed (manual bank transfer flow)
 
   const toggleDark = () => {
     const next = !isDark;
@@ -446,7 +438,6 @@ export default function DaftarPage() {
         if (res && res.success) {
           setSubmittedCandidate(res.data);
           setShowPaymentGate(true);
-          setPaymentPolling(true);
         } else {
           alert(res?.message || "Gagal mengirimkan formulir pendaftaran. Silakan coba lagi.");
         }
@@ -495,22 +486,7 @@ export default function DaftarPage() {
     setWizardStep(step);
   };
 
-  // Load Midtrans Snap script dynamically
-  useEffect(() => {
-    if (showPaymentGate && !snapScriptLoaded.current) {
-      const existingScript = document.querySelector('script[src*="snap.js"]');
-      if (existingScript) {
-        snapScriptLoaded.current = true;
-        return;
-      }
-      const script = document.createElement('script');
-      script.src = 'https://app.sandbox.midtrans.com/snap/snap.js';
-      script.setAttribute('data-client-key', process.env.NEXT_PUBLIC_MIDTRANS_CLIENT_KEY || 'SB-Mid-client-placeholder');
-      script.async = true;
-      script.onload = () => { snapScriptLoaded.current = true; };
-      document.head.appendChild(script);
-    }
-  }, [showPaymentGate]);
+  // Midtrans Snap script load removed
 
   if (isSuccess) {
     if (!successData) {
@@ -897,72 +873,14 @@ export default function DaftarPage() {
     );
   }
 
-
   if (showPaymentGate && submittedCandidate) {
-    const handlePay = async () => {
-      try {
-        const backendUrl = "http://localhost:5000"; // Should use env in prod
-        const res = await fetch(`${backendUrl}/api/payment/create-transaction`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ nisn: submittedCandidate.nisn })
-        });
-        const data = await res.json();
-        if (data.success && data.token) {
-          // @ts-ignore
-          if (window.snap) {
-            // @ts-ignore
-            window.snap.pay(data.token, {
-              onSuccess: function (result: any) {
-                console.log("Midtrans payment result:", result);
-                let detail = "Payment Gateway";
-                if (result) {
-                  const paymentChannel = result.payment_type || 'Midtrans';
-                  let channelDetail = paymentChannel;
-                  if (paymentChannel === 'bank_transfer' && result.va_numbers?.[0]) {
-                    channelDetail = `Bank Transfer (${result.va_numbers[0].bank?.toUpperCase()})`;
-                  } else if (paymentChannel === 'bank_transfer' && result.permata_va_number) {
-                    channelDetail = `Bank Transfer (PERMATA)`;
-                  } else if (paymentChannel === 'credit_card') {
-                    channelDetail = `Credit Card`;
-                  } else if (paymentChannel === 'cstore') {
-                    channelDetail = `Retail Store (${result.store?.toUpperCase() || ''})`;
-                  } else if (paymentChannel === 'qris') {
-                    channelDetail = `QRIS`;
-                  } else if (paymentChannel === 'gopay') {
-                    channelDetail = `GoPay`;
-                  } else if (paymentChannel === 'shopeepay') {
-                    channelDetail = `ShopeePay`;
-                  }
-                  detail = `Payment Gateway (Midtrans - ${channelDetail})`;
-                }
-                handleConfirmOption(detail);
-              },
-              onPending: function (result: any) {
-                alert("Menunggu pembayaran...");
-              },
-              onError: function (result: any) {
-                alert("Pembayaran gagal!");
-              },
-              onClose: function () {
-                console.log("Customer closed the popup without finishing the payment");
-              }
-            });
-          } else {
-            alert("Sistem pembayaran online belum siap, silakan coba lagi dalam beberapa detik.");
-          }
-        } else {
-          alert("Gagal membuat transaksi: " + data.message);
-        }
-      } catch (err: any) {
-        alert("Error: " + err.message);
-      }
-    };
-
-    const handleCopy = (text: string, type: 'mandiri' | 'bjb') => {
+    const handleCopy = (text: string) => {
       navigator.clipboard.writeText(text);
-      setCopiedBank(type);
-      setTimeout(() => setCopiedBank(null), 2000);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+      if (typeof addToast === "function") {
+        addToast("Nomor Rekening Disalin", "Nomor rekening berhasil disalin ke clipboard.", "success");
+      }
     };
 
     const handleReceiptFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -991,8 +909,8 @@ export default function DaftarPage() {
     const handleConfirmOption = async (metode: string, receiptBase64: string = "") => {
       setIsSubmittingReceipt(true);
       try {
-        const backendUrl = "http://localhost:5000";
-        const res = await fetch(`${backendUrl}/api/payment/confirm-payment-option`, {
+        const BACKEND_URL = typeof window !== 'undefined' ? `http://${window.location.hostname}:5000` : "http://localhost:5000";
+        const res = await fetch(`${BACKEND_URL}/api/payment/confirm-payment-option`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
@@ -1003,7 +921,6 @@ export default function DaftarPage() {
         });
         const data = await res.json();
         if (data.success) {
-          setPaymentPolling(false);
           setShowPaymentGate(false);
           setFormData(prev => ({ ...prev, nisn: submittedCandidate.nisn }));
           setIsSuccess(true);
@@ -1048,7 +965,7 @@ export default function DaftarPage() {
                   </div>
                 </div>
 
-                <p className="text-slate-500 dark:text-slate-400 text-xs md:text-sm leading-relaxed font-bold">
+                <p className="text-slate-555 dark:text-slate-400 text-xs md:text-sm leading-relaxed font-bold">
                   Selesaikan biaya pendaftaran untuk merampungkan berkas administrasi Anda di SMK Taruna Bhakti.
                 </p>
 
@@ -1088,147 +1005,154 @@ export default function DaftarPage() {
 
             {/* Right Side: Payment Form Selection (Col Span 8) */}
             <div className="lg:col-span-8 flex flex-col justify-between">
-              <div>
-                {/* 2-Option Tabs Switcher (Large and Spacious) */}
-                <div className="flex bg-slate-100 dark:bg-slate-950 p-1.5 rounded-2xl border border-slate-200/60 dark:border-slate-800/65 mb-8 shadow-inner">
-                  <button
-                    onClick={() => setActivePaymentTab("transfer")}
-                    className={`flex-1 py-4.5 rounded-xl text-xs md:text-sm font-black uppercase tracking-widest transition-all duration-200 flex items-center justify-center gap-3 ${activePaymentTab === "transfer"
-                      ? "bg-white dark:bg-slate-800 text-blue-600 dark:text-white shadow-md border border-slate-200/20"
-                      : "text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-350"
-                    }`}
-                  >
-                    <Building size={18} />
-                    <span>Transfer Manual</span>
-                  </button>
-                  <button
-                    onClick={() => setActivePaymentTab("midtrans")}
-                    className={`flex-1 py-4.5 rounded-xl text-xs md:text-sm font-black uppercase tracking-widest transition-all duration-200 flex items-center justify-center gap-3 ${activePaymentTab === "midtrans"
-                      ? "bg-white dark:bg-slate-800 text-blue-600 dark:text-white shadow-md border border-slate-200/20"
-                      : "text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-350"
-                    }`}
-                  >
-                    <CreditCard size={18} />
-                    <span>Payment Gateway</span>
-                  </button>
+              <div className="text-left space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-200">
+                <div>
+                  <h4 className="text-xs font-black uppercase tracking-wider text-slate-450 dark:text-slate-500 mb-2">
+                    Langkah Pembayaran Transfer Bank
+                  </h4>
+                  <p className="text-xs md:text-sm text-slate-500 dark:text-slate-400 leading-relaxed font-bold">
+                    Silakan lakukan transfer ke rekening resmi sekolah berikut sebesar biaya pendaftaran, kemudian unggah foto/file bukti transfer Anda.
+                  </p>
                 </div>
 
-                {/* Tab Content 1: Transfer Manual (Spacious accounts Cards) */}
-                {activePaymentTab === "transfer" && (
-                  <div className="text-left space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-200">
-                    <p className="text-xs md:text-sm text-slate-500 dark:text-slate-400 leading-relaxed font-bold text-center">
-                      Silakan lakukan transfer ke salah satu rekening yayasan sekolah resmi berikut, lalu unggah slip bukti transfer.
-                    </p>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      {/* Mandiri Card with Real SVG Logo - Enlarge Text */}
-                      <div className="bg-slate-50/70 dark:bg-slate-950/20 border border-slate-200/50 dark:border-slate-850 rounded-[1.5rem] p-6 flex justify-between items-center transition hover:border-blue-500/40 hover:shadow-md">
-                        <div className="space-y-3 w-full pr-4">
-                          <svg className="h-7 w-auto" viewBox="0 0 120 35" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <rect width="120" height="35" rx="6" fill="#0A2F5C"/>
-                            <path d="M15 22C18.5 15.5 25.5 11 30 11C33.5 11 35.5 13 35.5 16C35.5 20 28.5 25 21 25C18.5 25 15 24 15 22Z" fill="#F2A900" />
-                            <text x="42" y="22" fill="#FFFFFF" fontSize="12" fontWeight="900" fontFamily="system-ui, sans-serif">mandiri</text>
-                          </svg>
-                          <div>
-                            <p className="font-mono text-base md:text-lg lg:text-xl font-black text-slate-850 dark:text-white tracking-widest">157-00-0174092-2</p>
-                            <p className="text-[10px] text-slate-400 font-black uppercase tracking-wider">a.n. Yayasan Taruna Bhakti</p>
-                          </div>
-                        </div>
-                        <button
-                          onClick={() => handleCopy("157-00-0174092-2", "mandiri")}
-                          className="p-3.5 bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700/60 border border-slate-200/50 dark:border-slate-700 text-slate-500 dark:text-slate-400 rounded-2xl transition shadow-sm shrink-0"
-                          title="Copy Rekening"
-                        >
-                          {copiedBank === "mandiri" ? <Check size={18} className="text-emerald-500" /> : <Copy size={18} />}
-                        </button>
-                      </div>
-
-                      {/* BJB Card with Real SVG Logo - Enlarge Text */}
-                      <div className="bg-slate-50/70 dark:bg-slate-950/20 border border-slate-200/50 dark:border-slate-850 rounded-[1.5rem] p-6 flex justify-between items-center transition hover:border-blue-500/40 hover:shadow-md">
-                        <div className="space-y-3 w-full pr-4">
-                          <svg className="h-7 w-auto" viewBox="0 0 120 35" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <rect width="120" height="35" rx="6" fill="#00529C" />
-                            <path d="M15 10 C18 10 24 14 24 18 C24 22 18 26 15 26 Z" fill="#FFD100" />
-                            <path d="M22 10 C25 10 31 14 31 18 C31 22 25 26 22 26 Z" fill="#FFFFFF" />
-                            <text x="38" y="22" fill="#FFFFFF" fontSize="13" fontWeight="955" fontFamily="system-ui, sans-serif" fontStyle="italic">bank bjb</text>
-                          </svg>
-                          <div>
-                            <p className="font-mono text-base md:text-lg lg:text-xl font-black text-slate-850 dark:text-white tracking-widest">0010260271100</p>
-                            <p className="text-[10px] text-slate-400 font-black uppercase tracking-wider">a.n. SMK Taruna Bhakti</p>
-                          </div>
-                        </div>
-                        <button
-                          onClick={() => handleCopy("0010260271100", "bjb")}
-                          className="p-3.5 bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700/60 border border-slate-200/50 dark:border-slate-700 text-slate-500 dark:text-slate-400 rounded-2xl transition shadow-sm shrink-0"
-                          title="Copy Rekening"
-                        >
-                          {copiedBank === "bjb" ? <Check size={18} className="text-emerald-500" /> : <Copy size={18} />}
-                        </button>
-                      </div>
+                {/* Premium Bank Card Mockup */}
+                <div className="relative overflow-hidden rounded-[2rem] bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-900 p-6 md:p-8 text-white shadow-2xl border border-white/10 max-w-md mx-auto w-full transition-all duration-300 hover:scale-[1.02] hover:shadow-indigo-500/10">
+                  {/* Decorative Elements */}
+                  <div className="absolute right-[-10%] top-[-20%] w-48 h-48 rounded-full bg-gradient-to-tr from-blue-500/20 to-indigo-500/20 blur-2xl pointer-events-none"></div>
+                  <div className="absolute left-[-5%] bottom-[-10%] w-32 h-32 rounded-full bg-emerald-500/10 blur-xl pointer-events-none"></div>
+                  
+                  {/* Card Header */}
+                  <div className="flex justify-between items-start mb-10">
+                    <div className="space-y-1">
+                      <span className="text-[10px] font-black uppercase tracking-widest text-indigo-400">Official Payment Card</span>
+                      <h4 className="text-lg md:text-xl font-black tracking-wider uppercase text-slate-100">{bankConfig.bankName || "BANK TRANSFER"}</h4>
                     </div>
-
-                    {/* File Upload receipt - Enlarge Area */}
-                    <div className="space-y-2.5">
-                      <label className="block text-[10px] font-black uppercase text-slate-400 tracking-widest">Unggah Bukti Pembayaran Resmi</label>
-                      <div className="border-2 border-dashed border-slate-250 dark:border-slate-800 hover:border-blue-500 dark:hover:border-blue-500 rounded-[1.5rem] py-10 px-6 text-center transition bg-slate-50/20 dark:bg-slate-950/5 relative">
-                        <input
-                          type="file"
-                          accept="image/*,application/pdf"
-                          onChange={handleReceiptFileChange}
-                          className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
-                        />
-                        <div className="flex flex-col items-center gap-2 pointer-events-none">
-                          <Upload size={28} className="text-blue-500 animate-pulse" />
-                          <p className="text-xs md:text-sm font-black text-slate-750 dark:text-slate-200 truncate max-w-[450px]">
-                            {manualReceiptName ? manualReceiptName : "Pilih File Foto Slip Transfer / Dokumen PDF"}
-                          </p>
-                          <p className="text-[10px] text-slate-400 font-bold">Format file diperbolehkan: JPG, PNG, PDF (Maksimal file 3MB)</p>
+                    {/* Simulated contactless and chip */}
+                    <div className="flex items-center gap-2">
+                      <div className="w-10 h-7 rounded bg-amber-400/80 border border-amber-300/35 relative overflow-hidden flex items-center justify-center">
+                        <div className="absolute inset-x-1.5 inset-y-1 border border-slate-900/10 grid grid-cols-3 gap-0.5 opacity-40">
+                          <div className="border-r border-b border-slate-900/20"></div>
+                          <div className="border-r border-b border-slate-900/20"></div>
+                          <div className="border-b border-slate-900/20"></div>
+                          <div className="border-r border-slate-900/20"></div>
+                          <div className="border-r border-slate-900/20"></div>
+                          <div></div>
                         </div>
                       </div>
+                      <svg className="w-6 h-6 text-slate-400/80" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                      </svg>
                     </div>
-
-                    <button
-                      onClick={() => handleConfirmOption("Transfer Manual", manualReceiptBase64)}
-                      disabled={!manualReceiptBase64 || isSubmittingReceipt}
-                      className="w-full flex justify-center items-center gap-2 bg-gradient-to-r from-blue-600 to-indigo-650 hover:from-blue-700 hover:to-indigo-700 text-white font-black text-xs md:text-sm uppercase tracking-widest py-4.5 px-6 rounded-2xl shadow-lg disabled:opacity-40 disabled:pointer-events-none transition duration-300 transform hover:scale-[1.01] active:scale-[0.99] mt-2"
-                    >
-                      {isSubmittingReceipt ? "Mengirim Bukti..." : "Kirim Bukti Transfer Sekarang"}
-                      <ArrowRight size={16} />
-                    </button>
                   </div>
-                )}
 
-                {/* Tab Content 2: Payment Gateway (Enlarge details) */}
-                {activePaymentTab === "midtrans" && (
-                  <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-200 text-center lg:text-left">
-                    <p className="text-xs md:text-sm text-slate-500 dark:text-slate-400 leading-relaxed font-bold text-center">
-                      Bayar instan secara aman 24/7 menggunakan QRIS, e-Wallet (Gopay, ShopeePay), Virtual Account Bank (BCA, Mandiri, BNI, BRI), atau Kartu Kredit.
-                    </p>
-
-                    <div className="flex items-center justify-center gap-3 py-4 px-6 bg-slate-50 dark:bg-slate-950/40 border border-slate-200/50 dark:border-slate-850 rounded-xl text-xs font-bold text-slate-655 dark:text-slate-400 shadow-inner">
-                      <span className="animate-spin rounded-full h-4.5 w-4.5 border-2 border-blue-500 border-t-transparent shrink-0"></span>
-                      <span>Sistem siap menerima pembayaran instan otomatis...</span>
-                    </div>
-
-                    <div className="space-y-4">
-                      <button 
-                        onClick={handlePay}
-                        className="w-full flex justify-center items-center gap-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-black text-xs md:text-sm uppercase tracking-widest py-4.5 px-6 rounded-2xl shadow-lg shadow-blue-500/15 transition transform hover:scale-[1.01] active:scale-[0.99]"
-                      >
-                        Bayar Sekarang via Payment Gateway
-                        <ArrowRight size={16} />
-                      </button>
-
-                      {/* Simulation Bypass Button */}
+                  {/* Card Body - Account Number */}
+                  <div className="space-y-1 mb-8">
+                    <span className="text-[8px] font-black uppercase tracking-widest text-slate-400/70">Nomor Rekening Tujuan</span>
+                    <div className="flex items-center justify-between gap-3 bg-white/5 border border-white/10 rounded-2xl py-3 px-4 backdrop-blur-sm">
+                      <span className="font-mono text-base md:text-lg lg:text-xl font-black tracking-widest text-slate-100 select-all">
+                        {bankConfig.accountNumber || "157-00-0174092-2"}
+                      </span>
                       <button
-                        onClick={() => handleConfirmOption("Payment Gateway")}
-                        className="w-full bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-350 font-bold py-3 px-6 rounded-xl border border-slate-200 dark:border-slate-800 text-xs transition uppercase tracking-wider"
+                        type="button"
+                        onClick={() => handleCopy(bankConfig.accountNumber || "157-00-0174092-2")}
+                        className="p-2 bg-white/10 hover:bg-white/20 border border-white/15 text-slate-350 hover:text-white rounded-xl transition duration-150 active:scale-95 cursor-pointer"
+                        title="Salin Nomor Rekening"
                       >
-                        Simulasi Bayar Sukses (Bypass Admin)
+                        {copied ? <Check size={16} className="text-emerald-400" /> : <Copy size={16} />}
                       </button>
                     </div>
                   </div>
-                )}
+
+                  {/* Card Footer */}
+                  <div className="flex justify-between items-end">
+                    <div className="space-y-0.5">
+                      <span className="text-[8px] font-black uppercase tracking-widest text-slate-400/70">Atas Nama (A.N.)</span>
+                      <p className="text-xs md:text-sm font-extrabold tracking-wide uppercase text-slate-200">
+                        {bankConfig.accountHolder || "YAYASAN TARUNA BHAKTI"}
+                      </p>
+                    </div>
+                    <div className="text-right">
+                      <span className="text-[8px] font-black uppercase tracking-widest text-slate-400/70">Status</span>
+                      <p className="text-[10px] font-black text-emerald-400 uppercase flex items-center gap-1">
+                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-ping"></span>
+                        Aktif
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Upload Receipt Section */}
+                <div className="space-y-3">
+                  <label className="block text-[10px] font-black uppercase text-slate-400 tracking-widest">
+                    Unggah Bukti Transfer Pembayaran
+                  </label>
+                  
+                  {/* File Upload Zone / Area */}
+                  {!manualReceiptBase64 ? (
+                    <div className="border-2 border-dashed border-slate-250 dark:border-slate-800 hover:border-blue-500 dark:hover:border-blue-500 rounded-[1.5rem] py-10 px-6 text-center transition bg-slate-50/20 dark:bg-slate-950/5 relative group cursor-pointer">
+                      <input
+                        type="file"
+                        accept="image/*,application/pdf"
+                        onChange={handleReceiptFileChange}
+                        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                      />
+                      <div className="flex flex-col items-center gap-2 pointer-events-none transition-transform duration-200 group-hover:scale-102">
+                        <div className="w-12 h-12 rounded-full bg-blue-55 dark:bg-slate-800/80 flex items-center justify-center text-blue-500 border border-blue-100 dark:border-slate-700/50 mb-1">
+                          <Upload size={22} className="animate-pulse" />
+                        </div>
+                        <p className="text-xs md:text-sm font-black text-slate-755 dark:text-slate-200">
+                          Pilih atau seret file bukti transfer
+                        </p>
+                        <p className="text-[10px] text-slate-400 font-bold">
+                          JPG, JPEG, PNG, atau PDF (Maksimal 3MB)
+                        </p>
+                      </div>
+                    </div>
+                  ) : (
+                    /* High-fidelity preview of the uploaded receipt */
+                    <div className="bg-slate-50/80 dark:bg-slate-950/30 border border-slate-200/60 dark:border-slate-850 rounded-[1.5rem] p-5 flex flex-col md:flex-row items-center justify-between gap-4 animate-in fade-in zoom-in-95 duration-200">
+                      <div className="flex items-center gap-4 w-full md:w-auto">
+                        <div className="w-16 h-16 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-805 flex items-center justify-center text-blue-505 shrink-0 shadow-sm overflow-hidden relative">
+                          {manualReceiptBase64.startsWith("data:application/pdf") ? (
+                            <FileText size={32} className="text-red-500" />
+                          ) : (
+                            <img src={manualReceiptBase64} alt="Preview Bukti Bayar" className="w-full h-full object-cover" />
+                          )}
+                        </div>
+                        <div className="space-y-0.5 overflow-hidden w-full md:w-auto">
+                          <p className="text-xs font-black text-slate-750 dark:text-slate-200 truncate max-w-[200px] md:max-w-[300px]">
+                            {manualReceiptName}
+                          </p>
+                          <span className="text-[9px] font-black uppercase text-emerald-505 bg-emerald-50 dark:bg-emerald-950/50 border border-emerald-100 dark:border-emerald-900/35 px-2 py-0.5 rounded-full inline-block">
+                            File Siap Diunggah
+                          </span>
+                        </div>
+                      </div>
+                      
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setManualReceiptBase64("");
+                          setManualReceiptName("");
+                        }}
+                        className="px-4 py-2.5 bg-red-50 hover:bg-red-105 dark:bg-red-950/40 dark:hover:bg-red-900/30 border border-red-100/60 dark:border-red-900/35 text-red-655 dark:text-red-400 rounded-xl text-[10px] font-black uppercase tracking-wider transition active:scale-95 flex items-center gap-1.5 w-full md:w-auto justify-center cursor-pointer"
+                      >
+                        <X size={12} />
+                        Hapus File
+                      </button>
+                    </div>
+                  )}
+                </div>
+
+                {/* Submit Action Button */}
+                <button
+                  onClick={() => handleConfirmOption("Transfer Manual", manualReceiptBase64)}
+                  disabled={!manualReceiptBase64 || isSubmittingReceipt}
+                  className="w-full flex justify-center items-center gap-2 bg-gradient-to-r from-blue-650 to-indigo-650 hover:from-blue-700 hover:to-indigo-700 text-white font-black text-xs md:text-sm uppercase tracking-widest py-4.5 px-6 rounded-2xl shadow-lg disabled:opacity-40 disabled:pointer-events-none transition duration-300 transform hover:scale-[1.01] active:scale-[0.99] mt-4 cursor-pointer"
+                >
+                  {isSubmittingReceipt ? "Mengirim Bukti..." : "Kirim Bukti Transfer Sekarang"}
+                  <ArrowRight size={16} />
+                </button>
               </div>
             </div>
           </div>
