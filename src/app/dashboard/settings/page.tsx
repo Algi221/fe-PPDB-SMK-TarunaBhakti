@@ -31,10 +31,10 @@ export default function SimulationSettings() {
     addToast 
   } = usePPDB();
 
-  // Hydration safety
+  // Keamanan hidrasi
   const [mounted, setMounted] = useState<boolean>(false);
 
-  // Admin password change state
+  // State ubah password admin
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -42,7 +42,7 @@ export default function SimulationSettings() {
   const [isChangingPassword, setIsChangingPassword] = useState(false);
   const [passwordError, setPasswordError] = useState("");
 
-  // PPDB Gelombang Config state
+  // State konfigurasi gelombang PPDB
   const [gelombangConfig, setGelombangConfig] = useState<{
     gelombang1: { start: string; end: string };
     gelombang2: { start: string; end: string };
@@ -54,7 +54,7 @@ export default function SimulationSettings() {
   const [g2Error, setG2Error] = useState<string | null>(null);
   const [isSavingGelombang, setIsSavingGelombang] = useState(false);
 
-  // Bank Account Config state
+  // State konfigurasi rekening bank
   const [bankConfig, setBankConfig] = useState({
     bankName: "",
     accountNumber: "",
@@ -62,7 +62,7 @@ export default function SimulationSettings() {
   });
   const [isSavingBank, setIsSavingBank] = useState(false);
 
-  // Load preferences on mount
+  // Ambil konfigurasi saat render awal
   useEffect(() => {
     setMounted(true);
     fetchGelombangConfig();
@@ -315,7 +315,7 @@ export default function SimulationSettings() {
                 </div>
               )}
 
-              {/* Current Password */}
+              {/* Password saat ini */}
               <div className="space-y-2">
                 <label className="text-xs font-black uppercase tracking-wider text-slate-500 dark:text-slate-455 flex items-center gap-1.5">
                   <KeyRound size={13} className="text-slate-455" />
@@ -340,7 +340,7 @@ export default function SimulationSettings() {
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {/* New Password */}
+                {/* Password baru */}
                 <div className="space-y-2">
                   <label className="text-xs font-black uppercase tracking-wider text-slate-500 dark:text-slate-455 flex items-center gap-1.5">
                     <Lock size={13} className="text-slate-455" />
@@ -357,7 +357,7 @@ export default function SimulationSettings() {
                   </div>
                 </div>
 
-                {/* Confirm New Password */}
+                {/* Konfirmasi password baru */}
                 <div className="space-y-2">
                   <label className="text-xs font-black uppercase tracking-wider text-slate-500 dark:text-slate-455 flex items-center gap-1.5">
                     <ShieldCheck size={13} className="text-slate-455" />
@@ -375,7 +375,7 @@ export default function SimulationSettings() {
                 </div>
               </div>
 
-              {/* Submit Button */}
+              {/* Tombol submit */}
               <div className="pt-2">
                 <button
                   type="submit"
@@ -398,7 +398,7 @@ export default function SimulationSettings() {
             </form>
           </div>
 
-          {/* Engine Simulasi WebSocket Card */}
+          {/* Kartu engine simulasi WebSocket */}
           <div className="bg-white dark:bg-slate-900 border border-slate-200/85 dark:border-slate-800/60 rounded-3xl p-6 md:p-8 shadow-[0_4px_20px_rgba(0,0,0,0.02)] transition-colors duration-300 relative overflow-hidden">
             <div className="absolute top-[-10%] right-[-10%] w-[250px] h-[250px] rounded-full bg-blue-500/5 blur-[80px] pointer-events-none"></div>
 
@@ -425,7 +425,7 @@ export default function SimulationSettings() {
             </div>
 
             <div className="space-y-6">
-              {/* Quick Trigger Button */}
+              {/* Tombol pemicu cepat */}
               <div className="flex flex-col md:flex-row md:items-center justify-between p-4 bg-slate-50/50 dark:bg-slate-950/20 border border-slate-150/60 dark:border-slate-800 rounded-2xl gap-4">
                 <div>
                   <h4 className="text-sm font-bold text-slate-800 dark:text-white leading-snug">Simulasi Pendaftaran Baru</h4>
@@ -439,7 +439,7 @@ export default function SimulationSettings() {
                 </button>
               </div>
 
-              {/* Background Interval Toggle */}
+              {/* Saklar interval simulasi otomatis */}
               <div className="flex flex-col md:flex-row md:items-center justify-between p-4 bg-slate-50/50 dark:bg-slate-950/20 border border-slate-150/60 dark:border-slate-800 rounded-2xl gap-4">
                 <div>
                   <h4 className="text-sm font-bold text-slate-800 dark:text-white leading-snug">Auto-Simulation Interval</h4>
@@ -461,7 +461,7 @@ export default function SimulationSettings() {
                 </div>
               </div>
 
-              {/* Warning / Tips alert */}
+              {/* Peringatan / Tips simulasi */}
               <div className="p-4 rounded-2xl bg-amber-500/5 dark:bg-amber-500/10 border border-amber-500/20 text-slate-700 dark:text-amber-355 text-xs font-semibold leading-relaxed">
                 <h5 className="font-extrabold text-[10px] uppercase tracking-wider mb-2 flex items-center gap-1.5 text-amber-600 dark:text-amber-400">
                   💡 Informasi Tips Pengujian
@@ -477,7 +477,7 @@ export default function SimulationSettings() {
             </div>
           </div>
 
-          {/* Pengaturan Gelombang Pendaftaran Card */}
+          {/* Kartu pengaturan gelombang pendaftaran */}
           <div className="bg-white dark:bg-slate-900 border border-slate-200/85 dark:border-slate-800/60 rounded-3xl p-6 md:p-8 shadow-[0_4px_20px_rgba(0,0,0,0.02)] transition-colors duration-300 relative overflow-hidden">
             <div className="absolute top-[-10%] right-[-10%] w-[250px] h-[250px] rounded-full bg-blue-500/5 blur-[80px] pointer-events-none"></div>
 
@@ -498,7 +498,7 @@ export default function SimulationSettings() {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* Gelombang 1 */}
+              {/* Data Gelombang 1 */}
               <DateRangeCalendar
                 label="Gelombang 1"
                 startValue={gelombangConfig.gelombang1.start}
@@ -514,7 +514,7 @@ export default function SimulationSettings() {
                 setError={setG1Error}
               />
 
-              {/* Gelombang 2 */}
+              {/* Data Gelombang 2 */}
               <DateRangeCalendar
                 label="Gelombang 2"
                 startValue={gelombangConfig.gelombang2.start}
@@ -554,7 +554,7 @@ export default function SimulationSettings() {
             </div>
           </div>
 
-          {/* Pengaturan Rekening Bank Sekolah Card */}
+          {/* Kartu pengaturan rekening bank sekolah */}
           <div className="bg-white dark:bg-slate-900 border border-slate-200/85 dark:border-slate-800/60 rounded-3xl p-6 md:p-8 shadow-[0_4px_20px_rgba(0,0,0,0.02)] transition-colors duration-300 relative overflow-hidden">
             <div className="absolute top-[-10%] right-[-10%] w-[250px] h-[250px] rounded-full bg-emerald-500/5 blur-[80px] pointer-events-none"></div>
 
@@ -642,10 +642,10 @@ export default function SimulationSettings() {
 
         </div>
 
-        {/* RIGHT COLUMN: Integration Guides & System Stats */}
+        {/* KOLOM KANAN: Panduan & Status Sistem */}
         <div className="space-y-6">
           
-          {/* Security Best Practices Card */}
+          {/* Kartu tips keamanan */}
           <div className="bg-white dark:bg-slate-900 border border-slate-200/85 dark:border-slate-800/60 rounded-3xl p-6 shadow-[0_4px_20px_rgba(0,0,0,0.02)] transition-colors duration-300 relative overflow-hidden">
             <div className="absolute top-[-10%] right-[-10%] w-[150px] h-[150px] rounded-full bg-blue-500/5 blur-[50px] pointer-events-none"></div>
 
@@ -691,7 +691,7 @@ export default function SimulationSettings() {
             </div>
           </div>
 
-          {/* Info Card Statistics & Data Storage */}
+          {/* Kartu statistik data & penyimpanan */}
           <div className="bg-white dark:bg-slate-900 border border-slate-200/85 dark:border-slate-800/60 rounded-3xl p-6 shadow-[0_4px_20px_rgba(0,0,0,0.02)] transition-colors duration-300">
             <h4 className="text-xs font-black uppercase tracking-wider text-slate-455 border-b border-slate-100 dark:border-slate-800/60 pb-3 mb-4 flex items-center gap-1.5">
               <HardDrive size={14} className="text-blue-500" />

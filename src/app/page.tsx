@@ -754,11 +754,11 @@ export default function Home() {
             <div className="absolute left-[32px] md:left-1/2 top-0 bottom-0 w-1 bg-gradient-to-b from-blue-500 via-sky-400 to-indigo-500 transform -translate-x-1/2 z-0 rounded-full opacity-70"></div>
             <div className="absolute left-[32px] md:left-1/2 top-0 bottom-0 w-1 border-l-2 border-dashed border-white/40 dark:border-slate-950/40 transform -translate-x-1/2 z-0"></div>
 
-            <ScrollFloat containerClassName="space-y-16 relative z-10 w-full" textClassName="w-full" textMode={false}>
+            <div className="space-y-16 relative z-10 w-full">
               {alurList.map((item, index) => {
                 const isLeft = index % 2 === 0;
 
-                // Define distinct styles for up to 6 steps
+                // Gaya khusus untuk setiap tahap alur
                 const styles = [
                   { color: "blue", bg: "bg-blue-600", text: "text-blue-500 dark:text-blue-400", bgLight: "bg-blue-50 dark:bg-blue-950/60", shadow: "shadow-[0_0_20px_rgba(37,99,235,0.4)]", borderHover: "hover:border-blue-500/20", icon: FileText },
                   { color: "amber", bg: "bg-amber-500", text: "text-amber-500 dark:text-amber-400", bgLight: "bg-amber-50 dark:bg-amber-950/60", shadow: "shadow-[0_0_20px_rgba(245,158,11,0.4)]", borderHover: "hover:border-amber-500/20", icon: CreditCard },
@@ -768,42 +768,50 @@ export default function Home() {
                   { color: "emerald", bg: "bg-emerald-500", text: "text-emerald-500 dark:text-emerald-400", bgLight: "bg-emerald-50 dark:bg-emerald-950/60", shadow: "shadow-[0_0_20px_rgba(16,185,129,0.4)]", borderHover: "hover:border-emerald-500/20", icon: ShieldCheck },
                 ];
 
-                // Fallback to blue if index exceeds the defined styles
                 const stepStyle = styles[index % styles.length];
                 const Icon = stepStyle.icon;
 
                 return (
-                  <div key={item.id} className="relative grid grid-cols-1 md:grid-cols-2 md:gap-20 items-center">
-                    {isLeft ? (
-                      <>
-                        <div className="pl-20 md:pl-0 md:pr-12 md:text-right">
-                          <div className={`bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border border-white/60 dark:border-slate-800 p-6 rounded-3xl shadow-xl hover:shadow-2xl ${stepStyle.borderHover} hover:-translate-y-1 transition-all duration-300`}>
-                            <span className={`inline-block px-3 py-1 ${stepStyle.bgLight} ${stepStyle.text} rounded-full text-[10px] font-extrabold uppercase tracking-wider mb-3`}>Tahap 0{item.id}</span>
-                            <h3 className="text-lg font-black text-slate-800 dark:text-white mb-2">{item.title}</h3>
-                            <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed font-medium">{item.desc}</p>
+                  <ScrollFloat
+                    key={item.id}
+                    containerClassName="w-full"
+                    textClassName="w-full"
+                    textMode={false}
+                    scrollStart="top 85%"
+                    scrollEnd="bottom 60%"
+                  >
+                    <div className="relative grid grid-cols-1 md:grid-cols-2 md:gap-20 items-center">
+                      {isLeft ? (
+                        <>
+                          <div className="pl-20 md:pl-0 md:pr-12 md:text-right">
+                            <div className={`bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border border-white/60 dark:border-slate-800 p-6 rounded-3xl shadow-xl hover:shadow-2xl ${stepStyle.borderHover} hover:-translate-y-1 transition-all duration-300`}>
+                              <span className={`inline-block px-3 py-1 ${stepStyle.bgLight} ${stepStyle.text} rounded-full text-[10px] font-extrabold uppercase tracking-wider mb-3`}>Tahap 0{item.id}</span>
+                              <h3 className="text-lg font-black text-slate-800 dark:text-white mb-2">{item.title}</h3>
+                              <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed font-medium">{item.desc}</p>
+                            </div>
                           </div>
-                        </div>
-                        <div className="hidden md:block"></div>
-                      </>
-                    ) : (
-                      <>
-                        <div className="hidden md:block"></div>
-                        <div className="pl-20 md:pl-12 md:text-left">
-                          <div className={`bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border border-white/60 dark:border-slate-800 p-6 rounded-3xl shadow-xl hover:shadow-2xl ${stepStyle.borderHover} hover:-translate-y-1 transition-all duration-300`}>
-                            <span className={`inline-block px-3 py-1 ${stepStyle.bgLight} ${stepStyle.text} rounded-full text-[10px] font-extrabold uppercase tracking-wider mb-3`}>Tahap 0{item.id}</span>
-                            <h3 className="text-lg font-black text-slate-800 dark:text-white mb-2">{item.title}</h3>
-                            <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed font-medium">{item.desc}</p>
+                          <div className="hidden md:block"></div>
+                        </>
+                      ) : (
+                        <>
+                          <div className="hidden md:block"></div>
+                          <div className="pl-20 md:pl-12 md:text-left">
+                            <div className={`bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border border-white/60 dark:border-slate-800 p-6 rounded-3xl shadow-xl hover:shadow-2xl ${stepStyle.borderHover} hover:-translate-y-1 transition-all duration-300`}>
+                              <span className={`inline-block px-3 py-1 ${stepStyle.bgLight} ${stepStyle.text} rounded-full text-[10px] font-extrabold uppercase tracking-wider mb-3`}>Tahap 0{item.id}</span>
+                              <h3 className="text-lg font-black text-slate-800 dark:text-white mb-2">{item.title}</h3>
+                              <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed font-medium">{item.desc}</p>
+                            </div>
                           </div>
-                        </div>
-                      </>
-                    )}
-                    <div className={`absolute left-0 md:left-1/2 md:-translate-x-1/2 top-1/2 -translate-y-1/2 w-16 h-16 rounded-full ${stepStyle.bg} border-4 border-white dark:border-slate-900 text-white flex items-center justify-center font-black text-lg z-10 ${stepStyle.shadow} transition-all duration-300`}>
-                      <Icon size={22} />
+                        </>
+                      )}
+                      <div className={`absolute left-0 md:left-1/2 md:-translate-x-1/2 top-1/2 -translate-y-1/2 w-16 h-16 rounded-full ${stepStyle.bg} border-4 border-white dark:border-slate-900 text-white flex items-center justify-center font-black text-lg z-10 ${stepStyle.shadow} transition-all duration-300`}>
+                        <Icon size={22} />
+                      </div>
                     </div>
-                  </div>
+                  </ScrollFloat>
                 );
               })}
-            </ScrollFloat>
+            </div>
           </div>
         </div>
       </section>
@@ -1002,36 +1010,42 @@ export default function Home() {
             </ScrollFloat>
           </div>
 
-          <ScrollFloat containerClassName="space-y-4 w-full" textClassName="w-full" textMode={false}>
+          <div className="space-y-6 w-full">
             {faqList.map((faq, idx) => {
               const isOpen = activeFaq === idx;
               return (
-                <div 
+                <ScrollFloat
                   key={idx}
-                  className="bg-slate-50 dark:bg-slate-900/40 border border-slate-200/60 dark:border-slate-800/80 rounded-3xl overflow-hidden transition-all duration-300 shadow-sm"
+                  containerClassName="w-full"
+                  textClassName="w-full"
+                  textMode={false}
+                  scrollStart="top 90%"
+                  scrollEnd="bottom 75%"
                 >
-                  <button
-                    onClick={() => toggleFaq(idx)}
-                    className="w-full px-6 py-5 flex items-center justify-between text-left font-black text-sm md:text-base text-slate-800 dark:text-white focus:outline-none"
-                  >
-                    <span>{faq.q}</span>
-                    <span className={`text-blue-500 transform transition-transform duration-300 ${isOpen ? "rotate-180" : ""}`}>
-                      <ChevronRight size={20} className="rotate-90" />
-                    </span>
-                  </button>
-                  <div 
-                    className={`transition-all duration-300 ease-in-out overflow-hidden ${
-                      isOpen ? "max-h-60 border-t border-slate-200/50 dark:border-slate-800/50" : "max-h-0"
-                    }`}
-                  >
-                    <p className="px-6 py-5 text-xs md:text-sm text-slate-500 dark:text-slate-400 leading-relaxed font-semibold">
-                      {faq.a}
-                    </p>
+                  <div className="bg-slate-50 dark:bg-slate-900/40 border border-slate-200/60 dark:border-slate-800/80 rounded-3xl overflow-hidden transition-all duration-300 shadow-sm">
+                    <button
+                      onClick={() => toggleFaq(idx)}
+                      className="w-full px-6 py-5 flex items-center justify-between text-left font-black text-sm md:text-base text-slate-800 dark:text-white focus:outline-none"
+                    >
+                      <span>{faq.q}</span>
+                      <span className={`text-blue-500 transform transition-transform duration-300 ${isOpen ? "rotate-180" : ""}`}>
+                        <ChevronRight size={20} className="rotate-90" />
+                      </span>
+                    </button>
+                    <div 
+                      className={`transition-all duration-300 ease-in-out overflow-hidden ${
+                        isOpen ? "max-h-60 border-t border-slate-200/50 dark:border-slate-800/50" : "max-h-0"
+                      }`}
+                    >
+                      <p className="px-6 py-5 text-xs md:text-sm text-slate-500 dark:text-slate-400 leading-relaxed font-semibold">
+                        {faq.a}
+                      </p>
+                    </div>
                   </div>
-                </div>
+                </ScrollFloat>
               );
             })}
-          </ScrollFloat>
+          </div>
 
           <div className="mt-12 bg-blue-50/50 dark:bg-blue-950/20 border border-blue-150/40 dark:border-blue-900 rounded-[2.5rem] p-8 text-center relative overflow-hidden">
             <div className="absolute right-4 top-4 opacity-5 dark:opacity-10 pointer-events-none">
