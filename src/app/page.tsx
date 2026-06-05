@@ -121,6 +121,29 @@ export default function Home() {
   const [email, setEmail] = useState("info@smktarunabhakti.sch.id");
   const [address, setAddress] = useState("Jl. Pekapuran Kel. Curug Kec. Cimanggis, Depok, Jawa Barat 16453");
   const [schoolPeriod, setSchoolPeriod] = useState("2026-2027");
+  const [gelombangConfig, setGelombangConfig] = useState({
+    gelombang1: { start: "2026-06-03", end: "2026-07-24" },
+    gelombang2: { start: "2026-07-25", end: "2026-08-30" }
+  });
+
+  const getGelombangStatus = (startStr: string, endStr: string) => {
+    if (!startStr || !endStr) return { label: "Belum Diatur", color: "bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 border border-slate-200 dark:border-slate-700", active: false };
+    
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const start = new Date(startStr);
+    start.setHours(0, 0, 0, 0);
+    const end = new Date(endStr);
+    end.setHours(23, 59, 59, 999);
+    
+    if (today < start) {
+      return { label: "Akan Datang", color: "bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 border border-blue-100 dark:border-blue-900/30", active: false };
+    } else if (today >= start && today <= end) {
+      return { label: "Sedang Berlangsung", color: "bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 border border-emerald-100 dark:border-emerald-900/30", active: true };
+    } else {
+      return { label: "Telah Ditutup", color: "bg-rose-50 dark:bg-rose-950/60 text-rose-600 dark:text-rose-400 border border-rose-100 dark:border-rose-900/30", active: false };
+    }
+  };
   const [majors, setMajors] = useState([
     {
       code: "RPL",
@@ -293,6 +316,7 @@ export default function Home() {
           if (config.ppdb_wa_admin) setWaAdmin(config.ppdb_wa_admin);
           if (config.ppdb_alur_config) setAlurList(config.ppdb_alur_config);
           if (config.ppdb_faq_config) setFaqList(config.ppdb_faq_config);
+          if (config.ppdb_gelombang_config) setGelombangConfig(config.ppdb_gelombang_config);
           if (config.ppdb_majors_config && Array.isArray(config.ppdb_majors_config)) {
             const iconMap: Record<string, any> = {
               RPL: Cpu,
@@ -596,6 +620,98 @@ export default function Home() {
 
         </section>
       </div>
+      {/* JADWAL GELOMBANG PENDAFTARAN */}
+      <section id="gelombang" className="py-20 max-w-6xl mx-auto px-6 relative z-10">
+        <div className="text-center mb-12">
+          <span className="inline-block mb-2 text-blue-600 dark:text-sky-400 font-bold text-xs uppercase tracking-wider bg-blue-50 dark:bg-blue-950/50 border border-blue-100/50 dark:border-blue-900/30 px-3.5 py-1.5 rounded-full">
+            Jadwal Penerimaan · TP. {schoolPeriod}
+          </span>
+          <h2 className="text-3xl md:text-4xl font-black text-slate-800 dark:text-white mt-3 mb-3">
+            Gelombang Pendaftaran PPDB
+          </h2>
+          <p className="text-slate-500 dark:text-slate-400 max-w-xl mx-auto text-xs md:text-sm leading-relaxed">
+            Perhatikan rentang tanggal pendaftaran di setiap gelombang untuk mengamankan kuota jurusan pilihan Anda.
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+          {/* Gelombang 1 Card */}
+          {(() => {
+            const status = getGelombangStatus(gelombangConfig.gelombang1.start, gelombangConfig.gelombang1.end);
+            return (
+              <div className={`bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border ${status.active ? 'border-blue-500/30 dark:border-blue-500/20 shadow-blue-500/5' : 'border-white/50 dark:border-slate-800'} rounded-3xl p-8 shadow-lg hover:shadow-xl transition-all duration-300 relative overflow-hidden group`}>
+                {status.active && (
+                  <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-bl from-blue-500/10 to-transparent pointer-events-none" />
+                )}
+                <div className="flex justify-between items-start mb-6">
+                  <div>
+                    <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest block">Periode Pertama</span>
+                    <h3 className="text-xl font-black text-slate-800 dark:text-white mt-1">Gelombang 1</h3>
+                  </div>
+                  <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider flex items-center gap-1.5 ${status.color}`}>
+                    {status.active && <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />}
+                    {status.label}
+                  </span>
+                </div>
+                
+                <div className="space-y-4">
+                  <div className="flex items-center gap-3.5 bg-slate-50 dark:bg-slate-950/40 p-4.5 rounded-2xl border border-slate-150 dark:border-white/5">
+                    <Calendar size={18} className="text-blue-500 shrink-0" />
+                    <div>
+                      <span className="text-[9px] uppercase font-bold text-slate-400 block tracking-wider">Tanggal Pendaftaran</span>
+                      <span className="text-xs font-extrabold text-slate-700 dark:text-slate-200">
+                        {gelombangConfig.gelombang1.start ? formatDate(gelombangConfig.gelombang1.start) : "Belum diatur"} - {gelombangConfig.gelombang1.end ? formatDate(gelombangConfig.gelombang1.end) : "Belum diatur"}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="text-[11px] leading-relaxed text-slate-500 dark:text-slate-400 font-medium pl-1">
+                    Gelombang 1 ditujukan bagi calon siswa lulusan berprestasi maupun reguler yang ingin mendaftar lebih awal dengan prioritas seleksi tinggi.
+                  </div>
+                </div>
+              </div>
+            );
+          })()}
+
+          {/* Gelombang 2 Card */}
+          {(() => {
+            const status = getGelombangStatus(gelombangConfig.gelombang2.start, gelombangConfig.gelombang2.end);
+            return (
+              <div className={`bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border ${status.active ? 'border-blue-500/30 dark:border-blue-500/20 shadow-blue-500/5' : 'border-white/50 dark:border-slate-800'} rounded-3xl p-8 shadow-lg hover:shadow-xl transition-all duration-300 relative overflow-hidden group`}>
+                {status.active && (
+                  <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-bl from-blue-500/10 to-transparent pointer-events-none" />
+                )}
+                <div className="flex justify-between items-start mb-6">
+                  <div>
+                    <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest block">Periode Kedua</span>
+                    <h3 className="text-xl font-black text-slate-800 dark:text-white mt-1">Gelombang 2</h3>
+                  </div>
+                  <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider flex items-center gap-1.5 ${status.color}`}>
+                    {status.active && <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />}
+                    {status.label}
+                  </span>
+                </div>
+                
+                <div className="space-y-4">
+                  <div className="flex items-center gap-3.5 bg-slate-50 dark:bg-slate-950/40 p-4.5 rounded-2xl border border-slate-155 dark:border-white/5">
+                    <Calendar size={18} className="text-blue-500 shrink-0" />
+                    <div>
+                      <span className="text-[9px] uppercase font-bold text-slate-400 block tracking-wider">Tanggal Pendaftaran</span>
+                      <span className="text-xs font-extrabold text-slate-700 dark:text-slate-200">
+                        {gelombangConfig.gelombang2.start ? formatDate(gelombangConfig.gelombang2.start) : "Belum diatur"} - {gelombangConfig.gelombang2.end ? formatDate(gelombangConfig.gelombang2.end) : "Belum diatur"}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="text-[11px] leading-relaxed text-slate-500 dark:text-slate-400 font-medium pl-1">
+                    Gelombang 2 dibuka apabila kuota tampung laboratorium jurusan belum terpenuhi secara penuh. Pantau status kuota secara berkala.
+                  </div>
+                </div>
+              </div>
+            );
+          })()}
+        </div>
+      </section>
 
       {/* ALUR PENDAFTARAN */}
       <section id="alur" className="py-24 bg-slate-50 dark:bg-slate-900/60 relative z-10 border-y border-slate-200/50 dark:border-slate-800">

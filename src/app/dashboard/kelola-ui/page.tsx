@@ -583,9 +583,12 @@ export default function KelolaUserInterface() {
           localStorage.setItem("ppdb_school_period", schoolPeriod);
           localStorage.setItem("ppdb_wa_group_url", waGroupUrl);
           localStorage.setItem("ppdb_wa_admin", waAdmin);
-          localStorage.setItem("ppdb_classes_config", JSON.stringify(
-            finalMajors.map(m => ({ id: `${m.code}-1`, name: `X ${m.code} 1`, majorCode: m.code, maxCapacity: 100 }))
-          ));
+          const existingClasses = localStorage.getItem("ppdb_classes_config");
+          if (!existingClasses) {
+            localStorage.setItem("ppdb_classes_config", JSON.stringify(
+              finalMajors.map(m => ({ id: `X-${m.code}-1`, name: `X ${m.code} 1`, majorCode: m.code, maxCapacity: 100 }))
+            ));
+          }
         } catch (storageErr) {
           console.warn("Storage quota exceeded or unavailable. LocalStorage cache sync bypassed.", storageErr);
         }

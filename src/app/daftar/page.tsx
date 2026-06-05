@@ -177,7 +177,7 @@ export default function DaftarPage() {
     { code: "TJKT", title: "Teknik Jaringan Komputer & Telekomunikasi" },
     { code: "DKV", title: "Desain Komunikasi Visual" },
     { code: "ANM", title: "Animasi" },
-    { code: "BRF", title: "Broadcasting & Perfilman" },
+    { code: "BC", title: "Broadcasting & Perfilman" },
     { code: "TE", title: "Teknik Elektronika" }
   ]);
 

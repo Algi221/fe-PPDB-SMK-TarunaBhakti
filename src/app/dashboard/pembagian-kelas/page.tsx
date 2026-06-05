@@ -164,21 +164,37 @@ export default function ClassDivisionManagement() {
     }
   }, [activeMajors]);
 
-  // Load and save classes in localStorage
+  // Load and save classes
   useEffect(() => {
     setMounted(true);
-    const savedClasses = localStorage.getItem("ppdb_classes_config");
-    if (savedClasses) {
+    const fetchClassesConfig = async () => {
       try {
-        setClasses(JSON.parse(savedClasses));
+        const res = await fetch("http://localhost:5000/api/config");
+        const json = await res.json();
+        if (json.success && json.data && json.data.ppdb_classes_config) {
+          setClasses(json.data.ppdb_classes_config);
+          localStorage.setItem("ppdb_classes_config", JSON.stringify(json.data.ppdb_classes_config));
+          return;
+        }
       } catch (e) {
-        setClasses(generateDefaultClasses());
+        console.error("Gagal mengambil konfigurasi kelas dari API:", e);
       }
-    } else {
-      const defaults = generateDefaultClasses();
-      setClasses(defaults);
-      localStorage.setItem("ppdb_classes_config", JSON.stringify(defaults));
-    }
+
+      // Local storage fallback
+      const savedClasses = localStorage.getItem("ppdb_classes_config");
+      if (savedClasses) {
+        try {
+          setClasses(JSON.parse(savedClasses));
+        } catch (e) {
+          setClasses(generateDefaultClasses());
+        }
+      } else {
+        const defaults = generateDefaultClasses();
+        setClasses(defaults);
+        localStorage.setItem("ppdb_classes_config", JSON.stringify(defaults));
+      }
+    };
+    fetchClassesConfig();
   }, []);
 
   const getStudentGrade = (student: Applicant): number => {
@@ -246,9 +262,29 @@ export default function ClassDivisionManagement() {
     }, 4500);
   };
 
-  const saveClassesToStorage = (updatedClasses: ClassItem[]) => {
+  const saveClassesToStorage = async (updatedClasses: ClassItem[]) => {
     setClasses(updatedClasses);
     localStorage.setItem("ppdb_classes_config", JSON.stringify(updatedClasses));
+
+    // Save to backend if admin token is available
+    const token = localStorage.getItem("ppdb_admin_token");
+    if (token) {
+      try {
+        await fetch("http://localhost:5000/api/config", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${token}`
+          },
+          body: JSON.stringify({
+            key: "ppdb_classes_config",
+            value: updatedClasses
+          })
+        });
+      } catch (e) {
+        console.error("Gagal menyimpan konfigurasi kelas ke backend:", e);
+      }
+    }
   };
 
   // Filter approved/active applicants of the selected major
