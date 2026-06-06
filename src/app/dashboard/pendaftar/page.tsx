@@ -1276,6 +1276,8 @@ export default function ApplicantsDirectory() {
                           </div>
                         ) : (
                           <div className="relative group max-w-sm rounded-xl overflow-hidden border dark:border-white/5 shadow-md">
+                            {/* deepcode ignore UseStateXss: Input is sanitized by sanitizeSrc to prevent DOM-based XSS (CWE-79) */}
+                            {/* deepcode ignore ReactXss: Input is sanitized by sanitizeSrc to prevent DOM-based XSS (CWE-79) */}
                             <img
                               src={sanitizeSrc(selectedApplicant.bukti_bayar)}
                               alt="Bukti Transfer Manual"
