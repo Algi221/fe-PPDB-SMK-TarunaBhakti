@@ -189,7 +189,7 @@ export default function Home() {
       code: "BC",
       title: "Broadcasting & Perfilman",
       icon: Video,
-      logo: "/jurusan/bc.jpeg",
+      logo: "/jurusan/bc.png",
       desc: "Pelajari dunia penyiaran televisi, podcasting, penulisan naskah, penyutradaraan film, tata kamera, serta editing video profesional.",
       color: "#f59e0b",
       careers: "Video Editor, Cameraman, Director, Scriptwriter, Podcast Producer, Content Creator",
@@ -571,7 +571,7 @@ export default function Home() {
 
           <Link href="/jurusan/bc" className="floating-badge badge-kelas">
             <div className="badge-icon overflow-hidden" style={{ background: 'transparent' }}>
-              <img src="/jurusan/bc.jpeg" alt="Broadcasting" className="w-full h-full object-cover rounded-full" />
+              <img src="/jurusan/bc.png" alt="Broadcasting" className="w-full h-full object-cover rounded-full" />
             </div>
             <div className="badge-info">
               <span>Broadcasting</span>

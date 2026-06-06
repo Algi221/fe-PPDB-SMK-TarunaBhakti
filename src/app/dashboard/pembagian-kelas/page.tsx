@@ -66,7 +66,7 @@ export default function ClassDivisionManagement() {
       case "DKV":
         return "/jurusan/dkv.png";
       case "BC":
-        return "/jurusan/bc.jpeg";
+        return "/jurusan/bc.png";
       case "ANM":
         return "/jurusan/animasi.png";
       case "TE":

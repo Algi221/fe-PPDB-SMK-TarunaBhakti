@@ -6,9 +6,11 @@ const nextConfig = {
     };
     return config;
   },
-  turbo: {
-    resolveAlias: {
-      'dompurify': 'isomorphic-dompurify',
+  experimental: {
+    turbopack: {
+      resolveAlias: {
+        'dompurify': 'isomorphic-dompurify',
+      },
     },
   },
 };

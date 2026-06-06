@@ -235,7 +235,7 @@ const DEFAULT_MAJORS: MajorItem[] = [
       "Soundproof Podcasting & Sound Design Studio",
       "High-End Camera Equipment Gear Room"
     ],
-    logo: "/jurusan/bc.jpeg",
+    logo: "/jurusan/bc.png",
     banner: "https://images.unsplash.com/photo-1536440136628-849c177e76a1?q=80&w=1200&auto=format&fit=crop",
     video: "",
     gallery: [

@@ -205,7 +205,7 @@ const majorsData: Record<string, MajorDetail> = {
     bgAccent: "bg-amber-500/10 dark:bg-amber-500/20",
     textAccent: "text-amber-600 dark:text-amber-400",
     glowColor: "rgba(245,158,11,0.15)",
-    logo: "/jurusan/bc.jpeg",
+    logo: "/jurusan/bc.png",
     banner: "https://images.unsplash.com/photo-1536440136628-849c177e76a1?q=80&w=1200&auto=format&fit=crop",
     syllabus: [
       { subject: "Creative Writing & Directing", desc: "Storytelling, scriptwriting, storyboard creation, shot analysis, blocking." },
