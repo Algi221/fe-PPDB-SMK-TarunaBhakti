@@ -1027,17 +1027,15 @@ export default function ActiveStudentsDirectory() {
                       </div>
 
                       <div className="flex justify-center items-center bg-slate-100 dark:bg-slate-900/60 border border-slate-200/50 dark:border-white/5 rounded-2xl min-h-[300px] max-h-[500px] overflow-auto p-4">
-                        {/* deepcode ignore UseStateXss: Input is sanitized by sanitizeSrc to prevent DOM-based XSS (CWE-79) */}
-                        {/* deepcode ignore ReactXss: Input is sanitized by sanitizeSrc to prevent DOM-based XSS (CWE-79) */}
                         {selectedApplicant[selectedDoc].startsWith("data:application/pdf") ? (
                           <iframe 
-                            src={sanitizeSrc(selectedApplicant[selectedDoc])} 
+                            src={selectedApplicant[selectedDoc] && /^(https?:\/\/|\/(?!\/)|data:application\/pdf)/i.test(selectedApplicant[selectedDoc]) ? selectedApplicant[selectedDoc] : ""} 
                             className="w-full h-[400px] rounded-xl border border-slate-200 dark:border-white/5"
                             title="Pratinjau PDF"
                           />
                         ) : selectedApplicant[selectedDoc].startsWith("data:image/") || selectedApplicant[selectedDoc].startsWith("/") || selectedApplicant[selectedDoc].includes("base64") || selectedApplicant[selectedDoc].startsWith("http") ? (
                           <img 
-                            src={selectedApplicant[selectedDoc].includes("Mock_Data_Base64") ? "/logo_smktb.png" : sanitizeSrc(selectedApplicant[selectedDoc])} 
+                            src={selectedApplicant[selectedDoc].includes("Mock_Data_Base64") ? "/logo_smktb.png" : (selectedApplicant[selectedDoc] && /^(https?:\/\/|\/(?!\/)|data:image\/)/i.test(selectedApplicant[selectedDoc]) ? selectedApplicant[selectedDoc] : "")} 
                             alt="Pratinjau Dokumen" 
                             className="max-w-full max-h-[400px] object-contain rounded-xl shadow-sm animate-in fade-in"
                             onError={(e) => {

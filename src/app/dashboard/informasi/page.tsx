@@ -568,11 +568,9 @@ export default function KelolaInformasi() {
                 <div>
                   {/* Image Section */}
                   <div className="h-48 bg-slate-100 dark:bg-slate-955 overflow-hidden relative border-b border-slate-150 dark:border-white/5">
-                    {/* deepcode ignore UseStateXss: Input is sanitized by sanitizeSrc to prevent DOM-based XSS (CWE-79) */}
-                    {/* deepcode ignore ReactXss: Input is sanitized by sanitizeSrc to prevent DOM-based XSS (CWE-79) */}
                     {media.foto ? (
                       <img 
-                        src={sanitizeSrc(media.foto)} 
+                        src={media.foto && /^(https?:\/\/|\/(?!\/)|data:image\/)/i.test(media.foto) ? media.foto : ""} 
                         alt={item.judul}
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                       />
@@ -710,9 +708,7 @@ export default function KelolaInformasi() {
                   
                   {fotoUrl ? (
                     <div className="relative rounded-2xl border border-slate-200 dark:border-white/5 overflow-hidden h-52 bg-slate-100 dark:bg-slate-950 group">
-                      {/* deepcode ignore UseStateXss: Input is sanitized by sanitizeSrc to prevent DOM-based XSS (CWE-79) */}
-                      {/* deepcode ignore ReactXss: Input is sanitized by sanitizeSrc to prevent DOM-based XSS (CWE-79) */}
-                      <img src={sanitizeSrc(fotoUrl)} alt="Preview" className="w-full h-full object-cover" />
+                      <img src={fotoUrl && /^(https?:\/\/|\/(?!\/)|data:image\/)/i.test(fotoUrl) ? fotoUrl : ""} alt="Preview" className="w-full h-full object-cover" />
                       <div className="absolute inset-0 bg-black/40 backdrop-blur-[2px] opacity-0 group-hover:opacity-100 flex items-center justify-center gap-3 transition-opacity duration-200">
                         <button
                           type="button"
@@ -762,9 +758,7 @@ export default function KelolaInformasi() {
                     
                     {videoUrl ? (
                       <div className="relative rounded-2xl border border-slate-200 dark:border-white/5 overflow-hidden h-36 bg-slate-950 group flex items-center justify-center">
-                        {/* deepcode ignore UseStateXss: Input is sanitized by sanitizeSrc to prevent DOM-based XSS (CWE-79) */}
-                        {/* deepcode ignore ReactXss: Input is sanitized by sanitizeSrc to prevent DOM-based XSS (CWE-79) */}
-                        <video src={sanitizeSrc(videoUrl)} className="h-full w-full object-contain" />
+                        <video src={videoUrl && /^(https?:\/\/|\/(?!\/)|data:video\/)/i.test(videoUrl) ? videoUrl : ""} className="h-full w-full object-contain" />
                         <div className="absolute inset-0 bg-black/45 backdrop-blur-[2px] opacity-0 group-hover:opacity-100 flex flex-col items-center justify-center gap-2 transition-opacity duration-200">
                           <span className="text-[9px] text-white font-extrabold uppercase tracking-wider truncate max-w-[90%]">{videoName}</span>
                           <button
@@ -881,9 +875,7 @@ export default function KelolaInformasi() {
               {/* Poster Header */}
               {media.foto ? (
                 <div className="h-80 relative border-b border-slate-150 dark:border-white/5">
-                  {/* deepcode ignore UseStateXss: Input is sanitized by sanitizeSrc to prevent DOM-based XSS (CWE-79) */}
-                  {/* deepcode ignore ReactXss: Input is sanitized by sanitizeSrc to prevent DOM-based XSS (CWE-79) */}
-                  <img src={sanitizeSrc(media.foto)} alt={previewItem.judul} className="w-full h-full object-cover" />
+                  <img src={media.foto && /^(https?:\/\/|\/(?!\/)|data:image\/)/i.test(media.foto) ? media.foto : ""} alt={previewItem.judul} className="w-full h-full object-cover" />
                   <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-transparent to-transparent" />
                   
                   {/* Floating Date Over Image */}
@@ -933,11 +925,9 @@ export default function KelolaInformasi() {
                       {/* Video Player (Inline playback only, no download) */}
                       {media.video && (
                         <div className="space-y-3 text-left">
-                          <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">🎥 Berkas Video:</span>
-                          <div className="rounded-2xl border border-slate-200 dark:border-white/5 overflow-hidden bg-slate-950 shadow-sm relative">
-                            {/* deepcode ignore UseStateXss: Input is sanitized by sanitizeSrc to prevent DOM-based XSS (CWE-79) */}
-                            {/* deepcode ignore ReactXss: Input is sanitized by sanitizeSrc to prevent DOM-based XSS (CWE-79) */}
-                            <video src={sanitizeSrc(media.video)} controls className="w-full max-h-72 object-contain" />
+                          <span className="text-[10px] font-bold text-slate-400 dark:text-slate-555 uppercase tracking-wider block">🎥 Video Lampiran:</span>
+                          <div className="rounded-2xl border border-slate-200 dark:border-white/5 overflow-hidden bg-slate-950 shadow-md">
+                            <video src={media.video && /^(https?:\/\/|\/(?!\/)|data:video\/)/i.test(media.video) ? media.video : ""} controls className="w-full max-h-72 object-contain" />
                           </div>
                         </div>
                       )}
@@ -946,18 +936,13 @@ export default function KelolaInformasi() {
                       {media.dokumen && (
                         <div className="space-y-3 text-left w-full">
                           <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">📄 Pratinjau Dokumen Resmi:</span>
-                          
-                          {media.dokumen.startsWith("data:application/pdf") ? (
+                                   {media.dokumen.startsWith("data:application/pdf") ? (
                             <div className="rounded-2xl border border-slate-200 dark:border-white/5 overflow-hidden shadow-md bg-white">
-                              {/* deepcode ignore UseStateXss: Input is sanitized by sanitizeSrc to prevent DOM-based XSS (CWE-79) */}
-                              {/* deepcode ignore ReactXss: Input is sanitized by sanitizeSrc to prevent DOM-based XSS (CWE-79) */}
-                              <iframe src={sanitizeSrc(media.dokumen)} className="w-full h-[450px] border-0" />
+                              <iframe src={media.dokumen && /^(https?:\/\/|\/(?!\/)|data:application\/pdf)/i.test(media.dokumen) ? media.dokumen : ""} className="w-full h-[450px] border-0" />
                             </div>
                           ) : media.dokumen.startsWith("data:image/") ? (
-                            <div className="rounded-2xl border border-slate-200 dark:border-white/5 overflow-hidden shadow-md bg-slate-100 dark:bg-slate-950 flex items-center justify-center p-4">
-                              {/* deepcode ignore UseStateXss: Input is sanitized by sanitizeSrc to prevent DOM-based XSS (CWE-79) */}
-                              {/* deepcode ignore ReactXss: Input is sanitized by sanitizeSrc to prevent DOM-based XSS (CWE-79) */}
-                              <img src={sanitizeSrc(media.dokumen)} alt="Dokumen Preview" className="max-w-full max-h-96 object-contain rounded-xl" />
+                            <div className="rounded-2xl border border-slate-200 dark:border-white/5 overflow-hidden shadow-md bg-slate-100 dark:bg-slate-955 flex items-center justify-center p-4">
+                              <img src={media.dokumen && /^(https?:\/\/|\/(?!\/)|data:image\/)/i.test(media.dokumen) ? media.dokumen : ""} alt="Dokumen Preview" className="max-w-full max-h-96 object-contain rounded-xl" />
                             </div>
                           ) : (
                             <div className="p-4 bg-slate-50 dark:bg-slate-950/40 border border-slate-200 dark:border-white/5 rounded-2xl flex items-center gap-3">
