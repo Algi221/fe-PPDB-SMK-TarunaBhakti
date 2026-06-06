@@ -306,7 +306,7 @@ const DEFAULT_MAJORS: MajorItem[] = [
 export default function KelolaUserInterface() {
   const { adminToken } = usePPDB();
   const [mounted, setMounted] = useState(false);
-  const [activeTab, setActiveTab] = useState<"hero" | "majors" | "alur" | "form" | "faq" | "revisions" | "gelombang" | "bank">("hero");
+  const [activeTab, setActiveTab] = useState<"hero" | "majors" | "alur" | "form" | "faq" | "revisions" | "bank">("hero");
   
   // Loading & Action overlays
   const [loading, setLoading] = useState(true);
@@ -748,14 +748,13 @@ export default function KelolaUserInterface() {
         </button>
       </div>
 
-      {/* Navigation Tabs */}
-      <div className="flex flex-wrap gap-2 border-b border-slate-200/80 dark:border-slate-800/40 pb-4">
+      {/* Navigation Tabs - Capsule Container & Asymmetric Dynamic Leaf-like Design */}
+      <div className="bg-slate-100/50 dark:bg-slate-950 p-1.5 rounded-[22px] border border-slate-200/70 dark:border-slate-800/40 flex flex-wrap gap-1 shadow-inner mb-6 transition-all duration-300">
         {[
-          { id: "hero", label: "Hero & Kontak", icon: FileText },
+          { id: "hero", label: "Hero, Kontak & Gelombang", icon: FileText },
           { id: "majors", label: "Program Keahlian (Jurusan)", icon: GraduationCap },
           { id: "alur", label: "Alur Pendaftaran", icon: Settings },
           { id: "form", label: "Form & Panduan", icon: Info },
-          { id: "gelombang", label: "Gelombang Pendaftaran", icon: Calendar },
           { id: "bank", label: "Rekening Bank Sekolah", icon: Database },
           { id: "faq", label: "Pertanyaan (FAQ)", icon: HelpCircle },
           { id: "revisions", label: "Riwayat Perubahan", icon: Clock }
@@ -766,12 +765,12 @@ export default function KelolaUserInterface() {
               key={tab.id}
               disabled={editingMajor !== null && tab.id !== "majors"}
               onClick={() => setActiveTab(tab.id as any)}
-              className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-all border ${
-                editingMajor !== null && tab.id !== "majors" ? "opacity-30 cursor-not-allowed" : ""
+              className={`flex items-center gap-2 px-4 py-2.5 text-xs font-bold uppercase tracking-wider transition-all duration-300 border border-transparent ${
+                editingMajor !== null && tab.id !== "majors" ? "opacity-30 cursor-not-allowed" : "cursor-pointer"
               } ${
                 activeTab === tab.id
-                  ? "bg-blue-500 border-blue-500 text-white shadow shadow-blue-500/10"
-                  : "bg-white border-slate-200 hover:border-slate-300 dark:bg-slate-900 dark:border-slate-800 text-slate-555 hover:text-slate-800 dark:text-slate-400 dark:hover:text-white"
+                  ? "bg-gradient-to-r from-indigo-600 to-blue-600 text-white shadow-md shadow-indigo-500/20 rounded-[16px_6px_16px_6px] scale-[1.02] -translate-y-[0.5px]"
+                  : "text-slate-500 hover:text-slate-850 dark:text-slate-400 dark:hover:text-white hover:bg-slate-100/80 dark:hover:bg-slate-900/80 rounded-xl hover:rounded-[16px_6px_16px_6px] hover:border-indigo-500/30"
               }`}
             >
               <Icon size={14} />
@@ -912,6 +911,50 @@ export default function KelolaUserInterface() {
                     />
                   </div>
                 </div>
+
+                {/* CONSOLDATION: Gelombang Pendaftaran Section inside Hero & Kontak */}
+                <div className="border-t border-slate-100 dark:border-white/5 pt-8 mt-8 pb-4 mb-4">
+                  <h3 className="text-sm font-black uppercase text-slate-850 dark:text-white tracking-wider flex items-center gap-2">
+                    <Calendar size={16} className="text-indigo-500" />
+                    <span>Rentang Tanggal Gelombang Pendaftaran</span>
+                  </h3>
+                  <p className="text-[10px] text-slate-400 font-bold uppercase mt-1">Konfigurasikan masa aktif Gelombang 1 dan Gelombang 2 untuk portal pendaftaran</p>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {/* Gelombang 1 */}
+                  <DateRangeCalendar
+                    label="Gelombang 1"
+                    startValue={gelombangConfig.gelombang1.start}
+                    endValue={gelombangConfig.gelombang1.end}
+                    onSelectRange={(start, end) => {
+                      setGelombangConfig(prev => ({
+                        ...prev,
+                        gelombang1: { start, end }
+                      }));
+                    }}
+                    excludeRange={gelombangConfig.gelombang2.start && gelombangConfig.gelombang2.end ? gelombangConfig.gelombang2 : null}
+                    error={g1Error}
+                    setError={setG1Error}
+                  />
+
+                  {/* Gelombang 2 */}
+                  <DateRangeCalendar
+                    label="Gelombang 2"
+                    startValue={gelombangConfig.gelombang2.start}
+                    endValue={gelombangConfig.gelombang2.end}
+                    onSelectRange={(start, end) => {
+                      setGelombangConfig(prev => ({
+                        ...prev,
+                        gelombang2: { start, end }
+                      }));
+                    }}
+                    excludeRange={gelombangConfig.gelombang1.start && gelombangConfig.gelombang1.end ? gelombangConfig.gelombang1 : null}
+                    error={g2Error}
+                    setError={setG2Error}
+                  />
+                </div>
+
               </div>
             )}
 
@@ -1699,52 +1742,6 @@ export default function KelolaUserInterface() {
               </div>
             )}
 
-            {/* TAB: Gelombang Pendaftaran */}
-            {activeTab === "gelombang" && (
-              <div className="space-y-6 animate-in fade-in duration-300">
-                <div className="border-b border-slate-100 dark:border-white/5 pb-4 mb-4">
-                  <h3 className="text-sm font-black uppercase text-slate-850 dark:text-white tracking-wider flex items-center gap-2">
-                    <Calendar size={16} className="text-blue-500" />
-                    <span>Rentang Tanggal Gelombang Pendaftaran</span>
-                  </h3>
-                  <p className="text-[10px] text-slate-400 font-bold uppercase mt-1">Konfigurasikan masa aktif Gelombang 1 dan Gelombang 2 untuk portal pendaftaran</p>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  {/* Gelombang 1 */}
-                  <DateRangeCalendar
-                    label="Gelombang 1"
-                    startValue={gelombangConfig.gelombang1.start}
-                    endValue={gelombangConfig.gelombang1.end}
-                    onSelectRange={(start, end) => {
-                      setGelombangConfig(prev => ({
-                        ...prev,
-                        gelombang1: { start, end }
-                      }));
-                    }}
-                    excludeRange={gelombangConfig.gelombang2.start && gelombangConfig.gelombang2.end ? gelombangConfig.gelombang2 : null}
-                    error={g1Error}
-                    setError={setG1Error}
-                  />
-
-                  {/* Gelombang 2 */}
-                  <DateRangeCalendar
-                    label="Gelombang 2"
-                    startValue={gelombangConfig.gelombang2.start}
-                    endValue={gelombangConfig.gelombang2.end}
-                    onSelectRange={(start, end) => {
-                      setGelombangConfig(prev => ({
-                        ...prev,
-                        gelombang2: { start, end }
-                      }));
-                    }}
-                    excludeRange={gelombangConfig.gelombang1.start && gelombangConfig.gelombang1.end ? gelombangConfig.gelombang1 : null}
-                    error={g2Error}
-                    setError={setG2Error}
-                  />
-                </div>
-              </div>
-            )}
 
             {/* TAB: Rekening Bank Sekolah */}
             {activeTab === "bank" && (

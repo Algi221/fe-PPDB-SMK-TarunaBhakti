@@ -96,7 +96,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           onClick={() => setIsMobileMenuOpen(false)}
         />
       )}
-      <aside className={`fixed inset-y-0 left-0 z-50 md:sticky md:top-0 h-screen bg-white dark:bg-slate-900 border-r border-slate-200/60 dark:border-slate-800/40 flex flex-col shrink-0 transition-all duration-300 ease-in-out ${
+      <aside className={`fixed inset-y-0 left-0 z-50 md:sticky md:top-0 h-screen bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 flex flex-col shrink-0 transition-all duration-300 ease-in-out ${
         isCollapsed ? "w-20" : "w-64"
       } ${
         isMobileMenuOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"
@@ -111,7 +111,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         </button>
 
         {/* Brand Header */}
-        <div className={`py-4 flex items-center border-b border-slate-200/80 dark:border-slate-800/60 min-h-[73px] transition-all duration-300 ${
+        <div className={`py-4 flex items-center border-b border-slate-200 dark:border-slate-800 min-h-[73px] transition-all duration-300 ${
           isCollapsed ? "px-[22px]" : "px-4"
         }`}>
           <Link href="/dashboard" className="flex items-center group">
@@ -141,7 +141,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               }`}>
                 Manajemen Siswa
               </span>
-              <div className={`h-px bg-slate-200 dark:bg-slate-800/60 transition-all duration-300 ${isCollapsed ? "w-8" : "flex-1"}`} />
+              <div className={`h-px bg-slate-200 dark:bg-slate-800 transition-all duration-300 ${isCollapsed ? "w-8" : "flex-1"}`} />
             </div>
           </div>
           
@@ -225,7 +225,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               }`}>
                 Konten Portal
               </span>
-              <div className={`h-px bg-slate-200 dark:bg-slate-800/60 transition-all duration-300 ${isCollapsed ? "w-8" : "flex-1"}`} />
+              <div className={`h-px bg-slate-200 dark:bg-slate-800 transition-all duration-300 ${isCollapsed ? "w-8" : "flex-1"}`} />
             </div>
           </div>
  
@@ -273,7 +273,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               }`}>
                 Pengaturan Sistem
               </span>
-              <div className={`h-px bg-slate-200 dark:bg-slate-800/60 transition-all duration-300 ${isCollapsed ? "w-8" : "flex-1"}`} />
+              <div className={`h-px bg-slate-200 dark:bg-slate-800 transition-all duration-300 ${isCollapsed ? "w-8" : "flex-1"}`} />
             </div>
           </div>
  
@@ -317,7 +317,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         </nav>
 
         {/* Sidebar Footer (Admin Profile) */}
-        <div className={`py-4 border-t border-slate-200/60 dark:border-slate-800/40 bg-[#f7f7f7]/40 dark:bg-slate-950/20 flex flex-col gap-3 transition-all duration-300 ${
+        <div className={`py-4 border-t border-slate-200 dark:border-slate-800 bg-[#f7f7f7]/40 dark:bg-slate-950/20 flex flex-col gap-3 transition-all duration-300 ${
           isCollapsed ? "px-[20px] items-center" : "px-4 items-stretch"
         }`}>
           <div className="flex items-center transition-all duration-300 w-full">

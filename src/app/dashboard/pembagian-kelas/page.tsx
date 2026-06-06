@@ -870,7 +870,7 @@ export default function ClassDivisionManagement() {
       {isLoading && (
         <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center">
           <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 rounded-3xl p-8 shadow-2xl flex flex-col items-center gap-4 text-center max-w-sm w-full mx-4">
-            <svg className="animate-spin h-10 w-10 text-blue-500" fill="none" viewBox="0 0 24 24">
+            <svg className="animate-spin h-10 w-10 text-indigo-600" fill="none" viewBox="0 0 24 24">
               <circle className="opacity-25" cx={12} cy={12} r={10} stroke="currentColor" strokeWidth={4} />
               <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
             </svg>
@@ -879,7 +879,7 @@ export default function ClassDivisionManagement() {
               <p className="text-[10px] text-slate-400 font-bold uppercase mt-1">Mengupdate Data Calon Siswa ({loadingProgress}%)</p>
             </div>
             <div className="w-full bg-slate-100 dark:bg-slate-800 h-2 rounded-full overflow-hidden">
-              <div className="bg-blue-500 h-2 rounded-full transition-all duration-300" style={{ width: `${loadingProgress}%` }}></div>
+              <div className="bg-gradient-to-r from-indigo-600 to-blue-600 h-2 rounded-full transition-all duration-300" style={{ width: `${loadingProgress}%` }}></div>
             </div>
           </div>
         </div>
@@ -894,14 +894,14 @@ export default function ClassDivisionManagement() {
             <GraduationCap size={22} />
           </div>
           <div>
-            <h2 className="text-base font-black uppercase text-slate-800 dark:text-white tracking-wider">Manajemen Pembagian Rombel Kelas</h2>
+            <h2 className="text-base font-black uppercase text-slate-800 dark:text-white tracking-wider">Manajemen Pembagian Kelas</h2>
             <p className="text-[10px] text-slate-400 dark:text-slate-550 font-bold uppercase tracking-wider mt-0.5">SMK Taruna Bhakti · PPDB Portal Kelas</p>
           </div>
         </div>
 
         {/* Metric 1: Total Classes */}
         <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800/60 rounded-3xl p-6 shadow-[0_2px_12px_rgba(0,0,0,0.02)] flex flex-col justify-center transition-colors duration-300 text-left">
-          <span className="text-[9px] text-slate-400 dark:text-slate-550 font-black uppercase tracking-widest">Rombel Terbentuk (Kelas {selectedGrade} {selectedMajor})</span>
+          <span className="text-[9px] text-slate-400 dark:text-slate-550 font-black uppercase tracking-widest">Kelas Terbentuk (Kelas {selectedGrade} {selectedMajor})</span>
           <span className="text-2xl font-black text-slate-800 dark:text-white mt-1">{classesOfSelectedMajor.length} <span className="text-xs text-slate-455 font-bold">Kelas</span></span>
         </div>
 
@@ -923,10 +923,10 @@ export default function ClassDivisionManagement() {
               setSelectedStudentIds([]);
               setAssignmentFilter("ALL");
             }}
-            className={`flex flex-col items-center justify-center text-center p-6 rounded-3xl transition-all border duration-300 hover:scale-[1.03] group ${
+            className={`flex flex-col items-center justify-center text-center p-6 rounded-3xl transition-all border duration-300 hover:scale-[1.03] group cursor-pointer ${
               selectedMajor === m.code
-                ? "bg-blue-500 border-blue-600 text-white shadow-lg shadow-blue-500/20"
-                : "bg-white border-slate-200 hover:border-blue-500/40 hover:bg-slate-50/50 dark:bg-slate-900 dark:border-slate-800 dark:text-slate-450 dark:hover:text-white shadow-sm"
+                ? "bg-gradient-to-tr from-indigo-600 to-blue-600 border-indigo-600/85 text-white shadow-lg shadow-indigo-500/20 scale-[1.02]"
+                : "bg-white border-slate-200 hover:border-indigo-500/40 hover:bg-slate-50/50 dark:bg-slate-900 dark:border-slate-800 dark:text-slate-450 dark:hover:text-white shadow-sm"
             }`}
           >
             {getMajorLogo(m.code, "w-12 h-12 shadow-md")}
@@ -954,9 +954,9 @@ export default function ClassDivisionManagement() {
               setSelectedGrade(g);
               setSelectedStudentIds([]);
             }}
-            className={`flex-1 py-2.5 px-4 rounded-xl text-xs font-black uppercase tracking-wider transition-all duration-300 ${
+            className={`flex-1 py-2.5 px-4 rounded-xl text-xs font-black uppercase tracking-wider transition-all duration-300 cursor-pointer ${
               selectedGrade === g
-                ? "bg-blue-500 text-white shadow-md shadow-blue-500/20"
+                ? "bg-gradient-to-r from-indigo-600 to-blue-600 text-white shadow-md shadow-indigo-500/20 scale-[1.02]"
                 : "text-slate-500 hover:text-slate-850 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-slate-800/50"
             }`}
           >
@@ -995,21 +995,21 @@ export default function ClassDivisionManagement() {
         {isAddingClass && (
           <form onSubmit={handleCreateClass} className="bg-slate-50 dark:bg-slate-950 p-5 rounded-2xl border border-slate-200/60 dark:border-white/5 mb-6 flex flex-wrap gap-4 items-end animate-in zoom-in-95 duration-200">
             <div className="space-y-1.5 shrink-0 w-full sm:w-auto sm:flex-1">
-              <label className="text-[9px] uppercase font-bold text-slate-400 tracking-wider">Nama Rombel / Kelas Baru</label>
+              <label className="text-[9px] uppercase font-bold text-slate-400 tracking-wider">Nama Kelas Baru</label>
               <input
                 type="text"
                 value={newClassName}
                 onChange={(e) => setNewClassName(e.target.value)}
                 placeholder={`Contoh: X ${selectedMajor} 3`}
-                className="w-full px-3 py-2 bg-white dark:bg-slate-900 border border-slate-250 dark:border-white/5 rounded-xl text-slate-850 dark:text-white font-bold text-xs focus:outline-none focus:border-blue-500 uppercase"
+                className="w-full px-3 py-2 bg-white dark:bg-slate-900 border border-slate-250 dark:border-white/5 rounded-xl text-slate-850 dark:text-white font-bold text-xs focus:outline-none focus:border-indigo-500 uppercase"
               />
             </div>
 
             <button
               type="submit"
-              className="px-5 py-2.5 bg-blue-500 hover:bg-blue-600 text-white rounded-xl text-[10px] font-black uppercase tracking-wider transition-all shadow-sm w-full sm:w-auto"
+              className="px-5 py-2.5 bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-500 hover:to-blue-500 text-white rounded-xl text-[10px] font-black uppercase tracking-wider transition-all shadow-sm shadow-indigo-500/10 w-full sm:w-auto cursor-pointer"
             >
-              Simpan Rombel
+              Simpan Kelas
             </button>
           </form>
         )}
@@ -1071,7 +1071,7 @@ export default function ClassDivisionManagement() {
 
           {classesOfSelectedMajor.length === 0 && (
             <div className="sm:col-span-2 md:col-span-3 xl:col-span-4 text-center py-8 border-2 border-dashed border-slate-200 dark:border-slate-800 rounded-3xl text-slate-400 font-bold uppercase tracking-wider text-[10px]">
-              Belum ada rombel kelas yang terdaftar untuk jurusan {selectedMajor}. Klik "+ Buat Kelas Baru" untuk mendaftar.
+              Belum ada kelas yang terdaftar untuk jurusan {selectedMajor}. Klik "+ Buat Kelas Baru" untuk mendaftar.
             </div>
           )}
         </div>
@@ -1136,7 +1136,7 @@ export default function ClassDivisionManagement() {
                 <th className="py-3.5 px-4 text-center">NISN</th>
                 <th className="py-3.5 px-4">Asal Sekolah SMP</th>
                 <th className="py-3.5 px-4 text-center">Pilihan Keahlian</th>
-                <th className="py-3.5 px-4 text-center">Rombel Sekarang</th>
+                <th className="py-3.5 px-4 text-center">Kelas Sekarang</th>
                 <th className="py-3.5 px-4 text-right pr-6">Tindakan</th>
               </tr>
             </thead>
@@ -1357,7 +1357,7 @@ export default function ClassDivisionManagement() {
       {selectedStudentIds.length > 0 && (
         <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 bg-slate-900 border border-slate-800 text-white rounded-2xl px-6 py-4 flex flex-col md:flex-row items-center justify-between gap-6 shadow-[0_15px_40px_rgba(0,0,0,0.4)] w-full max-w-3xl animate-in slide-in-from-bottom duration-300">
           <div className="flex items-center gap-3">
-            <span className="w-5 h-5 rounded-full bg-blue-500 text-white font-extrabold flex items-center justify-center text-[10px] shrink-0">
+            <span className="w-5 h-5 rounded-full bg-indigo-600 text-white font-extrabold flex items-center justify-center text-[10px] shrink-0">
               {selectedStudentIds.length}
             </span>
             <div className="text-left">
@@ -1372,7 +1372,7 @@ export default function ClassDivisionManagement() {
               <button
                 key={c.id}
                 onClick={() => handleAssignSelectedToClass(c.name)}
-                className="px-3 py-1.5 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-[9px] font-black uppercase tracking-wider transition-all border border-blue-500 shadow-sm"
+                className="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-[9px] font-black uppercase tracking-wider transition-all border border-indigo-600 shadow-sm cursor-pointer"
               >
                 {c.name}
               </button>
