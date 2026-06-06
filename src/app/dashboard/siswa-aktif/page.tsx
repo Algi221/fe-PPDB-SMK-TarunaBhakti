@@ -2,7 +2,16 @@
 
 import React, { useState, useEffect, useMemo } from "react";
 import { usePPDB } from "@/context/PPDBContext";
-import { sanitizeUrl, sanitizeSrc } from "@/utils/security";
+import DOMPurify from "dompurify";
+
+const sanitizeUrl = (url: string | undefined | null): string => {
+  if (!url) return "";
+  return DOMPurify.sanitize(url, {
+    ALLOWED_URI_REGEXP: /^(?:https?:\/\/|\/|data:image\/|data:application\/pdf|data:video\/)/i
+  });
+};
+
+const sanitizeSrc = (src: string | undefined | null): string => sanitizeUrl(src);
 import { motion, AnimatePresence } from "framer-motion";
 import ExcelJS from 'exceljs';
 import { saveAs } from 'file-saver';
@@ -1000,7 +1009,7 @@ export default function ActiveStudentsDirectory() {
                           Pratinjau: {
                             selectedDoc === 'berkas_kk' ? 'Kartu Keluarga' :
                             selectedDoc === 'berkas_ktp' ? 'KTP Orang Tua / Wali' :
-                            selectedDoc === 'berkas_akta' ? 'Akta Kelahiran' :
+                        selectedDoc === 'berkas_akta' ? 'Akta Kelahiran' :
                             selectedDoc === 'berkas_ijazah' ? 'Ijazah / SKL' : 'Pas Foto'
                           }
                         </span>
@@ -1029,13 +1038,13 @@ export default function ActiveStudentsDirectory() {
                       <div className="flex justify-center items-center bg-slate-100 dark:bg-slate-900/60 border border-slate-200/50 dark:border-white/5 rounded-2xl min-h-[300px] max-h-[500px] overflow-auto p-4">
                         {selectedApplicant[selectedDoc].startsWith("data:application/pdf") ? (
                           <iframe 
-                            src={selectedApplicant[selectedDoc] && /^(https?:\/\/|\/(?!\/)|data:application\/pdf)/i.test(selectedApplicant[selectedDoc]) ? selectedApplicant[selectedDoc] : ""} 
+                            src={sanitizeSrc(selectedApplicant[selectedDoc])} 
                             className="w-full h-[400px] rounded-xl border border-slate-200 dark:border-white/5"
                             title="Pratinjau PDF"
                           />
                         ) : selectedApplicant[selectedDoc].startsWith("data:image/") || selectedApplicant[selectedDoc].startsWith("/") || selectedApplicant[selectedDoc].includes("base64") || selectedApplicant[selectedDoc].startsWith("http") ? (
                           <img 
-                            src={selectedApplicant[selectedDoc].includes("Mock_Data_Base64") ? "/logo_smktb.png" : (selectedApplicant[selectedDoc] && /^(https?:\/\/|\/(?!\/)|data:image\/)/i.test(selectedApplicant[selectedDoc]) ? selectedApplicant[selectedDoc] : "")} 
+                            src={selectedApplicant[selectedDoc].includes("Mock_Data_Base64") ? "/logo_smktb.png" : sanitizeSrc(selectedApplicant[selectedDoc])} 
                             alt="Pratinjau Dokumen" 
                             className="max-w-full max-h-[400px] object-contain rounded-xl shadow-sm animate-in fade-in"
                             onError={(e) => {

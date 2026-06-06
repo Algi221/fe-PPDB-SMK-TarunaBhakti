@@ -3,7 +3,16 @@
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { sanitizeUrl, sanitizeSrc } from "@/utils/security";
+import DOMPurify from "dompurify";
+
+const sanitizeUrl = (url: string | undefined | null): string => {
+  if (!url) return "";
+  return DOMPurify.sanitize(url, {
+    ALLOWED_URI_REGEXP: /^(?:https?:\/\/|\/|data:image\/|data:application\/pdf|data:video\/)/i
+  });
+};
+
+const sanitizeSrc = (src: string | undefined | null): string => sanitizeUrl(src);
 import { 
   ArrowLeft, 
   Sun, 

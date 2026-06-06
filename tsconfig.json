@@ -26,6 +26,9 @@
     "paths": {
       "@/*": [
         "./src/*"
+      ],
+      "dompurify": [
+        "./node_modules/isomorphic-dompurify"
       ]
     }
   },

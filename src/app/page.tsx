@@ -41,8 +41,17 @@ import {
 import DataPendaftarTable from "../components/DataPendaftarTable";
 import ShinyText from "../components/ShinyText";
 import ScrollFloat from "../components/ScrollFloat";
+import DOMPurify from "dompurify";
 import { usePPDB } from "@/context/PPDBContext";
-import { sanitizeUrl, sanitizeSrc } from "@/utils/security";
+
+const sanitizeUrl = (url: string | undefined | null): string => {
+  if (!url) return "";
+  return DOMPurify.sanitize(url, {
+    ALLOWED_URI_REGEXP: /^(?:https?:\/\/|\/|data:image\/|data:application\/pdf|data:video\/)/i
+  });
+};
+
+const sanitizeSrc = (src: string | undefined | null): string => sanitizeUrl(src);
 
 interface InformasiItem {
   id: number;

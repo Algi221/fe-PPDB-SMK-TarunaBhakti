@@ -2,7 +2,16 @@
 
 import React, { useState, useEffect } from "react";
 import { usePPDB } from "@/context/PPDBContext";
-import { sanitizeUrl, sanitizeSrc } from "@/utils/security";
+import DOMPurify from "dompurify";
+
+const sanitizeUrl = (url: string | undefined | null): string => {
+  if (!url) return "";
+  return DOMPurify.sanitize(url, {
+    ALLOWED_URI_REGEXP: /^(?:https?:\/\/|\/|data:image\/|data:application\/pdf|data:video\/)/i
+  });
+};
+
+const sanitizeSrc = (src: string | undefined | null): string => sanitizeUrl(src);
 import ExcelJS from 'exceljs';
 import { saveAs } from 'file-saver';
 import {
@@ -1277,7 +1286,7 @@ export default function ApplicantsDirectory() {
                         ) : (
                           <div className="relative group max-w-sm rounded-xl overflow-hidden border dark:border-white/5 shadow-md">
                             <img
-                              src={selectedApplicant.bukti_bayar && /^(https?:\/\/|\/(?!\/)|data:image\/|data:application\/pdf)/i.test(selectedApplicant.bukti_bayar) ? selectedApplicant.bukti_bayar : ""}
+                              src={sanitizeSrc(selectedApplicant.bukti_bayar)}
                               alt="Bukti Transfer Manual"
                               className="max-h-64 object-contain mx-auto bg-white rounded-lg"
                             />
