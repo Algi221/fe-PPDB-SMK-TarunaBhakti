@@ -133,30 +133,36 @@ function InvoiceContent() {
             background: white !important;
             margin: 0 !important;
             padding: 0 !important;
+            height: auto !important;
+            min-height: auto !important;
             overflow: visible !important;
           }
           
           /* Hide non-print elements */
-          .no-print, .action-panel, nav, header, footer, button, a[href] {
+          .no-print, .action-panel, .signature-block, nav, header, footer, button, a {
             display: none !important;
           }
           
           /* Reset all wrappers */
+          html,
+          body,
+          body > div,
           .print-root,
-          .screen-layout,
-          #__next,
-          main {
+          .screen-layout {
             display: block !important;
             background: white !important;
             padding: 0 !important;
             margin: 0 !important;
             min-height: auto !important;
+            height: auto !important;
             width: 100% !important;
             max-width: 100% !important;
             overflow: visible !important;
+            position: static !important;
           }
 
           .invoice-sheet {
+            display: block !important;
             box-shadow: none !important;
             border: none !important;
             border-radius: 0 !important;
@@ -164,13 +170,41 @@ function InvoiceContent() {
             padding: 0 !important;
             max-width: 100% !important;
             width: 100% !important;
+            background: white !important;
+            background-color: white !important;
+            color: #0f172a !important;
             overflow: visible !important;
+            position: static !important;
           }
           
           .invoice-inner {
             padding: 0 !important;
+            width: 100% !important;
+            background: white !important;
           }
 
+          /* Force text and lines inside invoice to be dark/visible */
+          .invoice-sheet *,
+          .invoice-sheet span,
+          .invoice-sheet p,
+          .invoice-sheet h1,
+          .invoice-sheet h2,
+          .invoice-sheet h4,
+          .invoice-sheet td,
+          .invoice-sheet th {
+            color: #0f172a !important;
+            background: transparent !important;
+            background-color: transparent !important;
+          }
+          
+          /* Keep specific colors for colored elements if print-color-adjust is supported */
+          .invoice-sheet .text-blue-600,
+          .invoice-sheet span[style*="color: rgb(37, 99, 235)"],
+          .invoice-sheet span[style*="color:#2563eb"],
+          .invoice-sheet span[style*="color: #2563eb"] {
+            color: #2563eb !important;
+          }
+          
           /* Preserve colors in print */
           * {
             -webkit-print-color-adjust: exact !important;
@@ -181,6 +215,23 @@ function InvoiceContent() {
           .invoice-sheet, .invoice-inner {
             page-break-inside: avoid;
           }
+        }
+
+        /* Force light theme colors on invoice-sheet on screen in dark mode */
+        html.dark .invoice-sheet {
+          background-color: #ffffff !important;
+          color: #0f172a !important;
+          border-color: #e2e8f0 !important;
+        }
+
+        html.dark .invoice-sheet * {
+          border-color: #e2e8f0 !important;
+        }
+
+        html.dark .invoice-sheet div[style*="background: #f8fafc"],
+        html.dark .invoice-sheet div[style*="background-color: #f8fafc"] {
+          background-color: #f8fafc !important;
+          background: #f8fafc !important;
         }
         
         /* Screen layout */
@@ -391,7 +442,7 @@ function InvoiceContent() {
             </div>
 
             {/* ── TANDA TANGAN (2 kolom, rapi sejajar) ── */}
-            <div style={{ borderTop: '2px dashed #e2e8f0', paddingTop: '20px', position: 'relative' }}>
+            <div className="signature-block" style={{ borderTop: '2px dashed #e2e8f0', paddingTop: '20px', position: 'relative' }}>
               
               {/* Watermark seal */}
               <div style={{

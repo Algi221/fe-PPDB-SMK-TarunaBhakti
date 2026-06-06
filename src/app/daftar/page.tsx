@@ -19,6 +19,7 @@ const getMajorDetails = (majorName: string) => {
     return {
       icon: <Code className="w-5 h-5 text-blue-500" />,
       logoText: "RPL",
+      logoPath: "/jurusan/pplg.png",
       bg: "bg-blue-50 dark:bg-blue-950/45",
       textColor: "text-blue-600 dark:text-sky-400"
     };
@@ -27,6 +28,7 @@ const getMajorDetails = (majorName: string) => {
     return {
       icon: <Monitor className="w-5 h-5 text-amber-500" />,
       logoText: "TJKT",
+      logoPath: "/jurusan/tjkt.png",
       bg: "bg-amber-50 dark:bg-amber-950/45",
       textColor: "text-amber-600 dark:text-amber-400"
     };
@@ -35,6 +37,7 @@ const getMajorDetails = (majorName: string) => {
     return {
       icon: <Palette className="w-5 h-5 text-purple-500" />,
       logoText: "DKV",
+      logoPath: "/jurusan/dkv.png",
       bg: "bg-purple-50 dark:bg-purple-950/45",
       textColor: "text-purple-600 dark:text-purple-400"
     };
@@ -43,6 +46,7 @@ const getMajorDetails = (majorName: string) => {
     return {
       icon: <Sparkles className="w-5 h-5 text-pink-500" />,
       logoText: "ANM",
+      logoPath: "/jurusan/animasi.png",
       bg: "bg-pink-50 dark:bg-pink-950/45",
       textColor: "text-pink-600 dark:text-pink-400"
     };
@@ -51,6 +55,7 @@ const getMajorDetails = (majorName: string) => {
     return {
       icon: <Film className="w-5 h-5 text-red-500" />,
       logoText: "BC",
+      logoPath: "/jurusan/bc.png",
       bg: "bg-red-50 dark:bg-red-950/45",
       textColor: "text-red-600 dark:text-red-400"
     };
@@ -59,6 +64,7 @@ const getMajorDetails = (majorName: string) => {
     return {
       icon: <Cpu className="w-5 h-5 text-emerald-500" />,
       logoText: "TE",
+      logoPath: "/jurusan/te.png",
       bg: "bg-emerald-50 dark:bg-emerald-950/45",
       textColor: "text-emerald-600 dark:text-emerald-400"
     };
@@ -66,6 +72,7 @@ const getMajorDetails = (majorName: string) => {
   return {
     icon: <Sparkles className="w-5 h-5 text-blue-500" />,
     logoText: "PPDB",
+    logoPath: "",
     bg: "bg-blue-50 dark:bg-blue-950/45",
     textColor: "text-blue-600 dark:text-sky-400"
   };
@@ -724,18 +731,24 @@ export default function DaftarPage() {
     });
 
     return (
-      <div className="relative min-h-screen flex flex-col items-center justify-center p-4 lg:p-10 bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 transition-colors duration-300 print:bg-white print:p-0">
+      <div className="ppdb-print-container relative min-h-screen flex flex-col items-center justify-center p-4 lg:p-10 bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 transition-colors duration-300 print:bg-white print:p-0">
         
         {/* CSS print override style block to hide headers/footers (localhost URL) and fix blank page */}
         <style dangerouslySetInnerHTML={{__html: `
           @media print {
             /* Hide all non-printable elements */
-            .bg-glow-container, .print-hide-sidebar, .floating-action-nav, button, a, nav, header, footer {
+            .bg-glow-container, .print-hide-sidebar, .signature-block, .floating-action-nav, button, a, nav, header, footer {
               display: none !important;
             }
             
             /* Reset parent wrappers to normal block display with visible overflow */
-            body, html, main, #__next, .min-h-screen, .relative, .grid, .col-span-12, .col-span-7, .lg:col-span-7, .max-w-6xl {
+            html,
+            body,
+            body > div,
+            main,
+            #__next,
+            .ppdb-print-container,
+            .ppdb-print-content {
               display: block !important;
               overflow: visible !important;
               background: white !important;
@@ -746,6 +759,9 @@ export default function DaftarPage() {
               max-width: 100% !important;
               box-shadow: none !important;
               border: none !important;
+              height: auto !important;
+              min-height: auto !important;
+              position: static !important;
             }
             
             /* Apply custom padding and formatting on the invoice sheet itself */
@@ -758,12 +774,115 @@ export default function DaftarPage() {
               box-shadow: none !important;
               border: none !important;
               background: white !important;
+              background-color: white !important;
+              color: #0f172a !important;
+              overflow: visible !important;
+              position: static !important;
+            }
+            
+            /* Force all text in print to be dark and visible */
+            .printable-invoice-sheet *,
+            .printable-invoice-sheet span,
+            .printable-invoice-sheet p,
+            .printable-invoice-sheet h1,
+            .printable-invoice-sheet h2,
+            .printable-invoice-sheet h4,
+            .printable-invoice-sheet td,
+            .printable-invoice-sheet th {
+              color: #0f172a !important;
+              background: transparent !important;
+              background-color: transparent !important;
+            }
+            
+            /* Keep specific colored text for status and rombel */
+            .printable-invoice-sheet .text-blue-650,
+            .printable-invoice-sheet .text-blue-600 {
+              color: #2563eb !important;
+            }
+            
+            .printable-invoice-sheet .text-emerald-600 {
+              color: #059669 !important;
+            }
+            
+            .printable-invoice-sheet .text-amber-500 {
+              color: #d97706 !important;
+            }
+            
+            .printable-invoice-sheet border,
+            .printable-invoice-sheet td,
+            .printable-invoice-sheet th,
+            .printable-invoice-sheet tr,
+            .printable-invoice-sheet table {
+              border-color: #000000 !important;
             }
             
             @page {
               size: auto;
               margin: 0mm; /* hides default browser header (title) and footer (localhost URL) */
             }
+          }
+
+          /* Force light theme colors on the printable invoice container even in dark mode on screen */
+          html.dark .printable-invoice-sheet,
+          .printable-invoice-sheet {
+            background-color: #ffffff !important;
+            color: #0f172a !important;
+            border-color: #e2e8f0 !important;
+          }
+
+          html.dark .printable-invoice-sheet .text-slate-955,
+          html.dark .printable-invoice-sheet .text-slate-900,
+          html.dark .printable-invoice-sheet .text-slate-850,
+          html.dark .printable-invoice-sheet .text-slate-855,
+          html.dark .printable-invoice-sheet .text-slate-800,
+          html.dark .printable-invoice-sheet .text-slate-700,
+          .printable-invoice-sheet .text-slate-955,
+          .printable-invoice-sheet .text-slate-900,
+          .printable-invoice-sheet .text-slate-855,
+          .printable-invoice-sheet .text-slate-850,
+          .printable-invoice-sheet .text-slate-800,
+          .printable-invoice-sheet .text-slate-700 {
+            color: #0f172a !important;
+          }
+
+          html.dark .printable-invoice-sheet .text-slate-550,
+          html.dark .printable-invoice-sheet .text-slate-500,
+          html.dark .printable-invoice-sheet .text-slate-450,
+          html.dark .printable-invoice-sheet .text-slate-400,
+          .printable-invoice-sheet .text-slate-550,
+          .printable-invoice-sheet .text-slate-500,
+          .printable-invoice-sheet .text-slate-450,
+          .printable-invoice-sheet .text-slate-400 {
+            color: #64748b !important;
+          }
+
+          html.dark .printable-invoice-sheet .bg-slate-50,
+          .printable-invoice-sheet .bg-slate-50 {
+            background-color: #f8fafc !important;
+          }
+
+          html.dark .printable-invoice-sheet .border-slate-200,
+          html.dark .printable-invoice-sheet .border-slate-100,
+          .printable-invoice-sheet .border-slate-200,
+          .printable-invoice-sheet .border-slate-100 {
+            border-color: #e2e8f0 !important;
+          }
+
+          html.dark .printable-invoice-sheet .border-slate-800,
+          html.dark .printable-invoice-sheet .border-slate-900,
+          .printable-invoice-sheet .border-slate-800,
+          .printable-invoice-sheet .border-slate-900 {
+            border-color: #1e293b !important;
+          }
+          
+          html.dark .printable-invoice-sheet .divide-slate-200,
+          .printable-invoice-sheet .divide-slate-200 {
+            border-color: #e2e8f0 !important;
+          }
+
+          html.dark .printable-invoice-sheet .text-blue-600,
+          .printable-invoice-sheet .text-blue-600 {
+            color: #2563eb !important;
           }
         `}} />
 
@@ -847,7 +966,7 @@ export default function DaftarPage() {
         </div>
 
         {/* DESKTOP VIEW (Congrats + Merged Invoice Side-by-Side, screen >= 1024px) */}
-        <div className="hidden lg:grid grid-cols-12 gap-8 max-w-6xl w-full relative z-10 items-start">
+        <div className="ppdb-print-content hidden lg:grid grid-cols-12 gap-8 max-w-6xl w-full relative z-10 items-start">
           
           {/* Left Column: Sidebar Stats, Documents checklist and WhatsApp CTA (print:hidden) */}
           <div className="lg:col-span-5 space-y-6 print-hide-sidebar">
@@ -1044,7 +1163,7 @@ export default function DaftarPage() {
             </div>
 
             {/* Dual Signature Block */}
-            <div className="grid grid-cols-2 gap-8 text-[11px] font-bold text-slate-800 text-left pt-6 relative border-t-2 border-dashed border-slate-200">
+            <div className="signature-block grid grid-cols-2 gap-8 text-[11px] font-bold text-slate-800 text-left pt-6 relative border-t-2 border-dashed border-slate-200">
               
               {/* Visual circle approved seal watermark */}
               <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 opacity-[0.06] select-none pointer-events-none">
@@ -1236,7 +1355,18 @@ export default function DaftarPage() {
                   </span>
                   <div className="flex items-center gap-3">
                     <div className={`w-10 h-10 rounded-xl flex items-center justify-center shadow-sm shrink-0 ${getMajorDetails(submittedCandidate?.jurusan_1 || submittedCandidate?.jurusan1).bg}`}>
-                      {getMajorDetails(submittedCandidate?.jurusan_1 || submittedCandidate?.jurusan1).icon}
+                      {getMajorDetails(submittedCandidate?.jurusan_1 || submittedCandidate?.jurusan1).logoPath ? (
+                        <img 
+                          src={getMajorDetails(submittedCandidate?.jurusan_1 || submittedCandidate?.jurusan1).logoPath} 
+                          alt={getMajorDetails(submittedCandidate?.jurusan_1 || submittedCandidate?.jurusan1).logoText} 
+                          className="w-7 h-7 object-contain"
+                          onError={(e: any) => {
+                            e.target.style.display = 'none';
+                          }}
+                        />
+                      ) : (
+                        getMajorDetails(submittedCandidate?.jurusan_1 || submittedCandidate?.jurusan1).icon
+                      )}
                     </div>
                     <div className="min-w-0">
                       <p className="text-[8px] font-black text-slate-450 uppercase tracking-wider">Jurusan</p>
@@ -1291,7 +1421,18 @@ export default function DaftarPage() {
                     </div>
                     <div className="flex items-center gap-3 bg-blue-50/50 dark:bg-blue-950/20 border border-blue-100/35 dark:border-blue-900/30 px-4 py-2 rounded-2xl shrink-0">
                       <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${getMajorDetails(submittedCandidate?.jurusan_1 || submittedCandidate?.jurusan1).bg}`}>
-                        {getMajorDetails(submittedCandidate?.jurusan_1 || submittedCandidate?.jurusan1).icon}
+                        {getMajorDetails(submittedCandidate?.jurusan_1 || submittedCandidate?.jurusan1).logoPath ? (
+                          <img 
+                            src={getMajorDetails(submittedCandidate?.jurusan_1 || submittedCandidate?.jurusan1).logoPath} 
+                            alt={getMajorDetails(submittedCandidate?.jurusan_1 || submittedCandidate?.jurusan1).logoText} 
+                            className="w-5 h-5 object-contain"
+                            onError={(e: any) => {
+                              e.target.style.display = 'none';
+                            }}
+                          />
+                        ) : (
+                          getMajorDetails(submittedCandidate?.jurusan_1 || submittedCandidate?.jurusan1).icon
+                        )}
                       </div>
                       <div>
                         <span className="text-[8px] font-black text-slate-455 uppercase tracking-widest block leading-none">Pilihan Jurusan</span>
