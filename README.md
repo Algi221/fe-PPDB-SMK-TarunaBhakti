@@ -125,42 +125,4 @@ Setelah Anda menjalankan seeder database, Anda dapat login ke Dashboard Admin PP
 | **Super Admin** | `KingAlgi` | `RPLSTRONG` |
 | **Admin Panitia** | `admin_tb` | `AdminTarunaBhakti2026` |
 
----
-
-## 🛡️ Catatan Keamanan: DOM-based XSS (CWE-79) False Positives
-
-Sistem PPDB ini memiliki modul perlindungan tangguh terhadap serangan XSS berbasis DOM melalui fungsi sanitasi URL tersentralisasi yang ada di [security.ts](file:///d:/Website%20Project/PPDB_SMK_TarunaBhakti/frontend/src/utils/security.ts):
-
-* **Fungsi `sanitizeUrl` & `sanitizeSrc`**:
-  * Menghapus karakter kontrol tersembunyi (seperti `\u0000-\u001F`, tab, baris baru) yang biasa digunakan peretas untuk menyelundupkan muatan jahat (obfuscated payload) seperti `java\tscript:`.
-  * Membatasi protokol URL secara ketat hanya pada protokol aman (`http`, `https`, `mailto`, `tel`).
-  * Membatasi `data:` URI hanya untuk format dokumen aman (`data:application/pdf;base64,...`) dan format gambar aman (`png`, `jpeg`, `jpg`, `gif`, `webp`).
-  * Mengubah URL berbahaya (seperti skema `javascript:`) secara otomatis menjadi `#` atau string kosong `""`.
-
-### Mengapa Snyk Code Masih Melaporkan Peringatan?
-Alat analisis kode statis seperti Snyk melacak aliran data (*taint analysis*) dari sumber dinamis (nilai state React seperti `useState`) ke elemen DOM seperti `src` pada tag `<img>` atau `<iframe>`. Karena Snyk Code tidak mengevaluasi logika internal dari fungsi kustom `sanitizeSrc`, ia tidak mengenali bahwa data telah sepenuhnya divalidasi. 
-
-**Tindakan yang direkomendasikan:** 
-Peringatan ini dipastikan merupakan **False Positive (Salah Deteksi)**. Anda dapat menandai temuan ini sebagai *Ignored* (False Positive / Accepted Risk) langsung melalui panel dashboard **Snyk Web UI (Consistent Ignores)** agar tidak lagi muncul pada pemindaian berikutnya.
-
----
-
-## 📦 Membangun untuk Produksi (Production Build)
-
-Jika sistem ini akan dideploy ke lingkungan produksi:
-
-### Backend:
-```bash
-# Lakukan kompilasi TypeScript jika diperlukan, lalu jalankan:
-bun run start
-# atau menggunakan node:
-npm start
-```
-
-### Frontend:
-```bash
-# Build paket Next.js produksi:
-bun run build
-# Jalankan web server produksi:
-bun run start
-```
+--
