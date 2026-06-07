@@ -28,7 +28,7 @@ export default function VerificationPage() {
   const [isDark, setIsDark] = useState(false);
 
   useEffect(() => {
-    // Check dark mode
+    
     if (typeof window !== "undefined") {
       const saved = localStorage.getItem("ppdb-theme");
       if (saved === "dark" || document.documentElement.classList.contains("dark")) {

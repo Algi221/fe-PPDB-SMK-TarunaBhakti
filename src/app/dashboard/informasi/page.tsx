@@ -42,32 +42,27 @@ export default function KelolaInformasi() {
   const [informasiList, setInformasiList] = useState<Informasi[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [submitting, setSubmitting] = useState<boolean>(false);
-  
-  // Modal States
+
   const [isOpenModal, setIsOpenModal] = useState<boolean>(false);
   const [isEditMode, setIsEditMode] = useState<boolean>(false);
   const [selectedId, setSelectedId] = useState<number | null>(null);
-  
-  // Form States
+
   const [judul, setJudul] = useState<string>("");
   const [konten, setKonten] = useState<string>("");
   const [tanggal, setTanggal] = useState<string>("");
-  const [fotoUrl, setFotoUrl] = useState<string>(""); // Base64 Image
-  const [videoUrl, setVideoUrl] = useState<string>(""); // Base64 Video
+  const [fotoUrl, setFotoUrl] = useState<string>(""); 
+  const [videoUrl, setVideoUrl] = useState<string>(""); 
   const [videoName, setVideoName] = useState<string>("");
-  const [dokumenUrl, setDokumenUrl] = useState<string>(""); // Base64 Document
+  const [dokumenUrl, setDokumenUrl] = useState<string>(""); 
   const [dokumenName, setDokumenName] = useState<string>("");
   const [dragActive, setDragActive] = useState<boolean>(false);
 
-  // Detail View State
   const [previewItem, setPreviewItem] = useState<Informasi | null>(null);
-  
-  // Delete Confirm State
+
   const [deleteConfirmId, setDeleteConfirmId] = useState<number | null>(null);
 
   const BACKEND_URL = "http://localhost:5000";
 
-  // Helper to parse dynamic JSON media attachments
   const parseMedia = (raw: string | null | undefined) => {
     if (!raw) return { foto: "", video: "", videoName: "", dokumen: "", dokumenName: "" };
     if (raw.startsWith("{")) {
@@ -87,7 +82,6 @@ export default function KelolaInformasi() {
     return { foto: raw, video: "", videoName: "", dokumen: "", dokumenName: "" };
   };
 
-  // Format date helper
   const formatDate = (dateString: string) => {
     if (!dateString) return "";
     try {
@@ -98,7 +92,6 @@ export default function KelolaInformasi() {
     }
   };
 
-  // Convert date format for input (YYYY-MM-DD)
   const formatInputDate = (dateString: string) => {
     if (!dateString) return "";
     try {
@@ -112,7 +105,6 @@ export default function KelolaInformasi() {
     }
   };
 
-  // Fetch all informasi
   const fetchInformasi = async () => {
     setLoading(true);
     try {
@@ -127,7 +119,7 @@ export default function KelolaInformasi() {
       }
     } catch (err: any) {
       console.warn("Backend offline, using fallback seeded data:", err.message);
-      // Fallback seeded data to keep app functional offline
+      
       const fallbackData: Informasi[] = [
         {
           id: 101,
@@ -156,13 +148,12 @@ export default function KelolaInformasi() {
     fetchInformasi();
   }, []);
 
-  // Handle Form Modal Open
   const handleOpenCreateModal = () => {
     setIsEditMode(false);
     setSelectedId(null);
     setJudul("");
     setKonten("");
-    // Set default date to today's date
+    
     const today = new Date().toISOString().split('T')[0];
     setTanggal(today);
     setFotoUrl("");
@@ -190,11 +181,9 @@ export default function KelolaInformasi() {
     setIsOpenModal(true);
   };
 
-  // Convert File to Base64
   const processFile = (file: File) => {
     if (!file) return;
-    
-    // Check size limit (limit to 3MB to avoid giant SQL payloads in development)
+
     if (file.size > 3 * 1024 * 1024) {
       if (typeof addToast === "function") {
         addToast("Ukuran File Terlalu Besar", "Harap pilih foto dengan ukuran di bawah 3 MB.", "warning");
@@ -212,7 +201,7 @@ export default function KelolaInformasi() {
     const reader = new FileReader();
     reader.onloadend = () => {
       if (typeof reader.result === "string") {
-        setFotoUrl(reader.result); // Base64 encoding
+        setFotoUrl(reader.result); 
         if (typeof addToast === "function") {
           addToast("Foto Siap", "Foto berhasil diproses untuk diunggah.", "success");
         }
@@ -226,11 +215,9 @@ export default function KelolaInformasi() {
     if (file) processFile(file);
   };
 
-  // Convert Video to Base64
   const processVideoFile = (file: File) => {
     if (!file) return;
-    
-    // Check size limit (limit to 10MB)
+
     if (file.size > 10 * 1024 * 1024) {
       if (typeof addToast === "function") {
         addToast("Ukuran Video Terlalu Besar", "Harap pilih video dengan ukuran di bawah 10 MB.", "warning");
@@ -263,11 +250,9 @@ export default function KelolaInformasi() {
     if (file) processVideoFile(file);
   };
 
-  // Convert Document to Base64
   const processDokumenFile = (file: File) => {
     if (!file) return;
-    
-    // Check size limit (limit to 5MB)
+
     if (file.size > 5 * 1024 * 1024) {
       if (typeof addToast === "function") {
         addToast("Ukuran Dokumen Terlalu Besar", "Harap pilih dokumen dengan ukuran di bawah 5 MB.", "warning");
@@ -275,7 +260,6 @@ export default function KelolaInformasi() {
       return;
     }
 
-    // Allow typical document mime types: pdf, doc, docx, xls, xlsx, txt
     const allowedTypes = [
       "application/pdf",
       "application/msword",
@@ -284,7 +268,7 @@ export default function KelolaInformasi() {
       "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
       "text/plain"
     ];
-    // Also allow by extension as a fallback
+    
     const ext = file.name.split('.').pop()?.toLowerCase();
     const isAllowedExt = ["pdf", "doc", "docx", "xls", "xlsx", "txt"].includes(ext || "");
 
@@ -313,7 +297,6 @@ export default function KelolaInformasi() {
     if (file) processDokumenFile(file);
   };
 
-  // Drag and drop event handlers
   const handleDrag = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
     e.stopPropagation();
@@ -334,7 +317,6 @@ export default function KelolaInformasi() {
     }
   };
 
-  // Create or Update
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!judul.trim() || !konten.trim() || !tanggal) {
@@ -394,8 +376,7 @@ export default function KelolaInformasi() {
       }
     } catch (err) {
       console.error("API error, executing offline fallback operations:", err);
-      
-      // Offline fallback processing
+
       if (isEditMode) {
         setInformasiList(prev => prev.map(item => item.id === selectedId ? { ...item, ...payload } : item));
         if (typeof addToast === "function") {
@@ -418,7 +399,6 @@ export default function KelolaInformasi() {
     }
   };
 
-  // Delete Announcement
   const executeDelete = async () => {
     if (!deleteConfirmId) return;
     const id = deleteConfirmId;

@@ -65,7 +65,6 @@ interface MajorDetail {
   partners: string;
 }
 
-// Extensive details dataset for SMK Taruna Bhakti's majors
 const majorsData: Record<string, MajorDetail> = {
   rpl: {
     code: "RPL",
@@ -340,7 +339,6 @@ export default function MajorPage() {
     }
   }, []);
 
-  // Sync static default data first
   useEffect(() => {
     if (code && majorsData[code]) {
       setMajor({ ...majorsData[code] });
@@ -350,7 +348,6 @@ export default function MajorPage() {
     }
   }, [code, nextCode]);
 
-  // Load dynamic changes from database API
   useEffect(() => {
     const loadDynamicConfig = async () => {
       try {
@@ -414,7 +411,6 @@ export default function MajorPage() {
     }
   };
 
-  // 404 State styled elegantly
   if (!major) {
     return (
       <div className="min-h-screen flex flex-col justify-center items-center bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 p-6 transition-colors duration-300">

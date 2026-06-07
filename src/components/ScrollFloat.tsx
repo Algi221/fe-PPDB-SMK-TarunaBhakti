@@ -47,7 +47,7 @@ const ScrollFloat = ({
       if (text) {
         return text.split(/(\s+)/).map((part, index) => {
           if (part.match(/\s+/)) {
-            return <span key={index}>{part}</span>; // Standard space allowing browser wrapping
+            return <span key={index}>{part}</span>; 
           }
           return (
             <span key={index} style={{ display: 'inline-block' }}>

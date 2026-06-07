@@ -61,7 +61,6 @@ const timeAgo = (dateStr: string | null | undefined) => {
   return `${diffDays} hari yang lalu`;
 };
 
-// Helper to parse dynamic JSON media attachments
 const parseMedia = (raw: string | null | undefined) => {
   if (!raw) return { foto: "", video: "", videoName: "", dokumen: "", dokumenName: "" };
   if (raw.startsWith("{")) {
@@ -89,20 +88,17 @@ export default function ForumPage() {
   const [loading, setLoading] = useState(true);
   const [selectedPost, setSelectedPost] = useState<InformasiItem | null>(null);
 
-  // Navbar scroll
   useEffect(() => {
     const handleScroll = () => setIsNavbarScrolled(window.scrollY > 50);
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  // Dark mode sync
   const toggleDark = () => {
     setIsDark(!isDark);
     document.documentElement.classList.toggle('dark');
   };
 
-  // Fetch data from backend
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -121,7 +117,6 @@ export default function ForumPage() {
     fetchData();
   }, []);
 
-  // Filter by tab & search
   const filtered = informasi.filter(item => {
     const searchLower = searchQuery.toLowerCase();
     const matchSearch = searchQuery === '' || 
@@ -130,10 +125,8 @@ export default function ForumPage() {
     return matchSearch;
   });
 
-  // Recent 3 announcements for sidebar
   const recentPosts = informasi.slice(0, 3);
 
-  // Badge color for category
   const getCategoryBadge = () => {
     return { label: 'INFORMASI', cls: 'bg-blue-50 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400' };
   };

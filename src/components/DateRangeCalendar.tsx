@@ -5,8 +5,8 @@ import { ChevronLeft, ChevronRight, Calendar } from "lucide-react";
 
 interface DateRangeCalendarProps {
   label: string;
-  startValue: string; // "YYYY-MM-DD"
-  endValue: string; // "YYYY-MM-DD"
+  startValue: string; 
+  endValue: string; 
   onSelectRange: (start: string, end: string) => void;
   excludeRange?: { start: string; end: string } | null;
   error?: string | null;
@@ -22,7 +22,7 @@ export default function DateRangeCalendar({
   error,
   setError
 }: DateRangeCalendarProps) {
-  // Current month displayed in calendar grid
+  
   const [currentDate, setCurrentDate] = useState<Date>(() => {
     if (startValue) return new Date(startValue);
     return new Date();
@@ -30,7 +30,6 @@ export default function DateRangeCalendar({
 
   const [tempStart, setTempStart] = useState<Date | null>(null);
 
-  // Sync displayed month when value is loaded
   useEffect(() => {
     if (startValue) {
       setCurrentDate(new Date(startValue));
@@ -40,7 +39,6 @@ export default function DateRangeCalendar({
   const year = currentDate.getFullYear();
   const month = currentDate.getMonth();
 
-  // Helper to format Date to YYYY-MM-DD local time string
   const formatDateString = (date: Date): string => {
     const y = date.getFullYear();
     const m = String(date.getMonth() + 1).padStart(2, "0");
@@ -59,9 +57,8 @@ export default function DateRangeCalendar({
   };
 
   const days = getDaysInMonth(year, month);
-  const firstDayIndex = new Date(year, month, 1).getDay(); // 0 is Sunday, 6 is Saturday
+  const firstDayIndex = new Date(year, month, 1).getDay(); 
 
-  // Padding days at the beginning of grid
   const paddingDays = Array(firstDayIndex).fill(null);
 
   const prevMonth = () => {
@@ -76,15 +73,15 @@ export default function DateRangeCalendar({
     if (setError) setError(null);
 
     if (!tempStart) {
-      // First click: select starting date
+      
       setTempStart(day);
     } else {
-      // Second click: select end date
+      
       let start = tempStart;
       let end = day;
 
       if (day < tempStart) {
-        // Swap if end is before start
+        
         start = day;
         end = tempStart;
       }
@@ -92,7 +89,6 @@ export default function DateRangeCalendar({
       const startStr = formatDateString(start);
       const endStr = formatDateString(end);
 
-      // Validate overlap with excludeRange (nabrak check)
       if (excludeRange && excludeRange.start && excludeRange.end) {
         const exclStart = new Date(excludeRange.start);
         const exclEnd = new Date(excludeRange.end);
@@ -111,7 +107,6 @@ export default function DateRangeCalendar({
         }
       }
 
-      // Valid: trigger callback and reset
       onSelectRange(startStr, endStr);
       setTempStart(null);
     }
@@ -134,8 +129,7 @@ export default function DateRangeCalendar({
   };
 
   const isHoveredRange = (day: Date): boolean => {
-    // Visually show range between tempStart and hovered day if possible
-    // (Here we just focus on tempStart and selected days)
+
     return false;
   };
 

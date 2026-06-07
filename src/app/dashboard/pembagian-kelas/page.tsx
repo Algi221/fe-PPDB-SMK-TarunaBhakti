@@ -87,18 +87,15 @@ export default function ClassDivisionManagement() {
     );
   };
 
-  // Core filter states
   const [selectedMajor, setSelectedMajor] = useState<string>("RPL");
   const [selectedGrade, setSelectedGrade] = useState<10 | 11 | 12>(10);
   const [schoolPeriod, setSchoolPeriod] = useState("2026-2027");
   const [searchTerm, setSearchTerm] = useState("");
   const [assignmentFilter, setAssignmentFilter] = useState<"ALL" | "UNASSIGNED" | "ASSIGNED">("ALL");
 
-  // Selection states
   const [selectedStudentIds, setSelectedStudentIds] = useState<number[]>([]);
   const [targetClass, setTargetClass] = useState<string>("");
 
-  // Load school active period on mount
   useEffect(() => {
     const fetchConfig = async () => {
       try {
@@ -114,23 +111,19 @@ export default function ClassDivisionManagement() {
     fetchConfig();
   }, []);
 
-  // UI state overlays
   const [isLoading, setIsLoading] = useState(false);
   const [loadingProgress, setLoadingProgress] = useState(0);
   const [toast, setToast] = useState<{ message: string; type: "success" | "error" | "info" } | null>(null);
 
-  // Dynamic Class Creation states
   const [classes, setClasses] = useState<ClassItem[]>([]);
   const [newClassName, setNewClassName] = useState("");
   const [newClassCapacity, setNewClassCapacity] = useState(40);
   const [isAddingClass, setIsAddingClass] = useState(false);
 
-  // Class Detail Modal states
   const [selectedClassDetail, setSelectedClassDetail] = useState<ClassItem | null>(null);
   const [classSearchTerm, setClassSearchTerm] = useState("");
   const [activeDropClass, setActiveDropClass] = useState<string | null>(null);
 
-  // Predefined/Suggested Majors
   const majors = [
     { code: "RPL", name: "Rekayasa Perangkat Lunak" },
     { code: "TJKT", name: "Teknik Jaringan Komputer & Telekomunikasi" },
@@ -140,7 +133,6 @@ export default function ClassDivisionManagement() {
     { code: "TE", name: "Teknik Elektronika" }
   ];
 
-  // Dynamic state for majors config loaded from localStorage (to align with Customizer)
   const activeMajors = useMemo(() => {
     if (!mounted) return majors;
     const saved = localStorage.getItem("ppdb_majors_config");
@@ -157,14 +149,12 @@ export default function ClassDivisionManagement() {
     return majors;
   }, [mounted]);
 
-  // Sync selected major on mount to whatever is the first active major code
   useEffect(() => {
     if (activeMajors.length > 0) {
       setSelectedMajor(activeMajors[0].code);
     }
   }, [activeMajors]);
 
-  // Load and save classes
   useEffect(() => {
     setMounted(true);
     const fetchClassesConfig = async () => {
@@ -180,7 +170,6 @@ export default function ClassDivisionManagement() {
         console.error("Gagal mengambil konfigurasi kelas dari API:", e);
       }
 
-      // Local storage fallback
       const savedClasses = localStorage.getItem("ppdb_classes_config");
       if (savedClasses) {
         try {
@@ -210,7 +199,7 @@ export default function ClassDivisionManagement() {
       if (diff === 0) return 10;
       if (diff === 1) return 11;
       if (diff === 2) return 12;
-      if (diff >= 3) return 99; // Lulus
+      if (diff >= 3) return 99; 
       return 10;
     } catch (e) {
       return 10;
@@ -222,7 +211,7 @@ export default function ClassDivisionManagement() {
     if (!baseClass) return null;
     
     const grade = getStudentGrade(student);
-    let cleanClass = baseClass.replace(/^(XII|XI|X)\s+/i, ""); // strip prefix
+    let cleanClass = baseClass.replace(/^(XII|XI|X)\s+/i, ""); 
     
     if (grade === 10) return `X ${cleanClass}`;
     if (grade === 11) return `XI ${cleanClass}`;
@@ -242,13 +231,13 @@ export default function ClassDivisionManagement() {
   const generateDefaultClasses = (): ClassItem[] => {
     const defaultList: ClassItem[] = [];
     majors.forEach(m => {
-      // Grade 10
+      
       defaultList.push({ id: `X-${m.code}-1`, name: `X ${m.code} 1`, majorCode: m.code, maxCapacity: 100 });
       defaultList.push({ id: `X-${m.code}-2`, name: `X ${m.code} 2`, majorCode: m.code, maxCapacity: 100 });
-      // Grade 11
+      
       defaultList.push({ id: `XI-${m.code}-1`, name: `XI ${m.code} 1`, majorCode: m.code, maxCapacity: 100 });
       defaultList.push({ id: `XI-${m.code}-2`, name: `XI ${m.code} 2`, majorCode: m.code, maxCapacity: 100 });
-      // Grade 12
+      
       defaultList.push({ id: `XII-${m.code}-1`, name: `XII ${m.code} 1`, majorCode: m.code, maxCapacity: 100 });
       defaultList.push({ id: `XII-${m.code}-2`, name: `XII ${m.code} 2`, majorCode: m.code, maxCapacity: 100 });
     });
@@ -266,7 +255,6 @@ export default function ClassDivisionManagement() {
     setClasses(updatedClasses);
     localStorage.setItem("ppdb_classes_config", JSON.stringify(updatedClasses));
 
-    // Save to backend if admin token is available
     const token = localStorage.getItem("ppdb_admin_token");
     if (token) {
       try {
@@ -287,7 +275,6 @@ export default function ClassDivisionManagement() {
     }
   };
 
-  // Filter approved/active applicants of the selected major
   const approvedApplicantsOfMajor = useMemo(() => {
     return applicants.filter((a: Applicant) => {
       const isApproved = a.status === "Approved";
@@ -348,10 +335,9 @@ export default function ClassDivisionManagement() {
     });
   }, [applicants, selectedMajor]);
 
-  // Apply Search, Grade, and Class Assignment Filters
   const filteredStudents = useMemo(() => {
     return approvedApplicantsOfMajor.filter((a: Applicant) => {
-      // Filter by dynamic Grade level
+      
       const grade = getStudentGrade(a);
       if (grade !== selectedGrade) return false;
 
@@ -371,21 +357,17 @@ export default function ClassDivisionManagement() {
     });
   }, [approvedApplicantsOfMajor, searchTerm, assignmentFilter, selectedGrade, schoolPeriod]);
 
-  // Group classes by the currently selected major and active grade
   const classesOfSelectedMajor = useMemo(() => {
     return classes.filter(c => c.majorCode === selectedMajor && getClassGrade(c.name) === selectedGrade);
   }, [classes, selectedMajor, selectedGrade]);
 
-  // Compute student count in each class dynamically based on dynamic class names
   const classEnrollments = useMemo(() => {
     const enrollmentCounts: Record<string, number> = {};
-    
-    // Initialize
+
     classesOfSelectedMajor.forEach(c => {
       enrollmentCounts[c.name] = 0;
     });
 
-    // Populate
     applicants.forEach((a: Applicant) => {
       const cls = getStudentCurrentClass(a);
       if (cls && enrollmentCounts[cls] !== undefined) {
@@ -396,12 +378,10 @@ export default function ClassDivisionManagement() {
     return enrollmentCounts;
   }, [applicants, classesOfSelectedMajor, schoolPeriod]);
 
-  // Total summary of assigned classes in selected major
   const totalClassesFilled = useMemo(() => {
     return classesOfSelectedMajor.filter(c => (classEnrollments[c.name] || 0) > 0).length;
   }, [classesOfSelectedMajor, classEnrollments]);
 
-  // Students in selected class detail
   const enrolledStudentsInDetail = useMemo(() => {
     if (!selectedClassDetail) return [];
     return applicants.filter((a: Applicant) => {
@@ -415,7 +395,6 @@ export default function ClassDivisionManagement() {
     });
   }, [applicants, selectedClassDetail, classSearchTerm, schoolPeriod]);
 
-  // Selection helpers
   const handleSelectAll = () => {
     if (selectedStudentIds.length === filteredStudents.length) {
       setSelectedStudentIds([]);
@@ -430,7 +409,6 @@ export default function ClassDivisionManagement() {
     );
   };
 
-  // Mass action: Move selected students to class
   const handleAssignSelectedToClass = async (className: string) => {
     if (selectedStudentIds.length === 0) return;
     
@@ -471,16 +449,14 @@ export default function ClassDivisionManagement() {
     }
   };
 
-  // Drag and Drop Event Handlers for Student Assignments
   const handleDragStart = (e: React.DragEvent, studentId: number) => {
-    // If the student being dragged is part of checked students, drag all of them!
+    
     const dragIds = selectedStudentIds.includes(studentId)
       ? selectedStudentIds
       : [studentId];
     e.dataTransfer.setData("application/json", JSON.stringify(dragIds));
     e.dataTransfer.effectAllowed = "move";
-    
-    // Create rich visual drag ghost showing count
+
     const dragGhost = document.createElement("div");
     dragGhost.style.padding = "10px 20px";
     dragGhost.style.background = "linear-gradient(135deg, #3b82f6, #4f46e5)";
@@ -555,7 +531,6 @@ export default function ClassDivisionManagement() {
     }
   };
 
-  // Class Management CRUD
   const handleCreateClass = (e: React.FormEvent) => {
     e.preventDefault();
     if (!newClassName.trim()) {
@@ -572,7 +547,6 @@ export default function ClassDivisionManagement() {
       cleanName = `${prefix} ${cleanName}`;
     }
 
-    // Check duplicate class name
     if (classes.some(c => c.name === cleanName)) {
       showToast(`Kelas "${cleanName}" sudah terdaftar!`, "error");
       return;
@@ -607,7 +581,6 @@ export default function ClassDivisionManagement() {
     }
   };
 
-  // Remove individual student from class detail modal
   const handleRemoveStudentFromClassDetail = async (studentId: number, studentNama: string) => {
     if (confirm(`Keluarkan ${studentNama} dari kelas ${selectedClassDetail?.name}?`)) {
       const result = await updateApplicant(studentId, {
@@ -623,7 +596,6 @@ export default function ClassDivisionManagement() {
     }
   };
 
-  // Export Class Roster Excel (ExcelJS)
   const handleExportClassCSV = async (className: string) => {
     const classStudents = applicants.filter((a: Applicant) => {
       const cls = getStudentCurrentClass(a);
@@ -655,7 +627,7 @@ export default function ClassDivisionManagement() {
       cell.fill = {
         type: 'pattern',
         pattern: 'solid',
-        fgColor: { argb: 'FF9BC2E6' } // Light Blue
+        fgColor: { argb: 'FF9BC2E6' } 
       };
       cell.alignment = { vertical: 'middle', horizontal: 'center' };
       cell.border = {
@@ -710,7 +682,6 @@ export default function ClassDivisionManagement() {
     saveAs(blob, `Roster_Kelas_${className.replace(/\s+/g, "_")}_${Date.now()}.xlsx`);
   };
 
-  // Export ALL Classes of Selected Major
   const handleExportAllClasses = async () => {
     const classesToExport = classesOfSelectedMajor;
     if (classesToExport.length === 0) {
@@ -726,11 +697,9 @@ export default function ClassDivisionManagement() {
         return getStudentCurrentClass(a) === c.name;
       });
 
-      // Create a sheet for each class (Excel limit sheet name to 31 chars)
       const sheetName = c.name.replace(/\s+/g, "_").substring(0, 30);
       const worksheet = workbook.addWorksheet(sheetName);
 
-      // Add Header rows
       worksheet.mergeCells('A1:G1');
       worksheet.mergeCells('A2:G2');
       worksheet.mergeCells('A3:G3');
@@ -741,7 +710,6 @@ export default function ClassDivisionManagement() {
       worksheet.getCell('A3').value = `PERIODE AKADEMIK: ${schoolPeriod || '2026-2027'}`;
       worksheet.getCell('A4').value = `KELAS: ${c.name}`;
 
-      // Style Title block
       ['A1', 'A2', 'A3', 'A4'].forEach((cellId, idx) => {
         const cell = worksheet.getCell(cellId);
         cell.alignment = { horizontal: 'center', vertical: 'middle' };
@@ -749,7 +717,7 @@ export default function ClassDivisionManagement() {
           bold: true,
           name: 'Arial',
           size: idx === 0 ? 14 : 11,
-          color: { argb: 'FF1F497D' } // Navy blue
+          color: { argb: 'FF1F497D' } 
         };
       });
 
@@ -757,9 +725,8 @@ export default function ClassDivisionManagement() {
       worksheet.getRow(2).height = 20;
       worksheet.getRow(3).height = 20;
       worksheet.getRow(4).height = 20;
-      worksheet.getRow(5).height = 10; // blank separator row
+      worksheet.getRow(5).height = 10; 
 
-      // Table Headers
       const headerRowIndex = 6;
       const headerRow = worksheet.getRow(headerRowIndex);
       headerRow.height = 28;
@@ -776,7 +743,6 @@ export default function ClassDivisionManagement() {
 
       worksheet.columns = columns;
 
-      // Write column headers at row 6
       columns.forEach((col, colIdx) => {
         const cell = worksheet.getCell(headerRowIndex, colIdx + 1);
         cell.value = col.header;
@@ -784,7 +750,7 @@ export default function ClassDivisionManagement() {
         cell.fill = {
           type: 'pattern',
           pattern: 'solid',
-          fgColor: { argb: 'FF366092' } // Slate steel blue
+          fgColor: { argb: 'FF366092' } 
         };
         cell.alignment = { vertical: 'middle', horizontal: 'center' };
         cell.border = {
@@ -795,7 +761,6 @@ export default function ClassDivisionManagement() {
         };
       });
 
-      // Add data rows starting from row 7
       classStudents.forEach((s: Applicant, index: number) => {
         worksheet.addRow({
           no: index + 1,
@@ -809,7 +774,6 @@ export default function ClassDivisionManagement() {
         totalStudentsExported++;
       });
 
-      // Style data rows
       const totalRows = classStudents.length;
       for (let r = 7; r < 7 + totalRows; r++) {
         const row = worksheet.getRow(r);
@@ -822,13 +786,12 @@ export default function ClassDivisionManagement() {
             right: { style: 'thin' }
           };
           cell.font = { name: 'Arial', size: 10 };
-          
-          // Alternating row background (zebra striping)
+
           if (r % 2 === 0) {
             cell.fill = {
               type: 'pattern',
               pattern: 'solid',
-              fgColor: { argb: 'FFF2F5F9' } // very light blue/gray
+              fgColor: { argb: 'FFF2F5F9' } 
             };
           }
 

@@ -225,7 +225,6 @@ export default function DaftarPage() {
     berkasFotoBase64: ""
   });
 
-  // Billing and Payment States
   const [showPaymentGate, setShowPaymentGate] = useState(false);
   const [submittedCandidate, setSubmittedCandidate] = useState(null);
   const [manualReceiptBase64, setManualReceiptBase64] = useState("");
@@ -246,7 +245,6 @@ export default function DaftarPage() {
     }
   ]);
 
-  // Dark Mode
   const [isDark, setIsDark] = useState(false);
   const [regCost, setRegCost] = useState(250000);
   const [waGroupUrl, setWaGroupUrl] = useState("https://chat.whatsapp.com/HJXHYajEOhl5RM6iN2SJOS");
@@ -264,11 +262,10 @@ export default function DaftarPage() {
     const saved = localStorage.getItem('ppdb-theme');
     if (saved === 'dark') {
       document.documentElement.classList.add('dark');
-      // eslint-disable-next-line
+      
       setIsDark(true);
     }
 
-    // Load initial fast values from localStorage if available
     const savedCost = localStorage.getItem('ppdb_reg_cost');
     if (savedCost) {
       const parsed = parseInt(savedCost);
@@ -312,7 +309,6 @@ export default function DaftarPage() {
       }
     }
 
-    // Fetch live config dynamically from backend config endpoint
     const loadLiveConfig = async () => {
       try {
         const BACKEND_URL = typeof window !== 'undefined' ? `http://${window.location.hostname}:5000` : "http://localhost:5000";
@@ -364,7 +360,6 @@ export default function DaftarPage() {
     };
     loadLiveConfig();
 
-    // Pulihkan sesi pendaftaran yang belum dibayar jika ada di localStorage
     if (typeof window !== "undefined") {
       const savedCheckout = localStorage.getItem('ppdb_active_checkout');
       if (savedCheckout) {
@@ -398,7 +393,6 @@ export default function DaftarPage() {
     }
   }, []);
 
-  // Read URL query params for payment success/failure redirects
   useEffect(() => {
     if (typeof window !== "undefined") {
       const params = new URLSearchParams(window.location.search);
@@ -407,7 +401,7 @@ export default function DaftarPage() {
       if (payment === "success" && nisn) {
         const forceVerifyAndShowSuccess = async () => {
           try {
-            // Automatically confirm/force-verify payment gateway transaction
+            
             const backendUrl = "http://localhost:5000";
             await fetch(`${backendUrl}/api/payment/confirm-payment-option`, {
               method: "POST",
@@ -431,7 +425,6 @@ export default function DaftarPage() {
     }
   }, [checkPaymentStatus, fetchPublicApplicants]);
 
-  // Fetch full details upon success to render the clean congrats sheet and high-fidelity invoice
   useEffect(() => {
     if (isSuccess) {
       const targetNisn = formData.nisn || (submittedCandidate && (submittedCandidate.nisn || submittedCandidate.nisn));
@@ -453,13 +446,10 @@ export default function DaftarPage() {
     }
   }, [isSuccess, formData.nisn, submittedCandidate]);
 
-  // Polling check payment status removed (manual bank transfer flow)
-
-  // Simpan draf data pendaftaran ke localStorage secara otomatis setiap kali ada perubahan
   useEffect(() => {
     if (typeof window !== "undefined" && !showPaymentGate && !isSuccess) {
       const dataToSave = { ...formData };
-      // Hapus data berkas base64 agar tidak melebihi kuota penyimpanan lokal
+      
       delete dataToSave.berkasKKFile;
       delete dataToSave.berkasKKBase64;
       delete dataToSave.berkasKTPFile;
@@ -475,7 +465,6 @@ export default function DaftarPage() {
     }
   }, [formData, showPaymentGate, isSuccess]);
 
-  // Simpan langkah wizard pendaftaran ke localStorage secara otomatis
   useEffect(() => {
     if (typeof window !== "undefined" && !showPaymentGate && !isSuccess) {
       localStorage.setItem('ppdb_registration_wizard_step', wizardStep.toString());
@@ -493,8 +482,6 @@ export default function DaftarPage() {
       localStorage.setItem('ppdb-theme', 'light');
     }
   };
-
-  // majors is now a state variable loaded dynamically from localStorage on mount.
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -557,41 +544,12 @@ export default function DaftarPage() {
   };
 
   const nextStep = async () => {
-    // Validasi di-bypass untuk pengujian pendaftaran agar bisa di-skip
-    /*
-    if (wizardStep === 1) {
-      if (!formData.nama || formData.nama.trim() === "") {
-        alert("Nama Lengkap wajib diisi!");
-        return;
-      }
-      if (!formData.jenisKelamin) {
-        alert("Jenis Kelamin wajib dipilih!");
-        return;
-      }
-      if (!formData.nisn || formData.nisn.length !== 10) {
-        alert("NISN wajib diisi dan harus tepat 10 digit angka!");
-        return;
-      }
-      if (!formData.nik || formData.nik.length !== 16) {
-        alert("NIK wajib diisi dan harus tepat 16 digit angka!");
-        return;
-      }
-      if (!formData.tempatLahir || !formData.tglLahir) {
-        alert("Tempat dan Tanggal Lahir wajib diisi!");
-        return;
-      }
-      if (!formData.agama) {
-        alert("Agama wajib dipilih!");
-        return;
-      }
-    }
-    */
 
     if (wizardStep < 14) {
       setWizardStep(prev => prev + 1);
     } else {
       setIsSubmitting(true);
-      // Auto-fill field wajib yang kosong dengan data tiruan untuk menghindari kegagalan database
+      
       const finalData = { ...formData };
       if (!finalData.nama || finalData.nama.trim() === "") {
         finalData.nama = "Calon Siswa Test " + Math.floor(1000 + Math.random() * 9000);
@@ -680,39 +638,9 @@ export default function DaftarPage() {
   };
 
   const goToStep = (step) => {
-    // Validasi di-bypass untuk pengujian pendaftaran agar bisa di-skip
-    /*
-    if (step > 1 && wizardStep === 1) {
-      if (!formData.nama || formData.nama.trim() === "") {
-        alert("Nama Lengkap wajib diisi!");
-        return;
-      }
-      if (!formData.jenisKelamin) {
-        alert("Jenis Kelamin wajib dipilih!");
-        return;
-      }
-      if (!formData.nisn || formData.nisn.length !== 10) {
-        alert("NISN wajib diisi dan harus tepat 10 digit angka!");
-        return;
-      }
-      if (!formData.nik || formData.nik.length !== 16) {
-        alert("NIK wajib diisi dan harus tepat 16 digit angka!");
-        return;
-      }
-      if (!formData.tempatLahir || !formData.tglLahir) {
-        alert("Tempat dan Tanggal Lahir wajib diisi!");
-        return;
-      }
-      if (!formData.agama) {
-        alert("Agama wajib dipilih!");
-        return;
-      }
-    }
-    */
+
     setWizardStep(step);
   };
-
-  // Midtrans Snap script load removed
 
   if (isSuccess) {
     if (!successData) {
@@ -1600,7 +1528,7 @@ export default function DaftarPage() {
                           </div>
                         </div>
                       ) : (
-                        /* High-fidelity preview of the uploaded receipt */
+                        
                         <div className="bg-slate-50/80 dark:bg-slate-950/30 border border-slate-200/60 dark:border-slate-850 rounded-[1.5rem] p-5 flex flex-col md:flex-row items-center justify-between gap-4 animate-in fade-in zoom-in-95 duration-200">
                           <div className="flex items-center gap-4 w-full md:w-auto">
                             <div className="w-16 h-16 rounded-2xl bg-white dark:bg-slate-900 border border-slate-205 dark:border-slate-805 flex items-center justify-center text-blue-550 shrink-0 shadow-sm overflow-hidden relative">

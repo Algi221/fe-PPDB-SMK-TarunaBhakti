@@ -1,6 +1,6 @@
 @import "tailwindcss";
 @custom-variant dark (&:is(.dark *));
-/* Modern & Premium Design System for PPDB SMK Taruna Bhakti */
+
 :root {
   --primary: #0066ff;
   --primary-glow: rgba(0, 102, 255, 0.15);
@@ -15,7 +15,7 @@
   --card-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.03), 0 1px 3px 0 rgba(0, 0, 0, 0.01);
   --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   --font-family: var(--font-plus-jakarta), 'Plus Jakarta Sans', sans-serif;
-  /* Form & input colors */
+  
   --input-bg: #f8fafc;
   --input-border: #e2e8f0;
   --input-text: #0f172a;
@@ -23,7 +23,6 @@
   --section-bg: #f1f5f9;
 }
 
-/* ==================== DARK MODE ==================== */
 html.dark {
   --dark: #e2e8f0;
   --dark-muted: #94a3b8;
@@ -53,7 +52,6 @@ html.dark .bg-glow-3 {
   background: radial-gradient(circle, rgba(99, 102, 241, 0.12) 0%, rgba(30, 41, 59, 0.1) 80%);
 }
 
-/* Navbar dark mode */
 html.dark .navbar {
   background: rgba(13, 17, 23, 0.85);
   border-color: rgba(255, 255, 255, 0.07);
@@ -72,7 +70,6 @@ html.dark .logo-text {
   color: #e2e8f0;
 }
 
-/* Cards, sections, glass containers dark mode */
 html.dark .bg-white,
 html.dark .bg-white\/80 {
   background-color: var(--card-bg) !important;
@@ -91,7 +88,6 @@ html.dark .text-slate-400 {
   color: #94a3b8 !important;
 }
 
-/* Form inputs dark mode */
 html.dark input[type="text"],
 html.dark input[type="date"],
 html.dark input[type="number"],
@@ -113,12 +109,10 @@ html.dark textarea:focus {
   box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15) !important;
 }
 
-/* Hero Title Dark Mode Outline */
 html.dark .hero-title {
   filter: drop-shadow(0px 1px 4px rgba(0, 0, 0, 0.5));
 }
 
-/* Radio/checkbox button cards in dark */
 html.dark .bg-slate-50 {
   background-color: #1a2540 !important;
 }
@@ -132,12 +126,10 @@ html.dark .text-blue-700 {
   color: #93c5fd !important;
 }
 
-/* Progress stepper dark */
 html.dark .bg-slate-100 {
   background-color: #1e2a3b !important;
 }
 
-/* Footer dark */
 html.dark footer {
   background: #0d1117;
   border-color: #1e293b;
@@ -150,12 +142,10 @@ html.dark .bg-white\/60 {
   border-color: rgba(255,255,255,0.06) !important;
 }
 
-/* Success screen dark */
 html.dark .bg-emerald-100 {
   background-color: rgba(16, 185, 129, 0.15) !important;
 }
 
-/* Dark mode toggle button */
 .dark-mode-toggle {
   width: 38px;
   height: 38px;
@@ -192,7 +182,6 @@ body {
   position: relative;
 }
 
-/* Glowing Background Blobs */
 .bg-glow-container {
   position: fixed;
   top: 0;
@@ -249,7 +238,6 @@ body {
   }
 }
 
-/* Floating Navbar */
 .navbar-wrapper {
   width: 100%;
   display: flex;
@@ -404,7 +392,6 @@ body {
   transform: translateY(0);
 }
 
-/* Hero Section */
 .hero {
   padding-top: 140px;
   padding-bottom: 60px;
@@ -443,7 +430,7 @@ body {
   line-height: 1.2;
   font-weight: 900;
   color: var(--dark);
-  -webkit-text-stroke: 1.5px var(--dark); /* Artificially thicken text */
+  -webkit-text-stroke: 1.5px var(--dark); 
   max-width: 800px;
   margin-bottom: 20px;
   animation: fadeInUp 0.9s ease-out;
@@ -455,7 +442,7 @@ body {
   background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
-  -webkit-text-stroke: 1.5px transparent; /* Thicken gradient text */
+  -webkit-text-stroke: 1.5px transparent; 
   display: inline-block;
 }
 
@@ -548,7 +535,6 @@ body {
   user-select: none;
 }
 
-/* Localized blue glow aura behind the badge (matching reference image) */
 .floating-badge::before {
   content: '';
   position: absolute;
@@ -609,7 +595,6 @@ body {
   color: var(--dark);
 }
 
-/* Float Animations */
 .badge-aset {
   top: 130px;
   left: 6%;
@@ -663,7 +648,6 @@ body {
   100% { transform: translateY(12px) rotate(0.6deg); }
 }
 
-/* App Mockup styles */
 .mockup-container {
   width: 100%;
   max-width: 820px;
@@ -724,7 +708,6 @@ body {
   letter-spacing: 0.5px;
 }
 
-/* Dashboard View */
 .dashboard-view {
   min-height: 400px;
   display: flex;
@@ -894,7 +877,6 @@ body {
   border-radius: 50%;
 }
 
-/* Metric Cards */
 .mock-metrics {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -949,7 +931,6 @@ body {
   gap: 16px;
 }
 
-/* Chart Card */
 .chart-card {
   background: white;
   border-radius: 12px;
@@ -997,7 +978,6 @@ body {
   color: var(--dark-muted);
 }
 
-/* Checklist Todo styles (CRITICAL FIX FOR THE BUG!) */
 .todo-card {
   background: white;
   border-radius: 12px;
@@ -1020,7 +1000,7 @@ body {
 }
 
 .todo-checkbox {
-  width: 18px; /* Slightly larger click target */
+  width: 18px; 
   height: 18px;
   border-radius: 4px;
   border: 1.5px solid #cbd5e1;
@@ -1062,7 +1042,6 @@ body {
   color: var(--dark-muted);
 }
 
-/* Majors Grid / Kompetensi Keahlian */
 .majors-section {
   padding: 100px 24px;
   max-width: 1100px;
@@ -1134,7 +1113,6 @@ body {
   transform: translateY(0);
 }
 
-/* Premium expanding spotlight glow behind card on hover */
 .major-card::before {
   content: '';
   position: absolute;
@@ -1149,7 +1127,6 @@ body {
   z-index: 0;
 }
 
-/* Glowing Top Accent Border on hover */
 .major-card::after {
   content: '';
   position: absolute;
@@ -1181,7 +1158,6 @@ body {
   transform: scaleX(1);
 }
 
-/* Place card contents above mouse glow pseudo-element */
 .major-card > * {
   position: relative;
   z-index: 1;
@@ -1243,7 +1219,6 @@ body {
   transform: translateX(6px);
 }
 
-/* Glassmorphism Modals */
 .modal-overlay {
   position: fixed;
   top: 0;
@@ -1311,7 +1286,6 @@ body {
   color: #ef4444;
 }
 
-/* Wizard Steps */
 .wizard-steps {
   display: flex;
   justify-content: space-between;
@@ -1516,7 +1490,6 @@ body {
   background: #0052cc;
 }
 
-/* Success Checkmark */
 .success-checkmark {
   width: 80px;
   height: 80px;
@@ -1540,7 +1513,6 @@ body {
   100% { transform: scale(1); }
 }
 
-/* Major Detail Overlay */
 .detail-modal-grid {
   display: grid;
   grid-template-columns: 80px 1fr;
@@ -1600,7 +1572,6 @@ body {
   line-height: 1.4;
 }
 
-/* Mobile Drawer */
 .sidebar-drawer {
   position: fixed;
   top: 0;
@@ -1679,7 +1650,6 @@ body {
   color: var(--primary);
 }
 
-/* Footer Section */
 footer {
   background: white;
   border-top: 1px solid #e2e8f0;
@@ -1690,7 +1660,6 @@ footer {
   margin-top: 60px;
 }
 
-/* Animations */
 @keyframes fadeInUp {
   0% {
     opacity: 0;
@@ -1707,7 +1676,6 @@ footer {
   to { opacity: 1; }
 }
 
-/* Custom Scrollbars */
 ::-webkit-scrollbar {
   width: 8px;
   height: 8px;
@@ -1726,7 +1694,6 @@ footer {
   background: rgba(15, 23, 42, 0.2);
 }
 
-/* Media Queries for Responsiveness */
 @media (max-width: 900px) {
   .floating-badge {
     display: none !important;
@@ -1789,7 +1756,6 @@ footer {
   }
 }
 
-/* Custom Premium Social Media Footer Links */
 .footer-social-link {
   display: inline-flex;
   align-items: center;
@@ -1798,17 +1764,16 @@ footer {
   height: 36px;
   border-radius: 50%;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  color: #4b5563 !important; /* light mode grey */
-  background-color: #e5e7eb !important; /* light mode bg */
+  color: #4b5563 !important; 
+  background-color: #e5e7eb !important; 
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
 }
 
 html.dark .footer-social-link {
-  color: #9ca3af !important; /* dark mode grey */
-  background-color: #1f2937 !important; /* dark mode bg */
+  color: #9ca3af !important; 
+  background-color: #1f2937 !important; 
 }
 
-/* Individual Brand Hovers */
 .footer-social-link.instagram:hover {
   background-color: #E1306C !important;
   color: #ffffff !important;

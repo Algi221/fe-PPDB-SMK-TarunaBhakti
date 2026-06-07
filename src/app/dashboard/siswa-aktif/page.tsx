@@ -148,7 +148,6 @@ interface Applicant {
 export default function ActiveStudentsDirectory() {
   const { applicants, addToast, fetchAdminApplicants } = usePPDB();
 
-  // Fetch fresh applicant data on mount
   useEffect(() => {
     if (typeof fetchAdminApplicants === "function") {
       fetchAdminApplicants();
@@ -157,8 +156,7 @@ export default function ActiveStudentsDirectory() {
   const [searchTerm, setSearchTerm] = useState<string>("");
   const [majorFilter, setMajorFilter] = useState<string>("ALL");
   const [expandedPeriods, setExpandedPeriods] = useState<Record<string, boolean>>({});
-  
-  // Custom periods state
+
   const [customPeriods, setCustomPeriods] = useState<string[]>(() => {
     if (typeof window !== 'undefined') {
       const saved = localStorage.getItem("ppdb_custom_periods");
@@ -169,7 +167,6 @@ export default function ActiveStudentsDirectory() {
   const [isAddPeriodModalOpen, setIsAddPeriodModalOpen] = useState(false);
   const [newPeriodValue, setNewPeriodValue] = useState("");
 
-  // Compute next suggested academic year based on latest existing period
   const getNextPeriod = () => {
     const allPeriods = [
       ...Object.keys(groupedByPeriod),
@@ -179,31 +176,27 @@ export default function ActiveStudentsDirectory() {
       const y = new Date().getFullYear();
       return `${y}-${y + 1}`;
     }
-    // Parse the start year from each period string like "2026-2027"
+    
     const maxStartYear = Math.max(
       ...allPeriods.map(p => parseInt(p.split("-")[0]) || 0)
     );
     return `${maxStartYear + 1}-${maxStartYear + 2}`;
   };
-  
-  // Modal detail states
+
   const [selectedApplicant, setSelectedApplicant] = useState<Applicant | null>(null);
   const [activeTab, setActiveTab] = useState<string>("biodata");
   const [selectedDoc, setSelectedDoc] = useState<string | null>(null);
 
-  // Clear doc preview when applicant modal closes
   useEffect(() => {
     if (!selectedApplicant) {
       setSelectedDoc(null);
     }
   }, [selectedApplicant]);
 
-  // 1. Filter applicants who are active/approved AND have a class assigned
   const activeApplicants = useMemo(() => {
     return applicants.filter((a: Applicant) => a.status === "Approved" && !!(a.diterima_kelas || a.diterimaKelas));
   }, [applicants]);
 
-  // 2. Apply search and major filters
   const filteredApplicants = useMemo(() => {
     return activeApplicants.filter((a: Applicant) => {
       const nameMatch = (a.nama || "").toLowerCase().includes(searchTerm.toLowerCase());
@@ -223,11 +216,9 @@ export default function ActiveStudentsDirectory() {
     });
   }, [activeApplicants, searchTerm, majorFilter]);
 
-  // 3. Group by period
   const groupedByPeriod = useMemo(() => {
     const groups: Record<string, Applicant[]> = {};
-    
-    // Initialize custom periods first
+
     customPeriods.forEach(p => {
       groups[p] = [];
     });
@@ -240,7 +231,6 @@ export default function ActiveStudentsDirectory() {
       groups[period].push(a);
     });
 
-    // Sort students in each period by name
     Object.keys(groups).forEach(p => {
       groups[p].sort((a, b) => (a.nama || "").localeCompare(b.nama || ""));
     });
@@ -248,20 +238,18 @@ export default function ActiveStudentsDirectory() {
     return groups;
   }, [filteredApplicants, customPeriods]);
 
-  // Get list of sorted periods (descending, newest first)
   const sortedPeriods = useMemo(() => {
     return Object.keys(groupedByPeriod).sort((a, b) => b.localeCompare(a));
   }, [groupedByPeriod]);
 
-  // Expand the newest period by default on mount or when groups change
   useEffect(() => {
     if (sortedPeriods.length > 0) {
       setExpandedPeriods(prev => {
-        // Only set default if no state exists yet to avoid overwriting user choices
+        
         if (Object.keys(prev).length === 0) {
           const defaults: Record<string, boolean> = {};
           sortedPeriods.forEach((p, idx) => {
-            defaults[p] = idx === 0; // expand first/newest, collapse others
+            defaults[p] = idx === 0; 
           });
           return defaults;
         }
@@ -277,12 +265,10 @@ export default function ActiveStudentsDirectory() {
     }));
   };
 
-  // Helper stats
   const stats = useMemo(() => {
     const total = activeApplicants.length;
     const currentBatch = activeApplicants.filter(a => (a.periode || "2026-2027") === "2026-2027").length;
-    
-    // Calculate popular major
+
     const majors: Record<string, number> = {};
     activeApplicants.forEach(a => {
       const choice = a.jurusan_1 || a.jurusan1 || "Lainnya";
@@ -301,7 +287,6 @@ export default function ActiveStudentsDirectory() {
     return { total, currentBatch, popular };
   }, [activeApplicants]);
 
-  // Export specific list of students to Excel (ExcelJS)
   const handleExportExcel = async (students: Applicant[], fileNameSuffix: string) => {
     if (students.length === 0) return;
 
@@ -1048,7 +1033,7 @@ export default function ActiveStudentsDirectory() {
                             alt="Pratinjau Dokumen" 
                             className="max-w-full max-h-[400px] object-contain rounded-xl shadow-sm animate-in fade-in"
                             onError={(e) => {
-                              // If mock base64 fails, fallback to general icon/logo
+                              
                               e.currentTarget.src = "/logo_smktb.png";
                             }}
                           />

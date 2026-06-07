@@ -80,11 +80,9 @@ const formatRupiah = (value: string) => {
 
 const formatPhoneNumber = (value: string) => {
   if (!value) return "";
-  
-  // Clean all characters except digits and plus (+)
+
   let clean = value.replace(/[^\d+]/g, "");
-  
-  // If it starts with '0', replace with '+62'
+
   if (clean.startsWith("0")) {
     clean = "+62" + clean.slice(1);
   }
@@ -307,17 +305,14 @@ export default function KelolaUserInterface() {
   const { adminToken } = usePPDB();
   const [mounted, setMounted] = useState(false);
   const [activeTab, setActiveTab] = useState<"hero" | "majors" | "alur" | "form" | "faq" | "revisions" | "bank">("hero");
-  
-  // Loading & Action overlays
+
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [toast, setToast] = useState<{ message: string; type: "success" | "error" | "info" } | null>(null);
-  
-  // Save confirmation overlay
+
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [changeDescription, setChangeDescription] = useState("");
 
-  // UI Configuration states
   const [heroTitle, setHeroTitle] = useState("Penerimaan Siswa Baru");
   const [heroTitleSub, setHeroTitleSub] = useState("Portal PPDB SMK Taruna Bhakti");
   const [heroSubtitle, setHeroSubtitle] = useState("Mulai langkah awal wujudkan masa depan cemerlang di bidang teknologi informasi.");
@@ -330,7 +325,6 @@ export default function KelolaUserInterface() {
   const [formGuideline, setFormGuideline] = useState("Silakan isi formulir pendaftaran calon siswa dengan lengkap dan benar. Berkas persyaratan wajib diunggah dalam format gambar (PNG/JPG) maksimal 2MB.");
   const [formFee, setFormFee] = useState("250000");
 
-  // Gelombang & Bank Configuration states
   const [gelombangConfig, setGelombangConfig] = useState({
     gelombang1: { start: "2026-06-03", end: "2026-07-24" },
     gelombang2: { start: "2026-07-25", end: "2026-08-30" }
@@ -350,13 +344,11 @@ export default function KelolaUserInterface() {
     }
   ]);
 
-  // Arrays
   const [alurList, setAlurList] = useState<AlurItem[]>(DEFAULT_ALUR);
   const [majorsList, setMajorsList] = useState<MajorItem[]>(DEFAULT_MAJORS);
   const [revisions, setRevisions] = useState<RevisionLog[]>([]);
   const [faqList, setFaqList] = useState<FaqItem[]>([]);
 
-  // Editing Major Inline State Workspace
   const [editingMajor, setEditingMajor] = useState<MajorItem | null>(null);
   const [dragActiveStates, setDragActiveStates] = useState<Record<string, boolean>>({});
 
@@ -399,7 +391,7 @@ export default function KelolaUserInterface() {
           setFaqList(DEFAULT_FAQ);
         }
         if (config.ppdb_majors_config && Array.isArray(config.ppdb_majors_config)) {
-          // Sync existing majors configurations with defaults to ensure full structure
+          
           const mergedMajors = DEFAULT_MAJORS.map(def => {
             const found = config.ppdb_majors_config.find((m: any) => m.code === def.code);
             return found ? { ...def, ...found } : def;
@@ -443,14 +435,12 @@ export default function KelolaUserInterface() {
     }
   };
 
-  // Drag and drop handler helpers
   const handleDragState = (e: React.DragEvent, elementId: string, active: boolean) => {
     e.preventDefault();
     e.stopPropagation();
     setDragActiveStates(prev => ({ ...prev, [elementId]: active }));
   };
 
-  // Bulk Media Loader: Handles Photo Logos, Banners, Local Video Uploads, Gallery Images
   const processMediaFile = (file: File, type: "logo" | "banner" | "video" | "gallery-0" | "gallery-1" | "gallery-2" | "gallery-3") => {
     const isVideo = type === "video";
     const fileExt = file.name.split('.').pop()?.toLowerCase() || '';
@@ -501,7 +491,6 @@ export default function KelolaUserInterface() {
     reader.readAsDataURL(file);
   };
 
-  // Alur Milestones handlers
   const handleAddAlur = () => {
     const nextId = alurList.length > 0 ? Math.max(...alurList.map(a => a.id)) + 1 : 1;
     setAlurList([...alurList, { id: nextId, title: "Langkah Baru", desc: "Deskripsi langkah pendaftaran baru..." }]);
@@ -529,7 +518,6 @@ export default function KelolaUserInterface() {
     setAlurList(reordered);
   };
 
-  // FAQ Handlers
   const handleAddFaq = () => {
     setFaqList([...faqList, { q: "Pertanyaan Baru?", a: "Tuliskan jawaban di sini." }]);
   };
@@ -554,7 +542,6 @@ export default function KelolaUserInterface() {
     setFaqList(copy);
   };
 
-  // Submit All Changes to production
   const handleSaveAll = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!changeDescription.trim()) {
@@ -566,7 +553,6 @@ export default function KelolaUserInterface() {
       setSaving(true);
       setShowConfirmModal(false);
 
-      // Automatically merge active workspace edits from editingMajor into majorsList if the user didn't click "Simpan Detail"
       let finalMajors = [...majorsList];
       if (editingMajor) {
         finalMajors = finalMajors.map(m => m.code === editingMajor.code ? editingMajor : m);
@@ -643,7 +629,6 @@ export default function KelolaUserInterface() {
     }
   };
 
-  // Restore Revision
   const handleRestore = async (revId: number) => {
     if (!confirm(`Apakah Anda yakin ingin memulihkan semua konfigurasi UI ke versi riwayat #${revId}?`)) {
       return;
@@ -1026,8 +1011,7 @@ export default function KelolaUserInterface() {
                     </div>
                   </>
                 ) : (
-                  
-                  /* 2. If editing: Render FULL-PAGE Workspace (No Modal!) as requested */
+
                   <div className="space-y-6 animate-in slide-in-from-right-8 duration-300">
                     <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-slate-100 dark:border-white/5 pb-4 mb-4">
                       <button
@@ -1741,7 +1725,6 @@ export default function KelolaUserInterface() {
                 </div>
               </div>
             )}
-
 
             {/* TAB: Rekening Bank Sekolah */}
             {activeTab === "bank" && (

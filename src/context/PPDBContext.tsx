@@ -67,10 +67,9 @@ export function PPDBProvider({ children }: { children: React.ReactNode }) {
 
   const wsRef = useRef<WebSocket | null>(null);
   const reconnectTimeoutRef = useRef<any>(null);
-  // Stable ref so onclose can call connectWs without circular dependency
+  
   const connectWsRef = useRef<(() => void) | null>(null);
 
-  // Play subtle chime sound for live updates
   const playNotificationSound = useCallback(() => {
     try {
       const audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
@@ -97,11 +96,9 @@ export function PPDBProvider({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
-  // Add toast notification
   const addToast = useCallback((title: string, message: string, type = "info") => {
     setToasts((prev) => {
-      // Deduplicate: remove any active toast that has the exact same message
-      // or refers to the same student name or ID.
+
       const getStudentKey = (msg: string) => {
         const idMatch = msg.match(/#\d+/);
         if (idMatch) return idMatch[0];
@@ -138,7 +135,6 @@ export function PPDBProvider({ children }: { children: React.ReactNode }) {
     playNotificationSound();
   }, [playNotificationSound]);
 
-  // Log WebSocket activity
   const addWsLog = useCallback((direction: string, event: string, payload: any) => {
     setWsLogs((prev) => [
       {
@@ -152,7 +148,6 @@ export function PPDBProvider({ children }: { children: React.ReactNode }) {
     ]);
   }, []);
 
-  // Fetch public applicants
   const fetchPublicApplicants = useCallback(async () => {
     try {
       const res = await fetch(`${BACKEND_URL}/api/applicants/public`);
@@ -168,7 +163,6 @@ export function PPDBProvider({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
-  // Admin: Logout
   const logoutAdmin = useCallback(() => {
     setAdminToken(null);
     setAdminUser(null);
@@ -176,7 +170,6 @@ export function PPDBProvider({ children }: { children: React.ReactNode }) {
     localStorage.removeItem("ppdb_admin_user");
   }, []);
 
-  // Fetch admin applicants (protected)
   const fetchAdminApplicants = useCallback(async () => {
     const token = adminToken || localStorage.getItem("ppdb_admin_token");
     if (!token) return;
@@ -196,7 +189,6 @@ export function PPDBProvider({ children }: { children: React.ReactNode }) {
     }
   }, [adminToken, logoutAdmin]);
 
-  // Submit registration form
   const registerApplicant = useCallback(async (formData: any) => {
     try {
       const res = await fetch(`${BACKEND_URL}/api/applicants`, {
@@ -230,7 +222,6 @@ export function PPDBProvider({ children }: { children: React.ReactNode }) {
     }
   }, [fetchPublicApplicants, addToast]);
 
-  // Admin: Approve
   const verifyApplicant = useCallback(async (id: number) => {
     const token = adminToken || localStorage.getItem("ppdb_admin_token");
     if (!token) return;
@@ -256,7 +247,6 @@ export function PPDBProvider({ children }: { children: React.ReactNode }) {
     }
   }, [adminToken, fetchAdminApplicants, fetchPublicApplicants, addToast]);
 
-  // Admin: Reject
   const rejectApplicant = useCallback(async (id: number) => {
     const token = adminToken || localStorage.getItem("ppdb_admin_token");
     if (!token) return;
@@ -282,7 +272,6 @@ export function PPDBProvider({ children }: { children: React.ReactNode }) {
     }
   }, [adminToken, fetchAdminApplicants, fetchPublicApplicants, addToast]);
 
-  // Admin: Delete
   const deleteApplicant = useCallback(async (id: number) => {
     const token = adminToken || localStorage.getItem("ppdb_admin_token");
     if (!token) return;
@@ -307,7 +296,6 @@ export function PPDBProvider({ children }: { children: React.ReactNode }) {
     }
   }, [adminToken, fetchAdminApplicants, fetchPublicApplicants, addToast]);
 
-  // Admin: Update / Edit applicant data
   const updateApplicant = useCallback(async (id: number, updatedData: any) => {
     const token = adminToken || localStorage.getItem("ppdb_admin_token");
     if (!token) return { success: false, message: "Tidak terautentikasi." };
@@ -328,7 +316,7 @@ export function PPDBProvider({ children }: { children: React.ReactNode }) {
       }
     } catch (err: any) {
       console.error("API update error:", err.message);
-      // Offline fallback: update in memory
+      
       setApplicants(prev => prev.map(a => a.id === id ? { ...a, ...updatedData } : a));
       setPublicApplicants(prev => prev.map(a => a.id === id ? { ...a, ...updatedData } : a));
       addToast("Data Diperbarui (Offline)", `Perubahan data tersimpan lokal.`, "success");
@@ -336,7 +324,6 @@ export function PPDBProvider({ children }: { children: React.ReactNode }) {
     }
   }, [adminToken, fetchAdminApplicants, fetchPublicApplicants, addToast]);
 
-  // Admin: Login
   const loginAdmin = useCallback(async (username: string, password: string) => {
     try {
       const res = await fetch(`${BACKEND_URL}/api/auth/login`, {
@@ -383,8 +370,6 @@ export function PPDBProvider({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
-
-  // WebSocket Connection Logic
   const connectWs = useCallback(() => {
     if (wsRef.current) wsRef.current.close();
 
@@ -469,22 +454,20 @@ export function PPDBProvider({ children }: { children: React.ReactNode }) {
       setWsStatus("DISCONNECTED");
       addWsLog("SYSTEM", "DISCONNECTED", { message: "Connection closed." });
       reconnectTimeoutRef.current = setTimeout(() => {
-        // Use ref to avoid circular dependency
+        
         if (connectWsRef.current) connectWsRef.current();
       }, 5000);
     };
 
     ws.onerror = () => {
-      // Silently handle WS errors in the console to avoid messy event traces
+      
       setWsStatus("ERROR");
       addWsLog("SYSTEM", "ERROR", { message: "Encountered networking error." });
     };
   }, [addToast, addWsLog]);
 
-  // Keep ref in sync with latest connectWs so onclose can call it
   connectWsRef.current = connectWs;
 
-  // Simulate registration (for testing)
   const simulateRegistration = useCallback(async () => {
     const firstNames = ["Ahmad", "Dian", "Budi", "Siti", "Kevin", "Rina", "Fajar", "Ayu", "Giri", "Reza", "Lutfi", "Indah"];
     const lastNames = ["Saputra", "Pratama", "Lestari", "Maharani", "Wijaya", "Siddiq", "Santoso", "Hidayat", "Kusuma", "Utami"];
@@ -525,7 +508,6 @@ export function PPDBProvider({ children }: { children: React.ReactNode }) {
     await registerApplicant(mockCandidate);
   }, [registerApplicant]);
 
-  // Check candidate payment status by NISN
   const checkPaymentStatus = useCallback(async (nisn: string) => {
     try {
       const res = await fetch(`${BACKEND_URL}/api/applicants/check-payment/${nisn}`);
@@ -537,7 +519,6 @@ export function PPDBProvider({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
-  // Background simulation engine
   useEffect(() => {
     if (!simulationActive) return;
     const intervalId = setInterval(() => {
@@ -546,7 +527,6 @@ export function PPDBProvider({ children }: { children: React.ReactNode }) {
     return () => clearInterval(intervalId);
   }, [simulationActive, simulateRegistration]);
 
-  // Bootstrap on mount: fetch public data & connect WS
   useEffect(() => {
     fetchPublicApplicants();
     connectWs();
@@ -557,7 +537,6 @@ export function PPDBProvider({ children }: { children: React.ReactNode }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // When admin token is available, fetch protected admin data + request notification permission
   useEffect(() => {
     if (!adminToken) return;
     fetchAdminApplicants();
@@ -566,7 +545,6 @@ export function PPDBProvider({ children }: { children: React.ReactNode }) {
     }
   }, [adminToken, fetchAdminApplicants]);
 
-  // Idle logout after 1 hour
   useEffect(() => {
     if (!adminToken) return;
     let timeoutId: any;

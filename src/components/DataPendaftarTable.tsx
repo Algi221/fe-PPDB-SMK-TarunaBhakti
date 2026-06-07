@@ -31,12 +31,11 @@ export default function DataPendaftarTable() {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 5;
 
-  // Local state for smooth fade-out / fade-in animations
   const [activeRows, setActiveRows] = useState<Student[]>([]);
   const prevApplicantsRef = useRef<Student[]>([]);
 
   useEffect(() => {
-    // Initialize if empty
+    
     if (activeRows.length === 0 && publicApplicants.length > 0) {
       setActiveRows(publicApplicants.map((a: any) => ({ ...a, isNew: false, isFadingOut: false })));
       prevApplicantsRef.current = publicApplicants;
@@ -45,12 +44,10 @@ export default function DataPendaftarTable() {
 
     const currentIds = publicApplicants.map((a: any) => a.id);
 
-    // Find what was removed (rejected)
     const removedApplicants = prevApplicantsRef.current.filter((a: any) => !currentIds.includes(a.id));
 
     let updatedRows = [...activeRows];
 
-    // 1. Mark removed applicants as fading out
     removedApplicants.forEach(removed => {
       const idx = updatedRows.findIndex(r => r.id === removed.id);
       if (idx > -1) {
@@ -60,7 +57,6 @@ export default function DataPendaftarTable() {
       }
     });
 
-    // 2. Add or update currently active applicants
     publicApplicants.forEach((newItem: any) => {
       const idx = updatedRows.findIndex(r => r.id === newItem.id);
       if (idx > -1) {
@@ -70,7 +66,7 @@ export default function DataPendaftarTable() {
           isFadingOut: false 
         };
       } else {
-        // New registration (from wizard submit or WS simulation)
+        
         updatedRows.unshift({ ...newItem, isNew: true, isFadingOut: false });
       }
     });
@@ -78,7 +74,6 @@ export default function DataPendaftarTable() {
     setActiveRows(updatedRows);
     prevApplicantsRef.current = publicApplicants;
 
-    // 3. Clear fading rows and reset isNew flag after animation duration (500ms)
     const timer = setTimeout(() => {
       setActiveRows(prev => 
         prev
@@ -278,7 +273,6 @@ export default function DataPendaftarTable() {
     );
   }
 
-  // Filter local active rows
   const filteredData = activeRows.filter(item => {
     const matchName = 
       (item.nama || "").toLowerCase().includes(searchTerm.toLowerCase()) || 
@@ -291,7 +285,6 @@ export default function DataPendaftarTable() {
     return matchName && matchJurusan;
   });
 
-  // Pagination Logic
   const totalPages = Math.ceil(filteredData.length / itemsPerPage) || 1;
   const startIndex = (currentPage - 1) * itemsPerPage;
   const currentData = filteredData.slice(startIndex, startIndex + itemsPerPage);
@@ -427,7 +420,6 @@ export default function DataPendaftarTable() {
           </div>
         )}
       </div>
-
 
     </div>
   );

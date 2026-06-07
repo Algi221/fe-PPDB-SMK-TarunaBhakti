@@ -103,19 +103,16 @@ const DEFAULT_ALUR: AlurItem[] = [
 
 export default function Home() {
   const { publicApplicants, wsStatus } = usePPDB();
-  // Navigation & UI States
+  
   const [isNavbarScrolled, setIsNavbarScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-  // Modals
   const [activeModal, setActiveModal] = useState<string | null>(null);
 
-  // Dynamic Announcements/Informasi State
   const [informasi, setInformasi] = useState<InformasiItem[]>([]);
   const [loadingInformasi, setLoadingInformasi] = useState(true);
   const [selectedNews, setSelectedNews] = useState<InformasiItem | null>(null);
 
-  // Dynamic Landing Page Config States
   const [waGroupUrl, setWaGroupUrl] = useState("https://chat.whatsapp.com/HJXHYajEOhl5RM6iN2SJOS");
   const [waAdmin, setWaAdmin] = useState("6281292244456");
   const [activeFaq, setActiveFaq] = useState<number | null>(null);
@@ -218,9 +215,7 @@ export default function Home() {
     }
   ]);
 
-  // Alur Config
   const [alurList, setAlurList] = useState<AlurItem[]>(DEFAULT_ALUR);
-
 
   const formatDate = (dateString: string | null | undefined) => {
     if (!dateString) return "";
@@ -265,7 +260,6 @@ export default function Home() {
     fetchInformasi();
   }, []);
 
-  // Video Background Logic
   const [loadVideo, setLoadVideo] = useState(false);
   const [currentVideo, setCurrentVideo] = useState(0);
   const videos = ["/videos/vid1.webm", "/videos/vid2.webm"];
@@ -305,7 +299,6 @@ export default function Home() {
     }
   }, []);
 
-  // Dark Mode
   const [isDark, setIsDark] = useState(false);
 
   useEffect(() => {
@@ -317,7 +310,7 @@ export default function Home() {
 
     const loadDynamicConfig = async () => {
       try {
-        // Coba load dari localStorage dulu agar perubahan langsung terlihat
+        
         const localAlur = localStorage.getItem("ppdb_alur_config");
         if (localAlur) {
           try {
@@ -389,7 +382,6 @@ export default function Home() {
     }
   };
 
-  // Handle Scroll to make Navbar beautiful
   useEffect(() => {
     const handleScroll = () => {
       if (window.scrollY > 40) {
@@ -409,7 +401,7 @@ export default function Home() {
       ([entry]) => {
         if (entry.isIntersecting) {
           setIsMajorsVisible(true);
-          observer.unobserve(entry.target); // Animate once
+          observer.unobserve(entry.target); 
         }
       },
       { threshold: 0.05 }
@@ -420,10 +412,6 @@ export default function Home() {
       if (element) observer.unobserve(element);
     };
   }, []);
-
-
-
-  // majors is now a dynamic state variable loaded from localStorage on mount.
 
   return (
     <div className="relative min-h-screen flex flex-col overflow-x-hidden">
@@ -790,7 +778,6 @@ export default function Home() {
               {alurList.map((item, index) => {
                 const isLeft = index % 2 === 0;
 
-                // Gaya khusus untuk setiap tahap alur
                 const styles = [
                   { color: "blue", bg: "bg-blue-600", text: "text-blue-500 dark:text-blue-400", bgLight: "bg-blue-50 dark:bg-blue-950/60", shadow: "shadow-[0_0_20px_rgba(37,99,235,0.4)]", borderHover: "hover:border-blue-500/20", icon: FileText },
                   { color: "amber", bg: "bg-amber-500", text: "text-amber-500 dark:text-amber-400", bgLight: "bg-amber-50 dark:bg-amber-950/60", shadow: "shadow-[0_0_20px_rgba(245,158,11,0.4)]", borderHover: "hover:border-amber-500/20", icon: CreditCard },
@@ -931,8 +918,6 @@ export default function Home() {
           </div>
         </ScrollFloat>
       </section>
-
-
 
       {/* KEMITRAAN INDUSTRI */}
       <section id="kemitraan" className="py-24 max-w-6xl mx-auto px-6 relative z-10 border-t border-slate-200/30">

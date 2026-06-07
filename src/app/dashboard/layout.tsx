@@ -61,12 +61,10 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
   if (!mounted) return null;
 
-  // Don't render sidebar & header on the login page
   if (pathname === "/dashboard/login") {
     return <>{children}</>;
   }
 
-  // If loading or unauthorized, show a minimal loading overlay
   if (!adminToken) {
     return (
       <div className="min-h-screen bg-[#f7f7f7] dark:bg-slate-950 flex items-center justify-center text-slate-800 dark:text-white transition-colors duration-300">

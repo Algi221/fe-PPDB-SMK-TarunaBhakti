@@ -17,7 +17,6 @@ export default function AdminLogin() {
   const [error, setError] = useState("");
   const [mounted, setMounted] = useState(false);
 
-  // GSAP Refs
   const containerRef = useRef<HTMLDivElement>(null);
   const leftPanelRef = useRef<HTMLDivElement>(null);
   const formElementsRef = useRef<(HTMLDivElement | null)[]>([]);
@@ -30,19 +29,17 @@ export default function AdminLogin() {
     }
   }, [adminToken, router]);
 
-  // Entrance Animations
   useEffect(() => {
     if (!mounted) return;
     
     const ctx = gsap.context(() => {
-      // Animate Left Panel Content
+      
       gsap.fromTo(
         ".brand-element",
         { opacity: 0, y: 30 },
         { opacity: 1, y: 0, duration: 0.8, stagger: 0.1, ease: "power3.out" }
       );
 
-      // Floating Shapes Animation (Subtle continuous movement)
       floatingShapesRef.current.forEach((shape, i) => {
         if (!shape) return;
         gsap.to(shape, {
@@ -56,7 +53,6 @@ export default function AdminLogin() {
         });
       });
 
-      // Animate Right Panel Form Elements
       gsap.fromTo(
         formElementsRef.current,
         { opacity: 0, x: 20 },
@@ -67,7 +63,6 @@ export default function AdminLogin() {
     return () => ctx.revert();
   }, [mounted]);
 
-  // Mouse Parallax Effect for Left Panel
   const handleMouseMove = (e: React.MouseEvent) => {
     if (!leftPanelRef.current) return;
     const { clientX, clientY } = e;
@@ -96,7 +91,7 @@ export default function AdminLogin() {
     try {
       const res = await loginAdmin(username, password);
       if (res.success) {
-        // Success exit animation
+        
         gsap.to(containerRef.current, {
           opacity: 0,
           scale: 0.98,
@@ -105,7 +100,7 @@ export default function AdminLogin() {
         });
       } else {
         setError(res.message || "Username atau Password salah.");
-        // Error shake animation
+        
         gsap.fromTo(
           ".login-form",
           { x: -8 },

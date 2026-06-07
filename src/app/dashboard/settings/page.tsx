@@ -29,10 +29,8 @@ export default function SimulationSettings() {
     addToast 
   } = usePPDB();
 
-  // Keamanan hidrasi
   const [mounted, setMounted] = useState<boolean>(false);
 
-  // State ubah password admin
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -40,7 +38,6 @@ export default function SimulationSettings() {
   const [isChangingPassword, setIsChangingPassword] = useState(false);
   const [passwordError, setPasswordError] = useState("");
 
-  // Ambil konfigurasi saat render awal
   useEffect(() => {
     setMounted(true);
   }, []);
@@ -96,7 +93,7 @@ export default function SimulationSettings() {
             "success"
           );
         }
-        // Reset form
+        
         setCurrentPassword("");
         setNewPassword("");
         setConfirmPassword("");

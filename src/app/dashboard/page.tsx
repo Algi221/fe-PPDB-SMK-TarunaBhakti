@@ -17,13 +17,11 @@ export default function DashboardOverview() {
   const [hoveredSegment, setHoveredSegment] = useState<number | null>(null);
   const [chartType, setChartType] = useState<"donut" | "bar">("donut");
 
-  // Compute metrics
   const totalCount = applicants.length;
   const approvedCount = applicants.filter((a: any) => a.status === "Approved").length;
   const pendingCount = applicants.filter((a: any) => a.status === "Pending" || !a.status).length;
   const rejectedCount = applicants.filter((a: any) => a.status === "Rejected").length;
 
-  // Major distribution statistics
   const majorsList: MajorItem[] = [
     { name: "PPLG / RPL", dbName: "Rekayasa Perangkat Lunak", color: "#3b82f6" },
     { name: "TJKT", dbName: "Teknik Jaringan Komputer & Telekomunikasi", color: "#0ea5e9" },
@@ -40,10 +38,8 @@ export default function DashboardOverview() {
     return { ...m, count };
   });
 
-  // Calculate total categorized majors for percentage
-  const totalMajorsCount = majorDistribution.reduce((acc, curr) => acc + curr.count, 0) || 1; // avoid divide by zero
+  const totalMajorsCount = majorDistribution.reduce((acc, curr) => acc + curr.count, 0) || 1; 
 
-  // SVG Donut calculation
   let accumulatedPercent = 0;
   const donutData = majorDistribution.map((m) => {
     const percent = Math.round((m.count / totalMajorsCount) * 100) || 0;
@@ -54,14 +50,13 @@ export default function DashboardOverview() {
 
   const [trendView, setTrendView] = useState<"hari" | "minggu" | "bulan" | "periode">("hari");
 
-  // Trend data: dynamically group by view
   const getTrendData = () => {
     const labels: string[] = [];
     const counts: number[] = [];
     const now = new Date();
 
     if (trendView === "hari") {
-      // Last 7 days
+      
       for (let i = 6; i >= 0; i--) {
         const d = new Date();
         d.setDate(now.getDate() - i);
@@ -74,13 +69,13 @@ export default function DashboardOverview() {
         }).length;
         counts.push(count);
       }
-      // Beautiful base fallback if empty
+      
       const baseCurve = [8, 14, 11, 23, 19, 32, totalCount || 5];
       const finalCounts = counts.every((c) => c === 0) ? baseCurve : counts;
       return { labels, counts: finalCounts };
 
     } else if (trendView === "minggu") {
-      // Last 4 weeks
+      
       for (let i = 3; i >= 0; i--) {
         const start = new Date();
         start.setDate(now.getDate() - (i + 1) * 7 + 1);
@@ -104,7 +99,7 @@ export default function DashboardOverview() {
       return { labels, counts: finalCounts };
 
     } else if (trendView === "bulan") {
-      // Last 6 months
+      
       for (let i = 5; i >= 0; i--) {
         const d = new Date();
         d.setMonth(now.getMonth() - i);
@@ -122,7 +117,7 @@ export default function DashboardOverview() {
       return { labels, counts: finalCounts };
 
     } else {
-      // Periode view
+      
       const uniquePeriods = Array.from(new Set(applicants.map((a: any) => a.periode || "2026-2027")));
       if (uniquePeriods.length <= 1) {
         labels.push("2024-2025", "2025-2026", "2026-2027");
@@ -143,7 +138,6 @@ export default function DashboardOverview() {
   const trend = getTrendData();
   const maxTrendVal = Math.max(...trend.counts, 10);
 
-  // SVG Area Chart points builder
   const width = 500;
   const height = 150;
   const padding = 25;

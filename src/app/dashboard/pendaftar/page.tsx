@@ -186,12 +186,8 @@ interface EditFormState {
 
 type SyncStatus = "IDLE" | "SYNCING" | "SUCCESS";
 
-// ============================================================
-// Binary Search Tree (BST) Implementation
-// Search fields: inisial nama, jurusan, asal sekolah, kelas
-// ============================================================
 interface BSTNode {
-  key: string;       // composite sort key
+  key: string;       
   id: number;
   left: BSTNode | null;
   right: BSTNode | null;
@@ -204,7 +200,6 @@ function bstInsert(root: BSTNode | null, node: BSTNode): BSTNode {
   return root;
 }
 
-// In-order traversal collecting ids whose key contains the query prefix
 function bstSearch(root: BSTNode | null, query: string, results: number[]): void {
   if (!root) return;
   bstSearch(root.left, query, results);
@@ -212,7 +207,6 @@ function bstSearch(root: BSTNode | null, query: string, results: number[]): void
   bstSearch(root.right, query, results);
 }
 
-// Build composite key: "<initial>|<jurusan>|<sekolah>"
 function buildKey(a: Applicant): string {
   const initial = (a.nama || "").trim().charAt(0).toLowerCase();
   const jurusan = (a.jurusan_1 || a.jurusan1 || "").toLowerCase();
@@ -237,16 +231,13 @@ export default function ApplicantsDirectory() {
     }
   }, [selectedApplicant]);
 
-  // Edit Modal States
   const [editApplicant, setEditApplicant] = useState<Applicant | null>(null);
   const [editForm, setEditForm] = useState<Partial<EditFormState>>({});
   const [isSaving, setIsSaving] = useState<boolean>(false);
 
-  // New Interactive Spreadsheet Mode State
   const [isSpreadsheetMode, setIsSpreadsheetMode] = useState<boolean>(false);
   const [activeCell, setActiveCell] = useState<{ row: number; col: number } | null>(null);
 
-  // Simulated Google Sheets Webhook Sync States
   const [syncStatus, setSyncStatus] = useState<SyncStatus>("IDLE");
   const [syncProgress, setSyncProgress] = useState<number>(0);
 
@@ -309,8 +300,6 @@ export default function ApplicantsDirectory() {
     "Animasi"
   ];
 
-  // ── BST-based search ────────────────────────────────────────
-  // Build BST from all applicants keyed by composite field
   const bstRoot = React.useMemo(() => {
     let root: BSTNode | null = null;
     applicants.forEach((a: Applicant) => {
@@ -319,18 +308,16 @@ export default function ApplicantsDirectory() {
     return root;
   }, [applicants]);
 
-  // IDs that match the BST query (empty query → all IDs)
   const bstMatchedIds = React.useMemo(() => {
     const q = searchTerm.trim().toLowerCase();
-    if (!q) return null; // null means "skip BST filter — show all"
+    if (!q) return null; 
     const ids: number[] = [];
     bstSearch(bstRoot, q, ids);
     return new Set(ids);
   }, [bstRoot, searchTerm]);
 
-  // Filtering Logic — BST gates the search, dropdowns gate status/major/gelombang
   const filteredApplicants = applicants.filter((a: Applicant) => {
-    // BST search: match against inisial nama, jurusan, asal sekolah
+    
     const matchesSearch = bstMatchedIds === null || bstMatchedIds.has(a.id);
 
     const matchesStatus =
@@ -353,7 +340,6 @@ export default function ApplicantsDirectory() {
   const [currentPage, setCurrentPage] = useState<number>(1);
   const itemsPerPage = 10;
 
-  // Reset page to 1 when filters change
   useEffect(() => {
     setCurrentPage(1);
   }, [searchTerm, statusFilter, majorFilter, gelombangFilter]);
@@ -364,7 +350,6 @@ export default function ApplicantsDirectory() {
     currentPage * itemsPerPage
   );
 
-  // Simulated Google Sheets Webhook Sync trigger
   const triggerGoogleSheetsSync = () => {
     if (filteredApplicants.length === 0) return;
     setSyncStatus("SYNCING");
@@ -389,14 +374,12 @@ export default function ApplicantsDirectory() {
     return () => clearInterval(interval);
   }, [syncStatus]);
 
-  // Export to Excel Function with Auto-Formatting
   const exportToExcel = async () => {
     if (filteredApplicants.length === 0) return;
 
     const workbook = new ExcelJS.Workbook();
     const worksheet = workbook.addWorksheet("Data Pendaftar");
 
-    // Define all original columns with wider widths
     worksheet.columns = [
       { header: 'No.', key: 'no', width: 10 },
       { header: 'Nama Lengkap', key: 'nama', width: 35 },
@@ -411,7 +394,6 @@ export default function ApplicantsDirectory() {
       { header: 'Tanggal Mendaftar', key: 'tanggal', width: 25 },
     ];
 
-    // Style header row (light blue background, black text, centered, taller height)
     const headerRow = worksheet.getRow(1);
     headerRow.height = 35;
     
@@ -431,7 +413,6 @@ export default function ApplicantsDirectory() {
       };
     });
 
-    // Add data
     filteredApplicants.forEach((a: Applicant, index: number) => {
       worksheet.addRow({
         no: index + 1,
@@ -448,7 +429,6 @@ export default function ApplicantsDirectory() {
       });
     });
 
-    // Style all cells (add borders, white backgrounds, and specific alignments)
     worksheet.eachRow((row, rowNumber) => {
       if (rowNumber > 1) {
         row.height = 25;
@@ -478,7 +458,6 @@ export default function ApplicantsDirectory() {
       });
     });
 
-    // Generate and save file
     const buffer = await workbook.xlsx.writeBuffer();
     const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
     saveAs(blob, `Data_Pendaftar_SMKTB_${Date.now()}.xlsx`);
@@ -560,7 +539,6 @@ export default function ApplicantsDirectory() {
             ))}
           </div>
 
-
           {/* Toggle View: Standard Table vs Excel Spreadsheet Grid */}
           <div className="flex items-center bg-slate-100 dark:bg-slate-950 p-1.5 rounded-2xl border border-slate-200/50 dark:border-white/5 shrink-0 shadow-inner">
             <button
@@ -603,7 +581,7 @@ export default function ApplicantsDirectory() {
       <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800/60 rounded-3xl backdrop-blur-md overflow-hidden shadow-[0_2px_12px_rgba(0,0,0,0.02)] transition-colors duration-300">
 
         {!isSpreadsheetMode ? (
-          /* STANDARD TABLE VIEW */
+          
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs font-bold text-slate-650 dark:text-slate-355">
               <thead>
@@ -711,7 +689,7 @@ export default function ApplicantsDirectory() {
             </table>
           </div>
         ) : (
-          /* INTERACTIVE EXCEL SPREADSHEET GRID VIEW */
+          
           <div className="overflow-x-auto">
             <div className="bg-[#f8fafc] dark:bg-slate-950 text-slate-500 dark:text-slate-400 border-b border-slate-200 dark:border-slate-800 p-2.5 text-[10px] font-bold font-mono tracking-widest flex items-center justify-between shrink-0">
               <span className="flex items-center gap-2">

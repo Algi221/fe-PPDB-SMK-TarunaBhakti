@@ -5,7 +5,6 @@ import Link from "next/link";
 import { ArrowLeft, Search, Filter, Eye, X, CheckCircle, Clock, XCircle, Moon, Sun, User, MapPin, Phone, Mail, FileText, ChevronLeft, ChevronRight, ArrowRight } from "lucide-react";
 import { usePPDB } from "@/context/PPDBContext";
 
-// Status Badge Component
 const StatusBadge = ({ status }: { status: string }) => {
   if (status === "Terverifikasi" || status === "Approved") return <span className="inline-flex items-center gap-1.5 px-3 py-1 text-xs font-semibold rounded-full bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800"><CheckCircle size={12}/> Terverifikasi</span>;
   if (status === "Menunggu Verifikasi" || status === "Pending") return <span className="inline-flex items-center gap-1.5 px-3 py-1 text-xs font-semibold rounded-full bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400 border border-amber-200 dark:border-amber-800"><Clock size={12}/> Menunggu</span>;
@@ -23,7 +22,6 @@ export default function DataPendaftarPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 8;
 
-  // Set initial theme
   useEffect(() => {
     const saved = localStorage.getItem('ppdb-theme');
     if (saved === 'dark') {
@@ -44,7 +42,6 @@ export default function DataPendaftarPage() {
     }
   };
 
-  // Filter Data
   const filteredData = publicApplicants.filter(item => {
     const matchName = (item.nama || "").toLowerCase().includes(searchTerm.toLowerCase()) || (item.nisn || "").includes(searchTerm);
     const matchJurusan = filterJurusan === "Semua" || (item.jurusan_1 || item.jurusan1 || "").includes(filterJurusan);
@@ -60,7 +57,6 @@ export default function DataPendaftarPage() {
     return matchName && matchJurusan && matchStatus;
   });
 
-  // Pagination Logic
   const totalPages = Math.ceil(filteredData.length / itemsPerPage) || 1;
   const startIndex = (currentPage - 1) * itemsPerPage;
   const currentData = filteredData.slice(startIndex, startIndex + itemsPerPage);
