@@ -168,6 +168,14 @@ export function PPDBProvider({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
+  // Admin: Logout
+  const logoutAdmin = useCallback(() => {
+    setAdminToken(null);
+    setAdminUser(null);
+    localStorage.removeItem("ppdb_admin_token");
+    localStorage.removeItem("ppdb_admin_user");
+  }, []);
+
   // Fetch admin applicants (protected)
   const fetchAdminApplicants = useCallback(async () => {
     const token = adminToken || localStorage.getItem("ppdb_admin_token");
@@ -176,12 +184,17 @@ export function PPDBProvider({ children }: { children: React.ReactNode }) {
       const res = await fetch(`${BACKEND_URL}/api/applicants`, {
         headers: { "Authorization": `Bearer ${token}` }
       });
+      if (res.status === 401) {
+        console.warn("Token is invalid or expired. Logging out admin.");
+        logoutAdmin();
+        return;
+      }
       const data = await res.json();
       if (data.success) setApplicants(data.data);
     } catch (err: any) {
       console.warn("Admin API fetch error:", err.message);
     }
-  }, [adminToken]);
+  }, [adminToken, logoutAdmin]);
 
   // Submit registration form
   const registerApplicant = useCallback(async (formData: any) => {
@@ -370,13 +383,6 @@ export function PPDBProvider({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
-  // Admin: Logout
-  const logoutAdmin = useCallback(() => {
-    setAdminToken(null);
-    setAdminUser(null);
-    localStorage.removeItem("ppdb_admin_token");
-    localStorage.removeItem("ppdb_admin_user");
-  }, []);
 
   // WebSocket Connection Logic
   const connectWs = useCallback(() => {

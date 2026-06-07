@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useRef, useMemo } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import {
   Menu,
   ArrowRight,
@@ -265,6 +266,7 @@ export default function Home() {
   }, []);
 
   // Video Background Logic
+  const [loadVideo, setLoadVideo] = useState(false);
   const [currentVideo, setCurrentVideo] = useState(0);
   const videos = ["/videos/vid1.mp4", "/videos/vid2.mp4"];
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -277,7 +279,31 @@ export default function Home() {
     if (videoRef.current) {
       videoRef.current.play().catch(e => console.log(e));
     }
-  }, [currentVideo]);
+  }, [currentVideo, loadVideo]);
+
+  useEffect(() => {
+    const handleLoad = () => {
+      const timer = setTimeout(() => {
+        setLoadVideo(true);
+      }, 1500);
+      return timer;
+    };
+
+    if (document.readyState === 'complete') {
+      const timer = handleLoad();
+      return () => clearTimeout(timer);
+    } else {
+      let timer: any;
+      const onWindowLoad = () => {
+        timer = handleLoad();
+      };
+      window.addEventListener('load', onWindowLoad);
+      return () => {
+        window.removeEventListener('load', onWindowLoad);
+        if (timer) clearTimeout(timer);
+      };
+    }
+  }, []);
 
   // Dark Mode
   const [isDark, setIsDark] = useState(false);
@@ -407,7 +433,7 @@ export default function Home() {
         <nav className={`navbar ${isNavbarScrolled ? "scrolled" : ""}`}>
           <div className="nav-left">
             <a href="#" className="logo-container">
-              <img src="/logo_smktb.png" alt="Logo SMK TB" className="w-9 h-9 object-contain" />
+              <Image src="/logo_smktb.png" alt="Logo SMK TB" width={36} height={36} className="w-9 h-9 object-contain" priority />
               <span className="logo-text font-extrabold">PPDB <span>SMK TB</span></span>
             </a>
           </div>
@@ -452,7 +478,7 @@ export default function Home() {
 
           <div className="flex flex-col items-center gap-6 text-center p-6 w-full max-w-sm relative z-10">
             <Link href="#" onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-2 mb-6">
-              <img src="/logo_smktb.png" alt="Logo SMK TB" className="w-12 h-12 object-contain" />
+              <Image src="/logo_smktb.png" alt="Logo SMK TB" width={48} height={48} className="w-12 h-12 object-contain" />
               <span className="text-2xl font-black text-slate-800 dark:text-white">PPDB <span className="text-blue-600 dark:text-blue-400">SMK TB</span></span>
             </Link>
 
@@ -507,16 +533,19 @@ export default function Home() {
       {/* HERO SECTION WRAPPER */}
       <div className="relative w-full overflow-hidden">
         {/* Video Background - Full Width */}
-        <div className="absolute inset-0 w-full h-full z-0 overflow-hidden bg-slate-100">
-          <video
-            ref={videoRef}
-            src={videos[currentVideo]}
-            autoPlay
-            muted
-            playsInline
-            onEnded={handleVideoEnded}
-            className="w-full h-full object-cover transition-opacity duration-1000"
-          />
+        <div className="absolute inset-0 w-full h-full z-0 overflow-hidden bg-slate-100 dark:bg-slate-900">
+          {loadVideo && (
+            <video
+              ref={videoRef}
+              src={videos[currentVideo]}
+              autoPlay
+              muted
+              playsInline
+              preload="none"
+              onEnded={handleVideoEnded}
+              className="w-full h-full object-cover transition-opacity duration-1000"
+            />
+          )}
           <div className="absolute inset-0 bg-white/50 dark:bg-slate-950/60 backdrop-blur-sm"></div>
         </div>
 
@@ -526,7 +555,7 @@ export default function Home() {
           {/* Floating elements representing major names as requested */}
           <Link href="/jurusan/rpl" className="floating-badge badge-aset">
             <div className="badge-icon overflow-hidden" style={{ background: 'transparent' }}>
-              <img src="/jurusan/pplg.png" alt="RPL" className="w-full h-full object-cover rounded-full" />
+              <Image src="/jurusan/pplg.png" alt="RPL" width={48} height={48} className="w-full h-full object-cover rounded-full" priority />
             </div>
             <div className="badge-info">
               <span>PPLG</span>
@@ -535,7 +564,7 @@ export default function Home() {
 
           <Link href="/jurusan/tjkt" className="floating-badge badge-peminjaman">
             <div className="badge-icon overflow-hidden" style={{ background: 'transparent' }}>
-              <img src="/jurusan/tjkt.png" alt="TJKT" className="w-full h-full object-cover rounded-full" />
+              <Image src="/jurusan/tjkt.png" alt="TJKT" width={48} height={48} className="w-full h-full object-cover rounded-full" priority />
             </div>
             <div className="badge-info">
               <span>TJKT</span>
@@ -544,7 +573,7 @@ export default function Home() {
 
           <Link href="/jurusan/te" className="floating-badge badge-te">
             <div className="badge-icon overflow-hidden" style={{ background: 'transparent' }}>
-              <img src="/jurusan/te.png" alt="TE" className="w-full h-full object-cover rounded-full" />
+              <Image src="/jurusan/te.png" alt="TE" width={48} height={48} className="w-full h-full object-cover rounded-full" priority />
             </div>
             <div className="badge-info">
               <span>TE</span>
@@ -553,7 +582,7 @@ export default function Home() {
 
           <Link href="/jurusan/dkv" className="floating-badge badge-laporan">
             <div className="badge-icon overflow-hidden" style={{ background: 'transparent' }}>
-              <img src="/jurusan/dkv.png" alt="DKV" className="w-full h-full object-cover rounded-full" />
+              <Image src="/jurusan/dkv.png" alt="DKV" width={48} height={48} className="w-full h-full object-cover rounded-full" priority />
             </div>
             <div className="badge-info">
               <span>DKV</span>
@@ -562,7 +591,7 @@ export default function Home() {
 
           <Link href="/jurusan/an" className="floating-badge badge-animasi">
             <div className="badge-icon overflow-hidden" style={{ background: 'transparent' }}>
-              <img src="/jurusan/animasi.png" alt="Animasi" className="w-full h-full object-cover rounded-full" />
+              <Image src="/jurusan/animasi.png" alt="Animasi" width={48} height={48} className="w-full h-full object-cover rounded-full" priority />
             </div>
             <div className="badge-info">
               <span>Animasi</span>
@@ -571,7 +600,7 @@ export default function Home() {
 
           <Link href="/jurusan/bc" className="floating-badge badge-kelas">
             <div className="badge-icon overflow-hidden" style={{ background: 'transparent' }}>
-              <img src="/jurusan/bc.png" alt="Broadcasting" className="w-full h-full object-cover rounded-full" />
+              <Image src="/jurusan/bc.png" alt="Broadcasting" width={48} height={48} className="w-full h-full object-cover rounded-full" priority />
             </div>
             <div className="badge-info">
               <span>Broadcasting</span>
@@ -747,6 +776,7 @@ export default function Home() {
               scrollStart='top 90%'
               scrollEnd='bottom bottom-=40%'
               stagger={0.01}
+              textMode={false}
             >
               Ikuti 6 langkah sederhana berikut untuk menjadi bagian dari SMK Taruna Bhakti Depok.
             </ScrollFloat>
@@ -838,6 +868,7 @@ export default function Home() {
             scrollStart='center bottom+=50%'
             scrollEnd='bottom bottom-=40%'
             stagger={0.01}
+            textMode={false}
           >
             Tersedia 6 jurusan unggulan dengan kurikulum berstandar industri nasional maupun internasional.
           </ScrollFloat>
@@ -858,9 +889,11 @@ export default function Home() {
 
                 <div className="relative z-10">
                   <div className="w-16 h-16 rounded-2xl overflow-hidden mb-6 flex items-center justify-center group-hover:scale-110 group-hover:rotate-3 transition-all duration-500 bg-white border border-slate-100 shadow-md group-hover:shadow-xl group-hover:shadow-blue-500/20">
-                    <img
-                      src={sanitizeSrc(major.logo)}
+                    <Image
+                      src={sanitizeSrc(major.logo) || "/logo_smktb.png"}
                       alt={`Logo ${major.code}`}
+                      width={56}
+                      height={56}
                       className="w-14 h-14 object-contain drop-shadow-sm"
                       onError={(e: any) => {
                         e.target.style.display = 'none';
@@ -932,6 +965,7 @@ export default function Home() {
             scrollStart='center bottom+=50%'
             scrollEnd='bottom bottom-=40%'
             stagger={0.01}
+            textMode={false}
           >
             Kurikulum berstandar internasional yang diselaraskan langsung dengan raksasa teknologi dunia, menghasilkan lulusan berdaya saing tinggi.
           </ScrollFloat>
@@ -982,6 +1016,7 @@ export default function Home() {
                     src={partner.logo}
                     alt={partner.name}
                     className={`w-auto object-contain ${partner.h} max-w-[150px] transition-all duration-300 drop-shadow-sm`}
+                    loading="lazy"
                   />
                 </a>
               ));
@@ -1022,6 +1057,7 @@ export default function Home() {
               scrollStart='top 90%'
               scrollEnd='bottom bottom-=40%'
               stagger={0.01}
+              textMode={false}
             >
               Temukan jawaban cepat untuk kendala dan pertanyaan umum seputar proses penerimaan siswa baru SMK Taruna Bhakti.
             </ScrollFloat>
@@ -1096,7 +1132,7 @@ export default function Home() {
             {/* Col 1 */}
             <div className="space-y-4">
               <div className="flex items-center gap-3">
-                <img src="/logo_smktb.png" alt="Logo SMK TB" className="w-12 h-12 object-contain shrink-0" />
+                <Image src="/logo_smktb.png" alt="Logo SMK TB" width={48} height={48} className="w-12 h-12 object-contain shrink-0" loading="lazy" />
                 <div>
                   <span className="logo-text font-black text-slate-800 dark:text-white text-lg">PPDB <span className="text-blue-600 dark:text-sky-400">SMK TB</span></span>
                   <span className="block text-[10px] font-bold tracking-widest text-slate-400 dark:text-slate-500 uppercase mt-0.5">SMK Taruna Bhakti</span>
