@@ -268,7 +268,7 @@ export default function Home() {
   // Video Background Logic
   const [loadVideo, setLoadVideo] = useState(false);
   const [currentVideo, setCurrentVideo] = useState(0);
-  const videos = ["/videos/vid1.mp4", "/videos/vid2.mp4"];
+  const videos = ["/videos/vid1.webm", "/videos/vid2.webm"];
   const videoRef = useRef<HTMLVideoElement>(null);
 
   const handleVideoEnded = () => {
