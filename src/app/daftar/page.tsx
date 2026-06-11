@@ -1249,31 +1249,62 @@ export default function DaftarPage() {
                     <span className="text-xs font-black text-blue-600 dark:text-sky-400">Metode Pembayaran</span>
                   </div>
 
-                  {/* Langkah 3 */}
-                  <div className="flex items-center gap-3">
-                    <div className={`w-8 h-8 rounded-full flex items-center justify-center border shrink-0 ${
-                      manualReceiptBase64 
-                        ? "bg-emerald-100 dark:bg-emerald-950/60 border-emerald-200 text-emerald-500"
-                        : "bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-400 dark:text-slate-500"
-                    }`}>
-                      {manualReceiptBase64 ? <Check size={14} className="stroke-[3]" /> : <Upload size={14} />}
-                    </div>
-                    <span className={`text-xs font-bold ${
-                      manualReceiptBase64 
-                        ? "text-emerald-500 dark:text-emerald-400" 
-                        : "text-slate-400 dark:text-slate-500"
-                    }`}>
-                      Upload Bukti
-                    </span>
-                  </div>
+                  {/* Langkah 3 & Seterusnya secara Dinamis */}
+                  {activePaymentMethod === "tu" ? (
+                    <>
+                      {/* Langkah 3 */}
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-400 dark:text-slate-500 flex items-center justify-center shrink-0">
+                          <School size={14} />
+                        </div>
+                        <span className="text-xs font-bold text-slate-450 dark:text-slate-500">Datang ke Sekolah</span>
+                      </div>
 
-                  {/* Langkah 4 */}
-                  <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-400 dark:text-slate-500 flex items-center justify-center shrink-0">
-                      <Clock size={14} />
-                    </div>
-                    <span className="text-xs font-bold text-slate-400 dark:text-slate-500">Selesai</span>
-                  </div>
+                      {/* Langkah 4 */}
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-400 dark:text-slate-500 flex items-center justify-center shrink-0">
+                          <Clock size={14} />
+                        </div>
+                        <span className="text-xs font-bold text-slate-450 dark:text-slate-500">Menunggu Verifikasi</span>
+                      </div>
+
+                      {/* Langkah 5 */}
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-400 dark:text-slate-500 flex items-center justify-center shrink-0">
+                          <CheckCircle2 size={14} />
+                        </div>
+                        <span className="text-xs font-bold text-slate-450 dark:text-slate-500">Selesai</span>
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      {/* Langkah 3 */}
+                      <div className="flex items-center gap-3">
+                        <div className={`w-8 h-8 rounded-full flex items-center justify-center border shrink-0 ${
+                          manualReceiptBase64 
+                            ? "bg-emerald-100 dark:bg-emerald-950/60 border-emerald-200 text-emerald-500"
+                            : "bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-400 dark:text-slate-500"
+                        }`}>
+                          {manualReceiptBase64 ? <Check size={14} className="stroke-[3]" /> : <Upload size={14} />}
+                        </div>
+                        <span className={`text-xs font-bold ${
+                          manualReceiptBase64 
+                            ? "text-emerald-500 dark:text-emerald-400" 
+                            : "text-slate-400 dark:text-slate-500"
+                        }`}>
+                          Upload Bukti
+                        </span>
+                      </div>
+
+                      {/* Langkah 4 */}
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-400 dark:text-slate-500 flex items-center justify-center shrink-0">
+                          <Clock size={14} />
+                        </div>
+                        <span className="text-xs font-bold text-slate-400 dark:text-slate-500">Selesai</span>
+                      </div>
+                    </>
+                  )}
                 </div>
 
                 {/* Box Info Pendaftaran */}
