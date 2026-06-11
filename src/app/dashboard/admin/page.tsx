@@ -24,6 +24,14 @@ export default function AdminManagementPage() {
   // Menyimpan status visibilitas password tiap baris tabel
   const [visiblePasswords, setVisiblePasswords] = useState<Record<number, boolean>>({});
 
+  // YSBMO Integration States
+  const [activeTab, setActiveTab] = useState<"admin" | "ysbmo">("admin");
+  const [ysbmoStaff, setYsbmoStaff] = useState<any[]>([]);
+  const [ysbmoLoading, setYsbmoLoading] = useState(false);
+  const [ysbmoError, setYsbmoError] = useState("");
+  const [ysbmoTokenInput, setYsbmoTokenInput] = useState("");
+  const [showYsbmoTokenForm, setShowYsbmoTokenForm] = useState(false);
+
   const getBackendUrl = () => {
     if (process.env.NEXT_PUBLIC_BACKEND_URL) return process.env.NEXT_PUBLIC_BACKEND_URL;
     if (typeof window !== 'undefined') return `http://${window.location.hostname}:5000`;
@@ -56,6 +64,98 @@ export default function AdminManagementPage() {
         setAdmins(data.data);
       } else {
         setError(data.message || 'Gagal mengambil data admin');
+      }
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (activeTab === "ysbmo" && ysbmoStaff.length === 0) {
+      fetchYsbmoStaff();
+    }
+  }, [activeTab]);
+
+  const fetchYsbmoStaff = async (manualToken?: string) => {
+    if (!adminToken) return;
+    try {
+      setYsbmoLoading(true);
+      setYsbmoError("");
+      const backendUrl = getBackendUrl();
+      const headers: Record<string, string> = {
+        'Authorization': `Bearer ${adminToken}`
+      };
+      if (manualToken) {
+        headers['X-YSBMO-Token'] = manualToken;
+      }
+      
+      const res = await fetch(`${backendUrl}/api/admin/users/ysbmo/staff`, {
+        headers
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        // Handle both nested data array or direct array
+        const list = Array.isArray(data.data) ? data.data : (Array.isArray(data) ? data : []);
+        setYsbmoStaff(list);
+        setShowYsbmoTokenForm(false);
+        if (manualToken) {
+          setSuccessMsg("Token YSBMO berhasil disimpan dan data berhasil dimuat!");
+        }
+      } else {
+        if (data.code === 'NO_TOKEN') {
+          setShowYsbmoTokenForm(true);
+        } else {
+          setYsbmoError(data.message || 'Gagal mengambil data staff YSBMO');
+        }
+      }
+    } catch (err: any) {
+      setYsbmoError(err.message);
+    } finally {
+      setYsbmoLoading(false);
+    }
+  };
+
+  const handleSaveYsbmoToken = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!ysbmoTokenInput.trim()) return;
+    await fetchYsbmoStaff(ysbmoTokenInput);
+  };
+
+  const handleMakeAdmin = async (staff: any) => {
+    if (!adminToken) return;
+    const usernameVal = staff.id || staff.username || "";
+    const nameVal = staff.text || staff.full_name || staff.nama_lengkap || "";
+    if (!usernameVal || !nameVal) {
+      setError("Data staff YSBMO tidak memiliki Username atau Nama Lengkap.");
+      return;
+    }
+
+    try {
+      setLoading(true);
+      setError("");
+      setSuccessMsg("");
+      const backendUrl = getBackendUrl();
+      const res = await fetch(`${backendUrl}/api/admin/users`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${adminToken}`
+        },
+        body: JSON.stringify({
+          username: usernameVal,
+          nama_lengkap: nameVal,
+          password: Math.random().toString(36).substring(2) + Math.random().toString(36).substring(2), // dynamic random bypass password
+          role: "admin"
+        })
+      });
+      const data = await res.json();
+      if (data.success) {
+        setSuccessMsg(`Berhasil mendaftarkan ${nameVal} sebagai Admin PPDB!`);
+        fetchAdmins(); // Refresh admin list
+      } else {
+        setError(data.message || 'Gagal mendaftarkan staff YSBMO sebagai admin');
       }
     } catch (err: any) {
       setError(err.message);
@@ -198,7 +298,7 @@ export default function AdminManagementPage() {
           </p>
         </div>
         
-        {!editAdminId && (
+        {!editAdminId && activeTab === "admin" && (
           <button
             onClick={() => {
               setShowAddForm(!showAddForm);
@@ -216,6 +316,38 @@ export default function AdminManagementPage() {
         )}
       </div>
 
+      {/* Tab Navigation */}
+      <div className="flex border-b border-slate-200 dark:border-slate-800 gap-6">
+        <button
+          onClick={() => {
+            setActiveTab("admin");
+            setError("");
+            setSuccessMsg("");
+          }}
+          className={`pb-3 text-sm font-bold border-b-2 transition-all ${
+            activeTab === "admin"
+              ? "border-emerald-500 text-emerald-600 dark:text-emerald-400"
+              : "border-transparent text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200"
+          }`}
+        >
+          Manajemen Akun Admin
+        </button>
+        <button
+          onClick={() => {
+            setActiveTab("ysbmo");
+            setError("");
+            setSuccessMsg("");
+          }}
+          className={`pb-3 text-sm font-bold border-b-2 transition-all ${
+            activeTab === "ysbmo"
+              ? "border-emerald-500 text-emerald-600 dark:text-emerald-400"
+              : "border-transparent text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200"
+          }`}
+        >
+          Data Staff & Guru YSBMO
+        </button>
+      </div>
+
       {error && (
         <div className="p-4 bg-rose-50 border border-rose-200 text-rose-600 rounded-xl text-sm font-semibold dark:bg-rose-950/30 dark:border-rose-900/50 dark:text-rose-400">
           {error}
@@ -228,278 +360,400 @@ export default function AdminManagementPage() {
         </div>
       )}
 
-      <AnimatePresence>
-        {/* Form Tambah Admin */}
-        {showAddForm && !editAdminId && (
-          <motion.form 
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: "auto", opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            onSubmit={handleAddAdmin}
-            className="overflow-hidden bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-sm space-y-4"
-          >
-            <h3 className="text-lg font-bold text-slate-800 dark:text-white">Buat Akun Panitia</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 mb-1.5 uppercase">Nama Lengkap</label>
-                <div className="relative">
-                  <User className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
-                  <input
-                    type="text"
-                    required
-                    value={formData.nama_lengkap}
-                    onChange={e => setFormData({ ...formData, nama_lengkap: e.target.value })}
-                    className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-800 dark:text-white rounded-xl pl-10 pr-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/50 transition-all"
-                    placeholder="Contoh: Budi Santoso"
-                  />
-                </div>
-              </div>
-              
-              <div>
-                <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 mb-1.5 uppercase">Username</label>
-                <div className="relative">
-                  <User className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
-                  <input
-                    type="text"
-                    required
-                    value={formData.username}
-                    onChange={e => setFormData({ ...formData, username: e.target.value })}
-                    className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-800 dark:text-white rounded-xl pl-10 pr-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/50 transition-all"
-                    placeholder="Contoh: panitia_budi"
-                  />
-                </div>
-              </div>
+      {activeTab === "admin" ? (
+        <>
+          <AnimatePresence>
+            {/* Form Tambah Admin */}
+            {showAddForm && !editAdminId && (
+              <motion.form 
+                initial={{ height: 0, opacity: 0 }}
+                animate={{ height: "auto", opacity: 1 }}
+                exit={{ height: 0, opacity: 0 }}
+                onSubmit={handleAddAdmin}
+                className="overflow-hidden bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-sm space-y-4"
+              >
+                <h3 className="text-lg font-bold text-slate-800 dark:text-white">Buat Akun Panitia</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 mb-1.5 uppercase">Nama Lengkap</label>
+                    <div className="relative">
+                      <User className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
+                      <input
+                        type="text"
+                        required
+                        value={formData.nama_lengkap}
+                        onChange={e => setFormData({ ...formData, nama_lengkap: e.target.value })}
+                        className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-800 dark:text-white rounded-xl pl-10 pr-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/50 transition-all"
+                        placeholder="Contoh: Budi Santoso"
+                      />
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 mb-1.5 uppercase">Username</label>
+                    <div className="relative">
+                      <User className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
+                      <input
+                        type="text"
+                        required
+                        value={formData.username}
+                        onChange={e => setFormData({ ...formData, username: e.target.value })}
+                        className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-800 dark:text-white rounded-xl pl-10 pr-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/50 transition-all"
+                        placeholder="Contoh: panitia_budi"
+                      />
+                    </div>
+                  </div>
 
-              <div>
-                <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 mb-1.5 uppercase">Password</label>
-                <div className="relative">
-                  <KeyRound className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
-                  <input
-                    type={showPassword ? "text" : "password"}
-                    required
-                    value={formData.password}
-                    onChange={e => setFormData({ ...formData, password: e.target.value })}
-                    className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-800 dark:text-white rounded-xl pl-10 pr-10 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/50 transition-all"
-                    placeholder="••••••••"
-                  />
+                  <div>
+                    <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 mb-1.5 uppercase">Password</label>
+                    <div className="relative">
+                      <KeyRound className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
+                      <input
+                        type={showPassword ? "text" : "password"}
+                        required
+                        value={formData.password}
+                        onChange={e => setFormData({ ...formData, password: e.target.value })}
+                        className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-800 dark:text-white rounded-xl pl-10 pr-10 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/50 transition-all"
+                        placeholder="••••••••"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword(!showPassword)}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
+                      >
+                        {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                      </button>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 mb-1.5 uppercase">Peran (Role)</label>
+                    <select
+                      value={formData.role}
+                      onChange={e => setFormData({ ...formData, role: e.target.value })}
+                      className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-800 dark:text-white rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/50 transition-all"
+                    >
+                      <option value="admin">Admin Biasa</option>
+                      <option value="superadmin">Super Admin</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div className="flex justify-end pt-2">
                   <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
+                    type="submit"
+                    disabled={formLoading}
+                    className="px-6 py-2.5 bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl text-sm font-bold transition-all disabled:opacity-50"
                   >
-                    {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                    {formLoading ? 'Menyimpan...' : 'Simpan Admin'}
                   </button>
                 </div>
-              </div>
+              </motion.form>
+            )}
 
-              <div>
-                <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 mb-1.5 uppercase">Peran (Role)</label>
-                <select
-                  value={formData.role}
-                  onChange={e => setFormData({ ...formData, role: e.target.value })}
-                  className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-800 dark:text-white rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/50 transition-all"
-                >
-                  <option value="admin">Admin Biasa</option>
-                  <option value="superadmin">Super Admin</option>
-                </select>
-              </div>
-            </div>
+            {/* Form Edit Admin */}
+            {editAdminId !== null && (
+              <motion.form 
+                initial={{ height: 0, opacity: 0 }}
+                animate={{ height: "auto", opacity: 1 }}
+                exit={{ height: 0, opacity: 0 }}
+                onSubmit={handleUpdateAdmin}
+                className="overflow-hidden bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-sm space-y-4"
+              >
+                <div className="flex justify-between items-center">
+                  <h3 className="text-lg font-bold text-slate-800 dark:text-white">Edit Akun Panitia</h3>
+                  <button 
+                    type="button" 
+                    onClick={handleCancelEdit}
+                    className="text-slate-400 hover:text-slate-650 dark:hover:text-slate-250"
+                  >
+                    <X size={20} />
+                  </button>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 mb-1.5 uppercase">Nama Lengkap</label>
+                    <div className="relative">
+                      <User className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
+                      <input
+                        type="text"
+                        required
+                        value={formData.nama_lengkap}
+                        onChange={e => setFormData({ ...formData, nama_lengkap: e.target.value })}
+                        className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-800 dark:text-white rounded-xl pl-10 pr-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/50 transition-all"
+                      />
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 mb-1.5 uppercase">Username</label>
+                    <div className="relative">
+                      <User className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
+                      <input
+                        type="text"
+                        required
+                        value={formData.username}
+                        onChange={e => setFormData({ ...formData, username: e.target.value })}
+                        className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-800 dark:text-white rounded-xl pl-10 pr-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/50 transition-all"
+                      />
+                    </div>
+                  </div>
 
-            <div className="flex justify-end pt-2">
+                  <div>
+                    <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 mb-1.5 uppercase">Password (Kosongkan jika tidak diganti)</label>
+                    <div className="relative">
+                      <KeyRound className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
+                      <input
+                        type={showPassword ? "text" : "password"}
+                        value={formData.password}
+                        onChange={e => setFormData({ ...formData, password: e.target.value })}
+                        className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-800 dark:text-white rounded-xl pl-10 pr-10 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/50 transition-all"
+                        placeholder="Masukkan password baru untuk mengganti"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword(!showPassword)}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-650 dark:hover:text-slate-250"
+                      >
+                        {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                      </button>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 mb-1.5 uppercase">Peran (Role)</label>
+                    <select
+                      value={formData.role}
+                      onChange={e => setFormData({ ...formData, role: e.target.value })}
+                      className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-800 dark:text-white rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/50 transition-all"
+                    >
+                      <option value="admin">Admin Biasa</option>
+                      <option value="superadmin">Super Admin</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div className="flex justify-end gap-2 pt-2">
+                  <button
+                    type="button"
+                    onClick={handleCancelEdit}
+                    className="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 rounded-xl text-sm font-bold transition-all"
+                  >
+                    Batal
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={formLoading}
+                    className="px-6 py-2.5 bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl text-sm font-bold transition-all disabled:opacity-50 flex items-center gap-2"
+                  >
+                    <Save size={16} />
+                    {formLoading ? 'Memperbarui...' : 'Simpan Perubahan'}
+                  </button>
+                </div>
+              </motion.form>
+            )}
+          </AnimatePresence>
+
+          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-sm overflow-hidden">
+            {loading ? (
+              <div className="p-8 text-center text-slate-500 dark:text-slate-400 font-medium">Memuat data admin...</div>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm text-left">
+                  <thead className="bg-slate-50 dark:bg-slate-950/50 text-slate-500 dark:text-slate-400 border-b border-slate-200 dark:border-slate-800">
+                    <tr>
+                      <th className="px-6 py-4 font-bold uppercase tracking-wider text-xs">Nama / Username</th>
+                      <th className="px-6 py-4 font-bold uppercase tracking-wider text-xs">Role</th>
+                      <th className="px-6 py-4 font-bold uppercase tracking-wider text-xs">Password</th>
+                      <th className="px-6 py-4 font-bold uppercase tracking-wider text-xs text-right">Aksi</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                    {admins.map((admin) => (
+                      <tr key={admin.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/20 transition-colors">
+                        <td className="px-6 py-4">
+                          <div className="font-bold text-slate-800 dark:text-white">{admin.nama_lengkap}</div>
+                          <div className="text-slate-500 dark:text-slate-400 text-xs mt-0.5 font-mono">@{admin.username}</div>
+                        </td>
+                        <td className="px-6 py-4">
+                          <span className={`px-2.5 py-1 rounded-md text-[10px] font-black uppercase tracking-wider ${
+                            admin.role === 'superadmin' 
+                              ? 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400'
+                              : 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400'
+                          }`}>
+                            {admin.role === 'superadmin' ? 'Super Admin' : 'Admin'}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4">
+                          {admin.password_plain ? (
+                            <div className="flex items-center gap-2 font-mono text-xs text-slate-700 dark:text-slate-300 bg-slate-50 dark:bg-slate-950 px-3 py-1.5 rounded-lg border border-slate-200/40 dark:border-slate-800/40 w-fit">
+                              <span>{visiblePasswords[admin.id] ? admin.password_plain : "••••••••"}</span>
+                              <button
+                                type="button"
+                                onClick={() => togglePasswordVisibility(admin.id)}
+                                className="text-slate-450 hover:text-slate-650 dark:hover:text-slate-250 ml-1.5"
+                              >
+                                {visiblePasswords[admin.id] ? <EyeOff size={14} /> : <Eye size={14} />}
+                              </button>
+                            </div>
+                          ) : (
+                            <span className="text-slate-400 dark:text-slate-600 text-xs italic">Tersinkronisasi YSBMO (Hanya Hash)</span>
+                          )}
+                        </td>
+                        <td className="px-6 py-4 text-right space-x-1.5">
+                          <button
+                            onClick={() => handleStartEdit(admin)}
+                            className="p-2 text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-950/30 rounded-lg transition-all inline-flex"
+                            title="Edit Admin"
+                          >
+                            <Edit3 size={16} />
+                          </button>
+                          
+                          {admin.username !== adminUser.username && (
+                            <button
+                              onClick={() => handleDeleteAdmin(admin.id)}
+                              className="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/30 rounded-lg transition-all inline-flex"
+                              title="Hapus Admin"
+                            >
+                              <Trash2 size={16} />
+                            </button>
+                          )}
+                        </td>
+                      </tr>
+                    ))}
+                    
+                    {admins.length === 0 && (
+                      <tr>
+                        <td colSpan={4} className="px-6 py-8 text-center text-slate-500 dark:text-slate-400">
+                          Tidak ada data admin.
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+        </>
+      ) : (
+        <>
+          {/* Form Input Token YSBMO Manual */}
+          {showYsbmoTokenForm && (
+            <motion.form
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              onSubmit={handleSaveYsbmoToken}
+              className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-sm space-y-4"
+            >
+              <h3 className="text-lg font-bold text-slate-800 dark:text-white">Otentikasi API YSBMO Diperlukan</h3>
+              <p className="text-sm text-slate-500 dark:text-slate-400">
+                Token YSBMO tidak ditemukan atau telah kedaluwarsa. Silakan masukkan token Authorization (Basic Auth) Anda untuk melanjutkan sinkronisasi data staff.
+              </p>
+              <div className="space-y-2">
+                <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase">Token Authorization / Basic Auth Value</label>
+                <input
+                  type="text"
+                  required
+                  value={ysbmoTokenInput}
+                  onChange={e => setYsbmoTokenInput(e.target.value)}
+                  placeholder="Basic To/WbnZk0DNtT1PJAOOaz+HdrU5eQQjBZbQHy..."
+                  className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-800 dark:text-white rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/50 transition-all font-mono"
+                />
+              </div>
               <button
                 type="submit"
-                disabled={formLoading}
+                disabled={ysbmoLoading}
                 className="px-6 py-2.5 bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl text-sm font-bold transition-all disabled:opacity-50"
               >
-                {formLoading ? 'Menyimpan...' : 'Simpan Admin'}
+                {ysbmoLoading ? "Menyimpan..." : "Simpan Token & Hubungkan"}
               </button>
+            </motion.form>
+          )}
+
+          {ysbmoError && (
+            <div className="p-4 bg-rose-50 border border-rose-200 text-rose-600 rounded-xl text-sm font-semibold dark:bg-rose-950/30 dark:border-rose-900/50 dark:text-rose-400">
+              {ysbmoError}
             </div>
-          </motion.form>
-        )}
+          )}
 
-        {/* Form Edit Admin */}
-        {editAdminId !== null && (
-          <motion.form 
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: "auto", opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            onSubmit={handleUpdateAdmin}
-            className="overflow-hidden bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-sm space-y-4"
-          >
-            <div className="flex justify-between items-center">
-              <h3 className="text-lg font-bold text-slate-800 dark:text-white">Edit Akun Panitia</h3>
-              <button 
-                type="button" 
-                onClick={handleCancelEdit}
-                className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
-              >
-                <X size={20} />
-              </button>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 mb-1.5 uppercase">Nama Lengkap</label>
-                <div className="relative">
-                  <User className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
-                  <input
-                    type="text"
-                    required
-                    value={formData.nama_lengkap}
-                    onChange={e => setFormData({ ...formData, nama_lengkap: e.target.value })}
-                    className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-800 dark:text-white rounded-xl pl-10 pr-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/50 transition-all"
-                  />
-                </div>
-              </div>
-              
-              <div>
-                <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 mb-1.5 uppercase">Username</label>
-                <div className="relative">
-                  <User className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
-                  <input
-                    type="text"
-                    required
-                    value={formData.username}
-                    onChange={e => setFormData({ ...formData, username: e.target.value })}
-                    className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-800 dark:text-white rounded-xl pl-10 pr-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/50 transition-all"
-                  />
-                </div>
-              </div>
+          {!showYsbmoTokenForm && (
+            <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-sm overflow-hidden">
+              {ysbmoLoading ? (
+                <div className="p-8 text-center text-slate-500 dark:text-slate-400 font-medium">Memuat data staff YSBMO...</div>
+              ) : (
+                <div className="overflow-x-auto">
+                  <div className="p-4 bg-slate-50 dark:bg-slate-950/30 border-b border-slate-200 dark:border-slate-800 flex justify-between items-center">
+                    <span className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase">Total Staff/Guru YSBMO: {ysbmoStaff.length}</span>
+                    <button
+                      onClick={() => {
+                        setShowYsbmoTokenForm(true);
+                        setYsbmoTokenInput("");
+                      }}
+                      className="text-xs text-emerald-600 dark:text-emerald-400 hover:underline font-semibold"
+                    >
+                      Update Token Manual
+                    </button>
+                  </div>
+                  <table className="w-full text-sm text-left">
+                    <thead className="bg-slate-50/50 dark:bg-slate-950/20 text-slate-500 dark:text-slate-400 border-b border-slate-200 dark:border-slate-800">
+                      <tr>
+                        <th className="px-6 py-4 font-bold uppercase tracking-wider text-xs">Nama / ID Guru</th>
+                        <th className="px-6 py-4 font-bold uppercase tracking-wider text-xs">Sekolah / Unit</th>
+                        <th className="px-6 py-4 font-bold uppercase tracking-wider text-xs text-right">Aksi</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                      {ysbmoStaff.map((staff, idx) => {
+                        const name = staff.text || staff.full_name || staff.nama_lengkap || staff.name || staff.nama || "-";
+                        const username = staff.id || staff.username || staff.user_name || staff.nip || "-";
+                        const schoolName = staff.nama_sekolah || staff.school_name || "-";
+                        const schoolId = staff.id_school || staff.school_id || "-";
+                        
+                        const isLocalAdmin = admins.some(a => a.username === username);
 
-              <div>
-                <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 mb-1.5 uppercase">Password (Kosongkan jika tidak diganti)</label>
-                <div className="relative">
-                  <KeyRound className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
-                  <input
-                    type={showPassword ? "text" : "password"}
-                    value={formData.password}
-                    onChange={e => setFormData({ ...formData, password: e.target.value })}
-                    className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-800 dark:text-white rounded-xl pl-10 pr-10 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/50 transition-all"
-                    placeholder="Masukkan password baru untuk mengganti"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
-                  >
-                    {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
-                  </button>
-                </div>
-              </div>
+                        return (
+                          <tr key={idx} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/20 transition-colors">
+                            <td className="px-6 py-4">
+                              <div className="font-bold text-slate-800 dark:text-white">{name}</div>
+                              <div className="text-slate-500 dark:text-slate-400 text-xs mt-0.5 font-mono">@{username}</div>
+                            </td>
+                            <td className="px-6 py-4">
+                              <div className="text-slate-700 dark:text-slate-300 font-semibold">{schoolName}</div>
+                              <div className="text-slate-500 dark:text-slate-400 text-xs mt-0.5">ID Unit: {schoolId}</div>
+                            </td>
+                            <td className="px-6 py-4 text-right">
+                              {isLocalAdmin ? (
+                                <span className="text-xs text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/30 px-2.5 py-1 rounded-lg border border-emerald-200/40 dark:border-emerald-800/40 font-bold">
+                                  Terdaftar Admin
+                                </span>
+                              ) : (
+                                <button
+                                  onClick={() => handleMakeAdmin(staff)}
+                                  className="px-3 py-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-600 dark:bg-emerald-900/20 dark:hover:bg-emerald-900/40 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800/60 rounded-xl text-xs font-bold transition-all shadow-sm"
+                                >
+                                  Jadikan Admin
+                                </button>
+                              )}
+                            </td>
+                          </tr>
+                        );
+                      })}
 
-              <div>
-                <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 mb-1.5 uppercase">Peran (Role)</label>
-                <select
-                  value={formData.role}
-                  onChange={e => setFormData({ ...formData, role: e.target.value })}
-                  className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-800 dark:text-white rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/50 transition-all"
-                >
-                  <option value="admin">Admin Biasa</option>
-                  <option value="superadmin">Super Admin</option>
-                </select>
-              </div>
-            </div>
-
-            <div className="flex justify-end gap-2 pt-2">
-              <button
-                type="button"
-                onClick={handleCancelEdit}
-                className="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 rounded-xl text-sm font-bold transition-all"
-              >
-                Batal
-              </button>
-              <button
-                type="submit"
-                disabled={formLoading}
-                className="px-6 py-2.5 bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl text-sm font-bold transition-all disabled:opacity-50 flex items-center gap-2"
-              >
-                <Save size={16} />
-                {formLoading ? 'Memperbarui...' : 'Simpan Perubahan'}
-              </button>
-            </div>
-          </motion.form>
-        )}
-      </AnimatePresence>
-
-      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-sm overflow-hidden">
-        {loading ? (
-          <div className="p-8 text-center text-slate-500 dark:text-slate-400 font-medium">Memuat data admin...</div>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm text-left">
-              <thead className="bg-slate-50 dark:bg-slate-950/50 text-slate-500 dark:text-slate-400 border-b border-slate-200 dark:border-slate-800">
-                <tr>
-                  <th className="px-6 py-4 font-bold uppercase tracking-wider text-xs">Nama / Username</th>
-                  <th className="px-6 py-4 font-bold uppercase tracking-wider text-xs">Role</th>
-                  <th className="px-6 py-4 font-bold uppercase tracking-wider text-xs">Password</th>
-                  <th className="px-6 py-4 font-bold uppercase tracking-wider text-xs text-right">Aksi</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-                {admins.map((admin) => (
-                  <tr key={admin.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/20 transition-colors">
-                    <td className="px-6 py-4">
-                      <div className="font-bold text-slate-800 dark:text-white">{admin.nama_lengkap}</div>
-                      <div className="text-slate-500 dark:text-slate-400 text-xs mt-0.5 font-mono">@{admin.username}</div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <span className={`px-2.5 py-1 rounded-md text-[10px] font-black uppercase tracking-wider ${
-                        admin.role === 'superadmin' 
-                          ? 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400'
-                          : 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400'
-                      }`}>
-                        {admin.role === 'superadmin' ? 'Super Admin' : 'Admin'}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4">
-                      {admin.password_plain ? (
-                        <div className="flex items-center gap-2 font-mono text-xs text-slate-700 dark:text-slate-300 bg-slate-50 dark:bg-slate-950 px-3 py-1.5 rounded-lg border border-slate-200/40 dark:border-slate-800/40 w-fit">
-                          <span>{visiblePasswords[admin.id] ? admin.password_plain : "••••••••"}</span>
-                          <button
-                            type="button"
-                            onClick={() => togglePasswordVisibility(admin.id)}
-                            className="text-slate-450 hover:text-slate-650 dark:hover:text-slate-250 ml-1.5"
-                          >
-                            {visiblePasswords[admin.id] ? <EyeOff size={14} /> : <Eye size={14} />}
-                          </button>
-                        </div>
-                      ) : (
-                        <span className="text-slate-400 dark:text-slate-600 text-xs italic">Tersinkronisasi YSBMO (Hanya Hash)</span>
+                      {ysbmoStaff.length === 0 && (
+                        <tr>
+                          <td colSpan={3} className="px-6 py-8 text-center text-slate-500 dark:text-slate-400">
+                            Tidak ada data staff YSBMO ditemukan.
+                          </td>
+                        </tr>
                       )}
-                    </td>
-                    <td className="px-6 py-4 text-right space-x-1.5">
-                      <button
-                        onClick={() => handleStartEdit(admin)}
-                        className="p-2 text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-950/30 rounded-lg transition-all inline-flex"
-                        title="Edit Admin"
-                      >
-                        <Edit3 size={16} />
-                      </button>
-                      
-                      {admin.username !== adminUser.username && (
-                        <button
-                          onClick={() => handleDeleteAdmin(admin.id)}
-                          className="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/30 rounded-lg transition-all inline-flex"
-                          title="Hapus Admin"
-                        >
-                          <Trash2 size={16} />
-                        </button>
-                      )}
-                    </td>
-                  </tr>
-                ))}
-                
-                {admins.length === 0 && (
-                  <tr>
-                    <td colSpan={4} className="px-6 py-8 text-center text-slate-500 dark:text-slate-400">
-                      Tidak ada data admin.
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </div>
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+          )}
+        </>
+      )}
     </div>
   );
 }

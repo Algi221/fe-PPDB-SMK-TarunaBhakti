@@ -1,148 +1,313 @@
-# Panduan Sistem PPDB SMK Taruna Bhakti Depok
+# Panduan Sistem PPDB SMK Taruna Bhakti Depok (Frontend)
 
 Aplikasi Penerimaan Peserta Didik Baru (PPDB) SMK Taruna Bhakti Depok adalah platform berbasis web modern yang dirancang untuk mempermudah pendaftaran siswa baru secara online, pengelolaan administrasi oleh panitia (dashboard pendaftar dan siswa aktif), integrasi pembayaran digital, serta forum informasi pengumuman.
 
 Sistem ini terbagi menjadi dua bagian utama:
-1. Frontend (Next.js): Aplikasi antarmuka pengguna berbasis React dengan Next.js.
-2. Backend (Hono.js + Node + PostgreSQL): Server REST API berbasis Hono.js dengan PostgreSQL sebagai database utama.
+1. Frontend: Aplikasi antarmuka pengguna berbasis React dengan Next.js.
+2. Backend: Server REST API berbasis Hono.js dengan PostgreSQL sebagai database utama dan Bun sebagai runtime engine.
 
 ---
 
-## Prasyarat Sistem
+## Spesifikasi Teknologi (Tech Stack)
 
-Sebelum menjalankan aplikasi, pastikan sistem Anda telah menginstal:
-- Node.js (versi 18 ke atas) atau Bun (direkomendasikan karena kecepatan eksekusi).
-- Database PostgreSQL (lokal atau hosting eksternal).
+### Frontend
+- Core Framework: Next.js (App Router)
+- Language: TypeScript
+- CSS Styling: Vanilla CSS / Tailwind CSS
+- Animation Library: Framer Motion
+- Iconography: Lucide React
+- Package Manager: Bun
+
+### Backend
+- Core Framework: Hono.js
+- Runtime Environment: Bun / Node.js
+- Database ORM: Prisma Client v6
+- Database Engine: PostgreSQL
+- Authentication: JSON Web Token (JWT) & bcryptjs
+- Communications: WebSocket Server (ws)
+- Package Manager: Bun
 
 ---
 
-## Struktur Repositori
+## Struktur Direktori
 
 ```text
 PPDB_SMK_TarunaBhakti/
-├── backend/            # REST API Server (Hono.js)
-├── frontend/           # Aplikasi User & Dashboard Admin (Next.js)
-└── README.md           # Panduan ini
+├── backend/
+│   ├── prisma/
+│   │   ├── schema.prisma       # Skema pemodelan database Prisma
+│   │   └── seed.js             # Skrip pengisian data simulasi awal (seeding)
+│   ├── src/
+│   │   ├── db/
+│   │   │   ├── prisma.ts       # Inisialisasi client Prisma
+│   │   │   └── schema.sql      # Cadangan skema SQL mentah
+│   │   ├── middleware/
+│   │   │   └── auth.ts         # Middleware otentikasi JWT admin & superadmin
+│   │   ├── routes/
+│   │   │   ├── admin-users.ts  # Endpoint manajemen admin & integrasi YSBMO
+│   │   │   ├── applicants.ts   # Endpoint pendaftar calon siswa
+│   │   │   ├── auth.ts         # Endpoint autentikasi admin lokal & YSBMO
+│   │   │   ├── config.ts       # Endpoint konfigurasi landing page
+│   │   │   ├── informasi.ts    # Endpoint artikel pengumuman
+│   │   │   └── payment.ts      # Endpoint pembayaran gerbang Xendit
+│   │   ├── ws/
+│   │   │   └── handler.ts      # Pengendali komunikasi WebSocket real-time
+│   │   └── index.ts            # Entrypoint utama server backend
+│   └── tsconfig.json
+└── frontend/
+    ├── public/
+    └── src/
+        ├── app/
+        │   ├── daftar/
+        │   ├── dashboard/
+        │   │   ├── admin/      # Halaman manajemen admin lokal & YSBMO
+        │   │   ├── pendaftar/
+        │   │   └── siswa-aktif/# Halaman pemantauan pendaftar aktif
+        │   ├── login/
+        │   └── page.tsx
+        ├── components/
+        └── context/
+            └── PPDBContext.tsx # Context global pengelolaan state dan auth
 ```
 
 ---
 
-## Langkah Setup Cepat
+## Skema Database (Database Schema)
 
-### 1. Konfigurasi Backend (API Server)
+Sistem database PPDB menggunakan PostgreSQL dengan rancangan tabel berikut:
 
-1. Buka terminal dan masuk ke direktori backend:
-   ```bash
-   cd backend
-   ```
+### Tabel: admin_users
+Menyimpan kredensial admin sistem PPDB lokal dan token autentikasi integrasi YSBMO.
 
-2. Salin file template environment variable .env.example menjadi .env:
-   - Windows (PowerShell):
-     ```powershell
-     cp .env.example .env
-     ```
-   - Linux/macOS/Git Bash:
-     ```bash
-     cp .env.example .env
-     ```
+| Nama Kolom | Tipe Data | Deskripsi / Kendala |
+|---|---|---|
+| id | SERIAL | Primary Key, Auto-increment |
+| username | VARCHAR(50) | Unique, Not Null |
+| password_hash | VARCHAR(255) | Hashed password, Not Null |
+| password_plain| VARCHAR(255) | Plaintext password (untuk Superadmin, Nullable) |
+| nama_lengkap | VARCHAR(100) | Not Null |
+| role | VARCHAR(20) | Default: 'admin', Nullable |
+| ysbmo_token | TEXT | Token akses YSBMO hasil login (Nullable) |
+| created_at | TIMESTAMP | Default: NOW(), Nullable |
 
-3. Sesuaikan konfigurasi database Anda pada file .env pada variabel DATABASE_URL:
-   ```env
-   DATABASE_URL=postgresql://username:password@localhost:5432/nama_database
-   JWT_SECRET=MasukkanSecretKeyKalianDisini
-   ```
+### Tabel: calon_siswa
+Menyimpan seluruh data formulir pendaftaran calon peserta didik baru.
 
-#### Inisialisasi Skema Database (Prisma ORM)
-Sistem backend telah dimigrasikan menggunakan **Prisma ORM**. Untuk membuat tabel-tabel database di PostgreSQL sesuai skema, jalankan perintah berikut di folder backend:
-```bash
-npx prisma db push
-```
+| Nama Kolom | Tipe Data | Deskripsi / Kendala |
+|---|---|---|
+| id | SERIAL | Primary Key, Auto-increment |
+| nama | VARCHAR(150) | Not Null |
+| nisn | VARCHAR(10) | Unique, Not Null |
+| nik | VARCHAR(16) | Unique, Not Null |
+| tempat_lahir | VARCHAR(100) | Not Null |
+| tgl_lahir | DATE | Not Null |
+| jenis_kelamin | CHAR(1) | Not Null |
+| agama | VARCHAR(20) | Not Null |
+| kewarganegaraan| VARCHAR(3) | Default: 'WNI', Nullable |
+| alamat | TEXT | Not Null |
+| rt_rw | VARCHAR(10) | Not Null |
+| kelurahan | VARCHAR(50) | Not Null |
+| kecamatan | VARCHAR(50) | Not Null |
+| kode_pos | VARCHAR(5) | Not Null |
+| whatsapp | VARCHAR(15) | Not Null |
+| email | VARCHAR(100) | Not Null |
+| tinggal_dengan| VARCHAR(30) | Not Null |
+| transportasi | VARCHAR(30) | Not Null |
+| tinggi_badan | INTEGER | Not Null |
+| berat_badan | INTEGER | Not Null |
+| jarak_sekolah | VARCHAR(30) | Not Null |
+| jarak_km | DECIMAL(5,2) | Not Null |
+| waktu_jam | INTEGER | Not Null |
+| waktu_menit | INTEGER | Not Null |
+| jumlah_saudara| INTEGER | Not Null |
+| golongan_darah| VARCHAR(5) | Not Null |
+| penyakit_diderita| VARCHAR(150) | Nullable |
+| kebutuhan_khusus| JSONB | Nullable |
+| punya_kps | VARCHAR(5) | Default: 'Tidak', Nullable |
+| no_kps | VARCHAR(30) | Nullable |
+| punya_kip | VARCHAR(5) | Default: 'Tidak', Nullable |
+| no_kip | VARCHAR(30) | Nullable |
+| jenis_prestasi| JSONB | Nullable |
+| tingkat_prestasi| JSONB | Nullable |
+| uraian_prestasi| TEXT | Nullable |
+| tahun_prestasi| VARCHAR(10) | Nullable |
+| penyelenggara | VARCHAR(100) | Nullable |
+| jenis_beasiswa| JSONB | Nullable |
+| uraian_beasiswa| TEXT | Nullable |
+| tahun_mulai_beasiswa| VARCHAR(10)| Nullable |
+| tahun_selesai_beasiswa| VARCHAR(10)| Nullable |
+| nama_ayah | VARCHAR(150) | Nullable |
+| status_ayah | VARCHAR(30) | Default: 'Masih Hidup', Nullable |
+| nama_ibu | VARCHAR(150) | Nullable |
+| status_ibu | VARCHAR(30) | Default: 'Masih Hidup', Nullable |
+| nama_wali | VARCHAR(150) | Nullable |
+| status_wali | VARCHAR(30) | Default: 'Masih Hidup', Nullable |
+| telepon_ortu | VARCHAR(15) | Not Null |
+| sekolah_asal | VARCHAR(150) | Not Null |
+| tgl_lulus | DATE | Not Null |
+| no_ijazah | VARCHAR(50) | Nullable |
+| no_skhun | VARCHAR(50) | Nullable |
+| no_peserta_un | VARCHAR(50) | Nullable |
+| lama_belajar | INTEGER | Nullable |
+| pindahan_dari | VARCHAR(150) | Nullable |
+| alasan_pindah | TEXT | Nullable |
+| diterima_kelas| VARCHAR(20) | Nullable |
+| diterima_tanggal| DATE | Nullable |
+| jurusan_1 | VARCHAR(50) | Not Null |
+| jurusan_2 | VARCHAR(50) | Not Null |
+| alasan_memilih| TEXT | Nullable |
+| hobi | JSONB | Nullable |
+| cita_cita | VARCHAR(100) | Nullable |
+| nilai_us_teori| DECIMAL(5,2) | Nullable |
+| nilai_us_praktik| DECIMAL(5,2)| Nullable |
+| nilai_muatan_lokal| DECIMAL(5,2)| Nullable |
+| cita_cita_setelah_lulus| VARCHAR(100)| Nullable |
+| pelajaran_disenangi| VARCHAR(100)| Nullable |
+| alasan_disenangi| TEXT | Nullable |
+| kesulitan_belajar| TEXT | Nullable |
+| perkelahian | VARCHAR(5) | Default: 'Tidak', Nullable |
+| ket_perkelahian| TEXT | Nullable |
+| narkoba | VARCHAR(5) | Default: 'Tidak', Nullable |
+| ket_narkoba | TEXT | Nullable |
+| pelanggaran_lain| VARCHAR(5) | Default: 'Tidak', Nullable |
+| ket_pelanggaran_lain| TEXT | Nullable |
+| janji_taat | BOOLEAN | Default: FALSE, Nullable |
+| janji_sanksi | BOOLEAN | Default: FALSE, Nullable |
+| janji_akrab | BOOLEAN | Default: FALSE, Nullable |
+| janji_belajar | BOOLEAN | Default: FALSE, Nullable |
+| janji_nama_baik| BOOLEAN | Default: FALSE, Nullable |
+| periode | VARCHAR(20) | Default: '2026-2027', Nullable |
+| gelombang | VARCHAR(20) | Default: 'Gelombang 1', Nullable |
+| berkas_kk | TEXT | Nullable |
+| berkas_ktp | TEXT | Nullable |
+| berkas_akta | TEXT | Nullable |
+| berkas_ijazah | TEXT | Nullable |
+| berkas_foto | TEXT | Nullable |
+| bukti_bayar | TEXT | Nullable |
+| metode_pembayaran| VARCHAR(50) | Default: 'Payment Gateway', Nullable |
+| status | VARCHAR(20) | Default: 'Pending', Nullable |
+| payment_status| VARCHAR(20) | Default: 'Unpaid', Nullable |
+| xendit_invoice_url| TEXT | Nullable |
+| tgl_daftar | TIMESTAMP | Default: NOW(), Nullable |
 
-#### Database Seeding
-Untuk memasukkan data simulasi awal (100+ data calon siswa/siswa aktif, pengumuman forum, dan konfigurasi default landing page) ke database, jalankan perintah berikut di folder backend:
-```bash
-npm run seed
-```
-Skrip seeder ini akan mengambil kredensial admin secara dinamis dari file `.env` Anda, memverifikasi koneksi database, lalu mengosongkan tabel lama dan mengisinya dengan data simulasi baru.
+### Tabel: informasi
+Menyimpan data artikel berita atau pengumuman terkait PPDB.
 
-#### Menjalankan Prisma Studio (Visual Editor)
-Anda dapat melihat, mencari, menambah, atau mengedit data di database secara visual dengan menjalankan:
-```bash
-npx prisma studio
-```
-Layanan ini akan otomatis terbuka di browser Anda (default: `http://localhost:5555`).
+| Nama Kolom | Tipe Data | Deskripsi / Kendala |
+|---|---|---|
+| id | SERIAL | Primary Key, Auto-increment |
+| judul | VARCHAR(255) | Not Null |
+| konten | TEXT | Not Null |
+| tanggal | DATE | Not Null |
+| foto_url | TEXT | Nullable |
+| created_at | TIMESTAMP | Default: NOW(), Nullable |
 
-#### Menjalankan Server Backend
-Jalankan server backend dalam mode pengembangan (development):
-- Menggunakan Bun:
-  ```bash
-  bun run dev
-  ```
-- Menggunakan Node.js:
-  ```bash
-  npm run dev
-  ```
-Server backend akan berjalan di `http://localhost:5000` dan WebSocket live di `ws://localhost:5000/ws`.
+### Tabel: landing_page_config
+Menyimpan konfigurasi berformat JSON untuk dinamisasi komponen halaman depan landing page.
+
+| Nama Kolom | Tipe Data | Deskripsi / Kendala |
+|---|---|---|
+| config_key | VARCHAR(50) | Primary Key |
+| config_value | JSONB | Data konfigurasi komponen, Not Null |
+| updated_at | TIMESTAMP | Default: NOW(), Auto-update |
+
+### Tabel: ui_revisions
+Menyimpan riwayat revisi dan perubahan konfigurasi landing page.
+
+| Nama Kolom | Tipe Data | Deskripsi / Kendala |
+|---|---|---|
+| id | SERIAL | Primary Key, Auto-increment |
+| config_values | JSONB | Backup konfigurasi saat diubah, Not Null |
+| changed_by | VARCHAR(100) | Default: 'admin', Nullable |
+| description | TEXT | Nullable |
+| created_at | TIMESTAMP | Default: NOW(), Nullable |
 
 ---
 
-### 2. Konfigurasi Frontend (Next.js)
+## Alur Kerja Integrasi YSBMO
 
-1. Buka terminal baru dan masuk ke direktori frontend:
+Sistem ini terintegrasi secara mulus dengan API Yayasan Setya Bhakti (YSBMO) untuk memfasilitasi integrasi login satu pintu dan pendaftaran admin secara dinamis:
+
+### Autentikasi Pengguna
+1. Ketika pengguna memasukkan ID/NIP dan Kata Sandi pada form login utama, sistem backend PPDB memproyeksikan data login ke API Autentikasi YSBMO (`/Auth/signIn-ysbmo`).
+2. Jika valid, API YSBMO mengembalikan kode status 200 beserta payload identitas pengguna dan token otentikasi YSBMO.
+3. Backend PPDB akan menangkap token tersebut dan menyimpannya ke database `admin_users` kolom `ysbmo_token`.
+4. Pengguna disinkronisasikan ke tabel lokal dan diberikan JWT token PPDB untuk mengakses area manajemen.
+
+### Penarikan Daftar Guru & Staff (list-staff)
+1. Super Admin mengakses tab **Data Staff & Guru YSBMO** di dashboard admin.
+2. Frontend meminta data ke API backend PPDB pada rute `GET /api/admin/users/ysbmo/staff`.
+3. Backend akan memeriksa ketersediaan token YSBMO yang tersimpan di database (atau menerima input manual dari header `X-YSBMO-Token` jika token kedaluwarsa).
+4. Backend menghasilkan header dinamis `x-api-key` berdasarkan tahun dan bulan saat ini dengan format: `SARPRAS-STARBHAK{tahun}{bulan}` (misal: `SARPRAS-STARBHAK202606` untuk bulan Juni 2026).
+5. Backend melakukan fetch data ke API eksternal YSBMO `/masterdata/list-staff` menggunakan header `Authorization: Basic {token}` dan `x-api-key`.
+6. Jika pemanggilan sukses, daftar staff dikembalikan dan ditampilkan ke dalam tabel admin.
+
+### Pendaftaran Instan (Instant Admin Promotion)
+1. Guru yang terdaftar di YSBMO dapat langsung masuk ke sistem PPDB sebagai admin baru tanpa perlu input pendaftaran manual.
+2. Dari tabel YSBMO, Super Admin mengklik tombol **Jadikan Admin**.
+3. Frontend akan mengirimkan request pembuatan admin lokal baru menggunakan data guru tersebut (Username diisi dengan `id` YSBMO, Nama Lengkap menggunakan properti `text` YSBMO) dengan kata sandi bypass sementara yang digenerate acak (memenuhi kepatuhan uji statis Snyk).
+4. Ketika guru tersebut pertama kali melakukan login menggunakan ID YSBMO dan kata sandi asli mereka, sistem secara otomatis memvalidasinya ke API YSBMO dan menyinkronkan kata sandi hash lokal PPDB dengan kredensial tersebut secara dinamis.
+
+---
+
+## Panduan Instalasi dan Setup Proyek
+
+Ikuti langkah-langkah berikut untuk memulai dan menjalankan proyek ini di lingkungan pengembangan lokal Anda.
+
+### Prasyarat
+- Pasang Bun runtime engine di komputer Anda.
+- Siapkan database PostgreSQL lokal atau cloud.
+
+### Langkah Setup Frontend
+
+1. Buka Terminal dan arahkan ke direktori frontend:
    ```bash
    cd frontend
    ```
 
-2. Salin file template environment variable .env.example menjadi .env.local:
-   - Windows (PowerShell):
+2. Instal dependensi menggunakan Bun:
+   ```bash
+   bun install
+   ```
+
+3. Duplikat berkas konfigurasi env:
+   - Pada Windows PowerShell:
      ```powershell
      cp .env.example .env.local
      ```
-   - Linux/macOS/Git Bash:
+   - Pada Linux/macOS:
      ```bash
      cp .env.example .env.local
      ```
 
-#### Menjalankan Aplikasi Frontend
-Jalankan server Next.js dalam mode pengembangan:
-- Menggunakan Bun:
-  ```bash
-  bun run dev
-  ```
-- Menggunakan Node.js:
-  ```bash
-  npm run dev
-  ```
-Buka browser dan akses http://localhost:3000.
-
-#### Membuat Production Build
-Untuk melakukan build produksi pada frontend Next.js, jalankan perintah berikut di folder frontend:
-- Menggunakan Bun:
-  ```bash
-  bun run build
-  ```
-- Menggunakan Node.js:
-  ```bash
-  npm run build
-  ```
-
-Setelah build berhasil dibuat, Anda dapat menjalankan aplikasi dalam mode produksi dengan perintah:
-- Menggunakan Bun:
-  ```bash
-  bun run start
-  ```
-- Menggunakan Node.js:
-  ```bash
-  npm run start
-  ```
+4. Jalankan aplikasi frontend Next.js:
+   ```bash
+   bun run dev
+   ```
+   Aplikasi frontend akan aktif pada alamat `http://localhost:3000`.
 
 ---
 
-## Kredensial Login Administrator Default
+## Panduan Push Perubahan ke Git Repository
 
-Setelah Anda menjalankan seeder database, Anda dapat login ke Dashboard Admin PPDB menggunakan akun berikut:
+Untuk menyimpan dan membagikan semua perubahan yang telah selesai dilakukan, jalankan perintah git berikut dari root direktori proyek Anda:
 
-| Peran (Role) | Username | Password |
-|---|---|---|
-| Super Admin | KingAlgi | RPLSTRONG |
-| Admin Panitia | admin_tb | AdminTarunaBhakti2026 |
+1. Periksa status berkas yang berubah:
+   ```bash
+   git status
+   ```
+
+2. Tambahkan semua perubahan baru dan pembersihan berkas:
+   ```bash
+   git add .
+   ```
+
+3. Lakukan commit perubahan dengan pesan deskriptif:
+   ```bash
+   git commit -m "feat: integrasi list-staff ysbmo, perbaikan keamanan snyk, pembersihan lockfile redundan, dan pembaruan readme komprehensif"
+   ```
+
+4. Push commit Anda ke remote repository branch Anda (contoh: main):
+   ```bash
+   git push origin main
+   ```
