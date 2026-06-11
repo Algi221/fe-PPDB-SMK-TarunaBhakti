@@ -24,20 +24,28 @@ export default function AdminManagementPage() {
   // Menyimpan status visibilitas password tiap baris tabel
   const [visiblePasswords, setVisiblePasswords] = useState<Record<number, boolean>>({});
 
+  const getBackendUrl = () => {
+    if (process.env.NEXT_PUBLIC_BACKEND_URL) return process.env.NEXT_PUBLIC_BACKEND_URL;
+    if (typeof window !== 'undefined') return `http://${window.location.hostname}:5000`;
+    return 'http://localhost:5000';
+  };
+
   useEffect(() => {
+    if (!adminUser) return;
     // Hanya superadmin yang boleh masuk halaman ini
-    if (adminUser && adminUser.role !== 'superadmin') {
+    if (adminUser.role !== 'superadmin') {
       router.push('/dashboard');
       return;
     }
     fetchAdmins();
-  }, [adminUser, router]);
+  }, [adminUser, adminToken, router]);
 
   const fetchAdmins = async () => {
+    if (!adminToken) return;
     try {
       setLoading(true);
       setError("");
-      const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5000';
+      const backendUrl = getBackendUrl();
       const res = await fetch(`${backendUrl}/api/admin/users`, {
         headers: {
           'Authorization': `Bearer ${adminToken}`
@@ -58,11 +66,12 @@ export default function AdminManagementPage() {
 
   const handleAddAdmin = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!adminToken) return;
     try {
       setFormLoading(true);
       setError("");
       setSuccessMsg("");
-      const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5000';
+      const backendUrl = getBackendUrl();
       const res = await fetch(`${backendUrl}/api/admin/users`, {
         method: 'POST',
         headers: {
@@ -106,13 +115,13 @@ export default function AdminManagementPage() {
 
   const handleUpdateAdmin = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!editAdminId) return;
+    if (!editAdminId || !adminToken) return;
 
     try {
       setFormLoading(true);
       setError("");
       setSuccessMsg("");
-      const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5000';
+      const backendUrl = getBackendUrl();
       const res = await fetch(`${backendUrl}/api/admin/users/${editAdminId}`, {
         method: 'PUT',
         headers: {
@@ -139,11 +148,12 @@ export default function AdminManagementPage() {
 
   const handleDeleteAdmin = async (id: number) => {
     if (!confirm("Apakah Anda yakin ingin menghapus admin ini secara permanen?")) return;
+    if (!adminToken) return;
     try {
       setLoading(true);
       setError("");
       setSuccessMsg("");
-      const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5000';
+      const backendUrl = getBackendUrl();
       const res = await fetch(`${backendUrl}/api/admin/users/${id}`, {
         method: 'DELETE',
         headers: {

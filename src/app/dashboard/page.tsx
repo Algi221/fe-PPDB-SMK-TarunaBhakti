@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import { usePPDB } from "@/context/PPDBContext";
 import { Users, ShieldCheck, Clock, AlertTriangle, TrendingUp, BookOpen, ArrowRight } from "lucide-react";
 import Link from "next/link";
+import { motion, AnimatePresence } from "framer-motion";
 
 interface MajorItem {
   name: string;
@@ -139,9 +140,9 @@ export default function DashboardOverview() {
   const trend = getTrendData();
   const maxTrendVal = Math.max(...trend.counts, 10);
 
-  const width = 800;
-  const height = 250;
-  const padding = 30;
+  const width = 1000;
+  const height = 360;
+  const padding = 40;
   const points = trend.counts.map((val, idx) => {
     const divisor = trend.counts.length - 1 || 1;
     const x = padding + (idx * (width - padding * 2)) / divisor;
@@ -149,14 +150,20 @@ export default function DashboardOverview() {
     return { x, y, val };
   });
 
-  const areaPath = points.length
-    ? `M ${points[0].x} ${points[0].y} ` +
-      points.slice(1).map((p) => `L ${p.x} ${p.y}`).join(" ") +
-      ` L ${points[points.length - 1].x} ${height - padding} L ${points[0].x} ${height - padding} Z`
+  const linePath = points.length
+    ? points.map((p, idx) => {
+        if (idx === 0) return `M ${p.x} ${p.y}`;
+        const prev = points[idx - 1];
+        const cp1x = prev.x + (p.x - prev.x) / 3;
+        const cp1y = prev.y;
+        const cp2x = p.x - (p.x - prev.x) / 3;
+        const cp2y = p.y;
+        return `C ${cp1x} ${cp1y}, ${cp2x} ${cp2y}, ${p.x} ${p.y}`;
+      }).join(" ")
     : "";
 
-  const linePath = points.length
-    ? `M ${points[0].x} ${points[0].y} ` + points.slice(1).map((p) => `L ${p.x} ${p.y}`).join(" ")
+  const areaPath = points.length
+    ? `${linePath} L ${points[points.length - 1].x} ${height - padding} L ${points[0].x} ${height - padding} Z`
     : "";
 
   return (
@@ -257,7 +264,7 @@ export default function DashboardOverview() {
           </div>
 
           {/* SVG Line/Area Chart */}
-          <div className="relative w-full h-[280px] mt-4 flex items-end">
+          <div className="relative w-full h-[380px] mt-4 flex items-end">
             <svg viewBox={`0 0 ${width} ${height}`} className="w-full h-full overflow-visible">
               {/* Grid Lines */}
               {[0, 0.25, 0.5, 0.75, 1].map((ratio, idx) => {
@@ -343,44 +350,7 @@ export default function DashboardOverview() {
                 </g>
               ))}
 
-              {/* Guideline Tooltip Card (Interactive Details) */}
-              {hoveredTrendIdx !== null && points[hoveredTrendIdx] && (
-                <g className="pointer-events-none">
-                  <rect
-                    x={points[hoveredTrendIdx].x - 65}
-                    y={points[hoveredTrendIdx].y - 50}
-                    width="130"
-                    height="38"
-                    rx="8"
-                    fill="#1e293b"
-                    className="shadow-xl"
-                    stroke="#3b82f6"
-                    strokeWidth="1.5"
-                  />
-                  <text
-                    x={points[hoveredTrendIdx].x}
-                    y={points[hoveredTrendIdx].y - 37}
-                    fill="#ffffff"
-                    fontSize="9.5"
-                    fontWeight="black"
-                    textAnchor="middle"
-                  >
-                    {trend.labels[hoveredTrendIdx]}
-                  </text>
-                  <text
-                    x={points[hoveredTrendIdx].x}
-                    y={points[hoveredTrendIdx].y - 23}
-                    fill="#38bdf8"
-                    fontSize="10"
-                    fontWeight="black"
-                    textAnchor="middle"
-                  >
-                    {points[hoveredTrendIdx].val} Pendaftar
-                  </text>
-                </g>
-              )}
-
-              {/* Day Labels */}
+              {/* Day/Period Labels */}
               {points.map((p, idx) => (
                 <text
                   key={idx}
@@ -388,7 +358,7 @@ export default function DashboardOverview() {
                   y={height - 6}
                   fill="currentColor"
                   className="text-slate-400 dark:text-slate-650"
-                  fontSize="8.5"
+                  fontSize="9.5"
                   fontWeight="bold"
                   textAnchor="middle"
                 >
@@ -396,6 +366,45 @@ export default function DashboardOverview() {
                 </text>
               ))}
             </svg>
+
+            {/* Premium Floating Tooltip Overlay */}
+            <AnimatePresence>
+              {hoveredTrendIdx !== null && points[hoveredTrendIdx] && (
+                <motion.div
+                  initial={{ opacity: 0, y: 15, scale: 0.95 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: 15, scale: 0.95 }}
+                  transition={{ duration: 0.15, ease: "easeOut" }}
+                  className="absolute pointer-events-none bg-slate-900/95 dark:bg-slate-950/95 border border-slate-700/50 backdrop-blur-md rounded-2xl p-3 shadow-2xl text-xs z-20 flex flex-col gap-1 text-white border-blue-500/30"
+                  style={{
+                    left: `${(points[hoveredTrendIdx].x / width) * 100}%`,
+                    top: `${(points[hoveredTrendIdx].y / height) * 100 - 18}%`,
+                    transform: 'translate(-50%, -100%)',
+                  }}
+                >
+                  <span className="font-extrabold uppercase tracking-widest text-[9px] text-slate-400">
+                    {trend.labels[hoveredTrendIdx]}
+                  </span>
+                  <span className="font-black text-sm text-blue-400">
+                    {points[hoveredTrendIdx].val} Calon Siswa
+                  </span>
+                  {hoveredTrendIdx > 0 && (
+                    <span className={`text-[10px] font-bold flex items-center gap-1 ${
+                      points[hoveredTrendIdx].val >= points[hoveredTrendIdx - 1].val 
+                        ? "text-emerald-400" 
+                        : "text-rose-400"
+                    }`}>
+                      {points[hoveredTrendIdx].val >= points[hoveredTrendIdx - 1].val ? "▲" : "▼"}{" "}
+                      {Math.abs(points[hoveredTrendIdx].val - points[hoveredTrendIdx - 1].val)}{" "}
+                      {trendView === "hari" ? "pendaftar vs kemarin" :
+                       trendView === "minggu" ? "pendaftar vs minggu lalu" :
+                       trendView === "bulan" ? "pendaftar vs bulan lalu" :
+                       "pendaftar vs periode lalu"}
+                    </span>
+                  )}
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
         </div>
 
