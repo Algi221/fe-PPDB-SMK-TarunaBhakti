@@ -52,20 +52,25 @@ PPDB_SMK_TarunaBhakti/
    JWT_SECRET=MasukkanSecretKeyKalianDisini
    ```
 
-#### Inisialisasi Database (Auto-Migration)
-Backend dirancang untuk melakukan migrasi database secara otomatis saat dijalankan pertama kali dengan membaca skema yang ada pada backend/src/db/schema.sql. Seluruh tabel database akan dibuat secara otomatis di PostgreSQL.
+#### Inisialisasi Skema Database (Prisma ORM)
+Sistem backend telah dimigrasikan menggunakan **Prisma ORM**. Untuk membuat tabel-tabel database di PostgreSQL sesuai skema, jalankan perintah berikut di folder backend:
+```bash
+npx prisma db push
+```
 
 #### Database Seeding
-Setelah database terkoneksi, masukkan data simulasi awal (seperti data siswa aktif, program keahlian, gelombang pendaftaran, pengumuman forum, dan konfigurasi landing page) dengan menjalankan perintah berikut di dalam folder backend:
-- Menggunakan Bun (Direkomendasikan):
-  ```bash
-  bun seed.js
-  ```
-- Menggunakan Node.js:
-  ```bash
-  node seed.js
-  ```
-Skrip seeder ini akan memverifikasi koneksi database Anda, menghapus data seeder lama (jika ada) untuk mencegah duplikasi, lalu memasukkan data siswa baru dan admin awal ke PostgreSQL.
+Untuk memasukkan data simulasi awal (100+ data calon siswa/siswa aktif, pengumuman forum, dan konfigurasi default landing page) ke database, jalankan perintah berikut di folder backend:
+```bash
+npm run seed
+```
+Skrip seeder ini akan mengambil kredensial admin secara dinamis dari file `.env` Anda, memverifikasi koneksi database, lalu mengosongkan tabel lama dan mengisinya dengan data simulasi baru.
+
+#### Menjalankan Prisma Studio (Visual Editor)
+Anda dapat melihat, mencari, menambah, atau mengedit data di database secara visual dengan menjalankan:
+```bash
+npx prisma studio
+```
+Layanan ini akan otomatis terbuka di browser Anda (default: `http://localhost:5555`).
 
 #### Menjalankan Server Backend
 Jalankan server backend dalam mode pengembangan (development):
@@ -77,7 +82,7 @@ Jalankan server backend dalam mode pengembangan (development):
   ```bash
   npm run dev
   ```
-Server backend akan berjalan di http://localhost:5000 dan WebSocket live di ws://localhost:5000/ws.
+Server backend akan berjalan di `http://localhost:5000` dan WebSocket live di `ws://localhost:5000/ws`.
 
 ---
 
