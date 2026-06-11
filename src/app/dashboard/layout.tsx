@@ -94,7 +94,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           onClick={() => setIsMobileMenuOpen(false)}
         />
       )}
-      <aside className={`fixed inset-y-0 left-0 z-50 md:sticky md:top-0 h-screen bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 flex flex-col shrink-0 transition-all duration-300 ease-in-out ${
+      <aside className={`fixed inset-y-0 left-0 z-50 md:sticky md:top-0 h-screen bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-700 flex flex-col shrink-0 transition-all duration-300 ease-in-out ${
         isCollapsed ? "w-20" : "w-64"
       } ${
         isMobileMenuOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"
@@ -102,14 +102,14 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         {/* Toggle Collapse Button (Desktop Only) */}
         <button
           onClick={handleToggleCollapse}
-          className="hidden md:flex absolute top-[24px] -right-4 w-8 h-8 rounded-full border border-slate-200 dark:border-slate-800/80 bg-white dark:bg-slate-900 text-slate-500 hover:text-blue-500 dark:text-slate-400 dark:hover:text-blue-400 items-center justify-center transition-all duration-300 shadow-sm z-50 hover:scale-110 cursor-pointer"
+          className="hidden md:flex absolute top-[24px] -right-4 w-8 h-8 rounded-full border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-500 hover:text-blue-500 dark:text-slate-400 dark:hover:text-blue-400 items-center justify-center transition-all duration-300 shadow-sm z-50 hover:scale-110 cursor-pointer"
           title={isCollapsed ? "Perluas Sidebar" : "Sembunyikan Sidebar"}
         >
           {isCollapsed ? <ChevronRight size={16} /> : <ChevronLeft size={16} />}
         </button>
 
         {/* Brand Header */}
-        <div className={`py-4 flex items-center border-b border-slate-200 dark:border-slate-800 min-h-[73px] transition-all duration-300 ${
+        <div className={`py-4 flex items-center border-b border-slate-200 dark:border-slate-700 min-h-[73px] transition-all duration-300 ${
           isCollapsed ? "px-[22px]" : "px-4"
         }`}>
           <Link href="/dashboard" className="flex items-center group">
@@ -139,7 +139,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               }`}>
                 Manajemen Siswa
               </span>
-              <div className={`h-px bg-slate-200 dark:bg-slate-800 transition-all duration-300 ${isCollapsed ? "w-8" : "flex-1"}`} />
+              <div className={`h-px bg-slate-200 dark:bg-slate-700 transition-all duration-300 ${isCollapsed ? "w-8" : "flex-1"}`} />
             </div>
           </div>
           
@@ -223,7 +223,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               }`}>
                 Konten Portal
               </span>
-              <div className={`h-px bg-slate-200 dark:bg-slate-800 transition-all duration-300 ${isCollapsed ? "w-8" : "flex-1"}`} />
+              <div className={`h-px bg-slate-200 dark:bg-slate-700 transition-all duration-300 ${isCollapsed ? "w-8" : "flex-1"}`} />
             </div>
           </div>
  
@@ -271,7 +271,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               }`}>
                 Pengaturan Sistem
               </span>
-              <div className={`h-px bg-slate-200 dark:bg-slate-800 transition-all duration-300 ${isCollapsed ? "w-8" : "flex-1"}`} />
+              <div className={`h-px bg-slate-200 dark:bg-slate-700 transition-all duration-300 ${isCollapsed ? "w-8" : "flex-1"}`} />
             </div>
           </div>
  
@@ -315,7 +315,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         </nav>
 
         {/* Sidebar Footer (Admin Profile) */}
-        <div className={`py-4 border-t border-slate-200 dark:border-slate-800 bg-[#f7f7f7]/40 dark:bg-slate-950/20 flex flex-col gap-3 transition-all duration-300 ${
+        <div className={`py-4 border-t border-slate-200 dark:border-slate-700 bg-[#f7f7f7]/40 dark:bg-slate-950/20 flex flex-col gap-3 transition-all duration-300 ${
           isCollapsed ? "px-[20px] items-center" : "px-4 items-stretch"
         }`}>
           <div className="flex items-center transition-all duration-300 w-full">
