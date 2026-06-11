@@ -285,29 +285,3 @@ Ikuti langkah-langkah berikut untuk memulai dan menjalankan proyek ini di lingku
    bun run dev
    ```
    Aplikasi frontend akan aktif pada alamat `http://localhost:3000`.
-
----
-
-## Panduan Push Perubahan ke Git Repository
-
-Untuk menyimpan dan membagikan semua perubahan yang telah selesai dilakukan, jalankan perintah git berikut dari root direktori proyek Anda:
-
-1. Periksa status berkas yang berubah:
-   ```bash
-   git status
-   ```
-
-2. Tambahkan semua perubahan baru dan pembersihan berkas:
-   ```bash
-   git add .
-   ```
-
-3. Lakukan commit perubahan dengan pesan deskriptif:
-   ```bash
-   git commit -m "feat: integrasi list-staff ysbmo, perbaikan keamanan snyk, pembersihan lockfile redundan, dan pembaruan readme komprehensif"
-   ```
-
-4. Push commit Anda ke remote repository branch Anda (contoh: main):
-   ```bash
-   git push origin main
-   ```
