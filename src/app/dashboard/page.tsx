@@ -16,6 +16,7 @@ export default function DashboardOverview() {
   const { applicants } = usePPDB();
   const [hoveredSegment, setHoveredSegment] = useState<number | null>(null);
   const [chartType, setChartType] = useState<"donut" | "bar">("donut");
+  const [hoveredTrendIdx, setHoveredTrendIdx] = useState<number | null>(null);
 
   const totalCount = applicants.length;
   const approvedCount = applicants.filter((a: any) => a.status === "Approved").length;
@@ -138,9 +139,9 @@ export default function DashboardOverview() {
   const trend = getTrendData();
   const maxTrendVal = Math.max(...trend.counts, 10);
 
-  const width = 500;
-  const height = 150;
-  const padding = 25;
+  const width = 800;
+  const height = 250;
+  const padding = 30;
   const points = trend.counts.map((val, idx) => {
     const divisor = trend.counts.length - 1 || 1;
     const x = padding + (idx * (width - padding * 2)) / divisor;
@@ -193,7 +194,7 @@ export default function DashboardOverview() {
         <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800/60 rounded-3xl p-6 relative overflow-hidden shadow-[0_2px_12px_rgba(0,0,0,0.02)] hover:shadow-[0_8px_20px_rgba(0,0,0,0.04)] hover:border-amber-500/30 transition-all duration-300 group">
           <div className="absolute top-0 right-0 w-24 h-24 rounded-full bg-amber-500/5 blur-2xl group-hover:bg-amber-500/10 transition-all"></div>
           <div className="flex items-center justify-between mb-4">
-            <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400 dark:text-slate-500">Menunggu Verifikasi</span>
+            <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400 dark:text-slate-550">Menunggu Verifikasi</span>
             <div className="w-10 h-10 rounded-2xl bg-amber-50 dark:bg-amber-950/50 text-amber-600 dark:text-amber-400 flex items-center justify-center">
               <Clock size={20} />
             </div>
@@ -229,7 +230,7 @@ export default function DashboardOverview() {
                 {trendView === "bulan" && "Tren Registrasi Bulanan"}
                 {trendView === "periode" && "Tren Registrasi Per Periode"}
               </h3>
-              <p className="text-[11px] text-slate-400 dark:text-slate-500 font-bold">
+              <p className="text-[11px] text-slate-400 dark:text-slate-550 font-bold">
                 {trendView === "hari" && "Statistik pendaftaran calon siswa 7 hari terakhir"}
                 {trendView === "minggu" && "Statistik pendaftaran calon siswa 4 minggu terakhir"}
                 {trendView === "bulan" && "Statistik pendaftaran calon siswa 6 bulan terakhir"}
@@ -245,8 +246,8 @@ export default function DashboardOverview() {
                   onClick={() => setTrendView(view)}
                   className={`px-3 py-1.5 rounded-xl text-[9px] font-black uppercase tracking-wider transition-all ${
                     trendView === view
-                      ? "bg-white dark:bg-slate-900 text-blue-650 dark:text-white shadow-sm border border-slate-200/40 dark:border-white/5"
-                      : "text-slate-500 dark:text-slate-450 hover:text-slate-850 dark:hover:text-white"
+                      ? "bg-white dark:bg-slate-900 text-blue-600 dark:text-white shadow-sm border border-slate-200/40 dark:border-white/5"
+                      : "text-slate-500 dark:text-slate-400 hover:text-slate-850 dark:hover:text-white"
                   }`}
                 >
                   {view}
@@ -256,7 +257,7 @@ export default function DashboardOverview() {
           </div>
 
           {/* SVG Line/Area Chart */}
-          <div className="relative w-full h-[180px] mt-4 flex items-end">
+          <div className="relative w-full h-[280px] mt-4 flex items-end">
             <svg viewBox={`0 0 ${width} ${height}`} className="w-full h-full overflow-visible">
               {/* Grid Lines */}
               {[0, 0.25, 0.5, 0.75, 1].map((ratio, idx) => {
@@ -269,8 +270,8 @@ export default function DashboardOverview() {
                     x2={width - padding}
                     y2={yVal}
                     stroke="currentColor"
-                    className="text-slate-100 dark:text-slate-800/50"
-                    strokeWidth="1.5"
+                    className="text-slate-100 dark:text-slate-800/30"
+                    strokeWidth="1"
                     strokeDasharray="4 4"
                   />
                 );
@@ -279,10 +280,33 @@ export default function DashboardOverview() {
               {/* Area Gradient */}
               <defs>
                 <linearGradient id="chartGlow" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="#3b82f6" stopOpacity="0.2" />
+                  <stop offset="0%" stopColor="#3b82f6" stopOpacity="0.25" />
                   <stop offset="100%" stopColor="#3b82f6" stopOpacity="0.0" />
                 </linearGradient>
               </defs>
+
+              {/* Interactive Dashed Guideline */}
+              {hoveredTrendIdx !== null && points[hoveredTrendIdx] && (
+                <g>
+                  <line
+                    x1={points[hoveredTrendIdx].x}
+                    y1={padding}
+                    x2={points[hoveredTrendIdx].x}
+                    y2={height - padding}
+                    stroke="#3b82f6"
+                    strokeWidth="1.5"
+                    strokeDasharray="4 4"
+                    className="text-blue-500/60"
+                  />
+                  <circle
+                    cx={points[hoveredTrendIdx].x}
+                    cy={points[hoveredTrendIdx].y}
+                    r="9"
+                    fill="#3b82f6"
+                    className="opacity-25 animate-ping"
+                  />
+                </g>
+              )}
 
               {/* Glowing Area Fill */}
               {areaPath && <path d={areaPath} fill="url(#chartGlow)" />}
@@ -293,7 +317,7 @@ export default function DashboardOverview() {
                   d={linePath}
                   fill="none"
                   stroke="#3b82f6"
-                  strokeWidth="3"
+                  strokeWidth="3.5"
                   strokeLinecap="round"
                   strokeLinejoin="round"
                 />
@@ -301,51 +325,70 @@ export default function DashboardOverview() {
 
               {/* Interacting Data Dots */}
               {points.map((p, idx) => (
-                <g key={idx} className="group/dot cursor-pointer">
+                <g 
+                  key={idx} 
+                  className="cursor-pointer"
+                  onMouseEnter={() => setHoveredTrendIdx(idx)}
+                  onMouseLeave={() => setHoveredTrendIdx(null)}
+                >
                   <circle
                     cx={p.x}
                     cy={p.y}
-                    r="5"
-                    fill="#3b82f6"
-                    stroke="currentColor"
-                    className="text-white dark:text-slate-900 transition-all duration-300 group-hover/dot:r-7 group-hover/dot:fill-white"
-                    strokeWidth="2.5"
+                    r={hoveredTrendIdx === idx ? "7" : "5"}
+                    fill={hoveredTrendIdx === idx ? "#ffffff" : "#3b82f6"}
+                    stroke="#3b82f6"
+                    className="transition-all duration-200"
+                    strokeWidth="3"
                   />
-                  {/* Tooltip Overlay */}
-                  <rect
-                    x={p.x - 18}
-                    y={p.y - 30}
-                    width="36"
-                    height="20"
-                    rx="6"
-                    fill="currentColor"
-                    className="text-slate-900 dark:text-slate-800 shadow-md opacity-0 group-hover/dot:opacity-100 transition-opacity duration-200"
-                    stroke="rgba(255,255,255,0.15)"
-                    strokeWidth="1"
-                  />
-                  <text
-                    x={p.x}
-                    y={p.y - 17}
-                    fill="#ffffff"
-                    fontSize="9"
-                    fontWeight="black"
-                    textAnchor="middle"
-                    className="opacity-0 group-hover/dot:opacity-100 transition-opacity duration-200"
-                  >
-                    {p.val}
-                  </text>
                 </g>
               ))}
+
+              {/* Guideline Tooltip Card (Interactive Details) */}
+              {hoveredTrendIdx !== null && points[hoveredTrendIdx] && (
+                <g className="pointer-events-none">
+                  <rect
+                    x={points[hoveredTrendIdx].x - 65}
+                    y={points[hoveredTrendIdx].y - 50}
+                    width="130"
+                    height="38"
+                    rx="8"
+                    fill="#1e293b"
+                    className="shadow-xl"
+                    stroke="#3b82f6"
+                    strokeWidth="1.5"
+                  />
+                  <text
+                    x={points[hoveredTrendIdx].x}
+                    y={points[hoveredTrendIdx].y - 37}
+                    fill="#ffffff"
+                    fontSize="9.5"
+                    fontWeight="black"
+                    textAnchor="middle"
+                  >
+                    {trend.labels[hoveredTrendIdx]}
+                  </text>
+                  <text
+                    x={points[hoveredTrendIdx].x}
+                    y={points[hoveredTrendIdx].y - 23}
+                    fill="#38bdf8"
+                    fontSize="10"
+                    fontWeight="black"
+                    textAnchor="middle"
+                  >
+                    {points[hoveredTrendIdx].val} Pendaftar
+                  </text>
+                </g>
+              )}
 
               {/* Day Labels */}
               {points.map((p, idx) => (
                 <text
                   key={idx}
                   x={p.x}
-                  y={height - 4}
+                  y={height - 6}
                   fill="currentColor"
-                  className="text-slate-400 dark:text-slate-600"
-                  fontSize="8"
+                  className="text-slate-400 dark:text-slate-650"
+                  fontSize="8.5"
                   fontWeight="bold"
                   textAnchor="middle"
                 >
