@@ -14,6 +14,10 @@ export const metadata = {
   description: "Selamat datang di Portal PPDB Online SMK Taruna Bhakti Depok. Pendaftaran mudah, cepat, transparan, dan terintegrasi untuk calon taruna-taruni baru bidang IT dan Elektronika.",
   keywords: ["PPDB", "SMK Taruna Bhakti", "SMK TB", "Pendaftaran SMK", "Depok", "Sekolah IT"],
   authors: [{ name: "SMK Taruna Bhakti Depok" }],
+  icons: {
+    icon: "/logo_smktb.png",
+    apple: "/logo_smktb.png",
+  },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
