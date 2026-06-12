@@ -2,13 +2,17 @@
 
 import React, { useState, useEffect, useMemo } from "react";
 import { usePPDB } from "@/context/PPDBContext";
-import DOMPurify from "dompurify";
+import dompurify from "dompurify";
 
 const sanitizeUrl = (url: string | undefined | null): string => {
   if (!url) return "";
-  return DOMPurify.sanitize(url, {
-    ALLOWED_URI_REGEXP: /^(?:https?:\/\/|\/|data:image\/|data:application\/pdf|data:video\/)/i
-  });
+  try {
+    return dompurify.sanitize(url, {
+      ALLOWED_URI_REGEXP: /^(?:https?:\/\/|\/|data:image\/|data:application\/pdf|data:video\/)/i
+    });
+  } catch (e) {
+    return "";
+  }
 };
 
 const sanitizeSrc = (src: string | undefined | null): string => sanitizeUrl(src);

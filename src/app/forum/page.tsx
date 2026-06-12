@@ -15,13 +15,17 @@ import {
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import BlurText from '../../components/BlurText';
-import DOMPurify from "dompurify";
+import dompurify from "dompurify";
 
 const sanitizeUrl = (url: string | undefined | null): string => {
   if (!url) return "";
-  return DOMPurify.sanitize(url, {
-    ALLOWED_URI_REGEXP: /^(?:https?:\/\/|\/|data:image\/|data:application\/pdf|data:video\/)/i
-  });
+  try {
+    return dompurify.sanitize(url, {
+      ALLOWED_URI_REGEXP: /^(?:https?:\/\/|\/|data:image\/|data:application\/pdf|data:video\/)/i
+    });
+  } catch (e) {
+    return "";
+  }
 };
 
 const sanitizeSrc = (src: string | undefined | null): string => sanitizeUrl(src);

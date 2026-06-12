@@ -4,13 +4,17 @@ import React, { useEffect, useState, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { Printer, ArrowLeft, Phone } from "lucide-react";
 import Link from "next/link";
-import DOMPurify from "dompurify";
+import dompurify from "dompurify";
 
 const sanitizeUrl = (url: string | undefined | null): string => {
   if (!url) return "";
-  return DOMPurify.sanitize(url, {
-    ALLOWED_URI_REGEXP: /^(?:https?:\/\/|\/|data:image\/|data:application\/pdf|data:video\/)/i
-  });
+  try {
+    return dompurify.sanitize(url, {
+      ALLOWED_URI_REGEXP: /^(?:https?:\/\/|\/|data:image\/|data:application\/pdf|data:video\/)/i
+    });
+  } catch (e) {
+    return "";
+  }
 };
 
 function InvoiceContent() {

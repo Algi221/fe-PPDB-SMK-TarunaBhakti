@@ -4,13 +4,17 @@ import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { ArrowRight, Check, Upload, ArrowLeft, Home, Monitor, Code, Palette, Film, Cpu, Sun, Moon, CreditCard, ShieldCheck, Sparkles, X, FileText, AlertCircle, Phone, Copy, ChevronRight, Building, CheckCircle2, DollarSign, Printer, User, Users, Pencil, School, HelpCircle, Clock } from "lucide-react";
 import { usePPDB } from "@/context/PPDBContext";
-import DOMPurify from "dompurify";
+import dompurify from "dompurify";
 
 const sanitizeUrl = (url: string | undefined | null): string => {
   if (!url) return "";
-  return DOMPurify.sanitize(url, {
-    ALLOWED_URI_REGEXP: /^(?:https?:\/\/|\/|data:image\/|data:application\/pdf|data:video\/)/i
-  });
+  try {
+    return dompurify.sanitize(url, {
+      ALLOWED_URI_REGEXP: /^(?:https?:\/\/|\/|data:image\/|data:application\/pdf|data:video\/)/i
+    });
+  } catch (e) {
+    return "";
+  }
 };
 
 const getMajorDetails = (majorName: string) => {
