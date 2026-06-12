@@ -54,8 +54,14 @@ interface ClassItem {
 }
 
 export default function ClassDivisionManagement() {
-  const { applicants, updateApplicant, fetchAdminApplicants } = usePPDB();
+  const { activeStudents, updateActiveStudent, fetchActiveStudents, fetchAdminApplicants } = usePPDB();
   const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    if (typeof fetchActiveStudents === "function") {
+      fetchActiveStudents();
+    }
+  }, [fetchActiveStudents]);
 
   const getMajorLogoUrl = (code: string) => {
     switch (code.toUpperCase()) {
@@ -276,11 +282,8 @@ export default function ClassDivisionManagement() {
   };
 
   const approvedApplicantsOfMajor = useMemo(() => {
-    return applicants.filter((a: Applicant) => {
-      const isApproved = a.status === "Approved";
-      if (!isApproved) return false;
-
-      const maj1 = (a.jurusan_1 || a.jurusan1 || "").toUpperCase();
+    return activeStudents.filter((a: Applicant) => {
+      const maj1 = (a.jurusan || a.jurusan_1 || a.jurusan1 || "").toUpperCase();
       
       const majorNameMap: Record<string, string> = {
         RPL: "REKAYASA PERANGKAT LUNAK",
@@ -333,7 +336,7 @@ export default function ClassDivisionManagement() {
 
       return isMajorMatch;
     });
-  }, [applicants, selectedMajor]);
+  }, [activeStudents, selectedMajor]);
 
   const filteredStudents = useMemo(() => {
     return approvedApplicantsOfMajor.filter((a: Applicant) => {
@@ -368,7 +371,7 @@ export default function ClassDivisionManagement() {
       enrollmentCounts[c.name] = 0;
     });
 
-    applicants.forEach((a: Applicant) => {
+    activeStudents.forEach((a: Applicant) => {
       const cls = getStudentCurrentClass(a);
       if (cls && enrollmentCounts[cls] !== undefined) {
         enrollmentCounts[cls]++;
@@ -376,7 +379,7 @@ export default function ClassDivisionManagement() {
     });
 
     return enrollmentCounts;
-  }, [applicants, classesOfSelectedMajor, schoolPeriod]);
+  }, [activeStudents, classesOfSelectedMajor, schoolPeriod]);
 
   const totalClassesFilled = useMemo(() => {
     return classesOfSelectedMajor.filter(c => (classEnrollments[c.name] || 0) > 0).length;
@@ -384,7 +387,7 @@ export default function ClassDivisionManagement() {
 
   const enrolledStudentsInDetail = useMemo(() => {
     if (!selectedClassDetail) return [];
-    return applicants.filter((a: Applicant) => {
+    return activeStudents.filter((a: Applicant) => {
       const cls = getStudentCurrentClass(a);
       const isClassMatch = cls === selectedClassDetail.name;
       if (!isClassMatch) return false;
@@ -393,7 +396,7 @@ export default function ClassDivisionManagement() {
                             (a.nisn || "").includes(classSearchTerm);
       return matchesSearch;
     });
-  }, [applicants, selectedClassDetail, classSearchTerm, schoolPeriod]);
+  }, [activeStudents, selectedClassDetail, classSearchTerm, schoolPeriod]);
 
   const handleSelectAll = () => {
     if (selectedStudentIds.length === filteredStudents.length) {
@@ -422,14 +425,14 @@ export default function ClassDivisionManagement() {
 
     for (let i = 0; i < total; i++) {
       const id = selectedStudentIds[i];
-      const student = applicants.find((a: Applicant) => a.id === id);
+      const student = activeStudents.find((a: Applicant) => a.id === id);
       
       const payload = {
         diterima_kelas: className || null,
         diterima_tanggal: className ? new Date().toISOString().split("T")[0] : null
       };
 
-      const result = await updateApplicant(id, payload);
+      const result = await updateActiveStudent(id, payload);
       
       if (result?.success) {
         successCount++;
@@ -440,7 +443,7 @@ export default function ClassDivisionManagement() {
 
     setIsLoading(false);
     setSelectedStudentIds([]);
-    await fetchAdminApplicants();
+    await fetchActiveStudents();
     
     if (successCount === total) {
       showToast(`Sukses memindahkan ${successCount} siswa ke kelas ${className || "Belum Ditentukan"}!`);
@@ -509,7 +512,7 @@ export default function ClassDivisionManagement() {
           diterima_kelas: className,
           diterima_tanggal: new Date().toISOString().split("T")[0]
         };
-        const result = await updateApplicant(id, payload);
+        const result = await updateActiveStudent(id, payload);
         if (result?.success) {
           successCount++;
         }
@@ -518,7 +521,7 @@ export default function ClassDivisionManagement() {
 
       setIsLoading(false);
       setSelectedStudentIds([]);
-      await fetchAdminApplicants();
+      await fetchActiveStudents();
 
       if (successCount === total) {
         showToast(`Sukses memindahkan ${successCount} siswa ke kelas ${className}!`);
@@ -583,7 +586,7 @@ export default function ClassDivisionManagement() {
 
   const handleRemoveStudentFromClassDetail = async (studentId: number, studentNama: string) => {
     if (confirm(`Keluarkan ${studentNama} dari kelas ${selectedClassDetail?.name}?`)) {
-      const result = await updateApplicant(studentId, {
+      const result = await updateActiveStudent(studentId, {
         diterima_kelas: null,
         diterima_tanggal: null
       });
@@ -597,7 +600,7 @@ export default function ClassDivisionManagement() {
   };
 
   const handleExportClassCSV = async (className: string) => {
-    const classStudents = applicants.filter((a: Applicant) => {
+    const classStudents = activeStudents.filter((a: Applicant) => {
       const cls = getStudentCurrentClass(a);
       return cls === className;
     });
@@ -693,7 +696,7 @@ export default function ClassDivisionManagement() {
     let totalStudentsExported = 0;
 
     classesToExport.forEach((c) => {
-      const classStudents = applicants.filter((a: Applicant) => {
+      const classStudents = activeStudents.filter((a: Applicant) => {
         return getStudentCurrentClass(a) === c.name;
       });
 

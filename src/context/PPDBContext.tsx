@@ -20,6 +20,7 @@ interface WsLog {
 interface PPDBContextType {
   applicants: any[];
   publicApplicants: any[];
+  activeStudents: any[];
   adminToken: string | null;
   adminUser: any | null;
   wsStatus: string;
@@ -32,10 +33,13 @@ interface PPDBContextType {
   rejectApplicant: (id: number) => Promise<void>;
   deleteApplicant: (id: number) => Promise<void>;
   updateApplicant: (id: number, updatedData: any) => Promise<{ success: boolean; data?: any; message?: string }>;
+  updateActiveStudent: (id: number, updatedData: any) => Promise<{ success: boolean; data?: any; message?: string }>;
+  deleteActiveStudent: (id: number) => Promise<void>;
   loginAdmin: (username: string, password: string) => Promise<{ success: boolean; message?: string }>;
   logoutAdmin: () => void;
   fetchPublicApplicants: () => Promise<void>;
   fetchAdminApplicants: () => Promise<void>;
+  fetchActiveStudents: () => Promise<void>;
   simulateRegistration: () => Promise<void>;
   addToast: (title: string, message: string, type?: string) => void;
   checkPaymentStatus: (nisn: string) => Promise<any>;
@@ -49,6 +53,7 @@ const WS_URL = typeof window !== 'undefined' ? `ws://${window.location.hostname}
 export function PPDBProvider({ children }: { children: React.ReactNode }) {
   const [applicants, setApplicants] = useState<any[]>([]);
   const [publicApplicants, setPublicApplicants] = useState<any[]>([]);
+  const [activeStudents, setActiveStudents] = useState<any[]>([]);
   const [adminToken, setAdminToken] = useState<string | null>(() => {
     if (typeof window !== 'undefined') return localStorage.getItem("ppdb_admin_token") || null;
     return null;
@@ -189,6 +194,26 @@ export function PPDBProvider({ children }: { children: React.ReactNode }) {
     }
   }, [adminToken, logoutAdmin]);
 
+  const fetchActiveStudents = useCallback(async () => {
+    const token = adminToken || localStorage.getItem("ppdb_admin_token");
+    if (!token) return;
+    try {
+      const res = await fetch(`${BACKEND_URL}/api/siswa-aktif`, {
+        headers: { "Authorization": `Bearer ${token}` }
+      });
+      if (res.status === 401) {
+        console.warn("Token is invalid or expired. Logging out admin.");
+        logoutAdmin();
+        return;
+      }
+      const data = await res.json();
+      if (data.success) setActiveStudents(data.data);
+    } catch (err: any) {
+      console.warn("Active students API fetch error:", err.message);
+    }
+  }, [adminToken, logoutAdmin]);
+
+
   const registerApplicant = useCallback(async (formData: any) => {
     try {
       const res = await fetch(`${BACKEND_URL}/api/applicants`, {
@@ -236,6 +261,7 @@ export function PPDBProvider({ children }: { children: React.ReactNode }) {
         addToast("Applicant Approved", `Pendaftar #${id} telah berhasil diverifikasi!`, "success");
         await fetchAdminApplicants();
         await fetchPublicApplicants();
+        await fetchActiveStudents();
       } else {
         addToast("Gagal Memverifikasi", data.message || "Gagal memperbarui status pendaftar.", "danger");
       }
@@ -245,7 +271,7 @@ export function PPDBProvider({ children }: { children: React.ReactNode }) {
       setPublicApplicants(prev => prev.map(a => a.id === id ? { ...a, status: "Approved" } : a));
       addToast("Applicant Approved (Offline)", `Pendaftar #${id} disetujui.`, "success");
     }
-  }, [adminToken, fetchAdminApplicants, fetchPublicApplicants, addToast]);
+  }, [adminToken, fetchAdminApplicants, fetchPublicApplicants, fetchActiveStudents, addToast]);
 
   const rejectApplicant = useCallback(async (id: number) => {
     const token = adminToken || localStorage.getItem("ppdb_admin_token");
@@ -261,6 +287,7 @@ export function PPDBProvider({ children }: { children: React.ReactNode }) {
         addToast("Applicant Rejected", `Calon siswa #${id} telah ditolak.`, "warning");
         await fetchAdminApplicants();
         await fetchPublicApplicants();
+        await fetchActiveStudents();
       } else {
         addToast("Gagal Menolak", data.message || "Gagal memperbarui status pendaftar.", "danger");
       }
@@ -270,7 +297,7 @@ export function PPDBProvider({ children }: { children: React.ReactNode }) {
       setPublicApplicants(prev => prev.filter(a => a.id !== id));
       addToast("Applicant Rejected (Offline)", `Calon siswa #${id} ditolak.`, "warning");
     }
-  }, [adminToken, fetchAdminApplicants, fetchPublicApplicants, addToast]);
+  }, [adminToken, fetchAdminApplicants, fetchPublicApplicants, fetchActiveStudents, addToast]);
 
   const deleteApplicant = useCallback(async (id: number) => {
     const token = adminToken || localStorage.getItem("ppdb_admin_token");
@@ -285,6 +312,7 @@ export function PPDBProvider({ children }: { children: React.ReactNode }) {
         addToast("Applicant Deleted", `Data pendaftar #${id} telah dihapus permanen.`, "danger");
         await fetchAdminApplicants();
         await fetchPublicApplicants();
+        await fetchActiveStudents();
       } else {
         addToast("Gagal Menghapus", data.message || "Gagal menghapus data pendaftar.", "danger");
       }
@@ -294,7 +322,7 @@ export function PPDBProvider({ children }: { children: React.ReactNode }) {
       setPublicApplicants(prev => prev.filter(a => a.id !== id));
       addToast("Applicant Deleted (Offline)", `Pendaftar #${id} dihapus.`, "danger");
     }
-  }, [adminToken, fetchAdminApplicants, fetchPublicApplicants, addToast]);
+  }, [adminToken, fetchAdminApplicants, fetchPublicApplicants, fetchActiveStudents, addToast]);
 
   const updateApplicant = useCallback(async (id: number, updatedData: any) => {
     const token = adminToken || localStorage.getItem("ppdb_admin_token");
@@ -310,6 +338,7 @@ export function PPDBProvider({ children }: { children: React.ReactNode }) {
         addToast("Data Diperbarui", `Data pendaftar ${updatedData.nama || '#' + id} berhasil disimpan.`, "success");
         await fetchAdminApplicants();
         await fetchPublicApplicants();
+        await fetchActiveStudents();
         return { success: true, data: data.data };
       } else {
         return { success: false, message: data.message };
@@ -322,7 +351,56 @@ export function PPDBProvider({ children }: { children: React.ReactNode }) {
       addToast("Data Diperbarui (Offline)", `Perubahan data tersimpan lokal.`, "success");
       return { success: true, data: { id, ...updatedData } };
     }
-  }, [adminToken, fetchAdminApplicants, fetchPublicApplicants, addToast]);
+  }, [adminToken, fetchAdminApplicants, fetchPublicApplicants, fetchActiveStudents, addToast]);
+
+  const updateActiveStudent = useCallback(async (id: number, updatedData: any) => {
+    const token = adminToken || localStorage.getItem("ppdb_admin_token");
+    if (!token) return { success: false, message: "Tidak terautentikasi." };
+    try {
+      const res = await fetch(`${BACKEND_URL}/api/siswa-aktif/${id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
+        body: JSON.stringify(updatedData)
+      });
+      const data = await res.json();
+      if (data.success) {
+        addToast("Data Diperbarui", `Data siswa aktif ${updatedData.nama || '#' + id} berhasil disimpan.`, "success");
+        await fetchActiveStudents();
+        await fetchAdminApplicants();
+        return { success: true, data: data.data };
+      } else {
+        return { success: false, message: data.message };
+      }
+    } catch (err: any) {
+      console.error("API active student update error:", err.message);
+      setActiveStudents(prev => prev.map(a => a.id === id ? { ...a, ...updatedData } : a));
+      addToast("Data Diperbarui (Offline)", `Perubahan data tersimpan lokal.`, "success");
+      return { success: true, data: { id, ...updatedData } };
+    }
+  }, [adminToken, fetchActiveStudents, fetchAdminApplicants, addToast]);
+
+  const deleteActiveStudent = useCallback(async (id: number) => {
+    const token = adminToken || localStorage.getItem("ppdb_admin_token");
+    if (!token) return;
+    try {
+      const res = await fetch(`${BACKEND_URL}/api/siswa-aktif/${id}`, {
+        method: "DELETE",
+        headers: { "Authorization": `Bearer ${token}` }
+      });
+      const data = await res.json();
+      if (data.success) {
+        addToast("Siswa Dihapus", `Siswa aktif #${id} telah dihapus.`, "danger");
+        await fetchActiveStudents();
+        await fetchAdminApplicants();
+      } else {
+        addToast("Gagal Menghapus", data.message || "Gagal menghapus siswa aktif.", "danger");
+      }
+    } catch (err: any) {
+      console.error("API active student delete error:", err.message);
+      setActiveStudents(prev => prev.filter(a => a.id !== id));
+      addToast("Siswa Dihapus (Offline)", `Siswa aktif #${id} dihapus.`, "danger");
+    }
+  }, [adminToken, fetchActiveStudents, fetchAdminApplicants, addToast]);
 
   const loginAdmin = useCallback(async (username: string, password: string) => {
     try {
@@ -540,10 +618,11 @@ export function PPDBProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     if (!adminToken) return;
     fetchAdminApplicants();
+    fetchActiveStudents();
     if (typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'default') {
       Notification.requestPermission();
     }
-  }, [adminToken, fetchAdminApplicants]);
+  }, [adminToken, fetchAdminApplicants, fetchActiveStudents]);
 
   useEffect(() => {
     if (!adminToken) return;
@@ -570,6 +649,7 @@ export function PPDBProvider({ children }: { children: React.ReactNode }) {
       value={{
         applicants,
         publicApplicants,
+        activeStudents,
         adminToken,
         adminUser,
         wsStatus,
@@ -582,10 +662,13 @@ export function PPDBProvider({ children }: { children: React.ReactNode }) {
         rejectApplicant,
         deleteApplicant,
         updateApplicant,
+        updateActiveStudent,
+        deleteActiveStudent,
         loginAdmin,
         logoutAdmin,
         fetchPublicApplicants,
         fetchAdminApplicants,
+        fetchActiveStudents,
         simulateRegistration,
         addToast,
         checkPaymentStatus

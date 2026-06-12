@@ -150,13 +150,13 @@ interface Applicant {
 }
 
 export default function ActiveStudentsDirectory() {
-  const { applicants, addToast, fetchAdminApplicants } = usePPDB();
+  const { activeStudents, addToast, fetchActiveStudents } = usePPDB();
 
   useEffect(() => {
-    if (typeof fetchAdminApplicants === "function") {
-      fetchAdminApplicants();
+    if (typeof fetchActiveStudents === "function") {
+      fetchActiveStudents();
     }
-  }, [fetchAdminApplicants]);
+  }, [fetchActiveStudents]);
   const [searchTerm, setSearchTerm] = useState<string>("");
   const [majorFilter, setMajorFilter] = useState<string>("ALL");
   const [expandedPeriods, setExpandedPeriods] = useState<Record<string, boolean>>({});
@@ -198,8 +198,8 @@ export default function ActiveStudentsDirectory() {
   }, [selectedApplicant]);
 
   const activeApplicants = useMemo(() => {
-    return applicants.filter((a: Applicant) => a.status === "Approved" && !!(a.diterima_kelas || a.diterimaKelas));
-  }, [applicants]);
+    return activeStudents.filter((a: Applicant) => !!(a.diterima_kelas || a.diterimaKelas));
+  }, [activeStudents]);
 
   const filteredApplicants = useMemo(() => {
     return activeApplicants.filter((a: Applicant) => {
@@ -211,11 +211,10 @@ export default function ActiveStudentsDirectory() {
       
       if (majorFilter === "ALL") return searchMatch;
       
-      const maj1 = (a.jurusan_1 || a.jurusan1 || "").toLowerCase();
-      const maj2 = (a.jurusan_2 || a.jurusan2 || "").toLowerCase();
+      const maj = (a.jurusan || a.jurusan_1 || a.jurusan1 || "").toLowerCase();
       const target = majorFilter.toLowerCase();
       
-      const majorMatch = maj1.includes(target) || maj2.includes(target);
+      const majorMatch = maj.includes(target);
       return searchMatch && majorMatch;
     });
   }, [activeApplicants, searchTerm, majorFilter]);
@@ -275,7 +274,7 @@ export default function ActiveStudentsDirectory() {
 
     const majors: Record<string, number> = {};
     activeApplicants.forEach(a => {
-      const choice = a.jurusan_1 || a.jurusan1 || "Lainnya";
+      const choice = a.jurusan || a.jurusan_1 || a.jurusan1 || "Lainnya";
       majors[choice] = (majors[choice] || 0) + 1;
     });
 
@@ -350,7 +349,7 @@ export default function ActiveStudentsDirectory() {
           nisn: a.nisn || "",
           nik: a.nik || "",
           sekolah: a.sekolah_asal || a.sekolahAsal || "",
-          jurusan: a.jurusan_1 || a.jurusan1 || "",
+          jurusan: a.jurusan || a.jurusan_1 || a.jurusan1 || "",
           kelas: a.diterima_kelas || a.diterimaKelas || "-",
           whatsapp: a.whatsapp || "",
           email: a.email || "",
@@ -627,7 +626,7 @@ export default function ActiveStudentsDirectory() {
                                 <td className="py-3.5 px-4 uppercase">{student.sekolah_asal || student.sekolahAsal || "-"}</td>
                                 <td className="py-3.5 px-4">
                                   <div className="flex flex-col gap-0.5 text-left">
-                                    <span className="text-blue-600 dark:text-blue-400 font-extrabold uppercase">{student.jurusan_1 || student.jurusan1}</span>
+                                    <span className="text-blue-600 dark:text-blue-400 font-extrabold uppercase">{student.jurusan || student.jurusan_1 || student.jurusan1}</span>
                                     {(student.diterima_kelas || student.diterimaKelas) && (
                                       <span className="inline-flex items-center w-fit px-2 py-0.5 rounded-md bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-250 dark:border-emerald-900/40 text-emerald-600 dark:text-emerald-400 text-[8px] font-black uppercase tracking-wider mt-1">
                                         Kelas: {student.diterima_kelas || student.diterimaKelas}
@@ -898,8 +897,7 @@ export default function ActiveStudentsDirectory() {
                       <Layers size={12} className="text-blue-500" /> Pilihan Minat Studi
                     </h4>
                     <div className="space-y-4">
-                      <div><span className="text-slate-400 dark:text-slate-550 block mb-0.5 font-bold uppercase text-[9px] tracking-wider">Program Studi Pilihan Utama</span> <span className="text-blue-600 dark:text-blue-400 text-sm font-extrabold uppercase">{selectedApplicant.jurusan_1 || selectedApplicant.jurusan1}</span></div>
-                      <div><span className="text-slate-400 dark:text-slate-555 block mb-0.5 font-bold uppercase text-[9px] tracking-wider">Program Studi Pilihan Cadangan</span> <span className="text-slate-500 dark:text-slate-400 text-sm font-extrabold uppercase">{selectedApplicant.jurusan_2 || selectedApplicant.jurusan2}</span></div>
+                      <div><span className="text-slate-400 dark:text-slate-550 block mb-0.5 font-bold uppercase text-[9px] tracking-wider">Kompetensi Keahlian / Jurusan</span> <span className="text-blue-600 dark:text-blue-400 text-sm font-extrabold uppercase">{selectedApplicant.jurusan || selectedApplicant.jurusan_1 || selectedApplicant.jurusan1}</span></div>
                       <div><span className="text-slate-400 dark:text-slate-555 block mb-0.5 font-bold uppercase text-[9px] tracking-wider">Alasan Memilih Jurusan</span> <span className="text-slate-800 dark:text-white font-extrabold">{selectedApplicant.alasan_memilih || selectedApplicant.alasanMemilih || "Ingin belajar IT"}</span></div>
                     </div>
                   </div>

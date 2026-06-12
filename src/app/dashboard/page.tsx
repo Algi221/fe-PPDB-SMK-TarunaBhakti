@@ -14,13 +14,13 @@ interface MajorItem {
 }
 
 export default function DashboardOverview() {
-  const { applicants } = usePPDB();
+  const { applicants, activeStudents } = usePPDB();
   const [hoveredSegment, setHoveredSegment] = useState<number | null>(null);
   const [chartType, setChartType] = useState<"donut" | "bar">("donut");
   const [hoveredTrendIdx, setHoveredTrendIdx] = useState<number | null>(null);
 
   const totalCount = applicants.length;
-  const approvedCount = applicants.filter((a: any) => a.status === "Approved").length;
+  const approvedCount = activeStudents.length;
   const pendingCount = applicants.filter((a: any) => a.status === "Pending" || !a.status).length;
   const rejectedCount = applicants.filter((a: any) => a.status === "Rejected").length;
 
