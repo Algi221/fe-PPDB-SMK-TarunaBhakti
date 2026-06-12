@@ -320,12 +320,10 @@ export default function ActiveStudentsDirectory() {
         { header: 'NISN', key: 'nisn', width: 25 },
         { header: 'NIK', key: 'nik', width: 25 },
         { header: 'Asal Sekolah', key: 'sekolah', width: 35 },
-        { header: 'Pilihan Jurusan 1', key: 'jurusan1', width: 35 },
-        { header: 'Pilihan Jurusan 2', key: 'jurusan2', width: 35 },
+        { header: 'Jurusan', key: 'jurusan', width: 35 },
+        { header: 'Kelas', key: 'kelas', width: 20 },
         { header: 'No. WhatsApp', key: 'whatsapp', width: 25 },
         { header: 'Email', key: 'email', width: 35 },
-        { header: 'Status Pembayaran', key: 'payment_status', width: 25 },
-        { header: 'Tanggal Terverifikasi', key: 'tanggal', width: 25 },
       ];
 
       const headerRow = worksheet.getRow(1);
@@ -352,12 +350,10 @@ export default function ActiveStudentsDirectory() {
           nisn: a.nisn || "",
           nik: a.nik || "",
           sekolah: a.sekolah_asal || a.sekolahAsal || "",
-          jurusan1: a.jurusan_1 || a.jurusan1 || "",
-          jurusan2: a.jurusan_2 || a.jurusan2 || "",
+          jurusan: a.jurusan_1 || a.jurusan1 || "",
+          kelas: a.diterima_kelas || a.diterimaKelas || "-",
           whatsapp: a.whatsapp || "",
           email: a.email || "",
-          payment_status: "Lunas",
-          tanggal: a.tgl_daftar ? new Date(a.tgl_daftar).toLocaleDateString("id-ID") : a.createdAt ? new Date(a.createdAt).toLocaleDateString("id-ID") : ""
         });
       });
 
@@ -369,7 +365,7 @@ export default function ActiveStudentsDirectory() {
           if (rowNumber > 1) {
             cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFFFFF' } };
             cell.border = { top: { style: 'thin' }, left: { style: 'thin' }, bottom: { style: 'thin' }, right: { style: 'thin' } };
-            if ([1, 3, 4, 8, 10, 11].includes(colNumber)) {
+            if ([1, 3, 4, 7, 8, 9].includes(colNumber)) {
               cell.alignment = { vertical: 'middle', horizontal: 'center' };
             } else {
               cell.alignment = { vertical: 'middle', horizontal: 'left', indent: 1 };
@@ -610,8 +606,7 @@ export default function ActiveStudentsDirectory() {
                               <th className="py-3 px-4 text-left">Nama Siswa</th>
                               <th className="py-3 px-4 text-left">NISN</th>
                               <th className="py-3 px-4 text-left">Asal Sekolah</th>
-                              <th className="py-3 px-4 text-left">Kompetensi Pilihan</th>
-                              <th className="py-3 px-4 text-left">Tanggal Daftar</th>
+                              <th className="py-3 px-4 text-left">Jurusan</th>
                               <th className="py-3 px-3 text-center w-24">Aksi</th>
                             </tr>
                           </thead>
@@ -633,20 +628,12 @@ export default function ActiveStudentsDirectory() {
                                 <td className="py-3.5 px-4">
                                   <div className="flex flex-col gap-0.5 text-left">
                                     <span className="text-blue-600 dark:text-blue-400 font-extrabold uppercase">{student.jurusan_1 || student.jurusan1}</span>
-                                    <span className="text-[10px] text-slate-400 dark:text-slate-550 uppercase">{student.jurusan_2 || student.jurusan2 || "-"}</span>
                                     {(student.diterima_kelas || student.diterimaKelas) && (
                                       <span className="inline-flex items-center w-fit px-2 py-0.5 rounded-md bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-250 dark:border-emerald-900/40 text-emerald-600 dark:text-emerald-400 text-[8px] font-black uppercase tracking-wider mt-1">
                                         Kelas: {student.diterima_kelas || student.diterimaKelas}
                                       </span>
                                     )}
                                   </div>
-                                </td>
-                                <td className="py-3.5 px-4 text-[10px] text-slate-400 dark:text-slate-550 font-bold uppercase tracking-wider">
-                                  {student.tgl_daftar ? new Date(student.tgl_daftar).toLocaleDateString("id-ID", {
-                                    year: "numeric",
-                                    month: "short",
-                                    day: "numeric"
-                                  }) : "-"}
                                 </td>
                                 <td className="py-3.5 px-3 text-center">
                                   <button
