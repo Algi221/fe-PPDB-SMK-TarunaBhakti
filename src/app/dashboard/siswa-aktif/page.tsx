@@ -295,65 +295,87 @@ export default function ActiveStudentsDirectory() {
     if (students.length === 0) return;
 
     const workbook = new ExcelJS.Workbook();
-    const worksheet = workbook.addWorksheet("Siswa Aktif");
-
-    worksheet.columns = [
-      { header: 'Periode Angkatan', key: 'periode', width: 20 },
-      { header: 'Nama Lengkap', key: 'nama', width: 35 },
-      { header: 'NISN', key: 'nisn', width: 25 },
-      { header: 'NIK', key: 'nik', width: 25 },
-      { header: 'Asal Sekolah', key: 'sekolah', width: 35 },
-      { header: 'Pilihan Jurusan 1', key: 'jurusan1', width: 35 },
-      { header: 'Pilihan Jurusan 2', key: 'jurusan2', width: 35 },
-      { header: 'No. WhatsApp', key: 'whatsapp', width: 25 },
-      { header: 'Email', key: 'email', width: 35 },
-      { header: 'Status Pembayaran', key: 'payment_status', width: 25 },
-      { header: 'Tanggal Terverifikasi', key: 'tanggal', width: 25 },
-    ];
-
-    const headerRow = worksheet.getRow(1);
-    headerRow.height = 35;
-    headerRow.eachCell((cell) => {
-      cell.font = { bold: true, color: { argb: 'FF000000' } };
-      cell.fill = {
-        type: 'pattern',
-        pattern: 'solid',
-        fgColor: { argb: 'FF9BC2E6' }
-      };
-      cell.alignment = { vertical: 'middle', horizontal: 'center' };
-      cell.border = { top: { style: 'thin' }, left: { style: 'thin' }, bottom: { style: 'thin' }, right: { style: 'thin' } };
-    });
-
+    
+    // Group students by period
+    const groups: Record<string, Applicant[]> = {};
     students.forEach((a: Applicant) => {
-      worksheet.addRow({
-        periode: a.periode || '2026-2027',
-        nama: a.nama || "",
-        nisn: a.nisn || "",
-        nik: a.nik || "",
-        sekolah: a.sekolah_asal || a.sekolahAsal || "",
-        jurusan1: a.jurusan_1 || a.jurusan1 || "",
-        jurusan2: a.jurusan_2 || a.jurusan2 || "",
-        whatsapp: a.whatsapp || "",
-        email: a.email || "",
-        payment_status: "Lunas",
-        tanggal: a.tgl_daftar ? new Date(a.tgl_daftar).toLocaleDateString("id-ID") : a.createdAt ? new Date(a.createdAt).toLocaleDateString("id-ID") : ""
-      });
+      const period = a.periode || '2026-2027';
+      if (!groups[period]) {
+        groups[period] = [];
+      }
+      groups[period].push(a);
     });
 
-    worksheet.eachRow((row, rowNumber) => {
-      if (rowNumber > 1) {
-        row.height = 25;
-      }
-      row.eachCell((cell, colNumber) => {
+    // Sort periods descending to have the latest period first
+    const periods = Object.keys(groups).sort((a, b) => b.localeCompare(a));
+
+    periods.forEach((period) => {
+      // Sheet name must not exceed 31 characters and cannot contain special characters like : \ / ? * [ ]
+      const sheetName = `Periode ${period.replace(/[:\\/?*\[\]]/g, '')}`.substring(0, 31);
+      const worksheet = workbook.addWorksheet(sheetName);
+
+      worksheet.columns = [
+        { header: 'Periode Angkatan', key: 'periode', width: 20 },
+        { header: 'Nama Lengkap', key: 'nama', width: 35 },
+        { header: 'NISN', key: 'nisn', width: 25 },
+        { header: 'NIK', key: 'nik', width: 25 },
+        { header: 'Asal Sekolah', key: 'sekolah', width: 35 },
+        { header: 'Pilihan Jurusan 1', key: 'jurusan1', width: 35 },
+        { header: 'Pilihan Jurusan 2', key: 'jurusan2', width: 35 },
+        { header: 'No. WhatsApp', key: 'whatsapp', width: 25 },
+        { header: 'Email', key: 'email', width: 35 },
+        { header: 'Status Pembayaran', key: 'payment_status', width: 25 },
+        { header: 'Tanggal Terverifikasi', key: 'tanggal', width: 25 },
+      ];
+
+      const headerRow = worksheet.getRow(1);
+      headerRow.height = 35;
+      headerRow.eachCell((cell) => {
+        cell.font = { bold: true, color: { argb: 'FF000000' } };
+        cell.fill = {
+          type: 'pattern',
+          pattern: 'solid',
+          fgColor: { argb: 'FF9BC2E6' }
+        };
+        cell.alignment = { vertical: 'middle', horizontal: 'center' };
+        cell.border = { top: { style: 'thin' }, left: { style: 'thin' }, bottom: { style: 'thin' }, right: { style: 'thin' } };
+      });
+
+      const periodStudents = groups[period];
+      // Sort periodStudents alphabetically by name
+      periodStudents.sort((a, b) => (a.nama || "").localeCompare(b.nama || ""));
+
+      periodStudents.forEach((a: Applicant) => {
+        worksheet.addRow({
+          periode: a.periode || '2026-2027',
+          nama: a.nama || "",
+          nisn: a.nisn || "",
+          nik: a.nik || "",
+          sekolah: a.sekolah_asal || a.sekolahAsal || "",
+          jurusan1: a.jurusan_1 || a.jurusan1 || "",
+          jurusan2: a.jurusan_2 || a.jurusan2 || "",
+          whatsapp: a.whatsapp || "",
+          email: a.email || "",
+          payment_status: "Lunas",
+          tanggal: a.tgl_daftar ? new Date(a.tgl_daftar).toLocaleDateString("id-ID") : a.createdAt ? new Date(a.createdAt).toLocaleDateString("id-ID") : ""
+        });
+      });
+
+      worksheet.eachRow((row, rowNumber) => {
         if (rowNumber > 1) {
-          cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFFFFF' } };
-          cell.border = { top: { style: 'thin' }, left: { style: 'thin' }, bottom: { style: 'thin' }, right: { style: 'thin' } };
-          if ([1, 3, 4, 8, 10, 11].includes(colNumber)) {
-            cell.alignment = { vertical: 'middle', horizontal: 'center' };
-          } else {
-            cell.alignment = { vertical: 'middle', horizontal: 'left', indent: 1 };
-          }
+          row.height = 25;
         }
+        row.eachCell((cell, colNumber) => {
+          if (rowNumber > 1) {
+            cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFFFFF' } };
+            cell.border = { top: { style: 'thin' }, left: { style: 'thin' }, bottom: { style: 'thin' }, right: { style: 'thin' } };
+            if ([1, 3, 4, 8, 10, 11].includes(colNumber)) {
+              cell.alignment = { vertical: 'middle', horizontal: 'center' };
+            } else {
+              cell.alignment = { vertical: 'middle', horizontal: 'left', indent: 1 };
+            }
+          }
+        });
       });
     });
 
