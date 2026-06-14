@@ -14,6 +14,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const [isDark, setIsDark] = useState(false);
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
 
   useEffect(() => {
     setIsMobileMenuOpen(false);
@@ -79,7 +80,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     );
   }
 
-  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
 
   const handleLogout = () => {
     setShowLogoutConfirm(true);
