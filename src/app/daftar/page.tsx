@@ -207,22 +207,6 @@ export default function DaftarPage() {
     janjiNamaBaik: "",
     deklarasi: false,
     periode: "2026-2027",
-    berkasKKOk: false,
-    berkasKKFile: null,
-    berkasKKName: "",
-    berkasKKBase64: "",
-    berkasKTPOk: false,
-    berkasKTPFile: null,
-    berkasKTPName: "",
-    berkasKTPBase64: "",
-    berkasAktaOk: false,
-    berkasAktaFile: null,
-    berkasAktaName: "",
-    berkasAktaBase64: "",
-    berkasIjazahOk: false,
-    berkasIjazahFile: null,
-    berkasIjazahName: "",
-    berkasIjazahBase64: "",
     berkasFotoOk: false,
     berkasFotoFile: null,
     berkasFotoName: "",
@@ -454,14 +438,6 @@ export default function DaftarPage() {
     if (typeof window !== "undefined" && !showPaymentGate && !isSuccess) {
       const dataToSave = { ...formData };
       
-      delete dataToSave.berkasKKFile;
-      delete dataToSave.berkasKKBase64;
-      delete dataToSave.berkasKTPFile;
-      delete dataToSave.berkasKTPBase64;
-      delete dataToSave.berkasAktaFile;
-      delete dataToSave.berkasAktaBase64;
-      delete dataToSave.berkasIjazahFile;
-      delete dataToSave.berkasIjazahBase64;
       delete dataToSave.berkasFotoFile;
       delete dataToSave.berkasFotoBase64;
       

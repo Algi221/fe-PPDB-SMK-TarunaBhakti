@@ -350,7 +350,31 @@ export default function KelolaUserInterface() {
   const [faqList, setFaqList] = useState<FaqItem[]>([]);
 
   const [editingMajor, setEditingMajor] = useState<MajorItem | null>(null);
+  const [isNewMajor, setIsNewMajor] = useState(false);
   const [dragActiveStates, setDragActiveStates] = useState<Record<string, boolean>>({});
+
+  const emptyMajor = (): MajorItem => ({
+    code: "",
+    title: "",
+    desc: "",
+    color: "#0066ff",
+    careers: [
+      { title: "", desc: "" },
+      { title: "", desc: "" },
+      { title: "", desc: "" },
+      { title: "", desc: "" }
+    ],
+    facilities: ["Laboratorium Praktikum Baru"],
+    logo: "",
+    banner: "",
+    video: "",
+    gallery: [
+      { url: "", caption: "" },
+      { url: "", caption: "" },
+      { url: "", caption: "" },
+      { url: "", caption: "" }
+    ]
+  });
 
   useEffect(() => {
     setMounted(true);
@@ -391,11 +415,31 @@ export default function KelolaUserInterface() {
           setFaqList(DEFAULT_FAQ);
         }
         if (config.ppdb_majors_config && Array.isArray(config.ppdb_majors_config)) {
+          const dbMajors = config.ppdb_majors_config;
+          const mergedMajors: MajorItem[] = [];
           
-          const mergedMajors = DEFAULT_MAJORS.map(def => {
-            const found = config.ppdb_majors_config.find((m: any) => m.code === def.code);
-            return found ? { ...def, ...found } : def;
+          dbMajors.forEach((dbMajor: any) => {
+            const defMajor = DEFAULT_MAJORS.find(d => d.code === dbMajor.code);
+            mergedMajors.push({
+              code: dbMajor.code,
+              title: dbMajor.title || "",
+              desc: dbMajor.desc || "",
+              color: dbMajor.color || (defMajor?.color || "#0066ff"),
+              careers: Array.isArray(dbMajor.careers) ? dbMajor.careers : (defMajor?.careers || []),
+              facilities: Array.isArray(dbMajor.facilities) ? dbMajor.facilities : (defMajor?.facilities || []),
+              logo: dbMajor.logo || (defMajor?.logo || ""),
+              banner: dbMajor.banner || (defMajor?.banner || ""),
+              video: dbMajor.video || (defMajor?.video || ""),
+              gallery: Array.isArray(dbMajor.gallery) ? dbMajor.gallery : (defMajor?.gallery || [])
+            });
           });
+          
+          DEFAULT_MAJORS.forEach(def => {
+            if (!mergedMajors.some(m => m.code === def.code)) {
+              mergedMajors.push(def);
+            }
+          });
+          
           setMajorsList(mergedMajors);
         }
         if (config.ppdb_gelombang_config) {
@@ -949,12 +993,26 @@ export default function KelolaUserInterface() {
                 {/* 1. If NOT editing: Render Grid Cards */}
                 {editingMajor === null ? (
                   <>
-                    <div className="border-b border-slate-100 dark:border-white/5 pb-4">
-                      <h3 className="text-sm font-black uppercase text-slate-850 dark:text-white tracking-wider flex items-center gap-2">
-                        <GraduationCap size={16} className="text-blue-500" />
-                        <span>Kompetensi Keahlian (Jurusan)</span>
-                      </h3>
-                      <p className="text-[10px] text-slate-400 font-bold uppercase mt-1">Klik salah satu kartu jurusan untuk membuka Workspace Editor penuh secara inline.</p>
+                    <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-slate-100 dark:border-white/5 pb-4">
+                      <div>
+                        <h3 className="text-sm font-black uppercase text-slate-850 dark:text-white tracking-wider flex items-center gap-2">
+                          <GraduationCap size={16} className="text-blue-500" />
+                          <span>Kompetensi Keahlian (Jurusan)</span>
+                        </h3>
+                        <p className="text-[10px] text-slate-400 font-bold uppercase mt-1">Klik salah satu kartu jurusan untuk membuka Workspace Editor penuh secara inline.</p>
+                      </div>
+                      
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setIsNewMajor(true);
+                          setEditingMajor(emptyMajor());
+                        }}
+                        className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-[10px] uppercase font-black tracking-wider transition-all shadow-md shadow-blue-500/10 shrink-0 cursor-pointer"
+                      >
+                        <Plus size={14} />
+                        <span>Tambah Jurusan Baru</span>
+                      </button>
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -985,8 +1043,32 @@ export default function KelolaUserInterface() {
                             <div className="absolute top-3 left-3 px-3 py-1 text-[9px] font-black uppercase text-white rounded-full shadow" style={{ backgroundColor: major.color }}>
                               {major.code}
                             </div>
+
+                            {/* Delete Button Overlay */}
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                if (confirm(`Apakah Anda yakin ingin menghapus jurusan ${major.title} (${major.code}) secara lokal? Klik "Simpan Perubahan" di atas untuk menyimpan secara permanen.`)) {
+                                  setMajorsList(prev => prev.filter(m => m.code !== major.code));
+                                  showToastMsg(`Jurusan ${major.code} dihapus secara lokal. Silakan klik "Simpan Perubahan" di pojok kanan atas untuk menerapkannya secara permanen.`, "info");
+                                }
+                              }}
+                              className="absolute top-3 right-3 p-2 bg-rose-600/90 hover:bg-rose-600 text-white rounded-xl shadow-lg border border-rose-500/30 opacity-0 group-hover:opacity-100 focus:opacity-100 transition-all duration-300 transform translate-y-[-4px] group-hover:translate-y-0 z-10 hover:scale-105 cursor-pointer"
+                              title="Hapus Jurusan"
+                            >
+                              <Trash2 size={13} />
+                            </button>
+
                             <div className="absolute bottom-3 left-3 w-10 h-10 rounded-xl overflow-hidden bg-white/90 p-0.5 border shadow border-white/20">
-                              <img src={major.logo} alt="" className="w-full h-full object-cover rounded-lg" />
+                              {major.logo ? (
+                                <img src={major.logo} alt="" className="w-full h-full object-cover rounded-lg" />
+                              ) : (
+                                <div className="w-full h-full flex items-center justify-center bg-slate-200 dark:bg-slate-800 text-slate-400">
+                                  <GraduationCap size={18} />
+                                </div>
+                              )}
                             </div>
                           </div>
 
@@ -1015,8 +1097,11 @@ export default function KelolaUserInterface() {
                   <div className="space-y-6 animate-in slide-in-from-right-8 duration-300">
                     <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-slate-100 dark:border-white/5 pb-4 mb-4">
                       <button
-                        onClick={() => setEditingMajor(null)}
-                        className="flex items-center gap-2 px-4.5 py-2.5 rounded-xl bg-slate-50 hover:bg-slate-100 dark:bg-slate-950 border border-slate-200 dark:border-white/5 text-[10px] uppercase font-bold text-slate-700 dark:text-slate-350 transition-colors"
+                        onClick={() => {
+                          setEditingMajor(null);
+                          setIsNewMajor(false);
+                        }}
+                        className="flex items-center gap-2 px-4.5 py-2.5 rounded-xl bg-slate-50 hover:bg-slate-100 dark:bg-slate-950 border border-slate-200 dark:border-white/5 text-[10px] uppercase font-bold text-slate-700 dark:text-slate-350 transition-colors cursor-pointer"
                       >
                         <ArrowLeft size={12} />
                         <span>Kembali ke List Kartu</span>
@@ -1025,7 +1110,7 @@ export default function KelolaUserInterface() {
                       <div className="flex items-center gap-3">
                         <span className="w-3 h-6 rounded-full" style={{ backgroundColor: editingMajor.color }} />
                         <h3 className="text-sm font-black uppercase tracking-wider text-slate-850 dark:text-white">
-                          WORKSPACE EDITOR JURUSAN: {editingMajor.code}
+                          {isNewMajor ? "WORKSPACE BARU JURUSAN" : `WORKSPACE EDITOR JURUSAN: ${editingMajor.code}`}
                         </h3>
                       </div>
                     </div>
@@ -1043,8 +1128,12 @@ export default function KelolaUserInterface() {
                             </div>
                             
                             {/* Adjusted circular logo size display as requested */}
-                            <div className="w-12 h-12 rounded-2xl overflow-hidden bg-white border shadow p-0.5">
-                              <img src={editingMajor.logo} alt="" className="w-full h-full object-cover rounded-xl" />
+                            <div className="w-12 h-12 rounded-2xl overflow-hidden bg-white dark:bg-slate-850 border shadow p-0.5 flex items-center justify-center text-slate-400">
+                              {editingMajor.logo ? (
+                                <img src={editingMajor.logo} alt="" className="w-full h-full object-cover rounded-xl" />
+                              ) : (
+                                <GraduationCap size={20} />
+                              )}
                             </div>
                           </div>
 
@@ -1210,6 +1299,18 @@ export default function KelolaUserInterface() {
                           
                           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div className="space-y-1.5">
+                              <label className="text-[8px] uppercase font-black text-slate-450 tracking-wider">Kode Jurusan (e.g. RPL, TJKT)</label>
+                              <input
+                                type="text"
+                                value={editingMajor.code}
+                                disabled={!isNewMajor}
+                                onChange={(e) => setEditingMajor({ ...editingMajor, code: e.target.value.toUpperCase().replace(/[^A-Z0-9-]/g, "") })}
+                                placeholder="Masukkan kode jurusan..."
+                                className={`w-full px-3.5 py-2.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/5 rounded-xl text-slate-850 dark:text-white font-bold text-xs focus:outline-none ${!isNewMajor ? "opacity-50 cursor-not-allowed" : ""}`}
+                              />
+                            </div>
+
+                            <div className="space-y-1.5">
                               <label className="text-[8px] uppercase font-black text-slate-450 tracking-wider">Nama Program Studi</label>
                               <input
                                 type="text"
@@ -1219,7 +1320,7 @@ export default function KelolaUserInterface() {
                               />
                             </div>
 
-                            <div className="space-y-1.5">
+                            <div className="space-y-1.5 sm:col-span-2">
                               <label className="text-[8px] uppercase font-black text-slate-450 tracking-wider">Warna Hex Aksen</label>
                               <div className="flex gap-2">
                                 <input
@@ -1422,19 +1523,43 @@ export default function KelolaUserInterface() {
                     <div className="flex gap-2 justify-end border-t border-slate-100 dark:border-white/5 pt-4.5 mt-6">
                       <button
                         type="button"
-                        onClick={() => setEditingMajor(null)}
-                        className="px-5 py-3 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-2xl text-[10px] font-black uppercase tracking-wider text-slate-750 dark:text-slate-300 transition-colors"
+                        onClick={() => {
+                          setEditingMajor(null);
+                          setIsNewMajor(false);
+                        }}
+                        className="px-5 py-3 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-2xl text-[10px] font-black uppercase tracking-wider text-slate-750 dark:text-slate-300 transition-colors cursor-pointer"
                       >
                         Batal
                       </button>
                       <button
                         type="button"
                         onClick={() => {
-                          setMajorsList(prev => prev.map(m => m.code === editingMajor.code ? editingMajor : m));
+                          if (!editingMajor.code.trim()) {
+                            showToastMsg("Kode Jurusan wajib diisi.", "error");
+                            return;
+                          }
+                          if (!editingMajor.title.trim()) {
+                            showToastMsg("Nama Program Studi wajib diisi.", "error");
+                            return;
+                          }
+                          
+                          if (isNewMajor) {
+                            const exists = majorsList.some(m => m.code.toUpperCase() === editingMajor.code.toUpperCase());
+                            if (exists) {
+                              showToastMsg(`Kode Jurusan "${editingMajor.code}" sudah terdaftar.`, "error");
+                              return;
+                            }
+                            setMajorsList(prev => [...prev, editingMajor]);
+                            setIsNewMajor(false);
+                          } else {
+                            setMajorsList(prev => prev.map(m => m.code === editingMajor.code ? editingMajor : m));
+                          }
+                          
+                          const savedCode = editingMajor.code;
                           setEditingMajor(null);
-                          showToastMsg(`Workspace ${editingMajor.code} tersimpan secara lokal. Silakan klik "Simpan Perubahan" di pojok kanan atas untuk menerapkannya secara permanen.`, "success");
+                          showToastMsg(`Workspace ${savedCode} tersimpan secara lokal. Silakan klik "Simpan Perubahan" di pojok kanan atas untuk menerapkannya secara permanen.`, "success");
                         }}
-                        className="px-6 py-3 bg-blue-500 hover:bg-blue-600 text-white rounded-2xl text-[10px] font-black uppercase tracking-wider transition-colors flex items-center gap-1.5 shadow-md"
+                        className="px-6 py-3 bg-blue-500 hover:bg-blue-600 text-white rounded-2xl text-[10px] font-black uppercase tracking-wider transition-colors flex items-center gap-1.5 shadow-md cursor-pointer"
                       >
                         <Check size={14} />
                         <span>Simpan Detail</span>

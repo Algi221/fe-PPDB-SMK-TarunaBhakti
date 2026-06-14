@@ -140,10 +140,6 @@ interface Applicant {
   narkoba?: string;
   pelanggaran_lain?: string;
   periode?: string;
-  berkas_kk?: string;
-  berkas_ktp?: string;
-  berkas_akta?: string;
-  berkas_ijazah?: string;
   berkas_foto?: string;
   diterima_kelas?: string | null;
   diterimaKelas?: string | null;
@@ -227,13 +223,6 @@ export default function ApplicantsDirectory() {
 
   const [selectedApplicant, setSelectedApplicant] = useState<Applicant | null>(null);
   const [activeTab, setActiveTab] = useState<string>("biodata");
-  const [selectedDoc, setSelectedDoc] = useState<string | null>(null);
-
-  useEffect(() => {
-    if (!selectedApplicant) {
-      setSelectedDoc(null);
-    }
-  }, [selectedApplicant]);
 
   const [editApplicant, setEditApplicant] = useState<Applicant | null>(null);
   const [editForm, setEditForm] = useState<Partial<EditFormState>>({});
