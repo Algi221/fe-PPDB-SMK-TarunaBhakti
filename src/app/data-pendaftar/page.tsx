@@ -125,7 +125,9 @@ export default function DataPendaftarPage() {
           <div className="flex gap-4 md:w-auto w-full">
             <div className="relative w-full md:w-48 shrink-0">
               <Filter className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
+              <label htmlFor="pendaftar-filter-jurusan" className="sr-only">Filter Jurusan</label>
               <select 
+                id="pendaftar-filter-jurusan"
                 value={filterJurusan}
                 onChange={(e) => setFilterJurusan(e.target.value)}
                 className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl pl-10 pr-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 text-slate-800 dark:text-white appearance-none cursor-pointer transition-all"
@@ -141,7 +143,9 @@ export default function DataPendaftarPage() {
             </div>
             <div className="relative w-full md:w-48 shrink-0">
               <Filter className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
+              <label htmlFor="pendaftar-filter-status" className="sr-only">Filter Status</label>
               <select 
+                id="pendaftar-filter-status"
                 value={filterStatus}
                 onChange={(e) => setFilterStatus(e.target.value)}
                 className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl pl-10 pr-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 text-slate-800 dark:text-white appearance-none cursor-pointer transition-all"

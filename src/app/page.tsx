@@ -45,18 +45,18 @@ import ScrollFloat from "../components/ScrollFloat";
 import dompurify from "dompurify";
 import { usePPDB } from "@/context/PPDBContext";
 
-const sanitizeUrl = (url: string | undefined | null): string => {
-  if (!url) return "";
+const sanitizeUrl = (url: string | undefined | null): string | null => {
+  if (!url) return null;
   try {
     return dompurify.sanitize(url, {
       ALLOWED_URI_REGEXP: /^(?:https?:\/\/|\/|data:image\/|data:application\/pdf|data:video\/)/i
-    });
+    }) || null;
   } catch (e) {
-    return "";
+    return null;
   }
 };
 
-const sanitizeSrc = (src: string | undefined | null): string => sanitizeUrl(src);
+const sanitizeSrc = (src: string | undefined | null): string | null => sanitizeUrl(src);
 
 interface InformasiItem {
   id: number;
@@ -523,23 +523,27 @@ export default function Home() {
       )}
 
       {/* HERO SECTION WRAPPER */}
-      <div className="relative w-full overflow-hidden">
-        {/* Video Background - Full Width */}
-        <div className="absolute inset-0 w-full h-full z-0 overflow-hidden bg-slate-100 dark:bg-slate-900">
-          {loadVideo && (
-            <video
-              ref={videoRef}
-              src={videos[currentVideo]}
-              autoPlay
-              muted
-              playsInline
-              preload="none"
-              onEnded={handleVideoEnded}
-              className="w-full h-full object-cover transition-opacity duration-1000"
-            />
-          )}
-          <div className="absolute inset-0 bg-white/50 dark:bg-slate-950/60 backdrop-blur-sm"></div>
-        </div>
+      <main className="flex-grow w-full">
+        <div className="relative w-full overflow-hidden">
+          {/* Video Background - Full Width */}
+          <div className="absolute inset-0 w-full h-full z-0 overflow-hidden bg-slate-100 dark:bg-slate-900">
+            {loadVideo && (
+              <video
+                ref={videoRef}
+                src={videos[currentVideo]}
+                autoPlay
+                muted
+                playsInline
+                preload="none"
+                onEnded={handleVideoEnded}
+                className="w-full h-full object-cover transition-opacity duration-1000"
+                aria-hidden="true"
+              >
+                <track kind="captions" label="No captions" default />
+              </video>
+            )}
+            <div className="absolute inset-0 bg-white/50 dark:bg-slate-950/60 backdrop-blur-sm"></div>
+          </div>
 
         {/* HERO SECTION */}
         <section className="hero">
@@ -547,7 +551,7 @@ export default function Home() {
           {/* Floating elements representing major names as requested */}
           <Link href="/jurusan/rpl" className="floating-badge badge-aset">
             <div className="badge-icon overflow-hidden" style={{ background: 'transparent' }}>
-              <Image src="/jurusan/pplg.png" alt="RPL" width={48} height={48} className="w-full h-full object-cover rounded-full" priority />
+              <Image src="/jurusan/pplg.png" alt="" width={48} height={48} className="w-full h-full object-cover rounded-full" priority />
             </div>
             <div className="badge-info">
               <span>PPLG</span>
@@ -556,7 +560,7 @@ export default function Home() {
 
           <Link href="/jurusan/tjkt" className="floating-badge badge-peminjaman">
             <div className="badge-icon overflow-hidden" style={{ background: 'transparent' }}>
-              <Image src="/jurusan/tjkt.png" alt="TJKT" width={48} height={48} className="w-full h-full object-cover rounded-full" priority />
+              <Image src="/jurusan/tjkt.png" alt="" width={48} height={48} className="w-full h-full object-cover rounded-full" priority />
             </div>
             <div className="badge-info">
               <span>TJKT</span>
@@ -565,7 +569,7 @@ export default function Home() {
 
           <Link href="/jurusan/te" className="floating-badge badge-te">
             <div className="badge-icon overflow-hidden" style={{ background: 'transparent' }}>
-              <Image src="/jurusan/te.png" alt="TE" width={48} height={48} className="w-full h-full object-cover rounded-full" priority />
+              <Image src="/jurusan/te.png" alt="" width={48} height={48} className="w-full h-full object-cover rounded-full" priority />
             </div>
             <div className="badge-info">
               <span>TE</span>
@@ -574,7 +578,7 @@ export default function Home() {
 
           <Link href="/jurusan/dkv" className="floating-badge badge-laporan">
             <div className="badge-icon overflow-hidden" style={{ background: 'transparent' }}>
-              <Image src="/jurusan/dkv.png" alt="DKV" width={48} height={48} className="w-full h-full object-cover rounded-full" priority />
+              <Image src="/jurusan/dkv.png" alt="" width={48} height={48} className="w-full h-full object-cover rounded-full" priority />
             </div>
             <div className="badge-info">
               <span>DKV</span>
@@ -583,7 +587,7 @@ export default function Home() {
 
           <Link href="/jurusan/an" className="floating-badge badge-animasi">
             <div className="badge-icon overflow-hidden" style={{ background: 'transparent' }}>
-              <Image src="/jurusan/animasi.png" alt="Animasi" width={48} height={48} className="w-full h-full object-cover rounded-full" priority />
+              <Image src="/jurusan/animasi.png" alt="" width={48} height={48} className="w-full h-full object-cover rounded-full" priority />
             </div>
             <div className="badge-info">
               <span>Animasi</span>
@@ -592,7 +596,7 @@ export default function Home() {
 
           <Link href="/jurusan/bc" className="floating-badge badge-kelas">
             <div className="badge-icon overflow-hidden" style={{ background: 'transparent' }}>
-              <Image src="/jurusan/bc.png" alt="Broadcasting" width={48} height={48} className="w-full h-full object-cover rounded-full" priority />
+              <Image src="/jurusan/bc.png" alt="" width={48} height={48} className="w-full h-full object-cover rounded-full" priority />
             </div>
             <div className="badge-info">
               <span>Broadcasting</span>
@@ -783,12 +787,12 @@ export default function Home() {
                 const isLeft = index % 2 === 0;
 
                 const styles = [
-                  { color: "blue", bg: "bg-blue-600", text: "text-blue-500 dark:text-blue-400", bgLight: "bg-blue-50 dark:bg-blue-950/60", shadow: "shadow-[0_0_20px_rgba(37,99,235,0.4)]", borderHover: "hover:border-blue-500/20", icon: FileText },
-                  { color: "amber", bg: "bg-amber-500", text: "text-amber-500 dark:text-amber-400", bgLight: "bg-amber-50 dark:bg-amber-950/60", shadow: "shadow-[0_0_20px_rgba(245,158,11,0.4)]", borderHover: "hover:border-amber-500/20", icon: CreditCard },
-                  { color: "teal", bg: "bg-teal-500", text: "text-teal-500 dark:text-teal-400", bgLight: "bg-teal-50 dark:bg-teal-950/60", shadow: "shadow-[0_0_20px_rgba(20,184,166,0.4)]", borderHover: "hover:border-teal-500/20", icon: Phone },
-                  { color: "rose", bg: "bg-rose-500", text: "text-rose-500 dark:text-rose-400", bgLight: "bg-rose-50 dark:bg-rose-950/60", shadow: "shadow-[0_0_20px_rgba(244,63,94,0.4)]", borderHover: "hover:border-rose-500/20", icon: Users },
-                  { color: "indigo", bg: "bg-indigo-600", text: "text-indigo-500 dark:text-indigo-400", bgLight: "bg-indigo-50 dark:bg-indigo-950/60", shadow: "shadow-[0_0_20px_rgba(79,70,229,0.4)]", borderHover: "hover:border-indigo-500/20", icon: Award },
-                  { color: "emerald", bg: "bg-emerald-500", text: "text-emerald-500 dark:text-emerald-400", bgLight: "bg-emerald-50 dark:bg-emerald-950/60", shadow: "shadow-[0_0_20px_rgba(16,185,129,0.4)]", borderHover: "hover:border-emerald-500/20", icon: ShieldCheck },
+                  { color: "blue", bg: "bg-blue-600", text: "text-blue-700 dark:text-blue-400", bgLight: "bg-blue-50 dark:bg-blue-950/60", shadow: "shadow-[0_0_20px_rgba(37,99,235,0.4)]", borderHover: "hover:border-blue-500/20", icon: FileText },
+                  { color: "amber", bg: "bg-amber-500", text: "text-amber-800 dark:text-amber-400", bgLight: "bg-amber-50 dark:bg-amber-950/60", shadow: "shadow-[0_0_20px_rgba(245,158,11,0.4)]", borderHover: "hover:border-amber-500/20", icon: CreditCard },
+                  { color: "teal", bg: "bg-teal-500", text: "text-teal-700 dark:text-teal-400", bgLight: "bg-teal-50 dark:bg-teal-950/60", shadow: "shadow-[0_0_20px_rgba(20,184,166,0.4)]", borderHover: "hover:border-teal-500/20", icon: Phone },
+                  { color: "rose", bg: "bg-rose-500", text: "text-rose-700 dark:text-rose-400", bgLight: "bg-rose-50 dark:bg-rose-950/60", shadow: "shadow-[0_0_20px_rgba(244,63,94,0.4)]", borderHover: "hover:border-rose-500/20", icon: Users },
+                  { color: "indigo", bg: "bg-indigo-600", text: "text-indigo-700 dark:text-indigo-400", bgLight: "bg-indigo-50 dark:bg-indigo-950/60", shadow: "shadow-[0_0_20px_rgba(79,70,229,0.4)]", borderHover: "hover:border-indigo-500/20", icon: Award },
+                  { color: "emerald", bg: "bg-emerald-500", text: "text-emerald-700 dark:text-emerald-400", bgLight: "bg-emerald-50 dark:bg-emerald-950/60", shadow: "shadow-[0_0_20px_rgba(16,185,129,0.4)]", borderHover: "hover:border-emerald-500/20", icon: ShieldCheck },
                 ];
 
                 const stepStyle = styles[index % styles.length];
@@ -1113,6 +1117,7 @@ export default function Home() {
           </div>
         </div>
       </section>
+      </main>
 
       {/* FOOTER */}
       <footer className="bg-slate-100 dark:bg-slate-950 border-t border-slate-200/50 dark:border-slate-900 py-16 transition-colors duration-300 relative z-10 mt-auto">

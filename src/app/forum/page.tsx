@@ -19,18 +19,18 @@ import { motion } from 'framer-motion';
 import BlurText from '../../components/BlurText';
 import dompurify from "dompurify";
 
-const sanitizeUrl = (url: string | undefined | null): string => {
-  if (!url) return "";
+const sanitizeUrl = (url: string | undefined | null): string | null => {
+  if (!url) return null;
   try {
     return dompurify.sanitize(url, {
       ALLOWED_URI_REGEXP: /^(?:https?:\/\/|\/|data:image\/|data:application\/pdf|data:video\/)/i
-    });
+    }) || null;
   } catch (e) {
-    return "";
+    return null;
   }
 };
 
-const sanitizeSrc = (src: string | undefined | null): string => sanitizeUrl(src);
+const sanitizeSrc = (src: string | undefined | null): string | null => sanitizeUrl(src);
 
 const BACKEND_URL = "http://localhost:5000";
 
@@ -494,7 +494,9 @@ export default function ForumPage() {
                           <div className="space-y-3 text-left">
                             <span className="text-[10px] font-bold text-slate-400 dark:text-slate-555 uppercase tracking-wider block">🎥 Video Lampiran:</span>
                             <div className="rounded-2xl border border-slate-200 dark:border-slate-800 overflow-hidden bg-slate-955 shadow-md">
-                              <video src={sanitizeSrc(media.video)} controls className="w-full max-h-72 object-contain" />
+                              <video src={sanitizeSrc(media.video)} controls className="w-full max-h-72 object-contain">
+                                <track kind="captions" label="No captions" default />
+                              </video>
                             </div>
                           </div>
                         )}

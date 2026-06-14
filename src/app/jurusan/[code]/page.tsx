@@ -5,18 +5,18 @@ import Link from "next/link";
 import { useParams } from "next/navigation";
 import dompurify from "dompurify";
 
-const sanitizeUrl = (url: string | undefined | null): string => {
-  if (!url) return "";
+const sanitizeUrl = (url: string | undefined | null): string | null => {
+  if (!url) return null;
   try {
     return dompurify.sanitize(url, {
       ALLOWED_URI_REGEXP: /^(?:https?:\/\/|\/|data:image\/|data:application\/pdf|data:video\/)/i
-    });
+    }) || null;
   } catch (e) {
-    return "";
+    return null;
   }
 };
 
-const sanitizeSrc = (src: string | undefined | null): string => sanitizeUrl(src);
+const sanitizeSrc = (src: string | undefined | null): string | null => sanitizeUrl(src);
 import { 
   ArrowLeft, 
   Sun, 
@@ -474,6 +474,7 @@ export default function MajorPage() {
       </div>
 
       {/* HERO SECTION - Premium Branding */}
+      <main className="flex-grow w-full">
       <section className="pt-32 pb-16 px-6 max-w-6xl mx-auto w-full relative z-10 flex flex-col lg:flex-row gap-12 items-center">
         
         {/* Left Copy Column */}
@@ -579,7 +580,9 @@ export default function MajorPage() {
                   src={sanitizeSrc(major.video)} 
                   controls 
                   className="w-full h-full object-cover rounded-[20px]"
-                />
+                >
+                  <track kind="captions" label="No captions" default />
+                </video>
               ) : (
                 <iframe
                   src={sanitizeSrc(major.video)}
@@ -834,6 +837,7 @@ export default function MajorPage() {
           </div>
         </div>
       </section>
+      </main>
 
       {/* FOOTER */}
       <footer className="bg-slate-100 dark:bg-slate-950 border-t border-slate-200/50 dark:border-slate-900 py-16 transition-colors duration-300 relative z-10 mt-auto">

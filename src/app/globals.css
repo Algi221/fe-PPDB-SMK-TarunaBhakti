@@ -88,8 +88,20 @@ html.dark .text-slate-700 {
 }
 html.dark .text-slate-600,
 html.dark .text-slate-500,
-html.dark .text-slate-400 {
-  color: #94a3b8 !important;
+html.dark .text-slate-400,
+html.dark .text-slate-550 {
+  color: #cbd5e1 !important;
+}
+
+/* High contrast overrides for light mode slate text */
+:root:not(.dark) .text-slate-400 {
+  color: #475569 !important; /* Darkened to slate-600 */
+}
+:root:not(.dark) .text-slate-500 {
+  color: #334155 !important; /* Darkened to slate-700 */
+}
+:root:not(.dark) .text-slate-600 {
+  color: #1e293b !important; /* Darkened to slate-800 */
 }
 
 html.dark input[type="text"],
@@ -137,7 +149,7 @@ html.dark .bg-slate-100 {
 html.dark footer {
   background: #0d1117;
   border-color: #1e293b;
-  color: #475569;
+  color: #94a3b8;
 }
 html.dark .bg-white\/50,
 html.dark .bg-white\/40,
@@ -706,7 +718,7 @@ body {
   background: rgba(255, 255, 255, 0.06);
   border-radius: 6px;
   font-size: 11px;
-  color: rgba(255, 255, 255, 0.4);
+  color: rgba(255, 255, 255, 0.8);
   padding: 4px 40px;
   font-family: monospace;
   letter-spacing: 0.5px;

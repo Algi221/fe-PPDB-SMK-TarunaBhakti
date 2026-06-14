@@ -313,13 +313,17 @@ export default function DataPendaftarTable() {
             placeholder="Cari Nama Pendaftar..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
+            aria-label="Cari nama atau NISN pendaftar"
             className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg pl-9 pr-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500/50 text-slate-800 dark:text-white transition-all placeholder:text-slate-400"
           />
         </div>
         <div className="flex gap-2">
+          <label htmlFor="filter-jurusan-select" className="sr-only">Filter berdasarkan jurusan</label>
           <select
+            id="filter-jurusan-select"
             value={filterJurusan}
             onChange={(e) => setFilterJurusan(e.target.value)}
+            aria-label="Filter berdasarkan jurusan"
             className="bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500/50 text-slate-800 dark:text-white transition-all"
           >
             <option value="Semua">Semua Jurusan</option>
@@ -368,8 +372,8 @@ export default function DataPendaftarTable() {
                     <td className="px-4 py-3">
                       <span className={`inline-flex px-2 py-0.5 rounded-full text-[9px] font-bold border ${
                         item.status === "Approved"
-                          ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-600 dark:text-emerald-400"
-                          : "bg-amber-500/10 border-amber-500/20 text-amber-600 dark:text-amber-400"
+                          ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-700 dark:text-emerald-400"
+                          : "bg-amber-500/10 border-amber-500/20 text-amber-800 dark:text-amber-400"
                       }`}>
                         {item.status === "Approved" ? "Terverifikasi" : "Menunggu Verifikasi"}
                       </span>
@@ -405,6 +409,7 @@ export default function DataPendaftarTable() {
               <button
                 onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
                 disabled={currentPage === 1}
+                aria-label="Halaman Sebelumnya"
                 className="w-7 h-7 flex items-center justify-center rounded-lg border border-slate-200/50 dark:border-slate-700/50 disabled:opacity-50 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
               >
                 <ChevronLeft size={12} />
@@ -412,6 +417,7 @@ export default function DataPendaftarTable() {
               <button
                 onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
                 disabled={currentPage === totalPages}
+                aria-label="Halaman Berikutnya"
                 className="w-7 h-7 flex items-center justify-center rounded-lg border border-slate-200/50 dark:border-slate-700/50 disabled:opacity-50 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
               >
                 <ChevronRight size={12} />
