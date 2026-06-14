@@ -14,6 +14,23 @@ interface Informasi {
   created_at?: string;
 }
 
+/**
+ * Sanitize image URL to prevent DOM-based XSS.
+ * Only allows safe schemes: https, http, or data:image (base64 from FileReader).
+ */
+function sanitizeImageUrl(url: string): string {
+  if (!url) return "";
+  const trimmed = url.trim();
+  if (
+    trimmed.startsWith("https://") ||
+    trimmed.startsWith("http://") ||
+    trimmed.startsWith("data:image/")
+  ) {
+    return trimmed;
+  }
+  return ""; // Reject javascript: and other dangerous schemes
+}
+
 export default function EditInformasi({ params }: { params: { id: string } }) {
   const { adminToken, addToast } = usePPDB();
   const [informasi, setInformasi] = useState<Informasi | null>(null);
@@ -26,21 +43,6 @@ export default function EditInformasi({ params }: { params: { id: string } }) {
   const [fotoUrl, setFotoUrl] = useState<string>("");
 
   const BACKEND_URL = "http://localhost:5000";
-
-  // Sanitize foto URL to prevent XSS via javascript: or other dangerous schemes
-  const sanitizeFotoUrl = (url: string): string => {
-    if (!url) return "";
-    const trimmed = url.trim();
-    // Allow only safe schemes: https, http, or data:image (from FileReader)
-    if (
-      trimmed.startsWith("https://") ||
-      trimmed.startsWith("http://") ||
-      trimmed.startsWith("data:image/")
-    ) {
-      return trimmed;
-    }
-    return ""; // Reject unsafe URLs
-  };
 
   const fetchDetail = async () => {
     try {
@@ -55,9 +57,9 @@ export default function EditInformasi({ params }: { params: { id: string } }) {
         if (data.data.foto_url) {
           try {
             const parsed = JSON.parse(data.data.foto_url);
-            setFotoUrl(sanitizeFotoUrl(parsed.foto || ""));
+            setFotoUrl(parsed.foto || "");
           } catch {
-            setFotoUrl(sanitizeFotoUrl(data.data.foto_url as string));
+            setFotoUrl(data.data.foto_url as string);
           }
         }
       } else {
@@ -171,9 +173,9 @@ export default function EditInformasi({ params }: { params: { id: string } }) {
           <label className="block text-sm font-medium text-slate-600 dark:text-slate-400 mb-1">
             Foto / Poster (opsional)
           </label>
-          {fotoUrl ? (
+          {sanitizeImageUrl(fotoUrl) ? (
             <div className="flex items-center space-x-4 mb-2">
-              <img src={fotoUrl} alt="Preview" className="h-24 w-24 object-cover rounded" />
+              <img src={sanitizeImageUrl(fotoUrl)} alt="Preview" className="h-24 w-24 object-cover rounded" />
               <button
                 type="button"
                 onClick={() => setFotoUrl("")}
@@ -192,7 +194,7 @@ export default function EditInformasi({ params }: { params: { id: string } }) {
               const reader = new FileReader();
               reader.onloadend = () => {
                 if (typeof reader.result === "string") {
-                  setFotoUrl(sanitizeFotoUrl(reader.result));
+                  setFotoUrl(reader.result);
                 }
               };
               reader.readAsDataURL(file);
