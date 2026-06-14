@@ -1499,12 +1499,6 @@ export default function DaftarPage() {
                                   {bank.accountHolder || "YAYASAN TARUNA BHAKTI"}
                                 </p>
                               </div>
-                              <div className="text-right">
-                                <p className="text-[8px] font-black text-emerald-400 uppercase flex items-center gap-1">
-                                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-ping"></span>
-                                  Aktif
-                                </p>
-                              </div>
                             </div>
                           </div>
                         );

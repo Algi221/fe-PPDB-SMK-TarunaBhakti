@@ -1,6 +1,10 @@
 @import "tailwindcss";
 @custom-variant dark (&:is(.dark *));
 
+@theme {
+  --color-white: #fafbfc;
+}
+
 :root {
   --primary: #0066ff;
   --primary-glow: rgba(0, 102, 255, 0.15);
@@ -9,17 +13,17 @@
   --dark: #0f172a;
   --dark-muted: #475569;
   --light-bg: #f4f9ff;
-  --glass-bg: rgba(255, 255, 255, 0.85);
-  --glass-border: rgba(255, 255, 255, 0.45);
+  --glass-bg: rgba(250, 251, 252, 0.85);
+  --glass-border: rgba(250, 251, 252, 0.45);
   --glass-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.05);
   --card-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.03), 0 1px 3px 0 rgba(0, 0, 0, 0.01);
   --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   --font-family: var(--font-plus-jakarta), 'Plus Jakarta Sans', sans-serif;
   
-  --input-bg: #f8fafc;
+  --input-bg: #f5f7fa;
   --input-border: #e2e8f0;
   --input-text: #0f172a;
-  --card-bg: #ffffff;
+  --card-bg: #fafbfc;
   --section-bg: #f1f5f9;
 }
 
