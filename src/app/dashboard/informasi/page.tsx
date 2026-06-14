@@ -62,6 +62,7 @@ export default function KelolaInformasi() {
   const [dragActive, setDragActive] = useState<boolean>(false);
 
   const [previewItem, setPreviewItem] = useState<Informasi | null>(null);
+  const [loadingDetailId, setLoadingDetailId] = useState<number | null>(null);
 
   const [deleteConfirmId, setDeleteConfirmId] = useState<number | null>(null);
 
@@ -96,7 +97,7 @@ export default function KelolaInformasi() {
     }
   };
 
-  const formatInputDate = (dateString: string) => {
+  const formatInputDate = (dateString: string | null | undefined) => {
     if (!dateString) return "";
     try {
       const date = new Date(dateString);
@@ -106,6 +107,38 @@ export default function KelolaInformasi() {
       return `${year}-${month}-${day}`;
     } catch (e) {
       return "";
+    }
+  };
+
+  const fetchDetailItem = async (id: number): Promise<Informasi | null> => {
+    try {
+      setLoadingDetailId(id);
+      const res = await fetch(`${BACKEND_URL}/api/informasi/${id}`);
+      const data = await res.json();
+      if (data.success && data.data) {
+        return data.data;
+      } else {
+        if (typeof addToast === "function") {
+          addToast("Gagal Memuat Detail", "Gagal memuat detail informasi dari server.", "danger");
+        }
+        return null;
+      }
+    } catch (err: any) {
+      console.error("Error fetching detail:", err);
+      if (typeof addToast === "function") {
+        addToast("Koneksi Error", "Gagal menghubungi server.", "danger");
+      }
+      return null;
+    } finally {
+      setLoadingDetailId(null);
+    }
+  };
+
+  const handleOpenPreview = async (item: Informasi) => {
+    if (loadingDetailId !== null) return;
+    const fullItem = await fetchDetailItem(item.id);
+    if (fullItem) {
+      setPreviewItem(fullItem);
     }
   };
 
@@ -168,14 +201,18 @@ export default function KelolaInformasi() {
     setIsOpenModal(true);
   };
 
-  const handleOpenEditModal = (item: Informasi) => {
+  const handleOpenEditModal = async (item: Informasi) => {
+    if (loadingDetailId !== null) return;
+    const fullItem = await fetchDetailItem(item.id);
+    if (!fullItem) return;
+
     setIsEditMode(true);
-    setSelectedId(item.id);
-    setJudul(item.judul);
-    setKonten(item.konten);
-    setTanggal(formatInputDate(item.tanggal));
+    setSelectedId(fullItem.id);
+    setJudul(fullItem.judul);
+    setKonten(fullItem.konten);
+    setTanggal(formatInputDate(fullItem.tanggal));
     
-    const media = parseMedia(item.foto_url);
+    const media = parseMedia(fullItem.foto_url);
     setFotoUrl(media.foto);
     setVideoUrl(media.video);
     setVideoName(media.videoName);
@@ -534,8 +571,12 @@ export default function KelolaInformasi() {
             return (
               <div 
                 key={item.id}
-                className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800/60 hover:border-slate-350 dark:hover:border-white/10 rounded-3xl overflow-hidden shadow-[0_2px_10px_rgba(0,0,0,0.01)] dark:shadow-[0_2px_10px_rgba(0,0,0,0.2)] hover:shadow-xl hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between group relative cursor-pointer"
-                onClick={() => setPreviewItem(item)}
+                className={`bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800/60 hover:border-slate-350 dark:hover:border-white/10 rounded-3xl overflow-hidden shadow-[0_2px_10px_rgba(0,0,0,0.01)] dark:shadow-[0_2px_10px_rgba(0,0,0,0.2)] hover:shadow-xl hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between group relative cursor-pointer ${loadingDetailId === item.id ? 'opacity-75 pointer-events-none' : ''}`}
+                onClick={() => {
+                  if (loadingDetailId === null) {
+                    handleOpenPreview(item);
+                  }
+                }}
               >
                 
                 {/* Floating Date Badge */}
@@ -590,18 +631,29 @@ export default function KelolaInformasi() {
                 {/* Action Bar Footer */}
                 <div className="px-6 py-4 bg-slate-50/50 dark:bg-slate-955/20 border-t border-slate-100 dark:border-white/5 flex items-center justify-between relative z-20" onClick={(e) => e.stopPropagation()}>
                   <button
-                    onClick={() => setPreviewItem(item)}
+                    onClick={() => handleOpenPreview(item)}
                     className="text-[11px] font-extrabold uppercase tracking-wide text-blue-550 dark:text-blue-400 hover:text-blue-600 dark:hover:text-blue-300 flex items-center gap-1 active:scale-[0.98] transition-all"
+                    disabled={loadingDetailId !== null}
                   >
-                    <span>Pratinjau</span>
-                    <ArrowRight size={12} className="group-hover:translate-x-1 transition-transform" />
+                    {loadingDetailId === item.id ? (
+                      <span className="inline-flex items-center gap-1">
+                        <Loader2 size={11} className="animate-spin" />
+                        <span>Memuat...</span>
+                      </span>
+                    ) : (
+                      <>
+                        <span>Pratinjau</span>
+                        <ArrowRight size={12} className="group-hover:translate-x-1 transition-transform" />
+                      </>
+                    )}
                   </button>
 
                   <div className="flex items-center gap-1.5">
                     <button
                       onClick={() => handleOpenEditModal(item)}
-                      className="p-2 bg-slate-100 hover:bg-blue-500/10 dark:bg-white/5 dark:hover:bg-blue-500/10 text-slate-500 dark:text-slate-400 hover:text-blue-500 dark:hover:text-blue-300 rounded-xl transition-all border border-slate-200/50 dark:border-white/5 hover:border-blue-500/20"
+                      className={`p-2 bg-slate-100 hover:bg-blue-500/10 dark:bg-white/5 dark:hover:bg-blue-500/10 text-slate-500 dark:text-slate-400 hover:text-blue-500 dark:hover:text-blue-300 rounded-xl transition-all border border-slate-200/50 dark:border-white/5 hover:border-blue-500/20 ${loadingDetailId !== null ? 'opacity-50 pointer-events-none' : ''}`}
                       title="Edit Informasi"
+                      disabled={loadingDetailId !== null}
                     >
                       <Edit3 size={13} />
                     </button>

@@ -93,9 +93,28 @@ export default function ForumPage() {
   const [informasi, setInformasi] = useState<InformasiItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedPost, setSelectedPost] = useState<InformasiItem | null>(null);
+  const [loadingDetailId, setLoadingDetailId] = useState<number | null>(null);
   const [schoolPeriod, setSchoolPeriod] = useState("2026-2027");
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [lightboxImage, setLightboxImage] = useState<string | null>(null);
+
+  const handleViewDetail = async (id: number) => {
+    try {
+      setLoadingDetailId(id);
+      const res = await fetch(`${BACKEND_URL}/api/informasi/${id}`);
+      const json = await res.json();
+      if (json.success && json.data) {
+        setSelectedPost(json.data);
+      } else {
+        alert("Gagal mengambil detail informasi.");
+      }
+    } catch (err) {
+      console.error("Error fetching detail:", err);
+      alert("Gagal terhubung ke server untuk mengambil detail informasi.");
+    } finally {
+      setLoadingDetailId(null);
+    }
+  };
 
   useEffect(() => {
     const handleScroll = () => setIsNavbarScrolled(window.scrollY > 50);
@@ -303,8 +322,12 @@ export default function ForumPage() {
                     animate={{ opacity: 1, filter: 'blur(0px)', y: 0 }}
                     transition={{ duration: 0.4, delay: index * 0.1 }}
                     key={item.id}
-                    onClick={() => setSelectedPost(item)}
-                    className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-2xl p-6 hover:shadow-md hover:border-blue-200 dark:hover:border-blue-800 transition-all duration-300 cursor-pointer group"
+                    onClick={() => {
+                      if (loadingDetailId === null) {
+                        handleViewDetail(item.id);
+                      }
+                    }}
+                    className={`bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-2xl p-6 hover:shadow-md hover:border-blue-200 dark:hover:border-blue-800 transition-all duration-300 cursor-pointer group ${loadingDetailId === item.id ? 'opacity-80 pointer-events-none' : ''}`}
                   >
                     <div className="flex justify-between items-start mb-4">
                       <div className="flex flex-wrap gap-2 items-center">
@@ -352,8 +375,17 @@ export default function ForumPage() {
                         Panitia PPDB SMK TB
                       </div>
                       <span className="text-blue-600 dark:text-blue-400 text-xs font-bold flex items-center gap-1">
-                        Baca Selengkapnya
-                        <ArrowRight size={14} className="transform group-hover:translate-x-1 transition-transform" />
+                        {loadingDetailId === item.id ? (
+                          <span className="inline-flex items-center gap-1">
+                            <span className="w-3 h-3 border-2 border-blue-600 border-t-transparent dark:border-blue-400 dark:border-t-transparent rounded-full animate-spin"></span>
+                            Memuat...
+                          </span>
+                        ) : (
+                          <>
+                            Baca Selengkapnya
+                            <ArrowRight size={14} className="transform group-hover:translate-x-1 transition-transform" />
+                          </>
+                        )}
                       </span>
                     </div>
                   </motion.div>
@@ -395,12 +427,16 @@ export default function ForumPage() {
                   const { day, month } = formatDateShort(item.tanggal);
                   return (
                     <motion.div
+                      key={item.id}
                       initial={{ opacity: 0, x: 20 }}
                       animate={{ opacity: 1, x: 0 }}
                       transition={{ duration: 0.3, delay: 0.3 + (index * 0.1) }}
-                      key={item.id}
-                      className="flex gap-4 items-start cursor-pointer group"
-                      onClick={() => setSelectedPost(item)}
+                      onClick={() => {
+                        if (loadingDetailId === null) {
+                          handleViewDetail(item.id);
+                        }
+                      }}
+                      className={`flex gap-4 items-start cursor-pointer group ${loadingDetailId === item.id ? 'opacity-80 pointer-events-none' : ''}`}
                     >
                       <div className="flex flex-col items-center justify-center w-10 h-11 bg-white dark:bg-slate-800 rounded-lg border border-slate-200/60 dark:border-slate-700 shadow-sm shrink-0">
                         <span className="text-[9px] font-bold text-blue-600 uppercase">{month}</span>

@@ -113,10 +113,6 @@ export default function Home() {
 
   const [activeModal, setActiveModal] = useState<string | null>(null);
 
-  const [informasi, setInformasi] = useState<InformasiItem[]>([]);
-  const [loadingInformasi, setLoadingInformasi] = useState(true);
-  const [selectedNews, setSelectedNews] = useState<InformasiItem | null>(null);
-
   const [waGroupUrl, setWaGroupUrl] = useState("https://chat.whatsapp.com/HJXHYajEOhl5RM6iN2SJOS");
   const [waAdmin, setWaAdmin] = useState("6281292244456");
   const [activeFaq, setActiveFaq] = useState<number | null>(null);
@@ -230,39 +226,6 @@ export default function Home() {
       return dateString;
     }
   };
-
-  useEffect(() => {
-    const fetchInformasi = async () => {
-      try {
-        const res = await fetch("http://localhost:5000/api/informasi");
-        const data = await res.json();
-        if (data.success) {
-          setInformasi(data.data);
-        }
-      } catch (e) {
-        console.log("Failed to fetch public informasi:", e);
-        setInformasi([
-          {
-            id: 101,
-            judul: "Pendaftaran Peserta Didik Baru (PPDB) SMK Taruna Bhakti 2026/2027 Resmi Dibuka!",
-            konten: "SMK Taruna Bhakti Depok resmi membuka pendaftaran bagi calon peserta didik baru untuk tahun ajaran 2026/2027. Tersedia 6 Program Keahlian unggulan yaitu Rekayasa Perangkat Lunak, Teknik Jaringan Komputer, Desain Komunikasi Visual, Broadcasting & Perfilman, Teknik Elektronika, dan Animasi. Segera lakukan registrasi online dan unggah berkas Anda sebelum kuota penuh!",
-            tanggal: "2026-05-15",
-            foto_url: ""
-          },
-          {
-            id: 102,
-            judul: "Sosialisasi Jurusan Baru: Teknik Elektronika (TE) dengan Fokus Robotika Industri",
-            konten: "Menjawab tantangan revolusi industri 4.0, SMK Taruna Bhakti menghadirkan inovasi di jurusan Teknik Elektronika. Kurikulum diperkuat dengan pemelajaran mikrokontroler, IoT, PLC, dan Robotika Industri modern. Lulusan TE siap diserap oleh industri manufaktur dan teknologi terkemuka.",
-            tanggal: "2026-05-20",
-            foto_url: ""
-          }
-        ]);
-      } finally {
-        setLoadingInformasi(false);
-      }
-    };
-    fetchInformasi();
-  }, []);
 
   const [loadVideo, setLoadVideo] = useState(false);
   const [currentVideo, setCurrentVideo] = useState(0);
@@ -996,23 +959,40 @@ export default function Home() {
                 { name: "Oracle Academy", logo: "https://smktarunabhakti.sch.id/wp-content/uploads/2025/07/oracleacademy.webp", url: "https://academy.oracle.com/en/oa-web-overview.html", h: "h-10" },
               ];
 
-              return remotePartners.map((partner, idx) => (
-                <a
-                  key={idx}
-                  href={partner.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="group inline-flex items-center justify-center p-2 transition-transform duration-300 hover:scale-110 hover:-translate-y-1"
-                  title={partner.name}
-                >
-                  <img
-                    src={partner.logo}
-                    alt={partner.name}
-                    className={`w-auto object-contain ${partner.h} max-w-[150px] transition-all duration-300 drop-shadow-sm`}
-                    loading="lazy"
-                  />
-                </a>
-              ));
+              const getPartnerDimensions = (hClass: string) => {
+                switch (hClass) {
+                  case "h-20": return { width: 150, height: 80 };
+                  case "h-16": return { width: 120, height: 64 };
+                  case "h-14": return { width: 105, height: 56 };
+                  case "h-12": return { width: 90, height: 48 };
+                  case "h-10": return { width: 75, height: 40 };
+                  case "h-8": return { width: 60, height: 32 };
+                  default: return { width: 120, height: 60 };
+                }
+              };
+
+              return remotePartners.map((partner, idx) => {
+                const { width, height } = getPartnerDimensions(partner.h);
+                return (
+                  <a
+                    key={idx}
+                    href={partner.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="group inline-flex items-center justify-center p-2 transition-transform duration-300 hover:scale-110 hover:-translate-y-1"
+                    title={partner.name}
+                  >
+                    <img
+                      src={partner.logo}
+                      alt={partner.name}
+                      className={`w-auto object-contain ${partner.h} max-w-[150px] transition-all duration-300 drop-shadow-sm`}
+                      loading="lazy"
+                      width={width}
+                      height={height}
+                    />
+                  </a>
+                );
+              });
             })()}
           </div>
         </ScrollFloat>
@@ -1231,66 +1211,7 @@ export default function Home() {
         </div>
       </footer>
 
-      {/* MODAL BERITA / INFORMASI DETAIL */}
-      {selectedNews && (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-slate-950/60 backdrop-blur-sm" onClick={() => setSelectedNews(null)}></div>
-          <div className="relative bg-white dark:bg-slate-900 w-full max-w-2xl rounded-3xl shadow-2xl overflow-hidden border border-slate-100 dark:border-slate-800 animate-in fade-in zoom-in-95 duration-200">
-            {selectedNews.foto_url ? (
-              <div className="relative h-64 md:h-80 w-full overflow-hidden bg-slate-200 dark:bg-slate-850">
-                <img
-                  src={selectedNews.foto_url}
-                  alt={selectedNews.judul}
-                  className="w-full h-full object-cover"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-transparent to-transparent" />
-                <div className="absolute bottom-6 left-6 z-10 px-3 py-1.5 bg-blue-600 text-white text-[10px] font-black uppercase tracking-widest rounded-xl flex items-center gap-1.5 shadow-md border border-blue-500">
-                  <Calendar size={11} />
-                  <span>{formatDate(selectedNews.tanggal)}</span>
-                </div>
-                <button
-                  onClick={() => setSelectedNews(null)}
-                  className="absolute top-4 right-4 w-8 h-8 rounded-full bg-slate-950/60 backdrop-blur-md border border-white/10 text-white hover:bg-slate-950 flex items-center justify-center transition-all font-bold"
-                >
-                  ✕
-                </button>
-              </div>
-            ) : (
-              <div className="p-6 border-b border-slate-150 dark:border-white/5 flex items-center justify-between bg-slate-50/50 dark:bg-slate-950/15">
-                <div className="px-3 py-1.5 bg-blue-50 dark:bg-blue-950/60 border border-blue-100 dark:border-blue-900 text-blue-600 dark:text-blue-400 text-[10px] font-black uppercase tracking-widest rounded-xl flex items-center gap-1.5 shadow-sm">
-                  <Calendar size={11} />
-                  <span>{formatDate(selectedNews.tanggal)}</span>
-                </div>
-                <button
-                  onClick={() => setSelectedNews(null)}
-                  className="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 dark:bg-white/5 dark:hover:bg-white/10 border border-slate-200/50 dark:border-white/5 text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white flex items-center justify-center transition-all font-bold"
-                >
-                  ✕
-                </button>
-              </div>
-            )}
-
-            <div className="p-8 space-y-6">
-              <h2 className="text-xl font-black text-slate-850 dark:text-white uppercase leading-snug tracking-tight text-left">
-                {selectedNews.judul}
-              </h2>
-              <p className="text-sm text-slate-650 dark:text-slate-350 leading-relaxed font-semibold whitespace-pre-line text-left">
-                {selectedNews.konten}
-              </p>
-            </div>
-
-            <div className="p-6 bg-slate-50/50 dark:bg-slate-950/15 border-t border-slate-150 dark:border-white/5 flex items-center justify-end">
-              <button
-                onClick={() => setSelectedNews(null)}
-                className="px-6 py-2.5 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-xs font-black uppercase tracking-wider shadow-sm transition-all active:scale-[0.98]"
-              >
-                Tutup Informasi
-              </button>
-            </div>
-
-          </div>
-        </div>
-      )}
+      {/* MODAL BERITA / INFORMASI DETAIL DIHAPUS KARENA TIDAK DIGUNAKAN DI LANDING PAGE */}
 
     </div>
   );

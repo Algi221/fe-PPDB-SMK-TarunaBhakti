@@ -73,6 +73,9 @@ html.dark .btn-nav-link:hover {
 html.dark .logo-text {
   color: #e2e8f0;
 }
+html.dark .logo-text span {
+  color: #38bdf8 !important; /* Force sky-400 color on logo text in dark mode */
+}
 
 html.dark .bg-white,
 html.dark .bg-white\/80 {
