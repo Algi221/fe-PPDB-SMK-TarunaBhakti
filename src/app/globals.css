@@ -2,7 +2,7 @@
 @custom-variant dark (&:is(.dark *));
 
 @theme {
-  --color-white: #fafbfc;
+  --color-white: #F1F3F5;
 }
 
 :root {
@@ -12,7 +12,7 @@
   --secondary: #0ea5e9;
   --dark: #0f172a;
   --dark-muted: #475569;
-  --light-bg: #f4f9ff;
+  --light-bg: #F1F3F5;
   --glass-bg: rgba(250, 251, 252, 0.85);
   --glass-border: rgba(250, 251, 252, 0.45);
   --glass-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.05);

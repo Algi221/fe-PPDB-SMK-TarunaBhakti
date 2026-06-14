@@ -91,6 +91,7 @@ export default function ForumPage() {
   const [informasi, setInformasi] = useState<InformasiItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedPost, setSelectedPost] = useState<InformasiItem | null>(null);
+  const [schoolPeriod, setSchoolPeriod] = useState("2026-2027");
 
   useEffect(() => {
     const handleScroll = () => setIsNavbarScrolled(window.scrollY > 50);
@@ -111,6 +112,18 @@ export default function ForumPage() {
         const json = await res.json();
         if (json.success && json.data) {
           setInformasi(json.data);
+        }
+        
+        try {
+          const configRes = await fetch(`${BACKEND_URL}/api/config`);
+          const configJson = await configRes.json();
+          if (configJson.success && configJson.data && configJson.data.ppdb_school_period) {
+            setSchoolPeriod(configJson.data.ppdb_school_period);
+          }
+        } catch (configErr) {
+          console.warn("Gagal mengambil config sekolah:", configErr);
+          const localPeriod = localStorage.getItem("ppdb_school_period");
+          if (localPeriod) setSchoolPeriod(localPeriod);
         }
       } catch (e) {
         console.error("Gagal fetch informasi:", e);
@@ -342,7 +355,7 @@ export default function ForumPage() {
             <div className="absolute -top-10 -right-10 w-32 h-32 bg-white/10 rounded-full blur-2xl"></div>
             <div className="absolute -bottom-10 -left-10 w-32 h-32 bg-indigo-400/20 rounded-full blur-2xl"></div>
             <div className="relative z-10">
-              <span className="text-[9px] font-black uppercase tracking-widest text-blue-200">PPDB 2025</span>
+              <span className="text-[9px] font-black uppercase tracking-widest text-blue-200">PPDB {schoolPeriod.includes("-") ? schoolPeriod.split("-")[0] : schoolPeriod}</span>
               <h3 className="text-lg font-bold leading-snug mt-1 mb-4">Pendaftaran Siswa Baru Telah Dibuka</h3>
               <Link href="/daftar" className="inline-block bg-white text-blue-600 text-xs font-bold px-4 py-2 rounded-lg hover:bg-blue-50 transition-colors shadow-sm">
                 Daftar Sekarang
@@ -366,9 +379,9 @@ export default function ForumPage() {
               onClick={(e) => e.stopPropagation()}
             >
               {media.foto && (
-                <div className="h-64 relative border-b border-slate-100 dark:border-white/5">
-                  <img src={sanitizeSrc(media.foto)} alt={selectedPost.judul} className="w-full h-full object-cover" />
-                  <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-transparent to-transparent" />
+                <div className="relative border-b border-slate-100 dark:border-white/5 w-full bg-slate-100 dark:bg-slate-950 flex items-center justify-center max-h-[500px] overflow-hidden">
+                  <img src={sanitizeSrc(media.foto)} alt={selectedPost.judul} className="w-full h-auto max-h-[500px] object-contain" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-slate-950/30 via-transparent to-transparent pointer-events-none" />
                 </div>
               )}
               
