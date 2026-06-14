@@ -1015,7 +1015,7 @@ export default function Home() {
       </section>
 
       {/* FAQ SECTION */}
-      <section id="faq" className="py-24 bg-white dark:bg-[#0d1117] relative z-10 border-t border-slate-200/50 dark:border-slate-900 transition-colors duration-300">
+      <section id="faq" className="py-24 bg-white dark:bg-slate-950 relative z-10 border-t border-slate-200/50 dark:border-slate-900 transition-colors duration-300">
         <div className="max-w-4xl mx-auto px-6">
           <div className="text-center mb-16">
             <ScrollFloat
@@ -1115,7 +1115,7 @@ export default function Home() {
       </section>
 
       {/* FOOTER */}
-      <footer className="bg-slate-100 dark:bg-[#0d1117] border-t border-slate-200/50 dark:border-slate-900 py-16 transition-colors duration-300 relative z-10 mt-auto">
+      <footer className="bg-slate-100 dark:bg-slate-950 border-t border-slate-200/50 dark:border-slate-900 py-16 transition-colors duration-300 relative z-10 mt-auto">
         <div className="max-w-6xl mx-auto px-6">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 text-slate-500 dark:text-slate-400">
             {/* Col 1 */}
