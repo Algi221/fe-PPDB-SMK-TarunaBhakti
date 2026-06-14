@@ -445,7 +445,7 @@ export default function Home() {
             >
               {isDark ? <Sun size={18} /> : <Moon size={18} />}
             </button>
-            <Link href="/daftar" className="btn-primary-pill hidden md:inline-flex">
+            <Link href="/daftar" className="btn-primary-pill !hidden md:!inline-flex">
               Daftar
             </Link>
 
