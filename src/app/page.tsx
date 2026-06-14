@@ -433,8 +433,8 @@ export default function Home() {
           <div className="hidden md:flex items-center gap-2">
             <a href="#alur" className="btn-nav-link">Alur Pendaftaran</a>
             <a href="#majors" className="btn-nav-link">Jurusan</a>
-            <Link href="/forum" className="btn-nav-link">Forum Informasi</Link>
             <a href="#kemitraan" className="btn-nav-link">Mitra Industri</a>
+            <Link href="/forum" className="btn-nav-link">Forum Informasi</Link>
           </div>
 
           <div className="flex items-center gap-3">
@@ -488,13 +488,6 @@ export default function Home() {
             >
               Jurusan
             </a>
-            <Link
-              href="/forum"
-              onClick={() => setMobileMenuOpen(false)}
-              className="text-lg font-extrabold text-slate-800 dark:text-white hover:text-blue-600 dark:hover:text-blue-400 transition-colors py-3 border-b border-slate-100 dark:border-slate-800/60 w-full"
-            >
-              Forum Informasi
-            </Link>
             <a
               href="#kemitraan"
               onClick={() => setMobileMenuOpen(false)}
@@ -502,6 +495,13 @@ export default function Home() {
             >
               Mitra Industri
             </a>
+            <Link
+              href="/forum"
+              onClick={() => setMobileMenuOpen(false)}
+              className="text-lg font-extrabold text-slate-800 dark:text-white hover:text-blue-600 dark:hover:text-blue-400 transition-colors py-3 border-b border-slate-100 dark:border-slate-800/60 w-full"
+            >
+              Forum Informasi
+            </Link>
 
             <div className="w-full flex flex-col gap-3 mt-8">
               <Link

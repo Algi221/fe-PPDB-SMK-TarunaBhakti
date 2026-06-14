@@ -164,8 +164,8 @@ export default function ForumPage() {
           <div className="hidden md:flex items-center gap-2">
             <Link href="/#alur" className="btn-nav-link">Alur Pendaftaran</Link>
             <Link href="/#majors" className="btn-nav-link">Jurusan</Link>
-            <Link href="/forum" className="btn-nav-link" style={{color: 'var(--color-blue-600, #2563eb)', fontWeight: 700}}>Forum Informasi</Link>
             <Link href="/#kemitraan" className="btn-nav-link">Mitra Industri</Link>
+            <Link href="/forum" className="btn-nav-link" style={{color: 'var(--color-blue-600, #2563eb)', fontWeight: 700}}>Forum Informasi</Link>
           </div>
 
           <div className="flex items-center gap-3">

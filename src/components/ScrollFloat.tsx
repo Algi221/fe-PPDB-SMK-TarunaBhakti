@@ -1,4 +1,4 @@
-import { useLayoutEffect, useMemo, useRef } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 
@@ -64,7 +64,7 @@ const ScrollFloat = ({
     return <div className="char w-full">{children}</div>;
   }, [children, textMode]);
 
-  useLayoutEffect(() => {
+  useEffect(() => {
     const el = containerRef.current;
     if (!el) return;
 
@@ -103,7 +103,13 @@ const ScrollFloat = ({
       );
     }, el);
 
-    return () => ctx.revert();
+    return () => {
+      try {
+        ctx.revert();
+      } catch (e) {
+        // Safe catch for React Strict Mode / HMR unmounting issues
+      }
+    };
   }, [scrollContainerRef, animationDuration, ease, scrollStart, scrollEnd, stagger, textMode]);
 
   return (
