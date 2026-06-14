@@ -27,6 +27,21 @@ export default function EditInformasi({ params }: { params: { id: string } }) {
 
   const BACKEND_URL = "http://localhost:5000";
 
+  // Sanitize foto URL to prevent XSS via javascript: or other dangerous schemes
+  const sanitizeFotoUrl = (url: string): string => {
+    if (!url) return "";
+    const trimmed = url.trim();
+    // Allow only safe schemes: https, http, or data:image (from FileReader)
+    if (
+      trimmed.startsWith("https://") ||
+      trimmed.startsWith("http://") ||
+      trimmed.startsWith("data:image/")
+    ) {
+      return trimmed;
+    }
+    return ""; // Reject unsafe URLs
+  };
+
   const fetchDetail = async () => {
     try {
       const res = await fetch(`${BACKEND_URL}/api/informasi/${params.id}`);
@@ -40,9 +55,9 @@ export default function EditInformasi({ params }: { params: { id: string } }) {
         if (data.data.foto_url) {
           try {
             const parsed = JSON.parse(data.data.foto_url);
-            setFotoUrl(parsed.foto || "");
+            setFotoUrl(sanitizeFotoUrl(parsed.foto || ""));
           } catch {
-            setFotoUrl(data.data.foto_url as string);
+            setFotoUrl(sanitizeFotoUrl(data.data.foto_url as string));
           }
         }
       } else {
@@ -176,7 +191,9 @@ export default function EditInformasi({ params }: { params: { id: string } }) {
               if (!file) return;
               const reader = new FileReader();
               reader.onloadend = () => {
-                if (typeof reader.result === "string") setFotoUrl(reader.result);
+                if (typeof reader.result === "string") {
+                  setFotoUrl(sanitizeFotoUrl(reader.result));
+                }
               };
               reader.readAsDataURL(file);
             }}
