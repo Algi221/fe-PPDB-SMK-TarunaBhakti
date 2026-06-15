@@ -258,7 +258,9 @@ export function PPDBProvider({ children }: { children: React.ReactNode }) {
       });
       const data = await res.json();
       if (data.success) {
-        addToast("Applicant Approved", `Pendaftar #${id} telah berhasil diverifikasi!`, "success");
+        if (wsStatus !== "CONNECTED") {
+          addToast("Applicant Approved", `Pendaftar #${id} telah berhasil diverifikasi!`, "success");
+        }
         await fetchAdminApplicants();
         await fetchPublicApplicants();
         await fetchActiveStudents();
@@ -271,7 +273,7 @@ export function PPDBProvider({ children }: { children: React.ReactNode }) {
       setPublicApplicants(prev => prev.map(a => a.id === id ? { ...a, status: "Approved" } : a));
       addToast("Applicant Approved (Offline)", `Pendaftar #${id} disetujui.`, "success");
     }
-  }, [adminToken, fetchAdminApplicants, fetchPublicApplicants, fetchActiveStudents, addToast]);
+  }, [adminToken, fetchAdminApplicants, fetchPublicApplicants, fetchActiveStudents, addToast, wsStatus]);
 
   const rejectApplicant = useCallback(async (id: number) => {
     const token = adminToken || localStorage.getItem("ppdb_admin_token");
@@ -284,7 +286,9 @@ export function PPDBProvider({ children }: { children: React.ReactNode }) {
       });
       const data = await res.json();
       if (data.success) {
-        addToast("Applicant Rejected", `Calon siswa #${id} telah ditolak.`, "warning");
+        if (wsStatus !== "CONNECTED") {
+          addToast("Applicant Rejected", `Calon siswa #${id} telah ditolak.`, "warning");
+        }
         await fetchAdminApplicants();
         await fetchPublicApplicants();
         await fetchActiveStudents();
@@ -297,7 +301,7 @@ export function PPDBProvider({ children }: { children: React.ReactNode }) {
       setPublicApplicants(prev => prev.filter(a => a.id !== id));
       addToast("Applicant Rejected (Offline)", `Calon siswa #${id} ditolak.`, "warning");
     }
-  }, [adminToken, fetchAdminApplicants, fetchPublicApplicants, fetchActiveStudents, addToast]);
+  }, [adminToken, fetchAdminApplicants, fetchPublicApplicants, fetchActiveStudents, addToast, wsStatus]);
 
   const deleteApplicant = useCallback(async (id: number) => {
     const token = adminToken || localStorage.getItem("ppdb_admin_token");
@@ -309,7 +313,9 @@ export function PPDBProvider({ children }: { children: React.ReactNode }) {
       });
       const data = await res.json();
       if (data.success) {
-        addToast("Applicant Deleted", `Data pendaftar #${id} telah dihapus permanen.`, "danger");
+        if (wsStatus !== "CONNECTED") {
+          addToast("Applicant Deleted", `Data pendaftar #${id} telah dihapus permanen.`, "danger");
+        }
         await fetchAdminApplicants();
         await fetchPublicApplicants();
         await fetchActiveStudents();
@@ -322,7 +328,7 @@ export function PPDBProvider({ children }: { children: React.ReactNode }) {
       setPublicApplicants(prev => prev.filter(a => a.id !== id));
       addToast("Applicant Deleted (Offline)", `Pendaftar #${id} dihapus.`, "danger");
     }
-  }, [adminToken, fetchAdminApplicants, fetchPublicApplicants, fetchActiveStudents, addToast]);
+  }, [adminToken, fetchAdminApplicants, fetchPublicApplicants, fetchActiveStudents, addToast, wsStatus]);
 
   const updateApplicant = useCallback(async (id: number, updatedData: any) => {
     const token = adminToken || localStorage.getItem("ppdb_admin_token");
@@ -624,25 +630,7 @@ export function PPDBProvider({ children }: { children: React.ReactNode }) {
     }
   }, [adminToken, fetchAdminApplicants, fetchActiveStudents]);
 
-  useEffect(() => {
-    if (!adminToken) return;
-    let timeoutId: any;
-    const resetTimer = () => {
-      clearTimeout(timeoutId);
-      timeoutId = setTimeout(() => {
-        logoutAdmin();
-        addToast("Sesi Berakhir", "Sesi Anda telah berakhir karena tidak ada aktivitas selama 1 jam.", "warning");
-      }, 3600000);
-    };
-    const events = ["mousemove", "keydown", "click", "scroll", "touchstart"];
-    const handleEvent = () => resetTimer();
-    events.forEach(ev => window.addEventListener(ev, handleEvent));
-    resetTimer();
-    return () => {
-      clearTimeout(timeoutId);
-      events.forEach(ev => window.removeEventListener(ev, handleEvent));
-    };
-  }, [adminToken, logoutAdmin, addToast]);
+
 
   return (
     <PPDBContext.Provider

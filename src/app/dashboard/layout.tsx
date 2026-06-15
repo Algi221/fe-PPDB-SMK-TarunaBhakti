@@ -15,6 +15,13 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
+  const [showTimeoutModal, setShowTimeoutModal] = useState(false);
+
+  const confirmTimeoutLogout = () => {
+    setShowTimeoutModal(false);
+    logoutAdmin();
+    router.push("/dashboard/login");
+  };
 
   useEffect(() => {
     setIsMobileMenuOpen(false);
@@ -49,7 +56,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     }
   }, [adminToken, mounted, router]);
 
-  // Inactivity timeout of 15 minutes
+  // Inactivity timeout of 1 hour (60 minutes)
   useEffect(() => {
     if (!adminToken || pathname === "/dashboard/login") return;
 
@@ -58,10 +65,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     const resetTimer = () => {
       clearTimeout(timeoutId);
       timeoutId = setTimeout(() => {
-        logoutAdmin();
-        router.push("/dashboard/login");
-        alert("Sesi Anda telah berakhir karena tidak ada aktivitas selama 15 menit. Silakan login kembali.");
-      }, 15 * 60 * 1000); // 15 minutes
+        setShowTimeoutModal(true);
+      }, 60 * 60 * 1000); // 1 hour (60 minutes)
     };
 
     const events = ["mousedown", "mousemove", "keypress", "scroll", "touchstart"];
@@ -81,7 +86,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         window.removeEventListener(event, resetTimer);
       });
     };
-  }, [adminToken, pathname, router, logoutAdmin]);
+  }, [adminToken, pathname, router]);
 
   const toggleTheme = () => {
     setIsDark(!isDark);
@@ -484,6 +489,34 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 className="flex-1 py-3 bg-gradient-to-tr from-rose-600 to-red-500 hover:from-rose-500 hover:to-red-400 text-white rounded-2xl text-[10px] font-black uppercase tracking-wider shadow shadow-rose-500/20 hover:shadow-rose-500/40 transition-all cursor-pointer"
               >
                 Ya, Keluar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Session Timeout Modal */}
+      {showTimeoutModal && (
+        <div className="fixed inset-0 z-[150] bg-black/70 backdrop-blur-md flex items-center justify-center animate-in fade-in duration-300">
+          <div className="bg-white/80 dark:bg-slate-900/80 border border-slate-200 dark:border-white/10 rounded-3xl p-8 shadow-2xl flex flex-col items-center gap-6 text-center max-w-sm w-full mx-4 backdrop-blur-xl animate-in zoom-in-95 duration-200">
+            <div className="w-16 h-16 bg-amber-50 dark:bg-amber-950/40 rounded-full flex items-center justify-center text-amber-550 dark:text-amber-500 border border-amber-100 dark:border-amber-900/40 shadow-inner">
+              <Shield size={28} className="animate-pulse" />
+            </div>
+            
+            <div className="space-y-2">
+              <h3 className="text-base font-black text-slate-800 dark:text-white uppercase tracking-wider">Sesi Berakhir</h3>
+              <p className="text-xs text-slate-500 dark:text-slate-400 font-medium leading-relaxed">
+                Sesi Anda telah berakhir karena tidak ada aktivitas selama 1 jam. Silakan login kembali untuk melanjutkan.
+              </p>
+            </div>
+            
+            <div className="flex w-full">
+              <button
+                type="button"
+                onClick={confirmTimeoutLogout}
+                className="w-full py-3 bg-gradient-to-tr from-blue-600 to-indigo-500 hover:from-blue-500 hover:to-indigo-400 text-white rounded-2xl text-[10px] font-black uppercase tracking-wider shadow shadow-blue-500/20 hover:shadow-blue-500/40 transition-all cursor-pointer"
+              >
+                Login Kembali
               </button>
             </div>
           </div>
