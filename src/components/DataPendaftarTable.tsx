@@ -370,10 +370,10 @@ export default function DataPendaftarTable() {
                       <div className="text-xs font-semibold text-slate-700 dark:text-slate-300">{item.sekolah_asal || item.sekolahAsal}</div>
                     </td>
                     <td className="px-4 py-3">
-                      <span className={`inline-flex px-2 py-0.5 rounded-full text-[9px] font-bold border ${
+                      <span className={`inline-flex px-2.5 py-0.5 rounded-full text-[11px] font-black uppercase tracking-wider border ${
                         item.status === "Approved"
-                          ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-700 dark:text-emerald-400"
-                          : "bg-amber-500/10 border-amber-500/20 text-amber-800 dark:text-amber-400"
+                          ? "bg-emerald-50 border-emerald-250 text-emerald-800 dark:bg-emerald-950/60 dark:border-emerald-900/40 dark:text-emerald-300"
+                          : "bg-amber-50 border-amber-250 text-amber-850 dark:bg-amber-950/60 dark:border-amber-900/40 dark:text-amber-300"
                       }`}>
                         {item.status === "Approved" ? "Terverifikasi" : "Menunggu Verifikasi"}
                       </span>

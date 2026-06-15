@@ -184,6 +184,23 @@ export default function ActiveStudentsDirectory() {
   };
 
   const [selectedApplicant, setSelectedApplicant] = useState<Applicant | null>(null);
+  
+  const handleViewDetail = async (student: Applicant) => {
+    setSelectedApplicant(student);
+    try {
+      const token = localStorage.getItem("ppdb_admin_token");
+      const res = await fetch(`http://localhost:5000/api/siswa-aktif/${student.id}`, {
+        headers: { "Authorization": `Bearer ${token}` }
+      });
+      const data = await res.json();
+      if (data.success && data.data) {
+        setSelectedApplicant(data.data);
+      }
+    } catch (err) {
+      console.warn("Failed to lazy load active student detail:", err);
+    }
+  };
+
   const [activeTab, setActiveTab] = useState<string>("biodata");
   const [selectedDoc, setSelectedDoc] = useState<string | null>(null);
 
@@ -633,7 +650,7 @@ export default function ActiveStudentsDirectory() {
                                 <td className="py-3.5 px-3 text-center">
                                   <button
                                     onClick={() => {
-                                      setSelectedApplicant(student);
+                                      handleViewDetail(student);
                                       setActiveTab("biodata");
                                     }}
                                     className="px-2.5 py-1.5 bg-slate-100 hover:bg-blue-50 hover:text-blue-600 dark:bg-white/5 dark:hover:bg-blue-950/40 border border-slate-200/50 dark:border-white/5 text-slate-600 dark:text-slate-400 rounded-xl transition-all flex items-center justify-center gap-1.5 mx-auto font-black uppercase text-[9px] tracking-wide"

@@ -222,6 +222,23 @@ export default function ApplicantsDirectory() {
   const [gelombangFilter, setGelombangFilter] = useState<string>("ALL");
 
   const [selectedApplicant, setSelectedApplicant] = useState<Applicant | null>(null);
+  
+  const handleViewDetail = async (applicant: Applicant) => {
+    setSelectedApplicant(applicant);
+    try {
+      const token = localStorage.getItem("ppdb_admin_token");
+      const res = await fetch(`http://localhost:5000/api/applicants/${applicant.id}`, {
+        headers: { "Authorization": `Bearer ${token}` }
+      });
+      const data = await res.json();
+      if (data.success && data.data) {
+        setSelectedApplicant(data.data);
+      }
+    } catch (err) {
+      console.warn("Failed to lazy load applicant detail:", err);
+    }
+  };
+
   const [activeTab, setActiveTab] = useState<string>("biodata");
   const [isFullscreenImageOpen, setIsFullscreenImageOpen] = useState<boolean>(false);
 
@@ -592,7 +609,7 @@ export default function ApplicantsDirectory() {
                   <tr
                     key={a.id || idx}
                     className="hover:bg-slate-50/60 dark:hover:bg-white/5 transition-all group cursor-pointer"
-                    onDoubleClick={() => setSelectedApplicant(a)}
+                    onDoubleClick={() => handleViewDetail(a)}
                   >
                     <td className="py-4 px-6 pl-8">
                       <div className="font-extrabold text-slate-850 dark:text-white text-sm">{a.nama}</div>
@@ -621,7 +638,7 @@ export default function ApplicantsDirectory() {
                     <td className="py-4 px-6 text-right pr-8 shrink-0">
                       <div className="flex items-center justify-end gap-1.5" onClick={(e) => e.stopPropagation()}>
                         <button
-                          onClick={() => setSelectedApplicant(a)}
+                          onClick={() => handleViewDetail(a)}
                           className="p-2 bg-slate-100 hover:bg-slate-200 dark:bg-white/5 dark:hover:bg-white/10 text-slate-600 dark:text-slate-355 hover:text-slate-850 dark:hover:text-white rounded-xl transition-all border border-slate-200/50 dark:border-white/5"
                           title="Lihat Detail Form"
                         >
@@ -712,7 +729,7 @@ export default function ApplicantsDirectory() {
                   <tr
                     key={a.id || rowIdx}
                     className="border-b border-slate-200 dark:border-slate-800 hover:bg-blue-50/30 dark:hover:bg-blue-900/10 cursor-pointer transition-colors duration-150"
-                    onDoubleClick={() => setSelectedApplicant(a)}
+                    onDoubleClick={() => handleViewDetail(a)}
                   >
                     {/* Row Index Number */}
                     <td className="py-2.5 text-center font-mono text-[10px] border-r border-slate-200 dark:border-slate-800 bg-slate-50/80 dark:bg-slate-950/40 text-slate-400 font-bold">
