@@ -223,6 +223,7 @@ export default function ApplicantsDirectory() {
 
   const [selectedApplicant, setSelectedApplicant] = useState<Applicant | null>(null);
   const [activeTab, setActiveTab] = useState<string>("biodata");
+  const [isFullscreenImageOpen, setIsFullscreenImageOpen] = useState<boolean>(false);
 
   const [editApplicant, setEditApplicant] = useState<Applicant | null>(null);
   const [editForm, setEditForm] = useState<Partial<EditFormState>>({});
@@ -878,8 +879,11 @@ export default function ApplicantsDirectory() {
                 </div>
               </div>
               <button
-                onClick={() => setSelectedApplicant(null)}
-                className="w-10 h-10 rounded-full bg-slate-100 hover:bg-slate-200 dark:bg-white/5 dark:hover:bg-white/10 border border-slate-200 dark:border-white/5 text-slate-500 dark:text-slate-400 hover:text-rose-500 dark:hover:text-rose-400 flex items-center justify-center transition-all font-bold relative z-10 shrink-0"
+                onClick={() => {
+                  setSelectedApplicant(null);
+                  setIsFullscreenImageOpen(false);
+                }}
+                className="w-10 h-10 rounded-full bg-slate-100 hover:bg-slate-200 dark:bg-white/5 dark:hover:bg-white/10 border border-slate-200 dark:border-white/5 text-slate-500 dark:text-slate-450 hover:text-rose-500 dark:hover:text-rose-400 flex items-center justify-center transition-all font-bold relative z-10 shrink-0"
               >
                 ✕
               </button>
@@ -1259,14 +1263,21 @@ export default function ApplicantsDirectory() {
                             <img
                               src={sanitizeSrc(selectedApplicant.bukti_bayar)}
                               alt="Bukti Transfer Manual"
-                              className="max-h-64 object-contain mx-auto bg-white rounded-lg"
+                              className="max-h-64 object-contain mx-auto bg-white rounded-lg cursor-zoom-in hover:brightness-95 transition-all"
+                              onClick={() => setIsFullscreenImageOpen(true)}
                             />
-                            <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition flex items-center justify-center pointer-events-none rounded-lg">
+                            <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition flex flex-col gap-2 items-center justify-center pointer-events-none rounded-lg">
+                              <button
+                                onClick={() => setIsFullscreenImageOpen(true)}
+                                className="pointer-events-auto px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white font-extrabold text-xs rounded-lg uppercase shadow cursor-pointer transition-all"
+                              >
+                                Buka Fullscreen
+                              </button>
                               <a
                                 href={sanitizeUrl(selectedApplicant.bukti_bayar)}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="pointer-events-auto px-4 py-2 bg-white text-slate-800 font-extrabold text-xs rounded-lg uppercase shadow"
+                                className="pointer-events-auto px-4 py-2 bg-white hover:bg-slate-100 text-slate-800 font-extrabold text-xs rounded-lg uppercase shadow cursor-pointer transition-all"
                               >
                                 Buka di Tab Baru
                               </a>
@@ -1510,6 +1521,27 @@ export default function ApplicantsDirectory() {
               </button>
             </div>
           </div>
+        </div>
+      )}
+
+      {/* Fullscreen Image Modal */}
+      {isFullscreenImageOpen && (
+        <div 
+          className="fixed inset-0 z-[110] bg-black/90 backdrop-blur-md flex items-center justify-center p-4 animate-in fade-in duration-200 cursor-zoom-out"
+          onClick={() => setIsFullscreenImageOpen(false)}
+        >
+          <button
+            onClick={() => setIsFullscreenImageOpen(false)}
+            className="absolute top-6 right-6 w-12 h-12 rounded-full bg-white/10 hover:bg-white/20 border border-white/10 text-white flex items-center justify-center text-xl transition-all shadow font-bold cursor-pointer hover:scale-110"
+          >
+            ✕
+          </button>
+          <img
+            src={sanitizeSrc(selectedApplicant?.bukti_bayar || "")}
+            alt="Bukti Transfer Manual Fullscreen"
+            className="max-w-full max-h-[90vh] object-contain rounded-xl select-none cursor-default"
+            onClick={(e) => e.stopPropagation()}
+          />
         </div>
       )}
 

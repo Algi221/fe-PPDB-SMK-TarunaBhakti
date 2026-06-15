@@ -49,6 +49,40 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     }
   }, [adminToken, mounted, router]);
 
+  // Inactivity timeout of 15 minutes
+  useEffect(() => {
+    if (!adminToken || pathname === "/dashboard/login") return;
+
+    let timeoutId: NodeJS.Timeout;
+
+    const resetTimer = () => {
+      clearTimeout(timeoutId);
+      timeoutId = setTimeout(() => {
+        logoutAdmin();
+        router.push("/dashboard/login");
+        alert("Sesi Anda telah berakhir karena tidak ada aktivitas selama 15 menit. Silakan login kembali.");
+      }, 15 * 60 * 1000); // 15 minutes
+    };
+
+    const events = ["mousedown", "mousemove", "keypress", "scroll", "touchstart"];
+    
+    // Set initial timer
+    resetTimer();
+
+    // Add event listeners
+    events.forEach((event) => {
+      window.addEventListener(event, resetTimer);
+    });
+
+    // Cleanup on unmount
+    return () => {
+      clearTimeout(timeoutId);
+      events.forEach((event) => {
+        window.removeEventListener(event, resetTimer);
+      });
+    };
+  }, [adminToken, pathname, router, logoutAdmin]);
+
   const toggleTheme = () => {
     setIsDark(!isDark);
     if (!isDark) {

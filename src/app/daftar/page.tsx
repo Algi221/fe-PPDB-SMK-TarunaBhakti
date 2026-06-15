@@ -1572,7 +1572,7 @@ export default function DaftarPage() {
                     <button
                       onClick={() => handleConfirmOption("Transfer Manual", manualReceiptBase64)}
                       disabled={!manualReceiptBase64 || isSubmittingReceipt}
-                      className="w-full flex justify-center items-center gap-2 bg-gradient-to-r from-blue-650 to-indigo-650 hover:from-blue-700 hover:to-indigo-700 text-white font-black text-xs md:text-sm uppercase tracking-widest py-4.5 px-6 rounded-2xl shadow-lg disabled:opacity-40 disabled:pointer-events-none transition duration-300 transform hover:scale-[1.01] active:scale-[0.99] mt-4 cursor-pointer"
+                      className="w-full flex justify-center items-center gap-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-black text-xs md:text-sm uppercase tracking-widest py-4.5 px-6 rounded-2xl shadow-lg disabled:opacity-40 disabled:pointer-events-none transition duration-300 transform hover:scale-[1.01] active:scale-[0.99] mt-4 cursor-pointer"
                     >
                       {isSubmittingReceipt ? "Mengirim Bukti..." : "Kirim Bukti Pembayaran"}
                       <ArrowRight size={16} />
