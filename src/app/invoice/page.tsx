@@ -20,11 +20,45 @@ const sanitizeUrl = (url: string | undefined | null): string => {
 function InvoiceContent() {
   const searchParams = useSearchParams();
   const nisn = searchParams.get("nisn");
+  const isAdmin = searchParams.get("isAdmin") === "true";
   const [data, setData] = useState<any>(null);
   const [regCost, setRegCost] = useState(250000);
   const [waGroupUrl, setWaGroupUrl] = useState("https://chat.whatsapp.com/HJXHYajEOhl5RM6iN2SJOS");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  // Bersihkan nomor WhatsApp calon siswa ke format internasional
+  const getCleanWaNumber = () => {
+    if (!data || !data.whatsapp) return "";
+    let rawPhone = data.whatsapp;
+    let cleanPhone = rawPhone.replace(/\D/g, '');
+    if (cleanPhone.startsWith('0')) {
+      cleanPhone = '62' + cleanPhone.substring(1);
+    } else if (cleanPhone.startsWith('8')) {
+      cleanPhone = '62' + cleanPhone;
+    }
+    return cleanPhone;
+  };
+
+  const getWaSendUrl = () => {
+    if (typeof window === 'undefined' || !data) return "";
+    const cleanPhone = getCleanWaNumber();
+    const invoiceUrl = `${window.location.origin}/invoice?nisn=${data.nisn}`;
+    const messageText = `Halo ${data.nama},\n\nPembayaran registrasi formulir PPDB SMK Taruna Bhakti Depok Anda dengan NISN: ${data.nisn} telah BERHASIL DIVERIFIKASI dan dinyatakan LUNAS.\n\nBerikut adalah tautan bukti registrasi & invoice resmi pembayaran Anda:\n${invoiceUrl}\n\nTerima kasih.\nPanitia PPDB SMK Taruna Bhakti`;
+    const encodedMessage = encodeURIComponent(messageText);
+    return `https://wa.me/${cleanPhone}?text=${encodedMessage}`;
+  };
+
+  const handleSendWhatsApp = () => {
+    const url = getWaSendUrl();
+    if (url) {
+      window.open(url, '_blank');
+      // Setelah membuka WA, kembalikan admin ke dashboard pendaftar
+      setTimeout(() => {
+        window.location.href = "/dashboard/pendaftar";
+      }, 1000);
+    }
+  };
 
   useEffect(() => {
     const savedCost = localStorage.getItem('ppdb_reg_cost');
@@ -515,6 +549,24 @@ function InvoiceContent() {
         {/* ===== ACTION PANEL (screen only) ===== */}
         <div className="action-panel no-print" style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
           
+          {/* Himbauan Pengiriman Struk untuk Siswa */}
+          {!isAdmin && data.payment_status === "Paid" && (
+            <div style={{
+              background: '#eff6ff',
+              border: '1px solid #bfdbfe',
+              borderRadius: '20px',
+              padding: '20px',
+              fontSize: '10px',
+              color: '#1e40af',
+              fontWeight: 'bold',
+              lineHeight: '1.6',
+              boxShadow: '0 4px 12px rgba(0,0,0,0.04)'
+            }}>
+              📢 HIMBAUAN:<br />
+              Struk bukti registrasi & invoice resmi pembayaran yang telah diverifikasi akan dikirimkan oleh Panitia PPDB ke nomor WhatsApp Anda yang terdaftar.
+            </div>
+          )}
+
           {/* Print & Return */}
           <div style={{ background: 'white', border: '1px solid rgba(226,232,240,0.6)', borderRadius: '20px', padding: '24px', boxShadow: '0 4px 12px rgba(0,0,0,0.06)' }}>
             <h3 style={{ fontWeight: 900, fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.1em', color: '#334155', marginBottom: '12px', paddingBottom: '8px', borderBottom: '1px solid #f1f5f9' }}>
@@ -538,7 +590,7 @@ function InvoiceContent() {
               Cetak / Simpan PDF
             </button>
 
-            <Link href="/" style={{
+            <Link href={isAdmin ? "/dashboard/pendaftar" : "/"} style={{
               width: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '8px',
               background: '#f1f5f9', color: '#475569', fontWeight: 900, fontSize: '11px',
               textTransform: 'uppercase', letterSpacing: '0.1em',
@@ -546,48 +598,85 @@ function InvoiceContent() {
               marginTop: '10px', transition: 'background 0.2s'
             }}>
               <ArrowLeft size={13} />
-              Kembali ke Beranda
+              {isAdmin ? "Kembali ke Dashboard" : "Kembali ke Beranda"}
             </Link>
           </div>
 
-          {/* WhatsApp Group (only if Paid) */}
+          {/* WhatsApp Action */}
           {data.payment_status === "Paid" && (
-            <div style={{
-              background: 'linear-gradient(135deg, #eff6ff, #eef2ff)',
-              border: '1px solid rgba(191,219,254,0.5)', borderRadius: '20px',
-              padding: '24px', boxShadow: '0 4px 12px rgba(0,0,0,0.04)',
-              textAlign: 'center'
-            }}>
+            isAdmin ? (
               <div style={{
-                width: '44px', height: '44px', background: '#d1fae5', color: '#059669',
-                borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                margin: '0 auto 12px'
+                background: 'linear-gradient(135deg, #eff6ff, #eef2ff)',
+                border: '1px solid rgba(191,219,254,0.5)', borderRadius: '20px',
+                padding: '24px', boxShadow: '0 4px 12px rgba(0,0,0,0.04)',
+                textAlign: 'center'
               }}>
-                <Phone size={18} />
+                <div style={{
+                  width: '44px', height: '44px', background: '#d1fae5', color: '#059669',
+                  borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  margin: '0 auto 12px'
+                }}>
+                  <Phone size={18} />
+                </div>
+                <h4 style={{ fontWeight: 900, fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.1em', color: '#334155', margin: '0 0 8px 0' }}>
+                  Kirim Invoice WA
+                </h4>
+                <p style={{ fontSize: '10px', color: '#64748b', lineHeight: 1.6, margin: '0 0 14px 0' }}>
+                  Kirim dokumen bukti registrasi & invoice resmi ke nomor WhatsApp calon siswa ({data.whatsapp}).
+                </p>
+                <button
+                  onClick={handleSendWhatsApp}
+                  style={{
+                    width: '100%', display: 'inline-flex', justifyContent: 'center', alignItems: 'center', gap: '8px',
+                    padding: '12px 20px', background: 'linear-gradient(135deg, #059669, #22c55e)',
+                    color: 'white', fontWeight: 900, fontSize: '11px', textTransform: 'uppercase',
+                    letterSpacing: '0.1em', borderRadius: '14px', border: 'none', cursor: 'pointer',
+                    boxShadow: '0 2px 8px rgba(5,150,105,0.2)',
+                    transition: 'all 0.2s'
+                  }}
+                >
+                  <Phone size={12} />
+                  Kirim Invoice WA
+                </button>
               </div>
-              <h4 style={{ fontWeight: 900, fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.1em', color: '#334155', margin: '0 0 8px 0' }}>
-                Gabung Grup WhatsApp
-              </h4>
-              <p style={{ fontSize: '10px', color: '#64748b', lineHeight: 1.6, margin: '0 0 14px 0' }}>
-                Hubungkan dengan pendaftar PPDB lainnya, berkas fisik, dan info jadwal tes seleksi.
-              </p>
-              <a
-                href={sanitizeUrl(waGroupUrl)}
-                target="_blank"
-                rel="noopener noreferrer"
-                style={{
-                  width: '100%', display: 'inline-flex', justifyContent: 'center', alignItems: 'center', gap: '8px',
-                  padding: '12px 20px', background: 'linear-gradient(135deg, #059669, #22c55e)',
-                  color: 'white', fontWeight: 900, fontSize: '11px', textTransform: 'uppercase',
-                  letterSpacing: '0.1em', borderRadius: '14px', textDecoration: 'none',
-                  boxShadow: '0 2px 8px rgba(5,150,105,0.2)',
-                  transition: 'all 0.2s'
-                }}
-              >
-                <Phone size={12} />
-                Gabung WhatsApp
-              </a>
-            </div>
+            ) : (
+              <div style={{
+                background: 'linear-gradient(135deg, #eff6ff, #eef2ff)',
+                border: '1px solid rgba(191,219,254,0.5)', borderRadius: '20px',
+                padding: '24px', boxShadow: '0 4px 12px rgba(0,0,0,0.04)',
+                textAlign: 'center'
+              }}>
+                <div style={{
+                  width: '44px', height: '44px', background: '#d1fae5', color: '#059669',
+                  borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  margin: '0 auto 12px'
+                }}>
+                  <Phone size={18} />
+                </div>
+                <h4 style={{ fontWeight: 900, fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.1em', color: '#334155', margin: '0 0 8px 0' }}>
+                  Gabung Grup WhatsApp
+                </h4>
+                <p style={{ fontSize: '10px', color: '#64748b', lineHeight: 1.6, margin: '0 0 14px 0' }}>
+                  Hubungkan dengan pendaftar PPDB lainnya, berkas fisik, dan info jadwal tes seleksi.
+                </p>
+                <a
+                  href={sanitizeUrl(waGroupUrl)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{
+                    width: '100%', display: 'inline-flex', justifyContent: 'center', alignItems: 'center', gap: '8px',
+                    padding: '12px 20px', background: 'linear-gradient(135deg, #059669, #22c55e)',
+                    color: 'white', fontWeight: 900, fontSize: '11px', textTransform: 'uppercase',
+                    letterSpacing: '0.1em', borderRadius: '14px', textDecoration: 'none',
+                    boxShadow: '0 2px 8px rgba(5,150,105,0.2)',
+                    transition: 'all 0.2s'
+                  }}
+                >
+                  <Phone size={12} />
+                  Gabung WhatsApp
+                </a>
+              </div>
+            )
           )}
 
         </div>

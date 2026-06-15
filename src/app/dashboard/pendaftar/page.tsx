@@ -1276,29 +1276,13 @@ export default function ApplicantsDirectory() {
                             </a>
                           </div>
                         ) : (
-                          <div className="relative group max-w-sm rounded-xl overflow-hidden border dark:border-white/5 shadow-md">
+                          <div className="max-w-sm rounded-xl overflow-hidden border dark:border-white/5 shadow-md">
                             <img
                               src={sanitizeSrc(selectedApplicant.bukti_bayar)}
                               alt="Bukti Transfer Manual"
-                              className="max-h-64 object-contain mx-auto bg-white rounded-lg cursor-zoom-in hover:brightness-95 transition-all"
+                              className="max-h-64 object-contain mx-auto bg-white rounded-lg cursor-pointer hover:brightness-95 transition-all w-full"
                               onClick={() => setIsFullscreenImageOpen(true)}
                             />
-                            <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition flex flex-col gap-2 items-center justify-center pointer-events-none rounded-lg">
-                              <button
-                                onClick={() => setIsFullscreenImageOpen(true)}
-                                className="pointer-events-auto px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white font-extrabold text-xs rounded-lg uppercase shadow cursor-pointer transition-all"
-                              >
-                                Buka Fullscreen
-                              </button>
-                              <a
-                                href={sanitizeUrl(selectedApplicant.bukti_bayar)}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="pointer-events-auto px-4 py-2 bg-white hover:bg-slate-100 text-slate-800 font-extrabold text-xs rounded-lg uppercase shadow cursor-pointer transition-all"
-                              >
-                                Buka di Tab Baru
-                              </a>
-                            </div>
                           </div>
                         )}
                         
@@ -1310,6 +1294,7 @@ export default function ApplicantsDirectory() {
                                 const res = await updateApplicant(selectedApplicant.id, { payment_status: "Paid" });
                                 if (res?.success) {
                                   setSelectedApplicant(prev => prev ? { ...prev, payment_status: "Paid" } : null);
+                                  window.location.href = `/invoice?nisn=${selectedApplicant.nisn}&isAdmin=true`;
                                 } else {
                                   alert(res?.message || "Gagal memperbarui status pembayaran.");
                                 }
