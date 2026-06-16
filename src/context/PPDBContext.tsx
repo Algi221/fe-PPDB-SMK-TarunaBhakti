@@ -427,30 +427,7 @@ export function PPDBProvider({ children }: { children: React.ReactNode }) {
       }
     } catch (err: any) {
       console.error("Auth API error:", err.message);
-      const superAdminUser = process.env.NEXT_PUBLIC_SUPER_ADMIN_USERNAME;
-      const superAdminPass = process.env.NEXT_PUBLIC_SUPER_ADMIN_PASSWORD;
-      const adminUserVal = process.env.NEXT_PUBLIC_ADMIN_USERNAME;
-      const adminPassVal = process.env.NEXT_PUBLIC_ADMIN_PASSWORD;
-      const mockJwtToken = process.env.NEXT_PUBLIC_MOCK_JWT_TOKEN;
-
-      if (superAdminUser && superAdminPass && username === superAdminUser && password === superAdminPass) {
-        const token = mockJwtToken || "";
-        const admin = { username: superAdminUser, nama: "Administrator PPDB TB (Local)", role: "superadmin" };
-        setAdminToken(token);
-        setAdminUser(admin);
-        localStorage.setItem("ppdb_admin_token", token);
-        localStorage.setItem("ppdb_admin_user", JSON.stringify(admin));
-        return { success: true };
-      } else if (adminUserVal && adminPassVal && username === adminUserVal && password === adminPassVal) {
-        const token = mockJwtToken || "";
-        const admin = { username: adminUserVal, nama: "Panitia PPDB Biasa", role: "admin" };
-        setAdminToken(token);
-        setAdminUser(admin);
-        localStorage.setItem("ppdb_admin_token", token);
-        localStorage.setItem("ppdb_admin_user", JSON.stringify(admin));
-        return { success: true };
-      }
-      return { success: false, message: "Koneksi ke backend gagal." };
+      return { success: false, message: "Koneksi ke server backend gagal." };
     }
   }, []);
 

@@ -21,9 +21,6 @@ export default function AdminManagementPage() {
   const [formLoading, setFormLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   
-  // Menyimpan status visibilitas password tiap baris tabel
-  const [visiblePasswords, setVisiblePasswords] = useState<Record<number, boolean>>({});
-
   // YSBMO Integration States
   const [activeTab, setActiveTab] = useState<"admin" | "ysbmo">("admin");
   const [ysbmoStaff, setYsbmoStaff] = useState<any[]>([]);
@@ -274,12 +271,6 @@ export default function AdminManagementPage() {
     }
   };
 
-  const togglePasswordVisibility = (id: number) => {
-    setVisiblePasswords(prev => ({
-      ...prev,
-      [id]: !prev[id]
-    }));
-  };
 
   if (!adminUser || adminUser.role !== 'superadmin') {
     return null;
@@ -564,7 +555,6 @@ export default function AdminManagementPage() {
                     <tr>
                       <th className="px-6 py-4 font-bold uppercase tracking-wider text-xs">Nama / Username</th>
                       <th className="px-6 py-4 font-bold uppercase tracking-wider text-xs">Role</th>
-                      <th className="px-6 py-4 font-bold uppercase tracking-wider text-xs">Password</th>
                       <th className="px-6 py-4 font-bold uppercase tracking-wider text-xs text-right">Aksi</th>
                     </tr>
                   </thead>
@@ -584,22 +574,7 @@ export default function AdminManagementPage() {
                             {admin.role === 'superadmin' ? 'Super Admin' : 'Admin'}
                           </span>
                         </td>
-                        <td className="px-6 py-4">
-                          {admin.password_plain ? (
-                            <div className="flex items-center gap-2 font-mono text-xs text-slate-700 dark:text-slate-300 bg-slate-50 dark:bg-slate-950 px-3 py-1.5 rounded-lg border border-slate-200/40 dark:border-slate-800/40 w-fit">
-                              <span>{visiblePasswords[admin.id] ? admin.password_plain : "••••••••"}</span>
-                              <button
-                                type="button"
-                                onClick={() => togglePasswordVisibility(admin.id)}
-                                className="text-slate-450 hover:text-slate-650 dark:hover:text-slate-250 ml-1.5"
-                              >
-                                {visiblePasswords[admin.id] ? <EyeOff size={14} /> : <Eye size={14} />}
-                              </button>
-                            </div>
-                          ) : (
-                            <span className="text-slate-400 dark:text-slate-600 text-xs italic">Tersinkronisasi YSBMO (Hanya Hash)</span>
-                          )}
-                        </td>
+
                         <td className="px-6 py-4 text-right space-x-1.5">
                           <button
                             onClick={() => handleStartEdit(admin)}
