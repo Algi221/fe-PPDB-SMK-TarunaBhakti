@@ -75,6 +75,11 @@ export function PPDBProvider({ children }: { children: React.ReactNode }) {
   
   const connectWsRef = useRef<(() => void) | null>(null);
 
+  const adminTokenRef = useRef<string | null>(adminToken);
+  useEffect(() => {
+    adminTokenRef.current = adminToken;
+  }, [adminToken]);
+
   const playNotificationSound = useCallback(() => {
     try {
       const audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
@@ -436,9 +441,12 @@ export function PPDBProvider({ children }: { children: React.ReactNode }) {
 
     console.log("Attempting to connect to Hono WebSocket channel...");
     setWsStatus("CONNECTING");
-    addWsLog("SYSTEM", "CONNECTING", { url: WS_URL });
+    
+    const currentToken = adminTokenRef.current;
+    const wsUrlWithToken = currentToken ? `${WS_URL}?token=${currentToken}` : WS_URL;
+    addWsLog("SYSTEM", "CONNECTING", { url: wsUrlWithToken });
 
-    const ws = new WebSocket(WS_URL);
+    const ws = new WebSocket(wsUrlWithToken);
     wsRef.current = ws;
 
     ws.onopen = () => {
@@ -590,13 +598,15 @@ export function PPDBProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     fetchPublicApplicants();
+  }, [fetchPublicApplicants]);
+
+  useEffect(() => {
     connectWs();
     return () => {
       if (wsRef.current) wsRef.current.close();
       if (reconnectTimeoutRef.current) clearTimeout(reconnectTimeoutRef.current);
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [adminToken, connectWs]);
 
   useEffect(() => {
     if (!adminToken) return;
