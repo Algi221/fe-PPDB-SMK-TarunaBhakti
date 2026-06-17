@@ -252,7 +252,9 @@ export default function Home() {
 
     if (document.readyState === 'complete') {
       const timer = handleLoad();
-      return () => clearTimeout(timer);
+      return () => {
+        if (timer) clearTimeout(timer);
+      };
     } else {
       let timer: any;
       const onWindowLoad = () => {
@@ -427,6 +429,15 @@ export default function Home() {
       {/* Fullscreen Mobile Navigation Menu Overlay */}
       {mobileMenuOpen && (
         <div className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-white/95 dark:bg-slate-900/98 backdrop-blur-2xl animate-in fade-in duration-300 md:hidden">
+          {/* Close Button X in top right */}
+          <button
+            onClick={() => setMobileMenuOpen(false)}
+            className="absolute top-6 right-6 p-2.5 rounded-full bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-white transition-colors cursor-pointer"
+            aria-label="Close Mobile Menu"
+          >
+            <X size={20} />
+          </button>
+
           {/* Decorative gradients */}
           <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] rounded-full bg-blue-500/10 blur-[80px] pointer-events-none"></div>
           <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] rounded-full bg-amber-500/10 blur-[80px] pointer-events-none"></div>
@@ -489,7 +500,7 @@ export default function Home() {
       <main className="flex-grow w-full">
         <div className="relative w-full overflow-hidden">
           {/* Video Background - Full Width */}
-          <div className="absolute inset-0 w-full h-full z-0 overflow-hidden bg-slate-100 dark:bg-slate-900">
+          <div className="absolute inset-0 w-full h-full z-0 overflow-hidden bg-gradient-to-br from-indigo-50/50 via-white to-sky-50/50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950">
             {loadVideo && (
               <video
                 ref={videoRef}

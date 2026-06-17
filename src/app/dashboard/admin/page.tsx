@@ -1,15 +1,18 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
 import { usePPDB } from "@/context/PPDBContext";
-import { useRouter } from "next/navigation";
-import { Shield, Plus, Trash2, Edit3, User, KeyRound, Eye, EyeOff, Save, X } from "lucide-react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { Shield, Plus, Trash2, Edit3, User, KeyRound, Eye, EyeOff, Save, X, RotateCcw } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
-export default function AdminManagementPage() {
+function AdminManagementPageContent() {
   const { adminUser, adminToken } = usePPDB();
   const router = useRouter();
-  
+  const searchParams = useSearchParams();
+  const activeTabParam = searchParams.get("tab") || "admin";
+  const activeTab = activeTabParam as "admin" | "ysbmo" | "trash";
+
   const [admins, setAdmins] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -20,14 +23,20 @@ export default function AdminManagementPage() {
   const [formData, setFormData] = useState({ username: "", password: "", nama_lengkap: "", role: "admin" });
   const [formLoading, setFormLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  
-  // YSBMO Integration States
-  const [activeTab, setActiveTab] = useState<"admin" | "ysbmo">("admin");
+
+  const [trashedAdmins, setTrashedAdmins] = useState<any[]>([]);
+  const [trashLoading, setTrashLoading] = useState(false);
   const [ysbmoStaff, setYsbmoStaff] = useState<any[]>([]);
   const [ysbmoLoading, setYsbmoLoading] = useState(false);
   const [ysbmoError, setYsbmoError] = useState("");
   const [ysbmoTokenInput, setYsbmoTokenInput] = useState("");
   const [showYsbmoTokenForm, setShowYsbmoTokenForm] = useState(false);
+
+  const handleTabChange = (tab: "admin" | "ysbmo" | "trash") => {
+    setError("");
+    setSuccessMsg("");
+    router.push(`/dashboard/admin?tab=${tab}`);
+  };
 
   const getBackendUrl = () => {
     if (process.env.NEXT_PUBLIC_BACKEND_URL) return process.env.NEXT_PUBLIC_BACKEND_URL;
@@ -72,8 +81,10 @@ export default function AdminManagementPage() {
   useEffect(() => {
     if (activeTab === "ysbmo" && ysbmoStaff.length === 0) {
       fetchYsbmoStaff();
+    } else if (activeTab === "trash") {
+      fetchTrashedAdmins();
     }
-  }, [activeTab]);
+  }, [activeTab, adminToken]);
 
   const fetchYsbmoStaff = async (manualToken?: string) => {
     if (!adminToken) return;
@@ -271,6 +282,83 @@ export default function AdminManagementPage() {
     }
   };
 
+  const fetchTrashedAdmins = async () => {
+    if (!adminToken) return;
+    try {
+      setTrashLoading(true);
+      const backendUrl = getBackendUrl();
+      const res = await fetch(`${backendUrl}/api/admin/users/trashed`, {
+        headers: {
+          'Authorization': `Bearer ${adminToken}`
+        }
+      });
+      const data = await res.json();
+      if (data.success) {
+        setTrashedAdmins(data.data);
+      }
+    } catch (err: any) {
+      console.error("Gagal mengambil data sampah:", err.message);
+    } finally {
+      setTrashLoading(false);
+    }
+  };
+
+  const handleRestoreAdmin = async (id: number) => {
+    if (!adminToken) return;
+    try {
+      setTrashLoading(true);
+      setError("");
+      setSuccessMsg("");
+      const backendUrl = getBackendUrl();
+      const res = await fetch(`${backendUrl}/api/admin/users/${id}/restore`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${adminToken}`
+        }
+      });
+      const data = await res.json();
+      if (data.success) {
+        setSuccessMsg("Admin berhasil dipulihkan!");
+        fetchTrashedAdmins();
+        fetchAdmins();
+      } else {
+        setError(data.message || "Gagal memulihkan admin.");
+      }
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
+      setTrashLoading(false);
+    }
+  };
+
+  const handlePermanentDeleteAdmin = async (id: number) => {
+    if (!confirm("Apakah Anda yakin ingin menghapus admin ini secara PERMANEN? Tindakan ini tidak dapat dibatalkan!")) return;
+    if (!adminToken) return;
+    try {
+      setTrashLoading(true);
+      setError("");
+      setSuccessMsg("");
+      const backendUrl = getBackendUrl();
+      const res = await fetch(`${backendUrl}/api/admin/users/${id}?permanent=true`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${adminToken}`
+        }
+      });
+      const data = await res.json();
+      if (data.success) {
+        setSuccessMsg("Admin berhasil dihapus secara permanen.");
+        fetchTrashedAdmins();
+      } else {
+        setError(data.message || "Gagal menghapus admin secara permanen.");
+      }
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
+      setTrashLoading(false);
+    }
+  };
+
 
   if (!adminUser || adminUser.role !== 'superadmin') {
     return null;
@@ -285,7 +373,7 @@ export default function AdminManagementPage() {
             Manajemen Admin
           </h2>
           <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
-            Kelola, edit, hapus, dan lihat sandi akses panitia PPDB.
+            Kelola hak akses, perbarui profil, hapus, dan atur peran (role) panitia PPDB.
           </p>
         </div>
         
@@ -310,11 +398,7 @@ export default function AdminManagementPage() {
       {/* Tab Navigation */}
       <div className="flex border-b border-slate-200 dark:border-slate-800 gap-6">
         <button
-          onClick={() => {
-            setActiveTab("admin");
-            setError("");
-            setSuccessMsg("");
-          }}
+          onClick={() => handleTabChange("admin")}
           className={`pb-3 text-sm font-bold border-b-2 transition-all ${
             activeTab === "admin"
               ? "border-emerald-500 text-emerald-600 dark:text-emerald-400"
@@ -324,11 +408,7 @@ export default function AdminManagementPage() {
           Manajemen Akun Admin
         </button>
         <button
-          onClick={() => {
-            setActiveTab("ysbmo");
-            setError("");
-            setSuccessMsg("");
-          }}
+          onClick={() => handleTabChange("ysbmo")}
           className={`pb-3 text-sm font-bold border-b-2 transition-all ${
             activeTab === "ysbmo"
               ? "border-emerald-500 text-emerald-600 dark:text-emerald-400"
@@ -336,6 +416,17 @@ export default function AdminManagementPage() {
           }`}
         >
           Data Staff & Guru YSBMO
+        </button>
+        <button
+          onClick={() => handleTabChange("trash")}
+          className={`pb-3 text-sm font-bold border-b-2 transition-all flex items-center gap-1.5 ${
+            activeTab === "trash"
+              ? "border-emerald-500 text-emerald-600 dark:text-emerald-400"
+              : "border-transparent text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200"
+          }`}
+        >
+          <Trash2 size={15} />
+          Sampah / Akun Dihapus
         </button>
       </div>
 
@@ -351,7 +442,7 @@ export default function AdminManagementPage() {
         </div>
       )}
 
-      {activeTab === "admin" ? (
+      {activeTab === "admin" && (
         <>
           <AnimatePresence>
             {/* Form Tambah Admin */}
@@ -490,26 +581,6 @@ export default function AdminManagementPage() {
                     </div>
                   </div>
 
-                  <div>
-                    <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 mb-1.5 uppercase">Password (Kosongkan jika tidak diganti)</label>
-                    <div className="relative">
-                      <KeyRound className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
-                      <input
-                        type={showPassword ? "text" : "password"}
-                        value={formData.password}
-                        onChange={e => setFormData({ ...formData, password: e.target.value })}
-                        className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-800 dark:text-white rounded-xl pl-10 pr-10 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/50 transition-all"
-                        placeholder="Masukkan password baru untuk mengganti"
-                      />
-                      <button
-                        type="button"
-                        onClick={() => setShowPassword(!showPassword)}
-                        className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-650 dark:hover:text-slate-250"
-                      >
-                        {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
-                      </button>
-                    </div>
-                  </div>
 
                   <div>
                     <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 mb-1.5 uppercase">Peran (Role)</label>
@@ -610,7 +681,9 @@ export default function AdminManagementPage() {
             )}
           </div>
         </>
-      ) : (
+      )}
+
+      {activeTab === "ysbmo" && (
         <>
           {/* Form Input Token YSBMO Manual */}
           {showYsbmoTokenForm && (
@@ -729,6 +802,81 @@ export default function AdminManagementPage() {
           )}
         </>
       )}
+
+      {activeTab === "trash" && (
+        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-sm overflow-hidden">
+          {trashLoading ? (
+            <div className="p-8 text-center text-slate-500 dark:text-slate-400 font-medium">Memuat data sampah...</div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm text-left">
+                <thead className="bg-slate-50 dark:bg-slate-950/50 text-slate-500 dark:text-slate-400 border-b border-slate-200 dark:border-slate-800">
+                  <tr>
+                    <th className="px-6 py-4 font-bold uppercase tracking-wider text-xs">Nama / Username</th>
+                    <th className="px-6 py-4 font-bold uppercase tracking-wider text-xs">Role</th>
+                    <th className="px-6 py-4 font-bold uppercase tracking-wider text-xs text-right">Aksi</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                  {trashedAdmins.map((admin) => (
+                    <tr key={admin.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/20 transition-colors">
+                      <td className="px-6 py-4">
+                        <div className="font-bold text-slate-800 dark:text-white">{admin.nama_lengkap}</div>
+                        <div className="text-slate-500 dark:text-slate-400 text-xs mt-0.5 font-mono">@{admin.username}</div>
+                      </td>
+                      <td className="px-6 py-4">
+                        <span className={`px-2.5 py-1 rounded-md text-[10px] font-black uppercase tracking-wider ${
+                          admin.role === 'superadmin' 
+                            ? 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400'
+                            : 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400'
+                        }`}>
+                          {admin.role === 'superadmin' ? 'Super Admin' : 'Admin'}
+                        </span>
+                      </td>
+
+                      <td className="px-6 py-4 text-right space-x-1.5">
+                        <button
+                          onClick={() => handleRestoreAdmin(admin.id)}
+                          className="px-3 py-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-600 dark:bg-emerald-900/20 dark:hover:bg-emerald-900/40 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800/60 rounded-xl text-xs font-bold transition-all shadow-sm inline-flex items-center gap-1.5"
+                          title="Pulihkan Admin"
+                        >
+                          <RotateCcw size={14} />
+                          Pulihkan
+                        </button>
+                        
+                        <button
+                          onClick={() => handlePermanentDeleteAdmin(admin.id)}
+                          className="px-3 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-650 dark:bg-rose-900/20 dark:hover:bg-rose-900/40 dark:text-rose-450 border border-rose-200 dark:border-rose-800/60 rounded-xl text-xs font-bold transition-all shadow-sm inline-flex items-center gap-1.5"
+                          title="Hapus Permanen"
+                        >
+                          <Trash2 size={14} />
+                          Hapus Permanen
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                  
+                  {trashedAdmins.length === 0 && (
+                    <tr>
+                      <td colSpan={3} className="px-6 py-8 text-center text-slate-500 dark:text-slate-400">
+                        Tempat sampah kosong.
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+      )}
     </div>
+  );
+}
+
+export default function AdminManagementPage() {
+  return (
+    <Suspense fallback={<div className="p-8 text-center text-slate-500 dark:text-slate-400 font-medium animate-pulse">Memuat halaman manajemen admin...</div>}>
+      <AdminManagementPageContent />
+    </Suspense>
   );
 }

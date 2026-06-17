@@ -1,10 +1,60 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, Suspense } from "react";
 import { usePPDB } from "@/context/PPDBContext";
-import { useRouter, usePathname } from "next/navigation";
+import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Sun, Moon, LogOut, LayoutDashboard, Users, Settings, Globe, Megaphone, GraduationCap, ChevronLeft, ChevronRight, Palette, Layers, Shield, Menu } from "lucide-react";
+
+function Breadcrumbs({ pathname }: { pathname: string }) {
+  const searchParams = useSearchParams();
+  const activeTab = searchParams.get("tab");
+
+  const paths = pathname.split('/').filter(p => p);
+  const labelMap: Record<string, string> = {
+    dashboard: "Dashboard",
+    admin: "users",
+    pendaftar: "pendaftar",
+    "siswa-aktif": "siswa-aktif",
+    informasi: "informasi",
+    "kelola-ui": "kelola-ui",
+    "pembagian-kelas": "pembagian-kelas",
+    settings: "settings"
+  };
+
+  const breadcrumbs: { label: string; href: string }[] = [];
+  paths.forEach((path, idx) => {
+    const label = labelMap[path] || path;
+    const href = '/' + paths.slice(0, idx + 1).join('/');
+    breadcrumbs.push({ label, href });
+  });
+
+  if (pathname === "/dashboard/admin" && activeTab === "trash") {
+    breadcrumbs.push({ label: "trashed", href: "/dashboard/admin?tab=trash" });
+  } else if (pathname === "/dashboard/pendaftar" && activeTab === "trash") {
+    breadcrumbs.push({ label: "trashed", href: "/dashboard/pendaftar?tab=trash" });
+  }
+
+  return (
+    <div className="flex items-center gap-1.5 text-xs text-slate-400 dark:text-slate-500 font-medium tracking-wide select-none">
+      {breadcrumbs.map((bc, idx) => {
+        const isLast = idx === breadcrumbs.length - 1;
+        return (
+          <React.Fragment key={idx}>
+            {idx > 0 && <span className="text-slate-300 dark:text-slate-700">&gt;</span>}
+            {isLast ? (
+              <span className="text-slate-650 dark:text-slate-300 font-semibold">{bc.label}</span>
+            ) : (
+              <Link href={bc.href} className="hover:text-slate-650 dark:hover:text-slate-350 transition-colors">
+                {bc.label}
+              </Link>
+            )}
+          </React.Fragment>
+        );
+      })}
+    </div>
+  );
+}
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const { adminToken, adminUser, logoutAdmin, wsStatus } = usePPDB();
@@ -19,12 +69,16 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
   const confirmTimeoutLogout = () => {
     setShowTimeoutModal(false);
+    setShowLogoutConfirm(false);
     logoutAdmin();
     router.push("/dashboard/login");
   };
 
   useEffect(() => {
     setIsMobileMenuOpen(false);
+    if (pathname === "/dashboard/login") {
+      setShowLogoutConfirm(false);
+    }
   }, [pathname]);
 
   useEffect(() => {
@@ -126,6 +180,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
   const confirmLogout = () => {
     logoutAdmin();
+    setShowLogoutConfirm(false);
     router.push("/dashboard/login");
   };
 
@@ -405,21 +460,11 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             >
               <Menu size={20} />
             </button>
-            <h1 className="text-sm font-black text-slate-800 dark:text-white leading-none uppercase tracking-wider hidden sm:block">
-            {pathname === "/dashboard"
-              ? "Ringkasan Eksekutif"
-              : pathname === "/dashboard/pendaftar"
-                ? "Direktori Calon Siswa"
-                : pathname === "/dashboard/siswa-aktif"
-                  ? "Daftar Siswa Aktif"
-                  : pathname === "/dashboard/informasi"
-                    ? "Kelola Informasi & Pengumuman"
-                    : pathname === "/dashboard/kelola-ui"
-                      ? "Kelola User Interface"
-                      : pathname === "/dashboard/pembagian-kelas"
-                        ? "Manajemen Pembagian Kelas"
-                        : "Konfigurasi & Simulasi"}
-            </h1>
+            <div className="hidden sm:block">
+              <Suspense fallback={<div className="h-4 w-32 bg-slate-200 dark:bg-slate-800 rounded animate-pulse" />}>
+                <Breadcrumbs pathname={pathname} />
+              </Suspense>
+            </div>
           </div>
 
           <div className="flex items-center gap-3">

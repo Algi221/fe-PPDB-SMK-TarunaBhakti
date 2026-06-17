@@ -144,7 +144,7 @@ export default function DataPendaftarTable() {
             <Image src="/logo_smktb.png" alt="" width={288} height={288} className="absolute -right-10 -bottom-10 w-72 h-72 object-contain opacity-[0.03] dark:opacity-[0.05] grayscale animate-[spin_80s_linear_infinite] pointer-events-none" />
 
             {/* Card Header */}
-            <div className="flex justify-between items-center border-b border-slate-200 dark:border-white/10 pb-4 mb-6 relative z-10">
+            <div className="flex flex-col sm:flex-row gap-4 sm:items-center justify-between border-b border-slate-200 dark:border-white/10 pb-4 mb-6 relative z-10">
               <div className="flex items-center gap-3">
                 <div className="relative">
                   <div className="absolute inset-0 bg-blue-500/20 dark:bg-blue-500/50 blur-md rounded-full animate-pulse" />
@@ -155,7 +155,7 @@ export default function DataPendaftarTable() {
                   <span className="text-[9px] font-black text-blue-600 dark:text-blue-400 uppercase tracking-[0.3em] block mt-1">PPDB ONLINE 2026</span>
                 </div>
               </div>
-              <div>
+              <div className="w-fit">
                 {selectedStudent.status === "Approved" ? (
                   <div className="relative group/badge cursor-default">
                     <div className="absolute inset-0 bg-emerald-500/20 dark:bg-emerald-500/40 blur-md opacity-0 group-hover/badge:opacity-100 transition-opacity rounded-full" />

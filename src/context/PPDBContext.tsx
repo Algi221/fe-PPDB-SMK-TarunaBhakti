@@ -437,7 +437,10 @@ export function PPDBProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const connectWs = useCallback(() => {
-    if (wsRef.current) wsRef.current.close();
+    if (wsRef.current) {
+      wsRef.current.onclose = null;
+      wsRef.current.close();
+    }
 
     console.log("Attempting to connect to Hono WebSocket channel...");
     setWsStatus("CONNECTING");
@@ -603,7 +606,10 @@ export function PPDBProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     connectWs();
     return () => {
-      if (wsRef.current) wsRef.current.close();
+      if (wsRef.current) {
+        wsRef.current.onclose = null;
+        wsRef.current.close();
+      }
       if (reconnectTimeoutRef.current) clearTimeout(reconnectTimeoutRef.current);
     };
   }, [adminToken, connectWs]);

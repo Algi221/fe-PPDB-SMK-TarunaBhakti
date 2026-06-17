@@ -1,7 +1,8 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, Suspense } from "react";
 import { usePPDB } from "@/context/PPDBContext";
+import { useRouter, useSearchParams } from "next/navigation";
 import dompurify from "dompurify";
 
 const sanitizeUrl = (url: string | undefined | null): string => {
@@ -214,14 +215,111 @@ function buildKey(a: Applicant): string {
   return `${initial}|${jurusan}|${sekolah}`;
 }
 
-export default function ApplicantsDirectory() {
-  const { applicants, verifyApplicant, rejectApplicant, deleteApplicant, updateApplicant } = usePPDB();
+function ApplicantsDirectoryContent() {
+  const { applicants, verifyApplicant, rejectApplicant, deleteApplicant, updateApplicant, fetchAdminApplicants } = usePPDB();
   const [searchTerm, setSearchTerm] = useState<string>("");
   const [statusFilter, setStatusFilter] = useState<string>("ALL");
   const [majorFilter, setMajorFilter] = useState<string>("ALL");
   const [gelombangFilter, setGelombangFilter] = useState<string>("ALL");
 
   const [selectedApplicant, setSelectedApplicant] = useState<Applicant | null>(null);
+  
+  // Trash bin implementation
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const activeTabParam = searchParams.get("tab") || "active";
+  const activePageTab = activeTabParam as "active" | "trash";
+
+  const [trashedApplicants, setTrashedApplicants] = useState<Applicant[]>([]);
+  const [trashLoading, setTrashLoading] = useState<boolean>(false);
+  const [trashError, setTrashError] = useState<string>("");
+  const [trashSuccess, setTrashSuccess] = useState<string>("");
+
+  const handleTabChange = (tab: "active" | "trash") => {
+    setTrashError("");
+    setTrashSuccess("");
+    router.push(`/dashboard/pendaftar?tab=${tab}`);
+  };
+
+  const fetchTrashedApplicants = async () => {
+    try {
+      setTrashLoading(true);
+      setTrashError("");
+      const token = localStorage.getItem("ppdb_admin_token");
+      const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:5000";
+      const res = await fetch(`${backendUrl}/api/applicants/trashed`, {
+        headers: { "Authorization": `Bearer ${token}` }
+      });
+      const data = await res.json();
+      if (data.success) {
+        setTrashedApplicants(data.data);
+      } else {
+        setTrashError(data.message || "Gagal mengambil data pendaftar terhapus");
+      }
+    } catch (err: any) {
+      setTrashError(err.message || "Terjadi kesalahan koneksi");
+    } finally {
+      setTrashLoading(false);
+    }
+  };
+
+  const handleRestoreApplicant = async (id: number) => {
+    try {
+      setTrashLoading(true);
+      setTrashError("");
+      setTrashSuccess("");
+      const token = localStorage.getItem("ppdb_admin_token");
+      const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:5000";
+      const res = await fetch(`${backendUrl}/api/applicants/${id}/restore`, {
+        method: "POST",
+        headers: { "Authorization": `Bearer ${token}` }
+      });
+      const data = await res.json();
+      if (data.success) {
+        setTrashSuccess("Data calon siswa berhasil dipulihkan!");
+        fetchTrashedApplicants();
+        await fetchAdminApplicants();
+      } else {
+        setTrashError(data.message || "Gagal memulihkan data");
+      }
+    } catch (err: any) {
+      setTrashError(err.message || "Terjadi kesalahan koneksi");
+    } finally {
+      setTrashLoading(false);
+    }
+  };
+
+  const handlePermanentDeleteApplicant = async (id: number) => {
+    if (!confirm("Apakah Anda yakin ingin menghapus data calon siswa ini secara PERMANEN? Tindakan ini tidak dapat dibatalkan!")) return;
+    try {
+      setTrashLoading(true);
+      setTrashError("");
+      setTrashSuccess("");
+      const token = localStorage.getItem("ppdb_admin_token");
+      const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:5000";
+      const res = await fetch(`${backendUrl}/api/applicants/${id}?permanent=true`, {
+        method: "DELETE",
+        headers: { "Authorization": `Bearer ${token}` }
+      });
+      const data = await res.json();
+      if (data.success) {
+        setTrashSuccess("Data calon siswa berhasil dihapus secara permanen.");
+        fetchTrashedApplicants();
+      } else {
+        setTrashError(data.message || "Gagal menghapus data");
+      }
+    } catch (err: any) {
+      setTrashError(err.message || "Terjadi kesalahan koneksi");
+    } finally {
+      setTrashLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (activePageTab === "trash") {
+      fetchTrashedApplicants();
+    }
+  }, [activePageTab]);
   
   const handleViewDetail = async (applicant: Applicant) => {
     setSelectedApplicant(applicant);
@@ -476,8 +574,46 @@ export default function ApplicantsDirectory() {
 
   return (
     <div className="space-y-6 animate-in fade-in duration-500 text-left">
+      {/* Tab Navigation */}
+      <div className="flex border-b border-slate-200 dark:border-slate-800 gap-6">
+        <button
+          onClick={() => handleTabChange("active")}
+          className={`pb-3 text-sm font-bold border-b-2 transition-all ${
+            activePageTab === "active"
+              ? "border-blue-500 text-blue-600 dark:text-blue-400"
+              : "border-transparent text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200"
+          }`}
+        >
+          Data Calon Siswa Aktif
+        </button>
+        <button
+          onClick={() => handleTabChange("trash")}
+          className={`pb-3 text-sm font-bold border-b-2 transition-all flex items-center gap-1.5 ${
+            activePageTab === "trash"
+              ? "border-blue-500 text-blue-600 dark:text-blue-400"
+              : "border-transparent text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200"
+          }`}
+        >
+          <Trash2 size={15} />
+          Sampah / Calon Siswa Dihapus
+        </button>
+      </div>
 
-      {/* Search, Filter & Spreadsheet Toggle Toolbar */}
+      {trashError && (
+        <div className="p-4 bg-rose-50 border border-rose-200 text-rose-600 rounded-xl text-sm font-semibold dark:bg-rose-950/30 dark:border-rose-900/50 dark:text-rose-400">
+          {trashError}
+        </div>
+      )}
+
+      {trashSuccess && (
+        <div className="p-4 bg-emerald-50 border border-emerald-250 text-emerald-600 rounded-xl text-sm font-semibold dark:bg-emerald-950/30 dark:border-emerald-900/50 dark:text-emerald-400">
+          {trashSuccess}
+        </div>
+      )}
+
+      {activePageTab === "active" ? (
+        <>
+          {/* Search, Filter & Spreadsheet Toggle Toolbar */}
       <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800/60 rounded-3xl p-6 shadow-[0_2px_12px_rgba(0,0,0,0.02)] flex flex-col xl:flex-row gap-4 items-center justify-between transition-colors duration-300">
 
         {/* Search Field */}
@@ -846,6 +982,86 @@ export default function ApplicantsDirectory() {
           </div>
         )}
       </div>
+        </>
+      ) : (
+        /* Trash Table View */
+        <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800/60 rounded-3xl backdrop-blur-md overflow-hidden shadow-[0_2px_12px_rgba(0,0,0,0.02)] transition-colors duration-300">
+          {trashLoading ? (
+            <div className="p-8 text-center text-slate-500 dark:text-slate-400 font-medium animate-pulse">Memuat data sampah...</div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-xs font-bold text-slate-655 dark:text-slate-355">
+                <thead>
+                  <tr className="border-b border-slate-100 dark:border-white/5 text-slate-400 dark:text-slate-500 font-black text-[9px] uppercase tracking-widest bg-slate-50/50 dark:bg-slate-950/15">
+                    <th className="py-4 px-6 pl-8">Nama Calon Siswa</th>
+                    <th className="py-4 px-6">Asal Sekolah</th>
+                    <th className="py-4 px-6">Pilihan Jurusan Utama</th>
+                    <th className="py-4 px-6 text-center">Status Sebelumnya</th>
+                    <th className="py-4 px-6 text-right pr-8">Aksi Pemulihan</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100 dark:divide-white/5">
+                  {trashedApplicants.map((a: Applicant, idx: number) => (
+                    <tr key={a.id || idx} className="hover:bg-slate-50/60 dark:hover:bg-white/5 transition-all">
+                      <td className="py-4 px-6 pl-8">
+                        <div className="font-extrabold text-slate-850 dark:text-white text-sm">{a.nama}</div>
+                        <span className="text-[9px] text-slate-400 dark:text-slate-555 font-bold tracking-wide uppercase mt-0.5 block">
+                          NISN: {a.nisn} · Lahir: {a.tempat_lahir || a.tempatLahir || "-"}, {a.tgl_lahir || a.tglLahir || "-"}
+                        </span>
+                      </td>
+                      <td className="py-4 px-6 text-slate-600 dark:text-slate-400 font-semibold">{a.sekolah_asal || a.sekolahAsal}</td>
+                      <td className="py-4 px-6">
+                        <span className="px-2.5 py-1 rounded-full bg-blue-50/70 dark:bg-blue-950/40 text-blue-550 dark:text-blue-400 border border-blue-100/80 dark:border-blue-900/40 font-extrabold text-[9px] uppercase tracking-wide">
+                          {a.jurusan_1 || a.jurusan1}
+                        </span>
+                      </td>
+                      <td className="py-4 px-6 text-center">
+                        <span
+                          className={`inline-flex px-2.5 py-0.5 rounded-full text-[9px] font-extrabold border uppercase tracking-wider ${a.status === "Approved"
+                              ? "bg-emerald-50 dark:bg-emerald-950/60 border-emerald-250 dark:border-emerald-900 text-emerald-600 dark:text-emerald-400"
+                              : a.status === "Rejected"
+                                ? "bg-rose-50 dark:bg-rose-950/60 border-rose-250 dark:border-rose-900 text-rose-600 dark:text-rose-400"
+                                : "bg-amber-50 dark:bg-amber-950/60 border-amber-250 dark:border-amber-900 text-amber-600 dark:text-amber-400"
+                            }`}
+                        >
+                          {a.status === "Approved" ? "Terverifikasi" : a.status === "Rejected" ? "Ditolak" : "Pending"}
+                        </span>
+                      </td>
+                      <td className="py-4 px-6 text-right pr-8">
+                        <div className="flex items-center justify-end gap-2">
+                          <button
+                            onClick={() => handleRestoreApplicant(a.id)}
+                            className="px-3 py-1.5 bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-900/20 dark:hover:bg-emerald-900/40 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800/60 rounded-xl text-xs font-bold transition-all shadow-sm inline-flex items-center gap-1 cursor-pointer"
+                            title="Pulihkan Calon Siswa"
+                          >
+                            Pulihkan
+                          </button>
+                          
+                          <button
+                            onClick={() => handlePermanentDeleteApplicant(a.id)}
+                            className="px-3 py-1.5 bg-rose-50 hover:bg-rose-100 dark:bg-rose-900/20 dark:hover:bg-rose-900/40 dark:text-rose-400 border border-rose-200 dark:border-rose-800/60 rounded-xl text-xs font-bold transition-all shadow-sm inline-flex items-center gap-1 cursor-pointer"
+                            title="Hapus Permanen"
+                          >
+                            Hapus Permanen
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+
+                  {trashedApplicants.length === 0 && (
+                    <tr>
+                      <td colSpan={5} className="text-center py-12 text-slate-400 font-bold uppercase tracking-wider">
+                        Tempat sampah kosong.
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Interactive Google Sheets Sync Simulation progress banner overlay */}
       {syncStatus === "SYNCING" && (
@@ -1548,5 +1764,13 @@ export default function ApplicantsDirectory() {
       )}
 
     </div>
+  );
+}
+
+export default function ApplicantsDirectory() {
+  return (
+    <Suspense fallback={<div className="p-8 text-center text-slate-500 dark:text-slate-400 font-medium animate-pulse">Memuat data pendaftar...</div>}>
+      <ApplicantsDirectoryContent />
+    </Suspense>
   );
 }
