@@ -105,6 +105,332 @@ const DEFAULT_ALUR: AlurItem[] = [
   { id: 6, title: "Pengumuman & Kelulusan", desc: "Pengumuman kelulusan resmi dan status penerimaan calon peserta didik baru melalui web smktarunabhakti.net." }
 ];
 
+interface Partner {
+  name: string;
+  sector: string;
+  color: string;
+  accent: string;
+  url: string;
+  iconType: string;
+}
+
+const PARTNERS_DATA: Partner[] = [
+  { name: "TOA", sector: "Industry & Electronics", color: "#e11d48", accent: "rgba(225,29,72,0.15)", url: "https://toa.co.id/", iconType: "toa" },
+  { name: "Biznet", sector: "Telecommunication & ISP", color: "#f97316", accent: "rgba(249,115,22,0.15)", url: "https://www.biznetnetworks.com/", iconType: "biznet" },
+  { name: "Infection Studio", sector: "Creative & Animation", color: "#6366f1", accent: "rgba(99,102,241,0.15)", url: "https://infectionstudio.com/", iconType: "infection" },
+  { name: "Icon+", sector: "Telecommunication & Network", color: "#14b8a6", accent: "rgba(20,184,166,0.15)", url: "https://iconnet.id/", iconType: "iconplus" },
+  { name: "MD Animation", sector: "Creative & Animation", color: "#ef4444", accent: "rgba(239,68,68,0.15)", url: "https://mdentertainment.com/id/md-animations/", iconType: "mdanimation" },
+  { name: "Hompimpa Animworks", sector: "Creative & Animation", color: "#9333ea", accent: "rgba(147,51,234,0.15)", url: "https://hompimpastudio.com/", iconType: "hompimpa" },
+  { name: "Monsterdata", sector: "Technology & Data", color: "#06b6d4", accent: "rgba(6,182,212,0.15)", url: "https://monsterdata.co.id/", iconType: "monsterdata" },
+  { name: "Ciptadrasoft", sector: "Software Development", color: "#3b82f6", accent: "rgba(59,130,246,0.15)", url: "https://ciptadrasoft.com/", iconType: "ciptadrasoft" },
+  { name: "Assemblr", sector: "Augmented Reality & IT", color: "#8b5cf6", accent: "rgba(139,92,246,0.15)", url: "https://www.assemblrworld.com/", iconType: "assemblr" },
+  { name: "Beyond Education Indonesia", sector: "Education & Training", color: "#4f46e5", accent: "rgba(79,70,229,0.15)", url: "https://beyondeducation.id/", iconType: "beyondeducation" },
+  { name: "Daun Biru Engineering", sector: "Technology & Engineering", color: "#10b981", accent: "rgba(16,185,129,0.15)", url: "https://www.daunbiru.co.id/", iconType: "daunbiru" },
+  { name: "Citra Film School", sector: "Broadcasting & Film", color: "#f59e0b", accent: "rgba(245,158,11,0.15)", url: "https://citrafilmschool.net/", iconType: "cfs" },
+  { name: "Prasimax", sector: "Technology & IoT", color: "#dc2626", accent: "rgba(220,38,38,0.15)", url: "https://prasimax.com/", iconType: "prasimax" },
+  { name: "Panasonic", sector: "Electronics & Industry", color: "#2563eb", accent: "rgba(37,99,235,0.15)", url: "https://www.panasonic.com/id/", iconType: "panasonic" },
+  { name: "LUWES Inovasi Mandiri", sector: "Technology & Automation", color: "#f97316", accent: "rgba(249,115,22,0.15)", url: "https://luwes.id/", iconType: "luwes" },
+  { name: "Pudak Scientific", sector: "Science & Education", color: "#22c55e", accent: "rgba(34,197,94,0.15)", url: "https://www.pudak-scientific.com/", iconType: "pudak" },
+  { name: "Pupuk Kujang", sector: "Industry & Agriculture", color: "#84cc16", accent: "rgba(132,204,22,0.15)", url: "https://pupuk-kujang.co.id/", iconType: "pupukkujang" },
+  { name: "Radio Rasil am720", sector: "Broadcasting & Media", color: "#0d9488", accent: "rgba(13,148,136,0.15)", url: "https://radiosilaturahim.com/", iconType: "rasil" },
+  { name: "Beyond Films", sector: "Broadcasting & Film", color: "#7c3aed", accent: "rgba(124,58,237,0.15)", url: "https://beyondfilms.gr/", iconType: "beyondfilms" },
+  { name: "POSTPLAY", sector: "Creative & Animation", color: "#d946ef", accent: "rgba(217,70,239,0.15)", url: "https://postplay.id/", iconType: "postplay" },
+  { name: "Visi 8", sector: "Creative & Animation", color: "#ea580c", accent: "rgba(234,88,12,0.15)", url: "https://visi8.com/", iconType: "visi8" },
+  { name: "Memento", sector: "Creative & Animation", color: "#fbbf24", accent: "rgba(251,191,36,0.15)", url: "https://memento.id/", iconType: "memento" },
+  { name: "Skynet", sector: "Telecommunication & ISP", color: "#0ea5e9", accent: "rgba(14,165,233,0.15)", url: "https://sky.net.id/", iconType: "skynet" },
+  { name: "Ristek", sector: "Technology & Education", color: "#3b82f6", accent: "rgba(59,130,246,0.15)", url: "https://ristek.id/", iconType: "ristek" },
+  { name: "Museum Nasional Indonesia", sector: "Art, History & Gov", color: "#d97706", accent: "rgba(217,119,6,0.15)", url: "https://www.museumnasional.or.id/", iconType: "museumnasional" },
+  { name: "ANIMO", sector: "Creative & Animation", color: "#f43f5e", accent: "rgba(244,63,94,0.15)", url: "https://animo.id/", iconType: "animo" },
+  { name: "Pionicon", sector: "Creative & IP Dev", color: "#ea580c", accent: "rgba(234,88,12,0.15)", url: "https://pionicon.com/", iconType: "pionicon" },
+  { name: "LSP SMK Taruna Bhakti", sector: "Certification & Edu", color: "#2563eb", accent: "rgba(37,99,235,0.15)", url: "https://smktarunabhakti.sch.id/", iconType: "lspsmktb" },
+  { name: "MVNET", sector: "Telecommunication & ISP", color: "#06b6d4", accent: "rgba(6,182,212,0.15)", url: "https://mvnet.id/", iconType: "mvnet" },
+  { name: "Sada Technology", sector: "Software & Integrator", color: "#4f46e5", accent: "rgba(79,70,229,0.15)", url: "https://sadata.id/", iconType: "sada" },
+  { name: "Light Code Digital", sector: "Software & Digital Agency", color: "#9333ea", accent: "rgba(147,51,234,0.15)", url: "https://lightcodedigital.com/", iconType: "lightcodedigital" }
+];
+
+const renderPartnerSVG = (type: string, color: string) => {
+  const strokeColor = color;
+  const fillColor = `${color}20`; // 12.5% opacity for fill
+  
+  switch (type) {
+    case "toa":
+      return (
+        <svg className="w-12 h-12" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M24 6L6 38H42L24 6Z" stroke={strokeColor} strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" fill={fillColor} />
+          <path d="M20 26L24 30L28 26" stroke={strokeColor} strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
+          <line x1="24" y1="18" x2="24" y2="24" stroke={strokeColor} strokeWidth="3" strokeLinecap="round" />
+        </svg>
+      );
+    case "biznet":
+      return (
+        <svg className="w-12 h-12" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M16 24C16 19.58 19.58 16 24 16C28.42 16 32 19.58 32 24C32 28.42 28.42 32 24 32" stroke={strokeColor} strokeWidth="3" strokeLinecap="round" />
+          <path d="M32 24C32 28.42 35.58 32 40 32C44.42 32 48 28.42 48 24C48 19.58 44.42 16 40 16" stroke={strokeColor} strokeWidth="3" strokeLinecap="round" />
+          <path d="M8 24C8 19.58 11.58 16 16 16" stroke={strokeColor} strokeWidth="3" strokeLinecap="round" />
+          <circle cx="24" cy="24" r="4" fill={strokeColor} />
+          <circle cx="40" cy="24" r="4" fill={strokeColor} />
+          <circle cx="8" cy="24" r="4" fill={strokeColor} />
+        </svg>
+      );
+    case "infection":
+      return (
+        <svg className="w-12 h-12" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M24 4L40 14V34L24 44L8 34V14L24 4Z" stroke={strokeColor} strokeWidth="3" strokeLinejoin="round" fill={fillColor} />
+          <circle cx="24" cy="24" r="7" stroke={strokeColor} strokeWidth="3" />
+          <path d="M24 17V8" stroke={strokeColor} strokeWidth="3" strokeLinecap="round" />
+          <path d="M18 27.5L10 32" stroke={strokeColor} strokeWidth="3" strokeLinecap="round" />
+          <path d="M30 27.5L38 32" stroke={strokeColor} strokeWidth="3" strokeLinecap="round" />
+        </svg>
+      );
+    case "iconplus":
+      return (
+        <svg className="w-12 h-12" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="24" cy="24" r="18" stroke={strokeColor} strokeWidth="3" fill={fillColor} />
+          <path d="M26 10L16 26H25L22 38L32 22H23L26 10Z" fill={strokeColor} />
+        </svg>
+      );
+    case "mdanimation":
+      return (
+        <svg className="w-12 h-12" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect x="6" y="10" width="36" height="28" rx="6" stroke={strokeColor} strokeWidth="3" fill={fillColor} />
+          <path d="M14 18V30H18L22 22L26 30H30V18" stroke={strokeColor} strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
+          <path d="M34 18C36 18 38 20 38 24C38 28 36 30 34 30" stroke={strokeColor} strokeWidth="3" strokeLinecap="round" />
+        </svg>
+      );
+    case "hompimpa":
+      return (
+        <svg className="w-12 h-12" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect x="6" y="14" width="36" height="20" rx="10" stroke={strokeColor} strokeWidth="3" fill={fillColor} />
+          <path d="M16 24H20M18 22V26" stroke={strokeColor} strokeWidth="3" strokeLinecap="round" />
+          <circle cx="28" cy="24" r="2.5" fill={strokeColor} />
+          <circle cx="34" cy="24" r="2.5" fill={strokeColor} />
+          <path d="M12 34L16 38" stroke={strokeColor} strokeWidth="3" strokeLinecap="round" />
+          <path d="M36 34L32 38" stroke={strokeColor} strokeWidth="3" strokeLinecap="round" />
+        </svg>
+      );
+    case "monsterdata":
+      return (
+        <svg className="w-12 h-12" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect x="8" y="8" width="32" height="32" rx="8" stroke={strokeColor} strokeWidth="3" fill={fillColor} />
+          <circle cx="18" cy="20" r="3" fill={strokeColor} />
+          <circle cx="30" cy="20" r="3" fill={strokeColor} />
+          <path d="M16 30C19 33 29 33 32 30" stroke={strokeColor} strokeWidth="3" strokeLinecap="round" />
+          <path d="M12 6L16 10M36 6L32 10" stroke={strokeColor} strokeWidth="3" strokeLinecap="round" />
+        </svg>
+      );
+    case "ciptadrasoft":
+      return (
+        <svg className="w-12 h-12" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M24 4L40 8V22C40 32.5 33 41.5 24 44C15 41.5 8 32.5 8 22V8L24 4Z" stroke={strokeColor} strokeWidth="3" strokeLinejoin="round" fill={fillColor} />
+          <path d="M18 20L13 24L18 28" stroke={strokeColor} strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
+          <path d="M30 20L35 24L30 28" stroke={strokeColor} strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
+          <path d="M26 18L22 30" stroke={strokeColor} strokeWidth="3" strokeLinecap="round" />
+        </svg>
+      );
+    case "assemblr":
+      return (
+        <svg className="w-12 h-12" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M24 6L40 14L24 22L8 14L24 6Z" stroke={strokeColor} strokeWidth="2.5" strokeLinejoin="round" fill={fillColor} />
+          <path d="M8 22L24 30L40 22" stroke={strokeColor} strokeWidth="2.5" strokeLinejoin="round" />
+          <path d="M8 30L24 38L40 30" stroke={strokeColor} strokeWidth="2.5" strokeLinejoin="round" />
+          <path d="M24 22V38" stroke={strokeColor} strokeWidth="2.5" />
+        </svg>
+      );
+    case "beyondeducation":
+      return (
+        <svg className="w-12 h-12" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M24 8L8 16L24 24L40 16L24 8Z" stroke={strokeColor} strokeWidth="3" strokeLinejoin="round" fill={fillColor} />
+          <path d="M14 21V30C14 34 18 36 24 36C30 36 34 34 34 30V21" stroke={strokeColor} strokeWidth="3" strokeLinejoin="round" />
+          <path d="M38 18V32" stroke={strokeColor} strokeWidth="3" strokeLinecap="round" />
+          <circle cx="38" cy="32" r="2" fill={strokeColor} />
+        </svg>
+      );
+    case "daunbiru":
+      return (
+        <svg className="w-12 h-12" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M24 4C35 4 40 12 40 24C40 36 35 44 24 44C13 44 8 36 8 24C8 12 13 4 24 4Z" stroke={strokeColor} strokeWidth="3" fill={fillColor} />
+          <path d="M24 4V44" stroke={strokeColor} strokeWidth="2" strokeDasharray="4 4" />
+          <path d="M14 24C16 18 20 16 24 16" stroke={strokeColor} strokeWidth="3" strokeLinecap="round" />
+          <path d="M34 24C32 30 28 32 24 32" stroke={strokeColor} strokeWidth="3" strokeLinecap="round" />
+        </svg>
+      );
+    case "cfs":
+      return (
+        <svg className="w-12 h-12" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect x="6" y="14" width="36" height="26" rx="4" stroke={strokeColor} strokeWidth="3" fill={fillColor} />
+          <path d="M6 22H42" stroke={strokeColor} strokeWidth="3" />
+          <path d="M12 14L16 22M22 14L26 22M32 14L36 22" stroke={strokeColor} strokeWidth="3" strokeLinecap="round" />
+        </svg>
+      );
+    case "prasimax":
+      return (
+        <svg className="w-12 h-12" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect x="10" y="10" width="28" height="28" rx="4" stroke={strokeColor} strokeWidth="3" fill={fillColor} />
+          <path d="M6 18H10M6 30H10M38 18H42M38 30H42M18 6V10M30 6V10M18 38V42M30 38V42" stroke={strokeColor} strokeWidth="3" strokeLinecap="round" />
+          <circle cx="24" cy="24" r="6" stroke={strokeColor} strokeWidth="3" />
+        </svg>
+      );
+    case "panasonic":
+      return (
+        <svg className="w-12 h-12" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect x="6" y="12" width="36" height="24" rx="4" stroke={strokeColor} strokeWidth="3" fill={fillColor} />
+          <path d="M14 18H22C24 18 26 19 26 21.5C26 24 24 25 22 25H18V30H14V18ZM18 22H22C23 22 23.5 21.8 23.5 21.5C23.5 21.2 23 21 22 21H18V22Z" fill={strokeColor} />
+          <path d="M30 18L34 30M34 18L30 30" stroke={strokeColor} strokeWidth="3" strokeLinecap="round" />
+        </svg>
+      );
+    case "luwes":
+      return (
+        <svg className="w-12 h-12" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M14 16C8.48 16 4 20.48 4 26C4 31.52 8.48 36 14 36C19.52 36 24 26 24 26C24 26 28.48 16 34 16C39.52 16 44 20.48 44 26C44 31.52 39.52 36 34 36C28.48 36 24 26 24 26C24 26 19.52 16 14 16Z" stroke={strokeColor} strokeWidth="3" strokeLinejoin="round" fill={fillColor} />
+        </svg>
+      );
+    case "pudak":
+      return (
+        <svg className="w-12 h-12" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M12 12C12 12 16 20 24 20C32 20 36 28 36 28" stroke={strokeColor} strokeWidth="3" strokeLinecap="round" />
+          <path d="M36 12C36 12 32 20 24 20C16 20 12 28 12 28" stroke={strokeColor} strokeWidth="3" strokeLinecap="round" />
+          <circle cx="12" cy="12" r="4" stroke={strokeColor} strokeWidth="2" fill={fillColor} />
+          <circle cx="36" cy="12" r="4" stroke={strokeColor} strokeWidth="2" fill={fillColor} />
+          <circle cx="12" cy="28" r="4" stroke={strokeColor} strokeWidth="2" fill={fillColor} />
+          <circle cx="36" cy="28" r="4" stroke={strokeColor} strokeWidth="2" fill={fillColor} />
+          <line x1="24" y1="12" x2="24" y2="28" stroke={strokeColor} strokeWidth="2" strokeDasharray="3 3" />
+        </svg>
+      );
+    case "pupukkujang":
+      return (
+        <svg className="w-12 h-12" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M24 4C18 10 14 18 14 26C14 34.5 20 40 24 44C28 40 34 34.5 34 26C34 18 30 10 24 4Z" stroke={strokeColor} strokeWidth="3" fill={fillColor} />
+          <path d="M24 12V36M24 20L20 24M24 28L28 32" stroke={strokeColor} strokeWidth="3" strokeLinecap="round" />
+        </svg>
+      );
+    case "rasil":
+      return (
+        <svg className="w-12 h-12" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M24 40L20 16L24 4L28 16L24 40Z" stroke={strokeColor} strokeWidth="3" fill={fillColor} />
+          <circle cx="24" cy="4" r="2" fill={strokeColor} />
+          <path d="M16 12C12 16 12 24 16 28" stroke={strokeColor} strokeWidth="3" strokeLinecap="round" />
+          <path d="M32 12C36 16 36 24 32 28" stroke={strokeColor} strokeWidth="3" strokeLinecap="round" />
+          <path d="M10 6C4 12 4 28 10 34" stroke={strokeColor} strokeWidth="2.5" strokeLinecap="round" />
+          <path d="M38 6C44 12 44 28 38 34" stroke={strokeColor} strokeWidth="2.5" strokeLinecap="round" />
+        </svg>
+      );
+    case "beyondfilms":
+      return (
+        <svg className="w-12 h-12" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect x="6" y="16" width="22" height="18" rx="4" stroke={strokeColor} strokeWidth="3" fill={fillColor} />
+          <path d="M28 21L40 15V35L28 29" stroke={strokeColor} strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" fill={fillColor} />
+          <circle cx="12" cy="10" r="4" stroke={strokeColor} strokeWidth="3" />
+          <circle cx="22" cy="10" r="4" stroke={strokeColor} strokeWidth="3" />
+        </svg>
+      );
+    case "postplay":
+      return (
+        <svg className="w-12 h-12" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <polygon points="16,10 38,24 16,38" stroke={strokeColor} strokeWidth="3" strokeLinejoin="round" fill={fillColor} />
+          <path d="M6 10V38" stroke={strokeColor} strokeWidth="3" strokeLinecap="round" />
+        </svg>
+      );
+    case "visi8":
+      return (
+        <svg className="w-12 h-12" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M6 24C6 24 14 10 24 10C34 10 42 24 42 24C42 24 34 38 24 38C14 38 6 24 6 24Z" stroke={strokeColor} strokeWidth="3" fill={fillColor} />
+          <circle cx="24" cy="24" r="6" stroke={strokeColor} strokeWidth="3" />
+          <circle cx="26" cy="22" r="2.5" fill={strokeColor} />
+        </svg>
+      );
+    case "memento":
+      return (
+        <svg className="w-12 h-12" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M12 8H36" stroke={strokeColor} strokeWidth="3" strokeLinecap="round" />
+          <path d="M12 40H36" stroke={strokeColor} strokeWidth="3" strokeLinecap="round" />
+          <path d="M14 8L22 22L14 36C14 38 16 40 18 40H30C32 40 34 38 34 36L26 22L34 8" stroke={strokeColor} strokeWidth="3" strokeLinejoin="round" fill={fillColor} />
+          <circle cx="24" cy="32" r="3" fill={strokeColor} />
+        </svg>
+      );
+    case "skynet":
+      return (
+        <svg className="w-12 h-12" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M14 34C9.58 34 6 30.42 6 26C6 21.84 9.17 18.42 13.25 18.04C14.73 12.33 19.88 8 26 8C33.27 8 39.29 13.46 39.94 20.53C43.37 21.22 46 24.3 46 28C46 32.42 42.42 36 38 36H16" stroke={strokeColor} strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" fill={fillColor} />
+          <circle cx="24" cy="26" r="3" fill={strokeColor} />
+          <path d="M24 29V38" stroke={strokeColor} strokeWidth="2.5" />
+          <circle cx="24" cy="40" r="2.5" fill={strokeColor} />
+        </svg>
+      );
+    case "ristek":
+      return (
+        <svg className="w-12 h-12" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="24" cy="24" r="4" fill={strokeColor} />
+          <ellipse cx="24" cy="24" rx="20" ry="7" stroke={strokeColor} strokeWidth="2.5" transform="rotate(30 24 24)" />
+          <ellipse cx="24" cy="24" rx="20" ry="7" stroke={strokeColor} strokeWidth="2.5" transform="rotate(-30 24 24)" />
+        </svg>
+      );
+    case "museumnasional":
+      return (
+        <svg className="w-12 h-12" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M6 40H42M10 40V20M24 40V20M38 40V20M12 12L24 6L36 12" stroke={strokeColor} strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" fill={fillColor} />
+          <path d="M6 14H42" stroke={strokeColor} strokeWidth="3" />
+        </svg>
+      );
+    case "animo":
+      return (
+        <svg className="w-12 h-12" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M24 44C32.8366 44 40 36.8366 40 28C40 17 24 4 24 4C24 4 8 17 8 28C8 36.8366 15.1634 44 24 44Z" stroke={strokeColor} strokeWidth="3" fill={fillColor} />
+          <path d="M24 36C28.4183 36 32 32.4183 32 28C32 21 24 14 24 14C24 14 16 21 16 28C16 32.4183 19.5817 36 24 36Z" stroke={strokeColor} strokeWidth="2.5" />
+        </svg>
+      );
+    case "pionicon":
+      return (
+        <svg className="w-12 h-12" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="24" cy="14" r="8" stroke={strokeColor} strokeWidth="3" fill={fillColor} />
+          <path d="M16 38C16 28 32 28 32 38" stroke={strokeColor} strokeWidth="3" strokeLinecap="round" fill={fillColor} />
+          <rect x="12" y="38" width="24" height="4" rx="2" stroke={strokeColor} strokeWidth="3" fill={strokeColor} />
+          <circle cx="22" cy="14" r="1.5" fill={strokeColor} />
+          <circle cx="26" cy="14" r="1.5" fill={strokeColor} />
+        </svg>
+      );
+    case "lspsmktb":
+      return (
+        <svg className="w-12 h-12" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M24 4L38 10V22C38 32.5 32 40 24 44C16 40 10 32.5 10 22V10L24 4Z" stroke={strokeColor} strokeWidth="3" strokeLinejoin="round" fill={fillColor} />
+          <path d="M18 24L22 28L30 18" stroke={strokeColor} strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+      );
+    case "mvnet":
+      return (
+        <svg className="w-12 h-12" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="10" cy="14" r="4" fill={strokeColor} />
+          <circle cx="38" cy="14" r="4" fill={strokeColor} />
+          <circle cx="24" cy="34" r="4" fill={strokeColor} />
+          <line x1="10" y1="14" x2="24" y2="34" stroke={strokeColor} strokeWidth="2.5" />
+          <line x1="38" y1="14" x2="24" y2="34" stroke={strokeColor} strokeWidth="2.5" />
+          <line x1="10" y1="14" x2="38" y2="14" stroke={strokeColor} strokeWidth="2.5" />
+        </svg>
+      );
+    case "sada":
+      return (
+        <svg className="w-12 h-12" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M36 12C36 12 30 6 24 6C18 6 12 10 12 16C12 24 36 24 36 32C36 38 30 42 24 42C16 42 12 36 12 36" stroke={strokeColor} strokeWidth="3.5" strokeLinecap="round" />
+          <circle cx="24" cy="24" r="3" fill={strokeColor} />
+        </svg>
+      );
+    case "lightcodedigital":
+      return (
+        <svg className="w-12 h-12" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M16 20C16 15.58 19.58 12 24 12C28.42 12 32 15.58 32 20C32 23.5 29 27.5 27 30H21C19 27.5 16 23.5 16 20Z" stroke={strokeColor} strokeWidth="3" fill={fillColor} />
+          <rect x="20" y="34" width="8" height="4" rx="2" stroke={strokeColor} strokeWidth="3" />
+          <path d="M22 18H26M20 22H28" stroke={strokeColor} strokeWidth="2" strokeLinecap="round" />
+        </svg>
+      );
+    default:
+      return (
+        <svg className="w-12 h-12" viewBox="0 0 24 24" fill="none" stroke={strokeColor} strokeWidth="2">
+          <circle cx="12" cy="12" r="10" />
+          <text x="12" y="16" textAnchor="middle" fill={strokeColor} fontSize="12" fontWeight="bold">{type.substring(0, 2).toUpperCase()}</text>
+        </svg>
+      );
+  }
+};
+
 export default function Home() {
   const { publicApplicants, wsStatus } = usePPDB();
   
@@ -938,73 +1264,44 @@ export default function Home() {
           </ScrollFloat>
         </div>
 
-        <ScrollFloat containerClassName="bg-white/50 dark:bg-slate-900/40 backdrop-blur-md border border-slate-100 dark:border-slate-800/60 rounded-3xl p-8 mb-12 shadow-sm w-full" textClassName="w-full" textMode={false}>
-          <p className="text-center text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-8">
-            Partner Industri Utama &amp; Sertifikasi Internasional &middot;
+        <ScrollFloat containerClassName="bg-white/50 dark:bg-slate-900/40 backdrop-blur-md border border-slate-100 dark:border-slate-800/60 rounded-[2.5rem] p-8 md:p-12 mb-12 shadow-sm w-full" textClassName="w-full" textMode={false}>
+          <p className="text-center text-xs font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-10">
+            Mitra Hubungan Industri &amp; Sertifikasi Internasional &middot; 31 Perusahaan Utama
           </p>
-          <div className="flex flex-wrap justify-center items-center gap-x-8 gap-y-10 max-w-5xl mx-auto">
-            {(() => {
-              const remotePartners = [
-                { name: "Dinas Pendidikan Propinsi Jabar", logo: "https://smktarunabhakti.sch.id/wp-content/uploads/2019/02/logojabarprov.png", url: "http://disdik.jabarprov.go.id/", h: "h-20" },
-                { name: "SMK Bisa Hebat", logo: "https://smktarunabhakti.sch.id/wp-content/uploads/2019/02/logosmk.png", url: "https://smk.kemendikdasmen.go.id/", h: "h-16" },
-                { name: "SMK PK", logo: "https://smktarunabhakti.sch.id/wp-content/uploads/2023/11/Logo-SMK-Bisa.jpg", url: "https://smk.kemendikdasmen.go.id/", h: "h-16" },
-                { name: "Icon+", logo: "https://smktarunabhakti.sch.id/wp-content/uploads/2023/11/56e83c6db8cd5587e87161281dfba75b.webp", url: "https://iconnet.id/", h: "h-14" },
-                { name: "Biznet", logo: "https://smktarunabhakti.sch.id/wp-content/uploads/2023/11/biznet_vertical_logo.png", url: "https://www.biznetnetworks.com/", h: "h-20" },
-                { name: "Prasimax", logo: "https://smktarunabhakti.sch.id/wp-content/uploads/2023/11/Prasimax_Logo.png", url: "https://prasimax.com/", h: "h-10" },
-                { name: "Agate", logo: "https://smktarunabhakti.sch.id/wp-content/uploads/2023/11/Logo-Agate-Color.png", url: "https://agate.id/", h: "h-10" },
-                { name: "Panasonic", logo: "https://smktarunabhakti.sch.id/wp-content/uploads/2023/11/8225.png", url: "https://www.panasonic.com/id/", h: "h-8" },
-                { name: "Citra Film School", logo: "https://smktarunabhakti.sch.id/wp-content/uploads/2023/11/cropped-Logo-baru-citra.png", url: "https://citrafilmschool.net/", h: "h-20" },
-                { name: "Samsung Tech Institute", logo: "https://smktarunabhakti.sch.id/wp-content/uploads/2019/02/STI-logo-1.png", url: "https://www.samsung.com/", h: "h-8" },
-                { name: "MD Animation", logo: "https://smktarunabhakti.sch.id/wp-content/uploads/2023/11/Logo_md_animation.png", url: "https://mdentertainment.com/id/md-animations/", h: "h-8" },
-                { name: "Daun Biru Engineering", logo: "https://smktarunabhakti.sch.id/wp-content/uploads/2023/11/E-Learning-5.png", url: "https://www.daunbiru.co.id/", h: "h-12" },
-                { name: "Assemblr", logo: "https://smktarunabhakti.sch.id/wp-content/uploads/2023/11/6156e76e275fa19ed9a33fa3_Group-33959.png", url: "https://www.assemblrworld.co.id/id", h: "h-20" },
-                { name: "TOA", logo: "https://smktarunabhakti.sch.id/wp-content/uploads/2023/11/PT-TOA.png", url: "https://toa.co.id/", h: "h-8" },
-                { name: "Infection Studio", logo: "https://smktarunabhakti.sch.id/wp-content/uploads/2023/11/Alpha-InfectionTagline_Square-FullColor-cut.png", url: "https://infectionstudio.com/", h: "h-8" },
-                { name: "Beyond Education", logo: "https://smktarunabhakti.sch.id/wp-content/uploads/2023/11/1661238758520.jpg", url: "https://beyondeducation.id/", h: "h-12" },
-                { name: "Animakini", logo: "https://smktarunabhakti.sch.id/wp-content/uploads/2023/11/logo-animakini-2022_.png", url: "https://animakini.id/", h: "h-12" },
-                { name: "IMP Studio", logo: "https://smktarunabhakti.sch.id/wp-content/uploads/2023/11/vgphayksj5yyqkq5zze5.png", url: "https://impstudio.id/", h: "h-12" },
-                { name: "Mikrotik Academy", logo: "https://smktarunabhakti.sch.id/wp-content/uploads/2025/07/mikrotikacademy.jpg", url: "https://mikrotik.com/training/academy/asia/indonesia", h: "h-10" },
-                { name: "Cisco Networking Academy", logo: "https://smktarunabhakti.sch.id/wp-content/uploads/2025/07/netacad.webp", url: "https://www.netacad.com/", h: "h-12" },
-                { name: "AWS Academy", logo: "https://smktarunabhakti.sch.id/wp-content/uploads/2025/07/awsacademy.jpeg", url: "https://aws.amazon.com/training/awsacademy/", h: "h-12" },
-                { name: "Red Hat Academy", logo: "https://smktarunabhakti.sch.id/wp-content/uploads/2025/07/redhatacademy.webp", url: "https://www.redhat.com/en/services/training/red-hat-academy", h: "h-10" },
-                { name: "Oracle Academy", logo: "https://smktarunabhakti.sch.id/wp-content/uploads/2025/07/oracleacademy.webp", url: "https://academy.oracle.com/en/oa-web-overview.html", h: "h-10" },
-              ];
-
-              const getPartnerDimensions = (hClass: string) => {
-                switch (hClass) {
-                  case "h-20": return { width: 150, height: 80 };
-                  case "h-16": return { width: 120, height: 64 };
-                  case "h-14": return { width: 105, height: 56 };
-                  case "h-12": return { width: 90, height: 48 };
-                  case "h-10": return { width: 75, height: 40 };
-                  case "h-8": return { width: 60, height: 32 };
-                  default: return { width: 120, height: 60 };
-                }
-              };
-
-              return remotePartners.map((partner, idx) => {
-                const { width, height } = getPartnerDimensions(partner.h);
-                return (
-                  <a
-                    key={idx}
-                    href={partner.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="group inline-flex items-center justify-center p-2 transition-transform duration-300 hover:scale-110 hover:-translate-y-1"
-                    title={partner.name}
-                  >
-                    <img
-                      src={partner.logo}
-                      alt={partner.name}
-                      className={`w-auto object-contain ${partner.h} max-w-[150px] transition-all duration-300 drop-shadow-sm`}
-                      loading="lazy"
-                      width={width}
-                      height={height}
-                    />
-                  </a>
-                );
-              });
-            })()}
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4 max-w-6xl mx-auto">
+            {PARTNERS_DATA.map((partner, idx) => (
+              <a
+                key={idx}
+                href={partner.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="group relative flex flex-col items-center justify-between p-5 bg-white/40 dark:bg-slate-900/40 hover:bg-white/95 dark:hover:bg-slate-900/90 border border-slate-200/50 dark:border-slate-800/40 hover:border-slate-300 dark:hover:border-slate-700/80 rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 overflow-hidden"
+                title={partner.name}
+              >
+                {/* Brand glow overlay */}
+                <div 
+                  className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"
+                  style={{
+                    background: `radial-gradient(circle at center, ${partner.accent} 0%, transparent 70%)`
+                  }}
+                />
+                
+                {/* SVG Icon */}
+                <div className="relative z-10 flex items-center justify-center h-16 w-16 mb-3 group-hover:scale-110 transition-transform duration-300">
+                  {renderPartnerSVG(partner.iconType, partner.color)}
+                </div>
+                
+                {/* Partner Details */}
+                <div className="relative z-10 text-center w-full">
+                  <h4 className="text-xs font-black text-slate-800 dark:text-slate-200 group-hover:text-slate-950 dark:group-hover:text-white line-clamp-1 transition-colors">
+                    {partner.name}
+                  </h4>
+                  <span className="text-[9px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-tight line-clamp-1 mt-0.5">
+                    {partner.sector}
+                  </span>
+                </div>
+              </a>
+            ))}
           </div>
         </ScrollFloat>
       </section>
