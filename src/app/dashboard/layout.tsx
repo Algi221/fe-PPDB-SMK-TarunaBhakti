@@ -420,7 +420,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         }`}>
           <div className="flex items-center transition-all duration-300 w-full">
             <div
-              className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-indigo-500/80 to-sky-400/80 flex items-center justify-center font-black text-white shrink-0 shadow-sm"
+              className="w-10 h-10 rounded-2xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 flex items-center justify-center font-black text-slate-750 dark:text-slate-200 shrink-0 shadow-sm"
               title={adminUser?.nama || "Admin TB"}
             >
               {adminUser?.nama ? adminUser.nama.charAt(0).toUpperCase() : "A"}

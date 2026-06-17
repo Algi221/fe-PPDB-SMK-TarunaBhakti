@@ -751,6 +751,8 @@ function ApplicantsDirectoryContent() {
                       <div className="font-extrabold text-slate-850 dark:text-white text-sm">{a.nama}</div>
                       <span className="text-[9px] text-slate-400 dark:text-slate-555 font-bold tracking-wide uppercase mt-0.5 block">
                         Daftar: {new Date(a.tgl_daftar || a.createdAt || Date.now()).toLocaleDateString("id-ID")} · {a.gelombang || "Gelombang 1"} · Lahir: {a.tempat_lahir || a.tempatLahir || "-"}, {a.tgl_lahir || a.tglLahir || "-"}
+                        {a.status === "Approved" && a.verified_by && ` · Diverifikasi: ${a.verified_by}`}
+                        {a.status === "Rejected" && a.rejected_by && ` · Digugurkan: ${a.rejected_by}`}
                       </span>
                     </td>
                     <td className="py-4 px-6 text-slate-600 dark:text-slate-400 font-semibold">{a.sekolah_asal || a.sekolahAsal}</td>
@@ -1007,6 +1009,7 @@ function ApplicantsDirectoryContent() {
                         <div className="font-extrabold text-slate-850 dark:text-white text-sm">{a.nama}</div>
                         <span className="text-[9px] text-slate-400 dark:text-slate-555 font-bold tracking-wide uppercase mt-0.5 block">
                           NISN: {a.nisn} · Lahir: {a.tempat_lahir || a.tempatLahir || "-"}, {a.tgl_lahir || a.tglLahir || "-"}
+                          {a.deleted_by && ` · Dihapus: ${a.deleted_by}`}
                         </span>
                       </td>
                       <td className="py-4 px-6 text-slate-600 dark:text-slate-400 font-semibold">{a.sekolah_asal || a.sekolahAsal}</td>
@@ -1085,9 +1088,8 @@ function ApplicantsDirectoryContent() {
             {/* Modal Header */}
             <div className="p-6 md:p-8 border-b border-slate-100 dark:border-white/5 flex items-start justify-between shrink-0 bg-white dark:bg-slate-900 relative">
               <div className="absolute inset-0 bg-gradient-to-r from-blue-50/50 to-transparent dark:from-blue-900/10 dark:to-transparent pointer-events-none"></div>
-              
-              <div className="flex items-center gap-5 relative z-10">
-                <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-blue-600 to-indigo-500 flex items-center justify-center text-white text-2xl font-black shadow-lg shadow-blue-500/20 shrink-0">
+                           <div className="flex items-center gap-5 relative z-10">
+                <div className="w-14 h-14 rounded-2xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 flex items-center justify-center text-slate-700 dark:text-slate-200 text-2xl font-black shrink-0">
                   {selectedApplicant.nama.substring(0, 1).toUpperCase()}
                 </div>
                 <div>
@@ -1104,11 +1106,26 @@ function ApplicantsDirectoryContent() {
                       {selectedApplicant.status === "Approved" ? "Terverifikasi" : selectedApplicant.status === "Rejected" ? "Ditolak" : "Pending"}
                     </span>
                   </h3>
-                  <p className="text-xs text-slate-400 dark:text-slate-500 font-bold uppercase tracking-wider mt-1.5 flex items-center gap-2">
+                  <p className="text-xs text-slate-400 dark:text-slate-555 font-bold uppercase tracking-wider mt-1.5 flex items-center gap-2">
                     <span className="text-blue-500">NISN:</span> {selectedApplicant.nisn} 
                     <span className="text-slate-300 dark:text-slate-700">•</span> 
                     <span className="text-blue-500">Asal:</span> {selectedApplicant.sekolah_asal || selectedApplicant.sekolahAsal}
                   </p>
+                  {selectedApplicant.status === "Approved" && selectedApplicant.verified_by && (
+                    <p className="text-[10px] text-emerald-600 dark:text-emerald-400 font-extrabold uppercase tracking-wide mt-1">
+                      ✓ Diverifikasi oleh: {selectedApplicant.verified_by}
+                    </p>
+                  )}
+                  {selectedApplicant.status === "Rejected" && selectedApplicant.rejected_by && (
+                    <p className="text-[10px] text-rose-650 dark:text-rose-400 font-extrabold uppercase tracking-wide mt-1">
+                      ✗ Digugurkan oleh: {selectedApplicant.rejected_by}
+                    </p>
+                  )}
+                  {selectedApplicant.deleted_at && selectedApplicant.deleted_by && (
+                    <p className="text-[10px] text-amber-600 dark:text-amber-400 font-extrabold uppercase tracking-wide mt-1">
+                      🗑️ Dihapus oleh: {selectedApplicant.deleted_by}
+                    </p>
+                  )}
                 </div>
               </div>
               <button
@@ -1614,7 +1631,7 @@ function ApplicantsDirectoryContent() {
               <div className="absolute inset-0 bg-gradient-to-r from-blue-50/50 to-transparent dark:from-blue-900/10 dark:to-transparent pointer-events-none"></div>
               
               <div className="flex items-center gap-5 relative z-10">
-                <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-blue-600 to-indigo-500 flex items-center justify-center text-white shadow-lg shadow-blue-500/20 shrink-0">
+                <div className="w-14 h-14 rounded-2xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 flex items-center justify-center text-slate-700 dark:text-slate-200 shadow-sm shrink-0">
                   <Pencil size={24} />
                 </div>
                 <div>
