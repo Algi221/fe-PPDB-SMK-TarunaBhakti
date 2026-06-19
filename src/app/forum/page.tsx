@@ -32,7 +32,7 @@ const sanitizeUrl = (url: string | undefined | null): string | null => {
 
 const sanitizeSrc = (src: string | undefined | null): string | null => sanitizeUrl(src);
 
-const BACKEND_URL = "http://localhost:5000";
+const BACKEND_URL = typeof window !== 'undefined' ? `http://${window.location.hostname}:5000` : "http://localhost:5000";
 
 interface InformasiItem {
   id: number;

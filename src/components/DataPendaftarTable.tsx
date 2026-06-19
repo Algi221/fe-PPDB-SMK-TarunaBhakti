@@ -156,7 +156,7 @@ export default function DataPendaftarTable() {
                   <span className="text-[9px] font-black text-blue-600 dark:text-blue-400 uppercase tracking-[0.3em] block mt-1">PPDB ONLINE 2026</span>
                 </div>
               </div>
-              <div className="w-fit">
+              <div className="flex flex-col gap-2 items-end w-fit">
                   <div className="relative group/badge cursor-default">
                     <div className="absolute inset-0 bg-blue-500/20 dark:bg-blue-500/40 blur-md opacity-0 group-hover/badge:opacity-100 transition-opacity rounded-full" />
                     <span className={`relative px-4 py-1.5 border text-[10px] font-black uppercase tracking-[0.2em] rounded-full flex items-center gap-2 shadow-sm backdrop-blur-md ${
@@ -167,12 +167,6 @@ export default function DataPendaftarTable() {
                       {selectedStudent.status === 'Approved' ? <><CheckCircle size={12} className="text-emerald-500" /> TERVERIFIKASI</> : 
                        selectedStudent.status === 'Rejected' ? <><XCircle size={12} className="text-rose-500" /> DITOLAK</> : 
                        <><Clock size={12} className="text-blue-500 animate-spin-slow" /> MENUNGGU VERIFIKASI</>}
-                    </span>
-                  </div>
-                  <div className="relative group/badge cursor-default">
-                    <div className="absolute inset-0 bg-amber-500/20 dark:bg-amber-500/40 blur-md opacity-0 group-hover/badge:opacity-100 transition-opacity rounded-full" />
-                    <span className="relative px-4 py-1.5 bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/30 text-amber-600 dark:text-amber-400 text-[10px] font-black uppercase tracking-[0.2em] rounded-full flex items-center gap-2 shadow-sm backdrop-blur-md">
-                      <Clock size={12} className="text-amber-500" /> DALAM PROSES
                     </span>
                   </div>
               </div>
