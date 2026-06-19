@@ -160,9 +160,9 @@ export default function DataPendaftarTable() {
                   <div className="relative group/badge cursor-default">
                     <div className="absolute inset-0 bg-blue-500/20 dark:bg-blue-500/40 blur-md opacity-0 group-hover/badge:opacity-100 transition-opacity rounded-full" />
                     <span className={`relative px-4 py-1.5 border text-[10px] font-black uppercase tracking-[0.2em] rounded-full flex items-center gap-2 shadow-sm backdrop-blur-md ${
-                      selectedStudent.status === 'Approved' ? 'bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-200 dark:border-emerald-500/30' :
-                      selectedStudent.status === 'Rejected' ? 'bg-rose-50 dark:bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-200 dark:border-rose-500/30' :
-                      'bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-200 dark:border-blue-500/30'
+                      selectedStudent.status === 'Approved' ? 'bg-emerald-50 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-500/30' :
+                      selectedStudent.status === 'Rejected' ? 'bg-rose-50 dark:bg-rose-500/10 text-rose-750 dark:text-rose-300 border-rose-200 dark:border-rose-500/30' :
+                      'bg-blue-50 dark:bg-blue-500/10 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-500/30'
                     }`}>
                       {selectedStudent.status === 'Approved' ? <><CheckCircle size={12} className="text-emerald-500" /> TERVERIFIKASI</> : 
                        selectedStudent.status === 'Rejected' ? <><XCircle size={12} className="text-rose-500" /> DITOLAK</> : 
@@ -181,7 +181,7 @@ export default function DataPendaftarTable() {
                   <div className="w-8 h-8 rounded-xl bg-blue-50 dark:bg-blue-500/10 flex items-center justify-center border border-blue-100 dark:border-blue-500/20 shadow-sm">
                     <User size={14} className="text-blue-600 dark:text-blue-400" />
                   </div>
-                  <span className="text-[10px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-[0.3em] bg-slate-100 dark:bg-slate-800/50 px-3 py-1 rounded-full border border-slate-200 dark:border-slate-700/50">Calon Peserta Didik</span>
+                  <span className="text-[10px] font-black text-slate-600 dark:text-slate-300 uppercase tracking-[0.3em] bg-slate-100 dark:bg-slate-800/50 px-3 py-1 rounded-full border border-slate-200 dark:border-slate-700/50">Calon Peserta Didik</span>
                 </div>
                 
                 <h2 className="text-3xl md:text-5xl font-black text-slate-800 dark:text-transparent dark:bg-clip-text dark:bg-gradient-to-br dark:from-slate-800 dark:via-blue-600 dark:to-indigo-500 dark:dark:from-white dark:dark:via-blue-100 dark:dark:to-indigo-300 uppercase tracking-tighter leading-tight break-words whitespace-normal mb-5 group-hover:scale-[1.02] origin-left transition-transform duration-300 cursor-default">
@@ -194,7 +194,7 @@ export default function DataPendaftarTable() {
                       <MapPin size={18} />
                    </div>
                    <div>
-                      <span className="text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-[0.3em] block mb-1">Asal Sekolah</span>
+                      <span className="text-[9px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-[0.3em] block mb-1">Asal Sekolah</span>
                       <span className="text-sm font-bold text-slate-700 dark:text-slate-200 uppercase tracking-wider group-hover/school:text-blue-600 dark:group-hover/school:text-blue-400 transition-colors">
                         {selectedStudent.sekolah_asal || selectedStudent.sekolahAsal || "-"}
                       </span>
@@ -236,14 +236,14 @@ export default function DataPendaftarTable() {
                   <span className="text-[11px] font-black text-blue-600 dark:text-blue-400 tracking-[0.3em] uppercase block animate-pulse">
                     VERIFIKASI DIGITAL
                   </span>
-                  <span className="text-[8px] text-slate-400 dark:text-slate-500 font-extrabold uppercase block tracking-widest">SISTEM PPDB TERINTEGRASI</span>
+                  <span className="text-[8px] text-slate-500 dark:text-slate-400 font-extrabold uppercase block tracking-widest">SISTEM PPDB TERINTEGRASI</span>
                 </div>
               </div>
 
             </div>
 
             {/* Card Footer */}
-            <div className="border-t border-slate-200 dark:border-white/10 pt-5 mt-8 flex flex-col sm:flex-row items-center justify-between gap-3 text-[10px] font-bold text-slate-400 dark:text-white/40 tracking-[0.2em] relative z-10">
+            <div className="border-t border-slate-200 dark:border-white/10 pt-5 mt-8 flex flex-col sm:flex-row items-center justify-between gap-3 text-[10px] font-bold text-slate-500 dark:text-slate-400 tracking-[0.2em] relative z-10">
               <div className="flex items-center gap-2.5">
                 <div className="relative flex items-center justify-center">
                   <div className="w-2.5 h-2.5 rounded-full bg-emerald-500 absolute animate-ping opacity-75" />
@@ -252,7 +252,7 @@ export default function DataPendaftarTable() {
                 <span>LIVE ENCRYPTED TICKET</span>
               </div>
               <div className="flex items-center gap-2">
-                  <span className="text-blue-500 dark:text-blue-400 font-black text-[9px] uppercase tracking-wider">
+                  <span className="text-blue-700 dark:text-blue-400 font-black text-[9px] uppercase tracking-wider">
                     {selectedStudent.status === 'Approved' ? 'DATA TELAH DIVERIFIKASI PANITIA' : 
                      selectedStudent.status === 'Rejected' ? 'PENDAFTARAN DITOLAK' : 
                      'SEDANG DALAM PROSES VERIFIKASI'}
@@ -290,7 +290,7 @@ export default function DataPendaftarTable() {
       <div className="mb-6 flex flex-col md:flex-row md:items-end justify-between gap-4">
         <div>
           <h2 className="text-xl font-bold text-slate-900 dark:text-white mb-1">Calon Peserta Didik Baru</h2>
-          <p className="text-sm text-slate-500 dark:text-slate-400">Data pendaftar PPDB Online secara real-time.</p>
+          <p className="text-sm text-slate-600 dark:text-slate-300">Data pendaftar PPDB Online secara real-time.</p>
         </div>
         <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-800/50 text-blue-700 dark:text-blue-400 shrink-0">
           <User size={16} className="text-blue-500" />
@@ -337,10 +337,10 @@ export default function DataPendaftarTable() {
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="border-b border-slate-200/50 dark:border-slate-700/50">
-                <th className="px-4 py-3 text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Nama Lengkap</th>
-                <th className="px-4 py-3 text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Asal Sekolah</th>
-                <th className="px-4 py-3 text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Status</th>
-                <th className="px-4 py-3 text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Aksi</th>
+                <th className="px-4 py-3 text-[10px] font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wider">Nama Lengkap</th>
+                <th className="px-4 py-3 text-[10px] font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wider">Asal Sekolah</th>
+                <th className="px-4 py-3 text-[10px] font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wider">Status</th>
+                <th className="px-4 py-3 text-[10px] font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wider">Aksi</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100/50 dark:divide-slate-800/50">
@@ -358,7 +358,7 @@ export default function DataPendaftarTable() {
                     }`}
                   >
                     <td className="px-4 py-3">
-                      <div className={`text-xs font-bold mb-0.5 ${item.status === 'Rejected' ? 'text-red-500 line-through' : 'text-slate-800 dark:text-white'}`}>
+                      <div className={`text-xs font-bold mb-0.5 ${item.status === 'Rejected' ? 'text-red-700 dark:text-red-400 line-through' : 'text-slate-800 dark:text-white'}`}>
                         {item.nama}
                       </div>
                     </td>
@@ -367,9 +367,9 @@ export default function DataPendaftarTable() {
                     </td>
                     <td className="px-4 py-3">
                       <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-md text-[9px] font-black uppercase tracking-wider ${
-                        item.status === 'Approved' ? 'bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-500/20' :
-                        item.status === 'Rejected' ? 'bg-rose-50 dark:bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-200 dark:border-rose-500/20' :
-                        'bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-500/20'
+                        item.status === 'Approved' ? 'bg-emerald-50 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-500/20' :
+                        item.status === 'Rejected' ? 'bg-rose-50 dark:bg-rose-500/10 text-rose-750 dark:text-rose-300 border border-rose-200 dark:border-rose-500/20' :
+                        'bg-blue-50 dark:bg-blue-500/10 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-500/20'
                       }`}>
                         {item.status === 'Approved' ? 'Terverifikasi' : item.status === 'Rejected' ? 'Ditolak' : 'Menunggu'}
                       </span>
@@ -378,7 +378,7 @@ export default function DataPendaftarTable() {
                       <button
                         type="button"
                         onClick={(e) => { e.preventDefault(); e.stopPropagation(); setSelectedStudent(item); }}
-                        className="inline-flex items-center gap-1 text-[10px] font-bold text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 transition-colors bg-blue-50/50 dark:bg-blue-900/20 px-2 py-1.5 rounded-md relative z-50 cursor-pointer"
+                        className="inline-flex items-center gap-1 text-[10px] font-bold text-blue-700 dark:text-blue-300 hover:text-blue-800 dark:hover:text-blue-200 transition-colors bg-blue-50 dark:bg-blue-900/40 px-2 py-1.5 rounded-md relative z-50 cursor-pointer"
                       >
                         Detail <ArrowRight size={12} />
                       </button>

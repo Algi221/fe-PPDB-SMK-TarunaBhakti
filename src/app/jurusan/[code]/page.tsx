@@ -326,7 +326,8 @@ const majorsData: Record<string, MajorDetail> = {
 
 export default function MajorPage() {
   const params = useParams();
-  const code = params?.code ? params.code.toString().toLowerCase() : "";
+  const rawCode = params?.code ? params.code.toString().toLowerCase() : "";
+  const code = rawCode === "anm" ? "an" : rawCode;
   const majorKeys = ["rpl", "tjkt", "dkv", "bc", "an", "te"];
   const currentIndex = majorKeys.indexOf(code);
   const nextCode = currentIndex !== -1 ? majorKeys[(currentIndex + 1) % majorKeys.length] : "rpl";
@@ -346,6 +347,33 @@ export default function MajorPage() {
   useEffect(() => {
     if (code && majorsData[code]) {
       setMajor({ ...majorsData[code] });
+    } else if (code) {
+      setMajor({
+        code: code.toUpperCase(),
+        title: code.toUpperCase(),
+        alias: code.toUpperCase(),
+        subtitle: "Program Keahlian Baru",
+        tagline: "Coding the Future, Building Creative Solutions.",
+        desc: "",
+        color: "from-blue-600 to-indigo-600",
+        accentColor: "#0066ff",
+        bgAccent: "bg-blue-500/10 dark:bg-blue-500/20",
+        textAccent: "text-blue-600 dark:text-blue-400",
+        glowColor: "rgba(0,102,255,0.15)",
+        logo: "/logo_smktb.png",
+        banner: "https://images.unsplash.com/photo-1555066931-4365d14bab8c?q=80&w=1200&auto=format&fit=crop",
+        syllabus: [
+          { subject: "Dasar Kompetensi", desc: "Mempelajari dasar-dasar keahlian program studi baru." }
+        ],
+        careers: [
+          { title: "Tenaga Ahli", desc: "Menjadi profesional kompeten di bidangnya." }
+        ],
+        facilities: [
+          "Laboratorium Praktikum Baru"
+        ],
+        gallery: [],
+        partners: "Mitra Industri SMK Taruna Bhakti"
+      });
     }
     if (nextCode && majorsData[nextCode]) {
       setNextMajor({ ...majorsData[nextCode] });
@@ -363,18 +391,37 @@ export default function MajorPage() {
             const found = config.ppdb_majors_config.find((m: any) => m.code.toLowerCase() === code || (m.code.toLowerCase() === "anm" && code === "an"));
             if (found) {
               setMajor((prev: any) => {
-                if (!prev) return null;
+                const base = prev || {
+                  code: found.code,
+                  title: found.title || found.code,
+                  alias: found.code,
+                  subtitle: found.title || found.code,
+                  tagline: "Coding the Future, Building Creative Solutions.",
+                  desc: found.desc || "",
+                  color: "from-blue-600 to-indigo-600",
+                  accentColor: found.color || "#0066ff",
+                  bgAccent: "bg-blue-500/10 dark:bg-blue-500/20",
+                  textAccent: "text-blue-600 dark:text-blue-400",
+                  glowColor: "rgba(0,102,255,0.15)",
+                  logo: found.logo || "/logo_smktb.png",
+                  banner: found.banner || "https://images.unsplash.com/photo-1555066931-4365d14bab8c?q=80&w=1200&auto=format&fit=crop",
+                  syllabus: [{ subject: "Dasar Kompetensi", desc: "Mempelajari dasar-dasar keahlian program studi." }],
+                  careers: Array.isArray(found.careers) ? found.careers : [{ title: "Tenaga Ahli", desc: "Menjadi profesional kompeten di bidangnya." }],
+                  facilities: Array.isArray(found.facilities) ? found.facilities : ["Laboratorium Praktikum Baru"],
+                  gallery: Array.isArray(found.gallery) ? found.gallery : [],
+                  partners: "Mitra Industri SMK Taruna Bhakti"
+                };
                 return {
-                  ...prev,
-                  title: found.title || prev.title,
-                  desc: found.desc || prev.desc,
-                  accentColor: found.color || prev.accentColor,
-                  logo: found.logo || prev.logo,
-                  banner: found.banner || prev.banner,
-                  video: found.video || prev.video,
-                  careers: Array.isArray(found.careers) ? found.careers : prev.careers,
-                  facilities: Array.isArray(found.facilities) ? found.facilities : prev.facilities,
-                  gallery: Array.isArray(found.gallery) ? found.gallery : prev.gallery
+                  ...base,
+                  title: found.title || base.title,
+                  desc: found.desc || base.desc,
+                  accentColor: found.color || base.accentColor,
+                  logo: found.logo || base.logo,
+                  banner: found.banner || base.banner,
+                  video: found.video || base.video,
+                  careers: Array.isArray(found.careers) ? found.careers : base.careers,
+                  facilities: Array.isArray(found.facilities) ? found.facilities : base.facilities,
+                  gallery: Array.isArray(found.gallery) ? found.gallery : base.gallery
                 };
               });
             }

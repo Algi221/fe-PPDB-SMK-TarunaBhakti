@@ -39,9 +39,21 @@ import {
   School
 } from "lucide-react";
 
-import DataPendaftarTable from "../components/DataPendaftarTable";
+import dynamic from "next/dynamic";
+const DataPendaftarTable = dynamic(() => import("../components/DataPendaftarTable"), {
+  ssr: false,
+  loading: () => (
+    <div className="h-full flex flex-col items-center justify-center text-slate-500 dark:text-slate-400">
+      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mb-4"></div>
+      <p className="text-xs font-semibold">Memuat data pendaftar...</p>
+    </div>
+  )
+});
 import ShinyText from "../components/ShinyText";
-import ScrollFloat from "../components/ScrollFloat";
+const ScrollFloat = dynamic(() => import("../components/ScrollFloat"), {
+  ssr: false,
+  loading: (props: any) => <div className={props.containerClassName}>{props.children}</div>
+});
 import dompurify from "dompurify";
 import { usePPDB } from "@/context/PPDBContext";
 
@@ -522,60 +534,56 @@ export default function Home() {
         {/* HERO SECTION */}
         <section className="hero">
 
-          {/* Floating elements representing major names as requested */}
-          <Link href="/jurusan/rpl" className="floating-badge badge-aset">
-            <div className="badge-icon overflow-hidden" style={{ background: 'transparent' }}>
-              <Image src="/jurusan/pplg.png" alt="" width={48} height={48} className="w-full h-full object-cover rounded-full" priority />
-            </div>
-            <div className="badge-info">
-              <span>PPLG</span>
-            </div>
-          </Link>
+          {/* Floating elements representing major names dynamically */}
+          {majors.map((m, index) => {
+            const isEven = index % 2 === 0;
+            const sideIndex = Math.floor(index / 2);
+            // Balance left & right positions flanking the screen
+            const topPos = isEven ? (130 + sideIndex * 120) : (130 + sideIndex * 160);
+            const horizPos = isEven ? (6 + (sideIndex % 3) * 2) : (6 + (sideIndex % 3) * 4);
+            const animName = `float${(index % 4) + 1}`;
+            const animDuration = `${6 + (index % 3) * 1.5}s`;
+            const animDelay = `-${(index % 5) * 1}s`;
 
-          <Link href="/jurusan/tjkt" className="floating-badge badge-peminjaman">
-            <div className="badge-icon overflow-hidden" style={{ background: 'transparent' }}>
-              <Image src="/jurusan/tjkt.png" alt="" width={48} height={48} className="w-full h-full object-cover rounded-full" priority />
-            </div>
-            <div className="badge-info">
-              <span>TJKT</span>
-            </div>
-          </Link>
+            // Map code to route link
+            const routeCode = m.code.toLowerCase() === 'anm' ? 'an' : m.code.toLowerCase();
+            const routeLink = `/jurusan/${routeCode}`;
 
-          <Link href="/jurusan/te" className="floating-badge badge-te">
-            <div className="badge-icon overflow-hidden" style={{ background: 'transparent' }}>
-              <Image src="/jurusan/te.png" alt="" width={48} height={48} className="w-full h-full object-cover rounded-full" priority />
-            </div>
-            <div className="badge-info">
-              <span>TE</span>
-            </div>
-          </Link>
+            // Map standard code aliases for display
+            const displayAlias = m.code === 'RPL' ? 'PPLG' : (m.code === 'ANM' ? 'Animasi' : (m.code === 'BC' ? 'Broadcasting' : m.code));
 
-          <Link href="/jurusan/dkv" className="floating-badge badge-laporan">
-            <div className="badge-icon overflow-hidden" style={{ background: 'transparent' }}>
-              <Image src="/jurusan/dkv.png" alt="" width={48} height={48} className="w-full h-full object-cover rounded-full" priority />
-            </div>
-            <div className="badge-info">
-              <span>DKV</span>
-            </div>
-          </Link>
-
-          <Link href="/jurusan/an" className="floating-badge badge-animasi">
-            <div className="badge-icon overflow-hidden" style={{ background: 'transparent' }}>
-              <Image src="/jurusan/animasi.png" alt="" width={48} height={48} className="w-full h-full object-cover rounded-full" priority />
-            </div>
-            <div className="badge-info">
-              <span>Animasi</span>
-            </div>
-          </Link>
-
-          <Link href="/jurusan/bc" className="floating-badge badge-kelas">
-            <div className="badge-icon overflow-hidden" style={{ background: 'transparent' }}>
-              <Image src="/jurusan/bc.png" alt="" width={48} height={48} className="w-full h-full object-cover rounded-full" priority />
-            </div>
-            <div className="badge-info">
-              <span>Broadcasting</span>
-            </div>
-          </Link>
+            return (
+              <Link 
+                key={m.code} 
+                href={routeLink} 
+                className="floating-badge animate-[fadeIn_0.5s_ease-out]"
+                style={{
+                  top: `${topPos}px`,
+                  [isEven ? 'left' : 'right']: `${horizPos}%`,
+                  animation: `${animName} ${animDuration} infinite alternate ease-in-out ${animDelay}`
+                }}
+              >
+                <div className="badge-icon overflow-hidden" style={{ background: 'transparent' }}>
+                  {m.logo ? (
+                    <img 
+                      src={sanitizeSrc(m.logo) || "/logo_smktb.png"} 
+                      alt="" 
+                      width={48} 
+                      height={48} 
+                      className="w-full h-full object-cover rounded-full" 
+                    />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center bg-blue-500 text-white font-bold text-[10px] rounded-full">
+                      {displayAlias.substring(0, 3).toUpperCase()}
+                    </div>
+                  )}
+                </div>
+                <div className="badge-info">
+                  <span>{displayAlias}</span>
+                </div>
+              </Link>
+            );
+          })}
 
           {/* Hero Copy */}
           <div className="badge-wrapper relative z-10">
