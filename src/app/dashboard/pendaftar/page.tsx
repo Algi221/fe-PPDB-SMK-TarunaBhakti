@@ -815,7 +815,12 @@ function ApplicantsDirectoryContent() {
 
                         {a.status !== "Rejected" && (
                           <button
-                            onClick={() => rejectApplicant(a.id)}
+                            onClick={() => {
+                              const reason = prompt("Masukkan alasan penolakan calon siswa ini:");
+                              if (reason !== null) {
+                                rejectApplicant(a.id, reason);
+                              }
+                            }}
                             className="p-2 bg-rose-50 hover:bg-rose-100 dark:bg-rose-500/10 dark:hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 hover:text-rose-700 dark:hover:text-rose-300 rounded-xl transition-all border border-rose-250 dark:border-rose-500/20"
                             title="Tolak Pendaftaran"
                           >
@@ -1131,9 +1136,15 @@ function ApplicantsDirectoryContent() {
                     </p>
                   )}
                   {selectedApplicant.status === "Rejected" && selectedApplicant.rejected_by && (
-                    <p className="text-[10px] text-rose-650 dark:text-rose-400 font-extrabold uppercase tracking-wide mt-1">
-                      ✗ Digugurkan oleh: {selectedApplicant.rejected_by}
-                    </p>
+                    <div className="mt-1.5 flex flex-col gap-1.5 align-start text-left">
+                      <p className="text-[10px] text-rose-650 dark:text-rose-400 font-extrabold uppercase tracking-wide">
+                        ✗ Digugurkan oleh: {selectedApplicant.rejected_by}
+                      </p>
+                      <div className="text-[10px] p-3 bg-rose-50 dark:bg-rose-950/20 border border-rose-200 dark:border-rose-900 rounded-xl text-rose-800 dark:text-rose-350 max-w-md">
+                        <span className="font-extrabold uppercase tracking-wider block mb-0.5">Alasan Penolakan:</span>
+                        <span className="font-bold">{selectedApplicant.alasan_ditolak || "Tidak ada alasan spesifik yang diberikan."}</span>
+                      </div>
+                    </div>
                   )}
                   {selectedApplicant.deleted_at && selectedApplicant.deleted_by && (
                     <p className="text-[10px] text-amber-600 dark:text-amber-400 font-extrabold uppercase tracking-wide mt-1">
@@ -1636,8 +1647,11 @@ function ApplicantsDirectoryContent() {
                 {selectedApplicant.status !== "Rejected" && (
                   <button
                     onClick={() => {
-                      rejectApplicant(selectedApplicant.id);
-                      setSelectedApplicant(null);
+                      const reason = prompt("Masukkan alasan penolakan calon siswa ini:");
+                      if (reason !== null) {
+                        rejectApplicant(selectedApplicant.id, reason);
+                        setSelectedApplicant(null);
+                      }
                     }}
                     className="px-5 py-2.5 bg-rose-600 hover:bg-rose-500 text-white rounded-xl text-xs font-black uppercase tracking-wider transition-all shadow-[0_4px_12px_rgba(239,68,68,0.2)] flex items-center gap-1.5"
                   >

@@ -31,6 +31,19 @@ import {
   School
 } from "lucide-react";
 
+const formatNoPendaftaran = (periode: string | null | undefined, id: number) => {
+  try {
+    const parts = (periode || "2026-2027").split("-");
+    const year1 = parts[0].slice(-2);
+    const year2 = parts[1].slice(-2);
+    const prefix = `${year1}${year2}`;
+    const sequence = 10000 + id;
+    return `${prefix}${sequence}`;
+  } catch (e) {
+    return `2627${10000 + id}`;
+  }
+};
+
 interface Applicant {
   id: number;
   nama: string;
@@ -54,14 +67,17 @@ interface ClassItem {
 }
 
 export default function ClassDivisionManagement() {
-  const { activeStudents, updateActiveStudent, fetchActiveStudents, fetchAdminApplicants } = usePPDB();
+  const { applicants, activeStudents, updateActiveStudent, fetchActiveStudents, fetchAdminApplicants } = usePPDB();
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
     if (typeof fetchActiveStudents === "function") {
       fetchActiveStudents();
     }
-  }, [fetchActiveStudents]);
+    if (typeof fetchAdminApplicants === "function") {
+      fetchAdminApplicants();
+    }
+  }, [fetchActiveStudents, fetchAdminApplicants]);
 
   const getMajorLogoUrl = (code: string) => {
     switch (code.toUpperCase()) {
@@ -284,7 +300,8 @@ export default function ClassDivisionManagement() {
   };
 
   const approvedApplicantsOfMajor = useMemo(() => {
-    return activeStudents.filter((a: Applicant) => {
+    return applicants.filter((a: Applicant) => {
+      if (a.status === 'Rejected') return false;
       const maj1 = (a.jurusan || a.jurusan_1 || a.jurusan1 || "").toUpperCase();
       
       const majorNameMap: Record<string, string> = {
@@ -338,7 +355,7 @@ export default function ClassDivisionManagement() {
 
       return isMajorMatch;
     });
-  }, [activeStudents, selectedMajor]);
+  }, [applicants, selectedMajor]);
 
   const filteredStudents = useMemo(() => {
     return approvedApplicantsOfMajor.filter((a: Applicant) => {
@@ -373,7 +390,8 @@ export default function ClassDivisionManagement() {
       enrollmentCounts[c.name] = 0;
     });
 
-    activeStudents.forEach((a: Applicant) => {
+    applicants.forEach((a: Applicant) => {
+      if (a.status === 'Rejected') return;
       const cls = getStudentCurrentClass(a);
       if (cls && enrollmentCounts[cls] !== undefined) {
         enrollmentCounts[cls]++;
@@ -381,7 +399,7 @@ export default function ClassDivisionManagement() {
     });
 
     return enrollmentCounts;
-  }, [activeStudents, classesOfSelectedMajor, schoolPeriod]);
+  }, [applicants, classesOfSelectedMajor, schoolPeriod]);
 
   const totalClassesFilled = useMemo(() => {
     return classesOfSelectedMajor.filter(c => (classEnrollments[c.name] || 0) > 0).length;
@@ -389,7 +407,8 @@ export default function ClassDivisionManagement() {
 
   const enrolledStudentsInDetail = useMemo(() => {
     if (!selectedClassDetail) return [];
-    return activeStudents.filter((a: Applicant) => {
+    return applicants.filter((a: Applicant) => {
+      if (a.status === 'Rejected') return false;
       const cls = getStudentCurrentClass(a);
       const isClassMatch = cls === selectedClassDetail.name;
       if (!isClassMatch) return false;
@@ -398,7 +417,7 @@ export default function ClassDivisionManagement() {
                             (a.nisn || "").includes(classSearchTerm);
       return matchesSearch;
     });
-  }, [activeStudents, selectedClassDetail, classSearchTerm, schoolPeriod]);
+  }, [applicants, selectedClassDetail, classSearchTerm, schoolPeriod]);
 
   const handleSelectAll = () => {
     if (selectedStudentIds.length === filteredStudents.length) {
@@ -427,7 +446,7 @@ export default function ClassDivisionManagement() {
 
     for (let i = 0; i < total; i++) {
       const id = selectedStudentIds[i];
-      const student = activeStudents.find((a: Applicant) => a.id === id);
+      const student = applicants.find((a: Applicant) => a.id === id);
       
       const payload = {
         diterima_kelas: className || null,
@@ -602,7 +621,8 @@ export default function ClassDivisionManagement() {
   };
 
   const handleExportClassCSV = async (className: string) => {
-    const classStudents = activeStudents.filter((a: Applicant) => {
+    const classStudents = applicants.filter((a: Applicant) => {
+      if (a.status === 'Rejected') return false;
       const cls = getStudentCurrentClass(a);
       return cls === className;
     });
@@ -700,7 +720,8 @@ export default function ClassDivisionManagement() {
     let totalStudentsExported = 0;
 
     classesToExport.forEach((c) => {
-      const classStudents = activeStudents.filter((a: Applicant) => {
+      const classStudents = applicants.filter((a: Applicant) => {
+        if (a.status === 'Rejected') return false;
         return getStudentCurrentClass(a) === c.name;
       });
 
@@ -817,6 +838,155 @@ export default function ClassDivisionManagement() {
     const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
     saveAs(blob, `Roster_Semua_Kelas_${selectedMajor}_${schoolPeriod || '2026-2027'}.xlsx`);
     showToast(`Berhasil mengekspor semua kelas jurusan ${selectedMajor} (${totalStudentsExported} siswa)!`, "success");
+  };
+
+  const handleExportAllMajors = async () => {
+    const workbook = new ExcelJS.Workbook();
+    let totalStudentsExported = 0;
+
+    activeMajors.forEach((m) => {
+      const majorClasses = classes.filter(c => c.majorCode === m.code);
+      const sheetName = m.code.toUpperCase().substring(0, 30);
+      const worksheet = workbook.addWorksheet(sheetName);
+
+      // Sheet title
+      worksheet.mergeCells('A1:G1');
+      worksheet.getCell('A1').value = `LAPORAN ROSTER KELAS - JURUSAN ${m.name.toUpperCase()}`;
+      worksheet.getCell('A1').alignment = { horizontal: 'center', vertical: 'middle' };
+      worksheet.getCell('A1').font = {
+        bold: true,
+        name: 'Arial',
+        size: 14,
+        color: { argb: 'FF1F497D' }
+      };
+      worksheet.getRow(1).height = 30;
+
+      let currentRowIndex = 3;
+
+      majorClasses.forEach((c) => {
+        const classStudents = applicants.filter((a: Applicant) => {
+          if (a.status === 'Rejected') return false;
+          return getStudentCurrentClass(a) === c.name;
+        });
+
+        worksheet.mergeCells(`A${currentRowIndex}:G${currentRowIndex}`);
+        const classHeaderCell = worksheet.getCell(`A${currentRowIndex}`);
+        classHeaderCell.value = `KELAS: ${c.name.toUpperCase()} (Total: ${classStudents.length} Siswa)`;
+        classHeaderCell.font = { bold: true, name: 'Arial', size: 11, color: { argb: 'FF366092' } };
+        classHeaderCell.alignment = { vertical: 'middle', horizontal: 'left' };
+        worksheet.getRow(currentRowIndex).height = 24;
+
+        currentRowIndex++;
+
+        const columns = [
+          { header: 'No.', key: 'no', width: 8 },
+          { header: 'No. Pendaftaran', key: 'no_pendaftaran', width: 20 },
+          { header: 'Nama Lengkap', key: 'nama', width: 35 },
+          { header: 'NISN', key: 'nisn', width: 18 },
+          { header: 'Sekolah Asal', key: 'sekolah', width: 30 },
+          { header: 'No. WhatsApp', key: 'whatsapp', width: 20 },
+          { header: 'Email', key: 'email', width: 30 }
+        ];
+
+        columns.forEach((col, colIdx) => {
+          const cell = worksheet.getCell(currentRowIndex, colIdx + 1);
+          cell.value = col.header;
+          cell.font = { bold: true, color: { argb: 'FFFFFFFF' } };
+          cell.fill = {
+            type: 'pattern',
+            pattern: 'solid',
+            fgColor: { argb: 'FF4F81BD' }
+          };
+          cell.alignment = { vertical: 'middle', horizontal: 'center' };
+          cell.border = {
+            top: { style: 'thin' },
+            bottom: { style: 'thin' },
+            left: { style: 'thin' },
+            right: { style: 'thin' }
+          };
+        });
+        worksheet.getRow(currentRowIndex).height = 22;
+
+        currentRowIndex++;
+
+        if (classStudents.length > 0) {
+          classStudents.forEach((s: Applicant, index: number) => {
+            const dataRow = worksheet.getRow(currentRowIndex);
+            dataRow.height = 20;
+
+            const values = {
+              no: index + 1,
+              no_pendaftaran: formatNoPendaftaran(s.periode, s.id),
+              nama: s.nama || "",
+              nisn: s.nisn || "",
+              sekolah: s.sekolah_asal || s.sekolahAsal || "",
+              whatsapp: s.whatsapp || "",
+              email: s.email || ""
+            };
+
+            columns.forEach((col, colIdx) => {
+              const cell = dataRow.getCell(colIdx + 1);
+              cell.value = (values as any)[col.key];
+              cell.font = { name: 'Arial', size: 9 };
+              cell.border = {
+                top: { style: 'thin' },
+                bottom: { style: 'thin' },
+                left: { style: 'thin' },
+                right: { style: 'thin' }
+              };
+
+              if (index % 2 === 1) {
+                cell.fill = {
+                  type: 'pattern',
+                  pattern: 'solid',
+                  fgColor: { argb: 'FFF2F5F9' }
+                };
+              }
+
+              if ([1, 2, 4, 6].includes(colIdx + 1)) {
+                cell.alignment = { vertical: 'middle', horizontal: 'center' };
+              } else {
+                cell.alignment = { vertical: 'middle', horizontal: 'left', indent: 1 };
+              }
+            });
+
+            totalStudentsExported++;
+            currentRowIndex++;
+          });
+        } else {
+          worksheet.mergeCells(`A${currentRowIndex}:G${currentRowIndex}`);
+          const emptyCell = worksheet.getCell(`A${currentRowIndex}`);
+          emptyCell.value = "TIDAK ADA SISWA TERDAFTAR DI KELAS INI";
+          emptyCell.font = { italic: true, name: 'Arial', size: 9, color: { argb: 'FF7F7F7F' } };
+          emptyCell.alignment = { vertical: 'middle', horizontal: 'center' };
+          emptyCell.border = {
+            top: { style: 'thin' },
+            bottom: { style: 'thin' },
+            left: { style: 'thin' },
+            right: { style: 'thin' }
+          };
+          worksheet.getRow(currentRowIndex).height = 20;
+          currentRowIndex++;
+        }
+
+        currentRowIndex += 2;
+      });
+
+      worksheet.columns = [
+        { width: 8 },
+        { width: 22 },
+        { width: 38 },
+        { width: 20 },
+        { width: 32 },
+        { width: 22 },
+        { width: 32 }
+      ];
+    });
+
+    const buffer = await workbook.xlsx.writeBuffer();
+    const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+    saveAs(blob, `Roster_Semua_Jurusan_PPDB_${schoolPeriod || '2026-2027'}.xlsx`);
+    showToast(`Berhasil mengekspor semua jurusan (${totalStudentsExported} siswa)!`, "success");
   };
 
   if (!mounted) return null;
@@ -952,6 +1122,13 @@ export default function ClassDivisionManagement() {
             >
               <Download size={12} />
               <span>Ekspor Semua Kelas ({selectedMajor})</span>
+            </button>
+            <button
+              onClick={handleExportAllMajors}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-blue-50 hover:bg-blue-100 dark:bg-blue-950/30 border border-blue-250 dark:border-white/5 text-[10px] uppercase font-bold text-blue-600 dark:text-blue-400 transition-all shadow-sm cursor-pointer"
+            >
+              <Download size={12} />
+              <span>Ekspor Semua Jurusan</span>
             </button>
             <button
               onClick={() => setIsAddingClass(!isAddingClass)}

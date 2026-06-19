@@ -152,6 +152,7 @@ export default function DataPendaftarPage() {
                   <th className="px-6 py-4 text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Nama & NISN</th>
                   <th className="px-6 py-4 text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Asal Sekolah</th>
                   <th className="px-6 py-4 text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Program Studi Pilihan 1</th>
+                  <th className="px-6 py-4 text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Status</th>
                   <th className="px-6 py-4 text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Aksi</th>
                 </tr>
               </thead>
@@ -169,6 +170,9 @@ export default function DataPendaftarPage() {
                       </td>
                       <td className="px-6 py-4">
                         <div className="text-sm font-semibold text-slate-700 dark:text-slate-300">{item.jurusan_1 || item.jurusan1}</div>
+                      </td>
+                      <td className="px-6 py-4">
+                        <StatusBadge status={item.status} />
                       </td>
                       <td className="px-6 py-4">
                         <button 
@@ -256,10 +260,22 @@ export default function DataPendaftarPage() {
                     <span className="flex items-center gap-1.5"><FileText size={16}/> NISN: {selectedStudent.nisn}</span>
                     <span className="flex items-center gap-1.5"><MapPin size={16}/> {selectedStudent.sekolah_asal || selectedStudent.asalSekolah}</span>
                   </div>
-                  <div className="inline-flex">
-                    <span className="inline-flex items-center gap-1.5 px-3 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 border border-blue-200 dark:border-blue-800">
+                  <div className="inline-flex flex-col gap-2.5 w-full">
+                    <span className="inline-flex items-center gap-1.5 px-3 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 border border-blue-200 dark:border-blue-800 w-fit">
                       SCAN QR PADA BUKTI PENDAFTARAN UNTUK CEK STATUS
                     </span>
+                    <div className="flex gap-2 items-center text-xs font-bold text-slate-500 dark:text-slate-450 mt-1">
+                      <span>STATUS:</span>
+                      <StatusBadge status={selectedStudent.status} />
+                    </div>
+                    {selectedStudent.status === "Rejected" && (
+                      <div className="p-4 bg-rose-50 dark:bg-rose-950/20 border border-rose-200 dark:border-rose-900 rounded-2xl w-full text-left">
+                        <div className="text-xs font-black text-rose-600 dark:text-rose-455 uppercase tracking-wider mb-1">Alasan Penolakan:</div>
+                        <div className="text-xs font-bold text-rose-700 dark:text-rose-300 leading-relaxed">
+                          {selectedStudent.alasan_ditolak || "Tidak ada alasan spesifik yang diberikan."}
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>

@@ -30,7 +30,7 @@ interface PPDBContextType {
   setSimulationActive: React.Dispatch<React.SetStateAction<boolean>>;
   registerApplicant: (formData: any) => Promise<{ success: boolean; data?: any; message?: string }>;
   verifyApplicant: (id: number) => Promise<void>;
-  rejectApplicant: (id: number) => Promise<void>;
+  rejectApplicant: (id: number, alasan_ditolak?: string) => Promise<void>;
   deleteApplicant: (id: number) => Promise<void>;
   updateApplicant: (id: number, updatedData: any) => Promise<{ success: boolean; data?: any; message?: string }>;
   updateActiveStudent: (id: number, updatedData: any) => Promise<{ success: boolean; data?: any; message?: string }>;
@@ -283,31 +283,38 @@ export function PPDBProvider({ children }: { children: React.ReactNode }) {
     }
   }, [adminToken, fetchAdminApplicants, fetchPublicApplicants, fetchActiveStudents, addToast, wsStatus]);
 
-  const rejectApplicant = useCallback(async (id: number) => {
+  const rejectApplicant = useCallback(async (id: number, alasan_ditolak?: string) => {
     const token = adminToken || localStorage.getItem("ppdb_admin_token");
     if (!token) return;
     try {
       const res = await fetch(`${BACKEND_URL}/api/applicants/${id}/status`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
-        body: JSON.stringify({ status: "Rejected" })
+        body: JSON.stringify({ status: "Rejected", alasan_ditolak })
       });
       const data = await res.json();
       if (data.success) {
-        if (wsStatus !== "CONNECTED") {
+        const isAdminPath = typeof window !== 'undefined' && window.location.pathname.startsWith('/dashboard');
+        if (wsStatus !== "CONNECTED" && isAdminPath) {
           addToast("Applicant Rejected", `Calon siswa #${id} telah ditolak.`, "warning");
         }
         await fetchAdminApplicants();
         await fetchPublicApplicants();
         await fetchActiveStudents();
       } else {
-        addToast("Gagal Menolak", data.message || "Gagal memperbarui status pendaftar.", "danger");
+        const isAdminPath = typeof window !== 'undefined' && window.location.pathname.startsWith('/dashboard');
+        if (isAdminPath) {
+          addToast("Gagal Menolak", data.message || "Gagal memperbarui status pendaftar.", "danger");
+        }
       }
     } catch (err: any) {
       console.error("API status update error:", err.message);
-      setApplicants(prev => prev.map(a => a.id === id ? { ...a, status: "Rejected" } : a));
-      setPublicApplicants(prev => prev.filter(a => a.id !== id));
-      addToast("Applicant Rejected (Offline)", `Calon siswa #${id} ditolak.`, "warning");
+      setApplicants(prev => prev.map(a => a.id === id ? { ...a, status: "Rejected", alasan_ditolak } : a));
+      setPublicApplicants(prev => prev.map(a => a.id === id ? { ...a, status: "Rejected", alasan_ditolak } : a));
+      const isAdminPath = typeof window !== 'undefined' && window.location.pathname.startsWith('/dashboard');
+      if (isAdminPath) {
+        addToast("Applicant Rejected (Offline)", `Calon siswa #${id} ditolak.`, "warning");
+      }
     }
   }, [adminToken, fetchAdminApplicants, fetchPublicApplicants, fetchActiveStudents, addToast, wsStatus]);
 
@@ -467,6 +474,8 @@ export function PPDBProvider({ children }: { children: React.ReactNode }) {
         console.log("WebSocket event received:", parsed);
         addWsLog("INCOMING", parsed.event, parsed.data);
 
+        const isAdminPath = typeof window !== 'undefined' && window.location.pathname.startsWith('/dashboard');
+
         if (parsed.event === 'NEW_APPLICANT') {
           const newStudent = parsed.data;
           setPublicApplicants((prev) => {
@@ -477,35 +486,46 @@ export function PPDBProvider({ children }: { children: React.ReactNode }) {
             if (prev.some(a => a.id === newStudent.id)) return prev;
             return [newStudent, ...prev];
           });
-          addToast(
-            "Pendaftaran Baru!",
-            `Nama: ${newStudent.nama} · Asal: ${newStudent.sekolah_asal || newStudent.sekolahAsal} · Jurusan: ${newStudent.jurusan_1 || newStudent.jurusan1}`,
-            "success"
-          );
-          if (typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'granted') {
-            new Notification('Pendaftaran Baru!', {
-              body: `Nama: ${newStudent.nama} (${newStudent.jurusan_1 || newStudent.jurusan1})`
-            });
+          if (isAdminPath) {
+            addToast(
+              "Pendaftaran Baru!",
+              `Nama: ${newStudent.nama} · Asal: ${newStudent.sekolah_asal || newStudent.sekolahAsal} · Jurusan: ${newStudent.jurusan_1 || newStudent.jurusan1}`,
+              "success"
+            );
+            if (typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'granted') {
+              new Notification('Pendaftaran Baru!', {
+                body: `Nama: ${newStudent.nama} (${newStudent.jurusan_1 || newStudent.jurusan1})`
+              });
+            }
           }
+        } else if (parsed.event === 'NEW_APPLICANT_PUBLIC') {
+          const newStudent = parsed.data;
+          setPublicApplicants((prev) => {
+            if (prev.some(a => a.id === newStudent.id)) return prev;
+            return [newStudent, ...prev];
+          });
         } else if (parsed.event === 'STATUS_UPDATE') {
           const update = parsed.data;
           setApplicants((prev) =>
-            prev.map(a => a.id === update.id ? { ...a, status: update.status } : a)
+            prev.map(a => a.id === update.id ? { ...a, status: update.status, alasan_ditolak: update.alasan_ditolak } : a)
           );
-          if (update.status === 'Rejected') {
-            setPublicApplicants((prev) => prev.filter(a => a.id !== update.id));
-            addToast("Pendaftar Ditolak", `${update.nama} dikeluarkan dari daftar beranda.`, "warning");
-          } else {
-            setPublicApplicants((prev) =>
-              prev.map(a => a.id === update.id ? { ...a, status: update.status } : a)
-            );
-            addToast("Pendaftar Disetujui", `${update.nama} telah terverifikasi!`, "success");
+          setPublicApplicants((prev) =>
+            prev.map(a => a.id === update.id ? { ...a, status: update.status, alasan_ditolak: update.alasan_ditolak } : a)
+          );
+          if (isAdminPath) {
+            if (update.status === 'Rejected') {
+              addToast("Pendaftar Ditolak", `${update.nama} ditolak.`, "warning");
+            } else {
+              addToast("Pendaftar Disetujui", `${update.nama} telah terverifikasi!`, "success");
+            }
           }
         } else if (parsed.event === 'APPLICANT_DELETED') {
           const { id } = parsed.data;
           setApplicants((prev) => prev.filter(a => a.id !== id));
           setPublicApplicants((prev) => prev.filter(a => a.id !== id));
-          addToast("Pendaftar Dihapus", `Data pendaftar #${id} dihapus dari sistem.`, "danger");
+          if (isAdminPath) {
+            addToast("Pendaftar Dihapus", `Data pendaftar #${id} dihapus dari sistem.`, "danger");
+          }
         } else if (parsed.event === 'APPLICANT_UPDATED') {
           const updatedStudent = parsed.data;
           setApplicants((prev) =>
