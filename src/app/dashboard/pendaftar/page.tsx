@@ -1353,7 +1353,7 @@ function ApplicantsDirectoryContent() {
                       {selectedApplicant.berkas_prestasi && (
                         <div className="bg-slate-50 dark:bg-slate-800/30 rounded-xl p-3 border border-slate-100 dark:border-white/5 hover:border-purple-500/20 transition-colors">
                           <span className="text-slate-400 dark:text-slate-550 block mb-1 font-bold uppercase text-[9px] tracking-wider">Berkas Prestasi</span>
-                          <button onClick={() => window.open(sanitizeSrc(selectedApplicant.berkas_prestasi), "_blank")} className="text-xs font-bold text-blue-500 hover:text-blue-600 underline text-left block w-full truncate">Lihat Sertifikat</button>
+                          <a href={sanitizeSrc(selectedApplicant.berkas_prestasi)} target="_blank" rel="noopener noreferrer" className="text-xs font-bold text-blue-500 hover:text-blue-600 underline text-left block w-full truncate">Lihat Sertifikat</a>
                         </div>
                       )}
                       <div className="bg-slate-50 dark:bg-slate-800/30 rounded-xl p-3 border border-slate-100 dark:border-white/5 hover:border-purple-500/20 transition-colors">
