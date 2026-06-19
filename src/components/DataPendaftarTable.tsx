@@ -159,8 +159,14 @@ export default function DataPendaftarTable() {
               <div className="w-fit">
                   <div className="relative group/badge cursor-default">
                     <div className="absolute inset-0 bg-blue-500/20 dark:bg-blue-500/40 blur-md opacity-0 group-hover/badge:opacity-100 transition-opacity rounded-full" />
-                    <span className="relative px-4 py-1.5 bg-blue-50 dark:bg-blue-500/10 border border-blue-200 dark:border-blue-500/30 text-blue-600 dark:text-blue-400 text-[10px] font-black uppercase tracking-[0.2em] rounded-full flex items-center gap-2 shadow-sm backdrop-blur-md">
-                      <Sparkles size={12} className="text-blue-500 animate-pulse" /> SCAN UNTUK CEK STATUS
+                    <span className={`relative px-4 py-1.5 border text-[10px] font-black uppercase tracking-[0.2em] rounded-full flex items-center gap-2 shadow-sm backdrop-blur-md ${
+                      selectedStudent.status === 'Approved' ? 'bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-200 dark:border-emerald-500/30' :
+                      selectedStudent.status === 'Rejected' ? 'bg-rose-50 dark:bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-200 dark:border-rose-500/30' :
+                      'bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-200 dark:border-blue-500/30'
+                    }`}>
+                      {selectedStudent.status === 'Approved' ? <><CheckCircle size={12} className="text-emerald-500" /> TERVERIFIKASI</> : 
+                       selectedStudent.status === 'Rejected' ? <><XCircle size={12} className="text-rose-500" /> DITOLAK</> : 
+                       <><Clock size={12} className="text-blue-500 animate-spin-slow" /> MENUNGGU VERIFIKASI</>}
                     </span>
                   </div>
               </div>
@@ -247,7 +253,9 @@ export default function DataPendaftarTable() {
               </div>
               <div className="flex items-center gap-2">
                   <span className="text-blue-500 dark:text-blue-400 font-black text-[9px] uppercase tracking-wider">
-                    SILAKAN SCAN QR CODE UNTUK MELIHAT STATUS PENDAFTARAN
+                    {selectedStudent.status === 'Approved' ? 'DATA TELAH DIVERIFIKASI PANITIA' : 
+                     selectedStudent.status === 'Rejected' ? 'PENDAFTARAN DITOLAK' : 
+                     'SEDANG DALAM PROSES VERIFIKASI'}
                   </span>
               </div>
             </div>
@@ -331,6 +339,7 @@ export default function DataPendaftarTable() {
               <tr className="border-b border-slate-200/50 dark:border-slate-700/50">
                 <th className="px-4 py-3 text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Nama Lengkap</th>
                 <th className="px-4 py-3 text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Asal Sekolah</th>
+                <th className="px-4 py-3 text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Status</th>
                 <th className="px-4 py-3 text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Aksi</th>
               </tr>
             </thead>
@@ -353,6 +362,15 @@ export default function DataPendaftarTable() {
                     </td>
                     <td className="px-4 py-3">
                       <div className="text-xs font-semibold text-slate-700 dark:text-slate-300">{item.sekolah_asal || item.sekolahAsal}</div>
+                    </td>
+                    <td className="px-4 py-3">
+                      <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-md text-[9px] font-black uppercase tracking-wider ${
+                        item.status === 'Approved' ? 'bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-500/20' :
+                        item.status === 'Rejected' ? 'bg-rose-50 dark:bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-200 dark:border-rose-500/20' :
+                        'bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-500/20'
+                      }`}>
+                        {item.status === 'Approved' ? 'Terverifikasi' : item.status === 'Rejected' ? 'Ditolak' : 'Menunggu'}
+                      </span>
                     </td>
                     <td className="px-4 py-3">
                       <button
