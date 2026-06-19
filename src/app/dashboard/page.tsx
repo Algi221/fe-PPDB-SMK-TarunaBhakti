@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { usePPDB } from "@/context/PPDBContext";
 import { Users, ShieldCheck, Clock, AlertTriangle, TrendingUp, BookOpen, ArrowRight } from "lucide-react";
 import Link from "next/link";
@@ -24,14 +24,57 @@ export default function DashboardOverview() {
   const pendingCount = applicants.filter((a: any) => a.status === "Pending" || !a.status).length;
   const rejectedCount = applicants.filter((a: any) => a.status === "Rejected").length;
 
-  const majorsList: MajorItem[] = [
+  const [majorsList, setMajorsList] = useState<MajorItem[]>([
     { name: "PPLG / RPL", dbName: "Rekayasa Perangkat Lunak", color: "#3b82f6" },
     { name: "TJKT", dbName: "Teknik Jaringan Komputer & Telekomunikasi", color: "#0ea5e9" },
     { name: "DKV", dbName: "Desain Komunikasi Visual", color: "#6366f1" },
     { name: "Broadcasting", dbName: "Broadcasting & Perfilman", color: "#f59e0b" },
     { name: "Elektronika", dbName: "Teknik Elektronika", color: "#10b981" },
     { name: "Animasi", dbName: "Animasi", color: "#ec4899" }
-  ];
+  ]);
+
+  useEffect(() => {
+    // 1. Try reading from localStorage first
+    const saved = localStorage.getItem("ppdb_majors_config");
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          const mapped = parsed.map((m: any) => ({
+            name: m.code === 'RPL' ? 'PPLG / RPL' : (m.code === 'ANM' ? 'Animasi' : (m.code === 'BC' ? 'Broadcasting' : (m.code === 'TE' ? 'Elektronika' : m.code))),
+            dbName: m.title,
+            color: m.color || "#3b82f6"
+          }));
+          setMajorsList(mapped);
+        }
+      } catch (e) {
+        console.error("Gagal mem-parsing ppdb_majors_config dari localStorage:", e);
+      }
+    }
+
+    // 2. Fetch fresh config from backend API
+    const fetchConfig = async () => {
+      try {
+        const res = await fetch("http://localhost:5000/api/config");
+        const json = await res.json();
+        if (json.success && json.data && json.data.ppdb_majors_config) {
+          const dbMajors = json.data.ppdb_majors_config;
+          if (Array.isArray(dbMajors) && dbMajors.length > 0) {
+            const mapped = dbMajors.map((m: any) => ({
+              name: m.code === 'RPL' ? 'PPLG / RPL' : (m.code === 'ANM' ? 'Animasi' : (m.code === 'BC' ? 'Broadcasting' : (m.code === 'TE' ? 'Elektronika' : m.code))),
+              dbName: m.title,
+              color: m.color || "#3b82f6"
+            }));
+            setMajorsList(mapped);
+            localStorage.setItem("ppdb_majors_config", JSON.stringify(dbMajors));
+          }
+        }
+      } catch (err) {
+        console.error("Gagal mengambil konfigurasi jurusan dari API:", err);
+      }
+    };
+    fetchConfig();
+  }, []);
 
   const majorDistribution = majorsList.map((m) => {
     const count = applicants.filter(

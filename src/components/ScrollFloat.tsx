@@ -97,7 +97,7 @@ const ScrollFloat = ({
             scroller,
             start: scrollStart,
             end: scrollEnd,
-            toggleActions: "play none none reverse"
+            once: true
           }
         }
       );

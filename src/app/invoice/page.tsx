@@ -73,6 +73,11 @@ function InvoiceContent() {
   };
 
   useEffect(() => {
+    const savedTheme = localStorage.getItem('ppdb-theme');
+    if (savedTheme === 'dark') {
+      document.documentElement.classList.add('dark');
+    }
+
     const savedCost = localStorage.getItem('ppdb_reg_cost');
     if (savedCost) {
       const parsed = parseInt(savedCost);
@@ -137,7 +142,7 @@ function InvoiceContent() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-50">
+      <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-slate-950">
         <div className="animate-spin rounded-full h-8 w-8 border-4 border-blue-500 border-t-transparent"></div>
       </div>
     );
@@ -145,10 +150,10 @@ function InvoiceContent() {
 
   if (error || !data) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-slate-50 p-6">
-        <div className="bg-white p-8 rounded-2xl shadow-lg max-w-md w-full text-center">
-          <h2 className="text-xl font-bold text-slate-800 mb-2">Oops!</h2>
-          <p className="text-slate-500 mb-6">{error || "Data tidak ditemukan."}</p>
+      <div className="min-h-screen flex flex-col items-center justify-center bg-slate-50 dark:bg-slate-950 p-6">
+        <div className="bg-white dark:bg-slate-900 p-8 rounded-2xl shadow-lg max-w-md w-full text-center">
+          <h2 className="text-xl font-bold text-slate-800 dark:text-white mb-2">Oops!</h2>
+          <p className="text-slate-500 dark:text-slate-400 mb-6">{error || "Data tidak ditemukan."}</p>
           <Link href="/" className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
             Kembali ke Beranda
           </Link>
@@ -168,7 +173,7 @@ function InvoiceContent() {
   });
 
   return (
-    <div className="min-h-screen bg-slate-100 py-8 px-4 print-root">
+    <div className="min-h-screen bg-slate-100 dark:bg-slate-950 py-8 px-4 print-root">
       
       {/* Print-only styles */}
       <style dangerouslySetInnerHTML={{__html: `
@@ -538,13 +543,11 @@ function InvoiceContent() {
           
           {/* Himbauan Pengiriman Struk untuk Siswa */}
           {!isAdmin && data.payment_status === "Paid" && (
-            <div style={{
-              background: '#eff6ff',
-              border: '1px solid #bfdbfe',
+            <div className="bg-blue-50 dark:bg-blue-950/50 border-blue-200 dark:border-blue-800 text-blue-800 dark:text-blue-300" style={{
+              border: '1px solid',
               borderRadius: '20px',
               padding: '20px',
               fontSize: '10px',
-              color: '#1e40af',
               fontWeight: 'bold',
               lineHeight: '1.6',
               boxShadow: '0 4px 12px rgba(0,0,0,0.04)'
@@ -555,8 +558,8 @@ function InvoiceContent() {
           )}
 
           {/* Print & Return */}
-          <div style={{ background: 'white', border: '1px solid rgba(226,232,240,0.6)', borderRadius: '20px', padding: '24px', boxShadow: '0 4px 12px rgba(0,0,0,0.06)' }}>
-            <h3 style={{ fontWeight: 900, fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.1em', color: '#334155', marginBottom: '12px', paddingBottom: '8px', borderBottom: '1px solid #f1f5f9' }}>
+          <div className="bg-white dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800" style={{ borderRadius: '20px', padding: '24px', boxShadow: '0 4px 12px rgba(0,0,0,0.06)' }}>
+            <h3 className="text-slate-700 dark:text-slate-200" style={{ fontWeight: 900, fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '12px', paddingBottom: '8px', borderBottom: '1px solid #f1f5f9' }}>
               Tindakan Nota
             </h3>
             
@@ -577,9 +580,9 @@ function InvoiceContent() {
               Cetak / Simpan PDF
             </button>
 
-            <Link href={isAdmin ? "/dashboard/pendaftar" : "/"} style={{
+            <Link href={isAdmin ? "/dashboard/pendaftar" : "/"} className="bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300" style={{
               width: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '8px',
-              background: '#f1f5f9', color: '#475569', fontWeight: 900, fontSize: '11px',
+              fontWeight: 900, fontSize: '11px',
               textTransform: 'uppercase', letterSpacing: '0.1em',
               padding: '12px 20px', borderRadius: '14px', textDecoration: 'none',
               marginTop: '10px', transition: 'background 0.2s'
@@ -592,9 +595,8 @@ function InvoiceContent() {
           {/* WhatsApp Action */}
           {data.payment_status === "Paid" && (
             isAdmin ? (
-              <div style={{
-                background: 'linear-gradient(135deg, #eff6ff, #eef2ff)',
-                border: '1px solid rgba(191,219,254,0.5)', borderRadius: '20px',
+              <div className="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-slate-900 dark:to-slate-800 border border-blue-200/50 dark:border-slate-700" style={{
+                borderRadius: '20px',
                 padding: '24px', boxShadow: '0 4px 12px rgba(0,0,0,0.04)',
                 textAlign: 'center'
               }}>
@@ -605,10 +607,10 @@ function InvoiceContent() {
                 }}>
                   <Phone size={18} />
                 </div>
-                <h4 style={{ fontWeight: 900, fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.1em', color: '#334155', margin: '0 0 8px 0' }}>
+                <h4 className="text-slate-700 dark:text-slate-200" style={{ fontWeight: 900, fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.1em', margin: '0 0 8px 0' }}>
                   Kirim Invoice WA
                 </h4>
-                <p style={{ fontSize: '10px', color: '#64748b', lineHeight: 1.6, margin: '0 0 14px 0' }}>
+                <p className="text-slate-500 dark:text-slate-400" style={{ fontSize: '10px', lineHeight: 1.6, margin: '0 0 14px 0' }}>
                   Kirim dokumen bukti registrasi & invoice resmi ke nomor WhatsApp calon siswa ({data.whatsapp}).
                 </p>
                 <button
@@ -627,9 +629,8 @@ function InvoiceContent() {
                 </button>
               </div>
             ) : (
-              <div style={{
-                background: 'linear-gradient(135deg, #eff6ff, #eef2ff)',
-                border: '1px solid rgba(191,219,254,0.5)', borderRadius: '20px',
+              <div className="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-slate-900 dark:to-slate-800 border border-blue-200/50 dark:border-slate-700" style={{
+                borderRadius: '20px',
                 padding: '24px', boxShadow: '0 4px 12px rgba(0,0,0,0.04)',
                 textAlign: 'center'
               }}>
@@ -640,10 +641,10 @@ function InvoiceContent() {
                 }}>
                   <Phone size={18} />
                 </div>
-                <h4 style={{ fontWeight: 900, fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.1em', color: '#334155', margin: '0 0 8px 0' }}>
+                <h4 className="text-slate-700 dark:text-slate-200" style={{ fontWeight: 900, fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.1em', margin: '0 0 8px 0' }}>
                   Gabung Grup WhatsApp
                 </h4>
-                <p style={{ fontSize: '10px', color: '#64748b', lineHeight: 1.6, margin: '0 0 14px 0' }}>
+                <p className="text-slate-500 dark:text-slate-400" style={{ fontSize: '10px', lineHeight: 1.6, margin: '0 0 14px 0' }}>
                   Hubungkan dengan pendaftar PPDB lainnya, berkas fisik, dan info jadwal tes seleksi.
                 </p>
                 <a

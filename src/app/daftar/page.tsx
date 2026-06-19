@@ -349,6 +349,23 @@ export default function DaftarPage() {
     loadLiveConfig();
 
     if (typeof window !== "undefined") {
+      const savedSuccess = localStorage.getItem('ppdb_registration_success');
+      if (savedSuccess) {
+        try {
+          const parsed = JSON.parse(savedSuccess);
+          if (parsed && parsed.success && parsed.nisn) {
+            setFormData(prev => ({ ...prev, nisn: parsed.nisn }));
+            if (parsed.successData) {
+              setSuccessData(parsed.successData);
+            }
+            setIsSuccess(true);
+            return;
+          }
+        } catch (e) {
+          console.log("Gagal memuat sesi sukses pendaftaran:", e);
+        }
+      }
+
       const savedCheckout = localStorage.getItem('ppdb_active_checkout');
       if (savedCheckout) {
         try {
@@ -389,9 +406,8 @@ export default function DaftarPage() {
       if (payment === "success" && nisn) {
         const forceVerifyAndShowSuccess = async () => {
           try {
-            
             const backendUrl = "http://localhost:5000";
-            await fetch(`${backendUrl}/api/payment/confirm-payment-option`, {
+            const res = await fetch(`${backendUrl}/api/payment/confirm-payment-option`, {
               method: "POST",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({
@@ -400,7 +416,21 @@ export default function DaftarPage() {
                 metode_pembayaran: "Payment Gateway"
               })
             });
+            const data = await res.json();
             localStorage.removeItem('ppdb_active_checkout');
+            if (data.success && data.data) {
+              setSuccessData(data.data);
+              localStorage.setItem('ppdb_registration_success', JSON.stringify({
+                nisn: nisn,
+                success: true,
+                successData: data.data
+              }));
+            } else {
+              localStorage.setItem('ppdb_registration_success', JSON.stringify({
+                nisn: nisn,
+                success: true
+              }));
+            }
             setFormData(prev => ({ ...prev, nisn: nisn }));
             setIsSuccess(true);
             fetchPublicApplicants?.();
@@ -424,6 +454,11 @@ export default function DaftarPage() {
             const json = await res.json();
             if (json.success && json.data) {
               setSuccessData(json.data);
+              localStorage.setItem('ppdb_registration_success', JSON.stringify({
+                nisn: targetNisn,
+                success: true,
+                successData: json.data
+              }));
             }
           } catch (err) {
             console.log("Failed to fetch success candidate details:", err);
@@ -878,9 +913,147 @@ export default function DaftarPage() {
             <Link href={`/invoice?nisn=${successData.nisn}`} target="_blank" className="w-full flex justify-center items-center py-3.5 px-6 bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-xs uppercase tracking-wider rounded-xl shadow-lg transition-transform hover:scale-[1.01] active:scale-[0.99]">
               Lihat &amp; Cetak Invoice
             </Link>
-            <Link href="/" className="w-full flex justify-center items-center py-3 px-6 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-355 font-bold text-xs rounded-xl transition-all">
+            <Link href="/" className="w-full flex justify-center items-center py-3.5 px-6 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-bold text-xs rounded-xl transition-all">
               Kembali ke Beranda
             </Link>
+            <button
+              type="button"
+              onClick={() => {
+                if (window.confirm("Apakah Anda ingin mendaftarkan calon siswa baru lainnya?")) {
+                  localStorage.removeItem('ppdb_registration_success');
+                  setIsSuccess(false);
+                  setSuccessData(null);
+                  setSubmittedCandidate(null);
+                  setWizardStep(1);
+                  setFormData({
+                    nama: "",
+                    nisn: "",
+                    nik: "",
+                    tempatLahir: "",
+                    tglLahir: "",
+                    jenisKelamin: "",
+                    agama: "",
+                    kewarganegaraan: "",
+                    alamat: "",
+                    rtRw: "",
+                    kelurahan: "",
+                    kecamatan: "",
+                    kodePos: "",
+                    whatsapp: "",
+                    email: "",
+                    tinggalDengan: "",
+                    transportasi: "",
+                    tinggiBadan: "",
+                    beratBadan: "",
+                    jarakSekolah: "",
+                    jarakKm: "",
+                    waktuJam: "",
+                    waktuMenit: "",
+                    jumlahSaudara: "",
+                    golonganDarah: "",
+                    penyakitDiderita: "",
+                    kebutuhanKhusus: [],
+                    jenisPrestasi: [],
+                    tingkatPrestasi: [],
+                    uraianPrestasi: "",
+                    tahunPrestasi: "",
+                    penyelenggara: "",
+                    jenisBeasiswa: [],
+                    uraianBeasiswa: "",
+                    tahunMulaiBeasiswa: "",
+                    tahunSelesaiBeasiswa: "",
+                    namaAyah: "",
+                    tempatLahirAyah: "",
+                    tglLahirAyah: null,
+                    agamaAyah: "",
+                    kewarganegaraanAyah: "WNI",
+                    pendidikanAyah: "",
+                    pekerjaanAyah: "",
+                    penghasilanAyah: "",
+                    alamatAyah: "",
+                    rtrwAyah: "",
+                    kelurahanAyah: "",
+                    kecamatanAyah: "",
+                    kodePosAyah: "",
+                    statusAyah: "Masih Hidup",
+                    namaIbu: "",
+                    tempatLahirIbu: "",
+                    tglLahirIbu: null,
+                    agamaIbu: "",
+                    kewarganegaraanIbu: "WNI",
+                    pendidikanIbu: "",
+                    pekerjaanIbu: "",
+                    penghasilanIbu: "",
+                    alamatIbu: "",
+                    rtrwIbu: "",
+                    kelurahanIbu: "",
+                    kecamatanIbu: "",
+                    kodePosIbu: "",
+                    statusIbu: "Masih Hidup",
+                    namaWali: "",
+                    tempatLahirWali: "",
+                    tglLahirWali: null,
+                    agamaWali: "",
+                    kewarganegaraanWali: "WNI",
+                    pendidikanWali: "",
+                    pekerjaanWali: "",
+                    penghasilanWali: "",
+                    alamatWali: "",
+                    rtrwWali: "",
+                    kelurahanWali: "",
+                    kecamatanWali: "",
+                    kodePosWali: "",
+                    statusWali: "Masih Hidup",
+                    teleponOrtu: "",
+                    sekolahAsal: "",
+                    tglLulus: "",
+                    noIjazah: "",
+                    noSKHUN: "",
+                    noPesertaUN: "",
+                    lamaBelajar: "",
+                    pindahanDari: "",
+                    alasanPindah: "",
+                    diterimaKelas: "",
+                    diterimaTanggal: "",
+                    jurusan1: "",
+                    hobi: [],
+                    citaCita: "",
+                    nilaiUSTeori: "",
+                    nilaiUSPraktik: "",
+                    nilaiMuatanLokal: "",
+                    alasanMemilih: "",
+                    citaCitaSetelahLulus: "",
+                    pelajaranDisenangi: "",
+                    punyaKPS: "Tidak",
+                    noKPS: "",
+                    punyaKIP: "Tidak",
+                    noKIP: "",
+                    alasanDisenangi: "",
+                    kesulitanBelajar: "",
+                    perkelahian: "",
+                    ketPerkelahian: "",
+                    narkoba: "",
+                    ketNarkoba: "",
+                    pelanggaranLain: "",
+                    ketPelanggaranLain: "",
+                    janjiTaat: "",
+                    janjiSanksi: "",
+                    janjiAkrab: "",
+                    janjiBelajar: "",
+                    janjiNamaBaik: "",
+                    deklarasi: false,
+                    periode: schoolPeriod,
+                    berkasFotoOk: false,
+                    berkasFotoFile: null,
+                    berkasFotoBase64: "",
+                    berkasPrestasiBase64: "",
+                  });
+                }
+              }}
+              className="w-full flex justify-center items-center gap-1.5 py-3 bg-blue-50 hover:bg-blue-100 dark:bg-blue-900/20 dark:hover:bg-blue-900/30 text-blue-700 dark:text-blue-300 font-bold text-xs rounded-xl transition-all cursor-pointer border border-blue-200/50 dark:border-blue-800/30"
+            >
+              Daftar Calon Baru Lainnya
+            </button>
           </div>
         </div>
 
@@ -960,6 +1133,145 @@ export default function DaftarPage() {
                 <Home size={13} />
                 Kembali ke Beranda
               </Link>
+
+              <button
+                type="button"
+                onClick={() => {
+                  if (window.confirm("Apakah Anda ingin mendaftarkan calon siswa baru lainnya?")) {
+                    localStorage.removeItem('ppdb_registration_success');
+                    setIsSuccess(false);
+                    setSuccessData(null);
+                    setSubmittedCandidate(null);
+                    setWizardStep(1);
+                    setFormData({
+                      nama: "",
+                      nisn: "",
+                      nik: "",
+                      tempatLahir: "",
+                      tglLahir: "",
+                      jenisKelamin: "",
+                      agama: "",
+                      kewarganegaraan: "",
+                      alamat: "",
+                      rtRw: "",
+                      kelurahan: "",
+                      kecamatan: "",
+                      kodePos: "",
+                      whatsapp: "",
+                      email: "",
+                      tinggalDengan: "",
+                      transportasi: "",
+                      tinggiBadan: "",
+                      beratBadan: "",
+                      jarakSekolah: "",
+                      jarakKm: "",
+                      waktuJam: "",
+                      waktuMenit: "",
+                      jumlahSaudara: "",
+                      golonganDarah: "",
+                      penyakitDiderita: "",
+                      kebutuhanKhusus: [],
+                      jenisPrestasi: [],
+                      tingkatPrestasi: [],
+                      uraianPrestasi: "",
+                      tahunPrestasi: "",
+                      penyelenggara: "",
+                      jenisBeasiswa: [],
+                      uraianBeasiswa: "",
+                      tahunMulaiBeasiswa: "",
+                      tahunSelesaiBeasiswa: "",
+                      namaAyah: "",
+                      tempatLahirAyah: "",
+                      tglLahirAyah: null,
+                      agamaAyah: "",
+                      kewarganegaraanAyah: "WNI",
+                      pendidikanAyah: "",
+                      pekerjaanAyah: "",
+                      penghasilanAyah: "",
+                      alamatAyah: "",
+                      rtrwAyah: "",
+                      kelurahanAyah: "",
+                      kecamatanAyah: "",
+                      kodePosAyah: "",
+                      statusAyah: "Masih Hidup",
+                      namaIbu: "",
+                      tempatLahirIbu: "",
+                      tglLahirIbu: null,
+                      agamaIbu: "",
+                      kewarganegaraanIbu: "WNI",
+                      pendidikanIbu: "",
+                      pekerjaanIbu: "",
+                      penghasilanIbu: "",
+                      alamatIbu: "",
+                      rtrwIbu: "",
+                      kelurahanIbu: "",
+                      kecamatanIbu: "",
+                      kodePosIbu: "",
+                      statusIbu: "Masih Hidup",
+                      namaWali: "",
+                      tempatLahirWali: "",
+                      tglLahirWali: null,
+                      agamaWali: "",
+                      kewarganegaraanWali: "WNI",
+                      pendidikanWali: "",
+                      pekerjaanWali: "",
+                      penghasilanWali: "",
+                      alamatWali: "",
+                      rtrwWali: "",
+                      kelurahanWali: "",
+                      kecamatanWali: "",
+                      kodePosWali: "",
+                      statusWali: "Masih Hidup",
+                      teleponOrtu: "",
+                      sekolahAsal: "",
+                      tglLulus: "",
+                      noIjazah: "",
+                      noSKHUN: "",
+                      noPesertaUN: "",
+                      lamaBelajar: "",
+                      pindahanDari: "",
+                      alasanPindah: "",
+                      diterimaKelas: "",
+                      diterimaTanggal: "",
+                      jurusan1: "",
+                      hobi: [],
+                      citaCita: "",
+                      nilaiUSTeori: "",
+                      nilaiUSPraktik: "",
+                      nilaiMuatanLokal: "",
+                      alasanMemilih: "",
+                      citaCitaSetelahLulus: "",
+                      pelajaranDisenangi: "",
+                      punyaKPS: "Tidak",
+                      noKPS: "",
+                      punyaKIP: "Tidak",
+                      noKIP: "",
+                      alasanDisenangi: "",
+                      kesulitanBelajar: "",
+                      perkelahian: "",
+                      ketPerkelahian: "",
+                      narkoba: "",
+                      ketNarkoba: "",
+                      pelanggaranLain: "",
+                      ketPelanggaranLain: "",
+                      janjiTaat: "",
+                      janjiSanksi: "",
+                      janjiAkrab: "",
+                      janjiBelajar: "",
+                      janjiNamaBaik: "",
+                      deklarasi: false,
+                      periode: schoolPeriod,
+                      berkasFotoOk: false,
+                      berkasFotoFile: null,
+                      berkasFotoBase64: "",
+                      berkasPrestasiBase64: "",
+                    });
+                  }
+                }}
+                className="w-full flex justify-center items-center gap-1.5 py-3.5 bg-blue-50 hover:bg-blue-100 dark:bg-blue-900/20 dark:hover:bg-blue-900/30 text-blue-700 dark:text-blue-300 font-bold text-xs rounded-xl transition-all cursor-pointer border border-blue-200/55 dark:border-blue-800/45"
+              >
+                Daftar Calon Baru Lainnya
+              </button>
             </div>
 
           </div>
@@ -1159,9 +1471,15 @@ export default function DaftarPage() {
         if (data.success) {
           if (typeof window !== "undefined") {
             localStorage.removeItem('ppdb_active_checkout');
+            localStorage.setItem('ppdb_registration_success', JSON.stringify({
+              nisn: submittedCandidate.nisn,
+              success: true,
+              successData: data.data
+            }));
           }
           setShowPaymentGate(false);
           setFormData(prev => ({ ...prev, nisn: submittedCandidate.nisn }));
+          setSuccessData(data.data);
           setIsSuccess(true);
           fetchPublicApplicants?.();
         } else {

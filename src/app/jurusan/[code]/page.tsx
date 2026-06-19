@@ -69,6 +69,38 @@ interface MajorDetail {
   partners: string;
 }
 
+function hexToRgb(hex: string): string {
+  try {
+    const shorthandRegex = /^#?([a-f\d])([a-f\d])([a-f\d])$/i;
+    const fullHex = (hex || "#0066ff").replace(shorthandRegex, (m, r, g, b) => r + r + g + g + b + b);
+    const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(fullHex);
+    return result
+      ? `${parseInt(result[1], 16)}, ${parseInt(result[2], 16)}, ${parseInt(result[3], 16)}`
+      : "0, 102, 255";
+  } catch (_) {
+    return "0, 102, 255";
+  }
+}
+
+function getDarkerColor(hex: string, percent = 20): string {
+  try {
+    const cleanHex = (hex || "#0066ff").replace("#", "");
+    const num = parseInt(cleanHex, 16);
+    if (isNaN(num)) return "#0044cc";
+    const amt = Math.round(2.55 * percent);
+    const R = (num >> 16) - amt;
+    const G = (num >> 8 & 0x00FF) - amt;
+    const B = (num & 0x0000FF) - amt;
+    const clamp = (val: number) => val < 0 ? 0 : val > 255 ? 255 : val;
+    const rHex = clamp(R).toString(16).padStart(2, "0");
+    const gHex = clamp(G).toString(16).padStart(2, "0");
+    const bHex = clamp(B).toString(16).padStart(2, "0");
+    return `#${rHex}${gHex}${bHex}`;
+  } catch (_) {
+    return "#0044cc";
+  }
+}
+
 const majorsData: Record<string, MajorDetail> = {
   rpl: {
     code: "RPL",
@@ -330,7 +362,10 @@ export default function MajorPage() {
   const code = rawCode === "anm" ? "an" : rawCode;
   const majorKeys = ["rpl", "tjkt", "dkv", "bc", "an", "te"];
   const currentIndex = majorKeys.indexOf(code);
-  const nextCode = currentIndex !== -1 ? majorKeys[(currentIndex + 1) % majorKeys.length] : "rpl";
+  const [nextCode, setNextCode] = useState(() => {
+    const otherKeys = majorKeys.filter(k => k !== code);
+    return otherKeys[Math.floor(Math.random() * otherKeys.length)] || "rpl";
+  });
 
   const [major, setMajor] = useState<any>(null);
   const [nextMajor, setNextMajor] = useState<any>(null);
@@ -486,14 +521,77 @@ export default function MajorPage() {
     );
   }
 
+  const accentColor = major.accentColor || "#0066ff";
+  const accentRgb = hexToRgb(accentColor);
+  const darkerColor = getDarkerColor(accentColor, 15);
+  const glowColor = `rgba(${accentRgb}, 0.15)`;
+
+  const nextAccentColor = nextMajor?.accentColor || "#0066ff";
+  const nextAccentRgb = hexToRgb(nextAccentColor);
+  const nextDarkerColor = getDarkerColor(nextAccentColor, 15);
+
   return (
-    <div className="relative min-h-screen flex flex-col overflow-x-hidden bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 transition-colors duration-300">
+    <div 
+      className="relative min-h-screen flex flex-col overflow-x-hidden bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 transition-colors duration-300"
+      style={{
+        '--major-accent': accentColor,
+        '--major-accent-rgb': accentRgb,
+        '--major-darker': darkerColor,
+        '--major-glow': glowColor,
+        '--next-accent': nextAccentColor,
+        '--next-accent-rgb': nextAccentRgb,
+        '--next-darker': nextDarkerColor
+      } as React.CSSProperties}
+    >
+      <style>{`
+        .major-gradient-bg {
+          background-image: linear-gradient(135deg, var(--major-accent) 0%, var(--major-darker) 100%) !important;
+        }
+        .major-text-clip {
+          background-image: linear-gradient(135deg, var(--major-accent) 0%, var(--major-darker) 100%) !important;
+          -webkit-background-clip: text !important;
+          -webkit-text-fill-color: transparent !important;
+        }
+        .major-bg-accent {
+          background-color: rgba(var(--major-accent-rgb), 0.1) !important;
+        }
+        .dark .major-bg-accent {
+          background-color: rgba(var(--major-accent-rgb), 0.2) !important;
+        }
+        .major-text-accent {
+          color: var(--major-accent) !important;
+        }
+        .major-glow-border:hover {
+          border-color: rgba(var(--major-accent-rgb), 0.25) !important;
+          box-shadow: 0 0 20px rgba(var(--major-accent-rgb), 0.08) !important;
+        }
+        .major-accent-border {
+          border-color: var(--major-accent) !important;
+        }
+        .next-gradient-bg {
+          background-image: linear-gradient(135deg, var(--next-accent) 0%, var(--next-darker) 100%) !important;
+        }
+        .next-text-clip {
+          background-image: linear-gradient(135deg, var(--next-accent) 0%, var(--next-darker) 100%) !important;
+          -webkit-background-clip: text !important;
+          -webkit-text-fill-color: transparent !important;
+        }
+        .next-bg-accent {
+          background-color: rgba(var(--next-accent-rgb), 0.1) !important;
+        }
+        .dark .next-bg-accent {
+          background-color: rgba(var(--next-accent-rgb), 0.2) !important;
+        }
+        .next-text-accent {
+          color: var(--next-accent) !important;
+        }
+      `}</style>
       
       {/* Floating Background Glow System */}
       <div className="absolute inset-0 bg-glow-container">
         <div 
           className="bg-glow bg-glow-1"
-          style={{ background: `radial-gradient(circle, ${major.glowColor} 0%, transparent 70%)` }}
+          style={{ background: `radial-gradient(circle, var(--major-glow) 0%, transparent 70%)` }}
         ></div>
         <div className="bg-glow bg-glow-2"></div>
         <div className="bg-glow bg-glow-3"></div>
@@ -536,7 +634,7 @@ export default function MajorPage() {
                   e.target.style.display = "none"; 
                   const parent = e.target.parentElement;
                   if (parent) {
-                    parent.classList.add("bg-gradient-to-r", ...major.color.split(" "));
+                    parent.style.backgroundImage = 'linear-gradient(135deg, var(--major-accent), var(--major-darker))';
                     parent.querySelectorAll('.fallback-alias').forEach((el: any) => el.remove());
                     const fallbackDiv = document.createElement('div');
                     fallbackDiv.style.color = 'white';
@@ -555,7 +653,7 @@ export default function MajorPage() {
               />
             </div>
             <div>
-              <span className={`inline-block px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider mb-1 ${major.bgAccent} ${major.textAccent}`}>
+              <span className="inline-block px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider mb-1 major-bg-accent major-text-accent">
                 Program Unggulan {major.code}
               </span>
               <h2 className="text-sm font-semibold text-slate-400">{major.subtitle}</h2>
@@ -564,7 +662,7 @@ export default function MajorPage() {
 
           <h1 className="text-3xl md:text-5xl font-black text-slate-800 dark:text-white leading-tight">
             Jurusan <br />
-            <span className={`bg-gradient-to-r ${major.color} bg-clip-text text-transparent`}>
+            <span className="major-text-clip">
               {major.title}
             </span>
           </h1>
@@ -589,7 +687,7 @@ export default function MajorPage() {
 
         {/* Right Hero Visual Column */}
         <div className="w-full lg:w-1/2 relative group">
-          <div className={`absolute -inset-1.5 bg-gradient-to-r ${major.color} rounded-[36px] blur-lg opacity-40 group-hover:opacity-60 transition duration-700 pointer-events-none`}></div>
+          <div className="absolute -inset-1.5 major-gradient-bg rounded-[36px] blur-lg opacity-40 group-hover:opacity-60 transition duration-700 pointer-events-none"></div>
           
           <div className="relative bg-white dark:bg-slate-900 rounded-[32px] p-3 border border-slate-200/40 dark:border-slate-800/40 shadow-2xl overflow-hidden aspect-video flex items-center justify-center">
             <img 
@@ -606,10 +704,10 @@ export default function MajorPage() {
       {major.video && (
         <section className="py-12 px-6 max-w-5xl mx-auto w-full relative z-10 animate-in fade-in duration-700">
           <div className="bg-white/60 dark:bg-slate-900/60 backdrop-blur-2xl border border-slate-200/50 dark:border-slate-850 p-6 md:p-10 rounded-[3rem] shadow-xl relative overflow-hidden flex flex-col items-center text-center space-y-6">
-            <div className={`absolute -right-24 -top-24 w-80 h-80 rounded-full bg-gradient-to-r ${major.color} opacity-10 dark:opacity-25 blur-3xl pointer-events-none`}></div>
+            <div className="absolute -right-24 -top-24 w-80 h-80 rounded-full major-gradient-bg opacity-10 dark:opacity-25 blur-3xl pointer-events-none"></div>
             
             <div className="space-y-2">
-              <span className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-black uppercase tracking-wider ${major.bgAccent} ${major.textAccent}`}>
+              <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-black uppercase tracking-wider major-bg-accent major-text-accent">
                 <Video size={12} className="animate-pulse" />
                 Video Profil &amp; Pengenalan Jurusan
               </span>
@@ -665,9 +763,9 @@ export default function MajorPage() {
                 key={idx} 
                 className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border border-white/50 dark:border-slate-800 rounded-3xl p-6 shadow-md hover:shadow-xl hover:-translate-y-1.5 hover:border-blue-500/20 transition-all duration-300 relative group overflow-hidden"
               >
-                <div className={`absolute top-0 left-0 w-full h-[4px] bg-gradient-to-r ${major.color} opacity-0 scale-x-0 group-hover:opacity-100 group-hover:scale-x-100 origin-left transition-all duration-300`}></div>
+                <div className="absolute top-0 left-0 w-full h-[4px] major-gradient-bg opacity-0 scale-x-0 group-hover:opacity-100 group-hover:scale-x-100 origin-left transition-all duration-300"></div>
                 
-                <div className={`w-10 h-10 rounded-xl flex items-center justify-center mb-4 ${major.bgAccent} ${major.textAccent}`}>
+                <div className="w-10 h-10 rounded-xl flex items-center justify-center mb-4 major-bg-accent major-text-accent">
                   <BookOpen size={20} />
                 </div>
                 
@@ -749,7 +847,7 @@ export default function MajorPage() {
                 key={idx} 
                 className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border border-white/50 dark:border-slate-800 p-8 rounded-3xl shadow-md hover:shadow-xl transition-all duration-300 flex items-start gap-5 relative group"
               >
-                <div className={`w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 ${major.bgAccent} ${major.textAccent}`}>
+                <div className="w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 major-bg-accent major-text-accent">
                   <Briefcase size={22} />
                 </div>
                 <div>
@@ -774,7 +872,7 @@ export default function MajorPage() {
           {/* Facilities Column */}
           <div className="w-full lg:w-1/2 space-y-6">
             <div>
-              <span className={`inline-block px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider mb-2 ${major.bgAccent} ${major.textAccent}`}>
+              <span className="inline-block px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider mb-2 major-bg-accent major-text-accent">
                 Fasilitas Praktik
               </span>
               <h2 className="text-2xl md:text-3xl font-extrabold text-slate-800 dark:text-white">
@@ -827,7 +925,7 @@ export default function MajorPage() {
 
       {/* FINAL CALL TO ACTION BANNER */}
       <section className="py-16 max-w-6xl mx-auto px-6 w-full relative z-10">
-        <div className={`relative bg-gradient-to-r ${major.color} rounded-[40px] p-10 md:p-16 text-center text-white shadow-2xl overflow-hidden group`}>
+        <div className="relative major-gradient-bg rounded-[40px] p-10 md:p-16 text-center text-white shadow-2xl overflow-hidden group">
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(255,255,255,0.15)_0%,transparent_60%)] pointer-events-none"></div>
           
           <div className="relative z-10 max-w-xl mx-auto space-y-6">
@@ -858,15 +956,15 @@ export default function MajorPage() {
       {/* EXPLORE NEXT MAJOR CTA */}
       <section className="py-16 max-w-6xl mx-auto px-6 w-full relative z-10">
         <div className="bg-white/40 dark:bg-slate-900/40 backdrop-blur-xl border border-slate-200/50 dark:border-slate-800 rounded-[3rem] p-8 md:p-12 shadow-xl relative overflow-hidden flex flex-col md:flex-row items-center justify-between gap-8 group">
-          <div className={`absolute -right-24 -bottom-24 w-80 h-80 rounded-full bg-gradient-to-r ${nextMajor.color} opacity-10 dark:opacity-20 blur-3xl pointer-events-none group-hover:scale-110 transition duration-700`}></div>
+          <div className="absolute -right-24 -bottom-24 w-80 h-80 rounded-full next-gradient-bg opacity-10 dark:opacity-20 blur-3xl pointer-events-none group-hover:scale-110 transition duration-700"></div>
           
           <div className="space-y-4 max-w-2xl text-left relative z-10">
-            <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider ${nextMajor.bgAccent} ${nextMajor.textAccent}`}>
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider next-bg-accent next-text-accent">
               <Sparkles size={12} className="animate-pulse" />
               Eksplor Jurusan Lain
             </span>
             <h2 className="text-2xl md:text-3xl font-extrabold text-slate-800 dark:text-white">
-              Tertarik Melihat Jurusan <span className={`bg-gradient-to-r ${nextMajor.color} bg-clip-text text-transparent`}>{nextMajor.title} ({nextMajor.alias})</span>?
+              Tertarik Melihat Jurusan <span className="next-text-clip">{nextMajor.title} ({nextMajor.alias})</span>?
             </h2>
             <p className="text-sm text-slate-500 dark:text-slate-400 leading-relaxed font-medium">
               {nextMajor.desc.length > 180 ? nextMajor.desc.slice(0, 180) + "..." : nextMajor.desc}
@@ -876,7 +974,7 @@ export default function MajorPage() {
           <div className="shrink-0 relative z-10 w-full md:w-auto">
             <Link 
               href={`/jurusan/${nextCode}`}
-              className={`flex items-center justify-center gap-2 bg-gradient-to-r ${nextMajor.color} hover:opacity-90 text-white font-extrabold px-6 py-3.5 rounded-2xl shadow-lg shadow-slate-950/5 hover:scale-[1.02] active:scale-[0.98] transition-all w-full md:w-auto group/btn`}
+              className="flex items-center justify-center gap-2 next-gradient-bg hover:opacity-90 text-white font-extrabold px-6 py-3.5 rounded-2xl shadow-lg shadow-slate-950/5 hover:scale-[1.02] active:scale-[0.98] transition-all w-full md:w-auto group/btn"
             >
               <span>Lihat Detail {nextMajor.alias}</span>
               <ArrowRight size={16} className="transform group-hover/btn:translate-x-1 transition-transform" />
@@ -994,7 +1092,6 @@ export default function MajorPage() {
               &copy; {new Date().getFullYear()} SMK Taruna Bhakti Depok. All rights reserved.
             </div>
             <div className="flex items-center gap-1.5">
-              <span>Made with 💙 for futuristic education</span>
             </div>
           </div>
         </div>
