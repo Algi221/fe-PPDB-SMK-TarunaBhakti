@@ -384,6 +384,51 @@ export default function KelolaUserInterface() {
     fetchRevisions();
   }, []);
 
+  // Auto-save unsaved draft to localStorage whenever form states change
+  useEffect(() => {
+    if (!mounted || loading) return;
+
+    const draft = {
+      ppdb_hero_title: heroTitle,
+      ppdb_hero_title_sub: heroTitleSub,
+      ppdb_hero_subtitle: heroSubtitle,
+      ppdb_phone: phone,
+      ppdb_email: email,
+      ppdb_address: address,
+      ppdb_school_period: schoolPeriod,
+      ppdb_wa_group_url: waGroupUrl,
+      ppdb_wa_admin: waAdmin,
+      ppdb_form_guideline: formGuideline,
+      ppdb_form_fee: formFee,
+      ppdb_gelombang_config: gelombangConfig,
+      ppdb_bank_config: bankConfigList,
+      ppdb_alur_config: alurList,
+      ppdb_majors_config: majorsList,
+      ppdb_faq_config: faqList,
+    };
+
+    localStorage.setItem("ppdb_ui_editor_draft", JSON.stringify(draft));
+  }, [
+    mounted,
+    loading,
+    heroTitle,
+    heroTitleSub,
+    heroSubtitle,
+    phone,
+    email,
+    address,
+    schoolPeriod,
+    waGroupUrl,
+    waAdmin,
+    formGuideline,
+    formFee,
+    gelombangConfig,
+    bankConfigList,
+    alurList,
+    majorsList,
+    faqList,
+  ]);
+
   const showToastMsg = (message: string, type: "success" | "error" | "info" = "success") => {
     setToast({ message, type });
     setTimeout(() => setToast(null), 4000);
@@ -394,67 +439,81 @@ export default function KelolaUserInterface() {
       setLoading(true);
       const res = await fetch("http://localhost:5000/api/config");
       const json = await res.json();
-      if (json.success && json.data) {
-        const config = json.data;
-        if (config.ppdb_hero_title) setHeroTitle(config.ppdb_hero_title);
-        if (config.ppdb_hero_title_sub) setHeroTitleSub(config.ppdb_hero_title_sub);
-        if (config.ppdb_hero_subtitle) setHeroSubtitle(config.ppdb_hero_subtitle);
-        if (config.ppdb_phone) setPhone(formatPhoneNumber(config.ppdb_phone));
-        if (config.ppdb_email) setEmail(config.ppdb_email);
-        if (config.ppdb_address) setAddress(config.ppdb_address);
-        if (config.ppdb_school_period) setSchoolPeriod(config.ppdb_school_period);
-        if (config.ppdb_wa_group_url) setWaGroupUrl(config.ppdb_wa_group_url);
-        if (config.ppdb_wa_admin) setWaAdmin(formatPhoneNumber(config.ppdb_wa_admin));
-        if (config.ppdb_form_guideline) setFormGuideline(config.ppdb_form_guideline);
-        if (config.ppdb_form_fee) setFormFee(config.ppdb_form_fee);
+      const config = (json.success && json.data) ? json.data : {};
+
+      // Load draft from localStorage if present
+      const savedDraft = localStorage.getItem("ppdb_ui_editor_draft");
+      let draft: any = null;
+      if (savedDraft) {
+        try {
+          draft = JSON.parse(savedDraft);
+        } catch (_) {}
+      }
+
+      const activeConfig = draft ? { ...config, ...draft } : config;
+
+      if (activeConfig.ppdb_hero_title) setHeroTitle(activeConfig.ppdb_hero_title);
+      if (activeConfig.ppdb_hero_title_sub) setHeroTitleSub(activeConfig.ppdb_hero_title_sub);
+      if (activeConfig.ppdb_hero_subtitle) setHeroSubtitle(activeConfig.ppdb_hero_subtitle);
+      if (activeConfig.ppdb_phone) setPhone(formatPhoneNumber(activeConfig.ppdb_phone));
+      if (activeConfig.ppdb_email) setEmail(activeConfig.ppdb_email);
+      if (activeConfig.ppdb_address) setAddress(activeConfig.ppdb_address);
+      if (activeConfig.ppdb_school_period) setSchoolPeriod(activeConfig.ppdb_school_period);
+      if (activeConfig.ppdb_wa_group_url) setWaGroupUrl(activeConfig.ppdb_wa_group_url);
+      if (activeConfig.ppdb_wa_admin) setWaAdmin(formatPhoneNumber(activeConfig.ppdb_wa_admin));
+      if (activeConfig.ppdb_form_guideline) setFormGuideline(activeConfig.ppdb_form_guideline);
+      if (activeConfig.ppdb_form_fee) setFormFee(activeConfig.ppdb_form_fee);
+      
+      if (activeConfig.ppdb_alur_config && Array.isArray(activeConfig.ppdb_alur_config)) {
+        setAlurList(activeConfig.ppdb_alur_config);
+      }
+      if (activeConfig.ppdb_faq_config && Array.isArray(activeConfig.ppdb_faq_config)) {
+        setFaqList(activeConfig.ppdb_faq_config);
+      } else {
+        setFaqList(DEFAULT_FAQ);
+      }
+      if (activeConfig.ppdb_majors_config && Array.isArray(activeConfig.ppdb_majors_config)) {
+        const dbMajors = activeConfig.ppdb_majors_config;
+        const mergedMajors: MajorItem[] = [];
         
-        if (config.ppdb_alur_config && Array.isArray(config.ppdb_alur_config)) {
-          setAlurList(config.ppdb_alur_config);
-        }
-        if (config.ppdb_faq_config && Array.isArray(config.ppdb_faq_config)) {
-          setFaqList(config.ppdb_faq_config);
-        } else {
-          setFaqList(DEFAULT_FAQ);
-        }
-        if (config.ppdb_majors_config && Array.isArray(config.ppdb_majors_config)) {
-          const dbMajors = config.ppdb_majors_config;
-          const mergedMajors: MajorItem[] = [];
-          
-          dbMajors.forEach((dbMajor: any) => {
-            const defMajor = DEFAULT_MAJORS.find(d => d.code === dbMajor.code);
-            mergedMajors.push({
-              code: dbMajor.code,
-              title: dbMajor.title || "",
-              desc: dbMajor.desc || "",
-              color: dbMajor.color || (defMajor?.color || "#0066ff"),
-              careers: Array.isArray(dbMajor.careers) ? dbMajor.careers : (defMajor?.careers || []),
-              facilities: Array.isArray(dbMajor.facilities) ? dbMajor.facilities : (defMajor?.facilities || []),
-              logo: dbMajor.logo || (defMajor?.logo || ""),
-              banner: dbMajor.banner || (defMajor?.banner || ""),
-              video: dbMajor.video || (defMajor?.video || ""),
-              gallery: Array.isArray(dbMajor.gallery) ? dbMajor.gallery : (defMajor?.gallery || [])
-            });
+        dbMajors.forEach((dbMajor: any) => {
+          const defMajor = DEFAULT_MAJORS.find(d => d.code === dbMajor.code);
+          mergedMajors.push({
+            code: dbMajor.code,
+            title: dbMajor.title || "",
+            desc: dbMajor.desc || "",
+            color: dbMajor.color || (defMajor?.color || "#0066ff"),
+            careers: Array.isArray(dbMajor.careers) ? dbMajor.careers : (defMajor?.careers || []),
+            facilities: Array.isArray(dbMajor.facilities) ? dbMajor.facilities : (defMajor?.facilities || []),
+            logo: dbMajor.logo || (defMajor?.logo || ""),
+            banner: dbMajor.banner || (defMajor?.banner || ""),
+            video: dbMajor.video || (defMajor?.video || ""),
+            gallery: Array.isArray(dbMajor.gallery) ? dbMajor.gallery : (defMajor?.gallery || [])
           });
-          
-          DEFAULT_MAJORS.forEach(def => {
-            if (!mergedMajors.some(m => m.code === def.code)) {
-              mergedMajors.push(def);
-            }
-          });
-          
-          setMajorsList(mergedMajors);
-        }
-        if (config.ppdb_gelombang_config) {
-          setGelombangConfig(config.ppdb_gelombang_config);
-        }
-        if (config.ppdb_bank_config) {
-          const bankData = config.ppdb_bank_config;
-          if (Array.isArray(bankData)) {
-            setBankConfigList(bankData);
-          } else if (bankData && typeof bankData === "object") {
-            setBankConfigList([bankData]);
+        });
+        
+        DEFAULT_MAJORS.forEach(def => {
+          if (!mergedMajors.some(m => m.code === def.code)) {
+            mergedMajors.push(def);
           }
+        });
+        
+        setMajorsList(mergedMajors);
+      }
+      if (activeConfig.ppdb_gelombang_config) {
+        setGelombangConfig(activeConfig.ppdb_gelombang_config);
+      }
+      if (activeConfig.ppdb_bank_config) {
+        const bankData = activeConfig.ppdb_bank_config;
+        if (Array.isArray(bankData)) {
+          setBankConfigList(bankData);
+        } else if (bankData && typeof bankData === "object") {
+          setBankConfigList([bankData]);
         }
+      }
+
+      if (draft) {
+        showToastMsg("Draf perubahan berhasil dipulihkan dari sesi sebelumnya.", "info");
       }
     } catch (e) {
       console.error("Gagal mengambil konfigurasi UI:", e);
@@ -642,6 +701,7 @@ export default function KelolaUserInterface() {
       if (json.success) {
         showToastMsg("Semua perubahan UI berhasil disimpan dan tercatat.");
         setChangeDescription("");
+        localStorage.removeItem("ppdb_ui_editor_draft");
         
         try {
           localStorage.setItem("ppdb_majors_config", JSON.stringify(finalMajors));
@@ -695,6 +755,7 @@ export default function KelolaUserInterface() {
       const json = await res.json();
       if (json.success) {
         showToastMsg(`Sukses memulihkan tampilan ke versi #${revId}!`);
+        localStorage.removeItem("ppdb_ui_editor_draft");
         await fetchCurrentConfig();
         await fetchRevisions();
       } else {
@@ -770,13 +831,30 @@ export default function KelolaUserInterface() {
           </div>
         </div>
         
-        <button
-          onClick={() => setShowConfirmModal(true)}
-          className="px-6 py-3 bg-gradient-to-tr from-blue-600 to-indigo-500 hover:from-blue-500 hover:to-indigo-400 text-white rounded-xl text-xs font-black uppercase tracking-wider shadow shadow-blue-500/20 hover:shadow-blue-500/40 transition-all flex items-center gap-2"
-        >
-          <Check size={14} />
-          <span>Simpan Perubahan</span>
-        </button>
+        <div className="flex gap-2.5">
+          {mounted && typeof window !== "undefined" && localStorage.getItem("ppdb_ui_editor_draft") && (
+            <button
+              onClick={() => {
+                if (window.confirm("Apakah Anda yakin ingin membatalkan semua draf perubahan yang belum disimpan dan memuat ulang data asli dari server?")) {
+                  localStorage.removeItem("ppdb_ui_editor_draft");
+                  fetchCurrentConfig();
+                }
+              }}
+              className="px-4 py-3 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 rounded-xl text-xs font-black uppercase tracking-wider transition-all flex items-center gap-2 border border-slate-200 dark:border-slate-700 cursor-pointer"
+            >
+              <RotateCcw size={14} />
+              <span>Reset Draf</span>
+            </button>
+          )}
+          
+          <button
+            onClick={() => setShowConfirmModal(true)}
+            className="px-6 py-3 bg-gradient-to-tr from-blue-600 to-indigo-500 hover:from-blue-500 hover:to-indigo-400 text-white rounded-xl text-xs font-black uppercase tracking-wider shadow shadow-blue-500/20 hover:shadow-blue-500/40 transition-all flex items-center gap-2 cursor-pointer"
+          >
+            <Check size={14} />
+            <span>Simpan Perubahan</span>
+          </button>
+        </div>
       </div>
 
       {/* Navigation Tabs - Capsule Container & Asymmetric Dynamic Leaf-like Design */}
