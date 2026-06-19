@@ -1474,9 +1474,9 @@ body {
 }
 
 .btn-secondary {
-  background: rgba(0, 0, 0, 0.04);
-  border: none;
-  color: var(--dark);
+  background: #f1f5f9;
+  border: 1px solid #e2e8f0;
+  color: #334155;
   font-size: 14px;
   font-weight: 600;
   padding: 12px 24px;
@@ -1486,7 +1486,7 @@ body {
 }
 
 .btn-secondary:hover {
-  background: rgba(0, 0, 0, 0.08);
+  background: #e2e8f0;
 }
 
 .btn-wizard-next {

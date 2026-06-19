@@ -484,7 +484,9 @@ function InvoiceContent() {
               <div style={{ display: 'flex', gap: '16px' }}>
                 <div>
                   <span style={{ fontWeight: 800 }}>Metode Bayar: </span>
-                  <span style={{ color: '#0f172a', fontWeight: 700, textTransform: 'uppercase' }}>{data.metode_pembayaran}</span>
+                  <span style={{ color: '#0f172a', fontWeight: 700, textTransform: 'uppercase' }}>
+                    {data.metode_pembayaran === 'Transfer Manual' ? 'Transfer' : data.metode_pembayaran}
+                  </span>
                 </div>
                 <div>
                   <span style={{ fontWeight: 800 }}>Status Bayar: </span>
@@ -495,63 +497,32 @@ function InvoiceContent() {
               </div>
             </div>
 
-            {/* ── TANDA TANGAN (2 kolom, rapi sejajar) ── */}
-            <div className="signature-block" style={{ borderTop: '2px dashed #e2e8f0', paddingTop: '20px', position: 'relative' }}>
-              
-              {/* Watermark seal */}
-              <div style={{
-                position: 'absolute', left: '50%', top: '50%',
-                transform: 'translate(-50%, -50%)',
-                opacity: 0.05, pointerEvents: 'none', userSelect: 'none'
-              }}>
-                <svg width="100" height="100" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <circle cx="50" cy="50" r="45" stroke="#10B981" strokeWidth="4" />
-                  <text x="50" y="42" fill="#10B981" fontSize="8" fontWeight="bold" textAnchor="middle">SMK TB</text>
-                  <text x="50" y="54" fill="#10B981" fontSize="11" fontWeight="900" textAnchor="middle">VERIFIED</text>
-                  <text x="50" y="64" fill="#10B981" fontSize="8" fontWeight="bold" textAnchor="middle">APPROVED</text>
-                </svg>
+            {/* ── HIMBAUAN BERKAS FISIK ── */}
+            <div style={{
+              background: '#fef3c7',
+              border: '1px solid #fde68a',
+              borderRadius: '12px',
+              padding: '16px',
+              marginTop: '20px',
+              fontSize: '11px',
+              color: '#92400e',
+              lineHeight: '1.6',
+              fontWeight: 600
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px', fontWeight: 900, color: '#b45309', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                <span style={{ fontSize: '14px' }}>⚠️</span>
+                Penting: Bawa Berkas Fisik!
               </div>
-
-              <div style={{ 
-                display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '40px',
-                fontSize: '11px', fontWeight: 600, color: '#1e293b'
-              }}>
-                {/* Kiri: Kepala Sekolah */}
-                <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', height: '120px' }}>
-                  <div>
-                    <p style={{ margin: '0 0 2px 0', color: '#64748b', fontWeight: 500, fontSize: '11px' }}>Mengetahui,</p>
-                    <p style={{ margin: 0, fontWeight: 800, fontSize: '11px', color: '#1e293b' }}>Kepala SMK Taruna Bhakti</p>
-                  </div>
-                  <div>
-                    <p style={{ 
-                      margin: 0, fontWeight: 900, fontSize: '12px', color: '#0f172a',
-                      borderBottom: '2px solid #0f172a', paddingBottom: '3px',
-                      textTransform: 'uppercase', letterSpacing: '0.05em',
-                      display: 'inline-block'
-                    }}>
-                      AINA NOVERA, S.Pd., MM
-                    </p>
-                  </div>
-                </div>
-
-                {/* Kanan: Ketua Pelaksana */}
-                <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', height: '120px', textAlign: 'right' }}>
-                  <div>
-                    <p style={{ margin: '0 0 2px 0', color: '#64748b', fontWeight: 500, fontSize: '11px' }}>Depok, {tglDaftarFormatted}</p>
-                    <p style={{ margin: 0, fontWeight: 800, fontSize: '11px', color: '#1e293b' }}>Ketua Pelaksana PPDB</p>
-                  </div>
-                  <div>
-                    <p style={{ 
-                      margin: 0, fontWeight: 900, fontSize: '12px', color: '#0f172a',
-                      borderBottom: '2px solid #0f172a', paddingBottom: '3px',
-                      textTransform: 'uppercase', letterSpacing: '0.05em',
-                      display: 'inline-block'
-                    }}>
-                      RATNA WATI, SE
-                    </p>
-                  </div>
-                </div>
-              </div>
+              <p style={{ margin: '0 0 8px 0' }}>
+                Harap datang langsung ke loket sekretariat PPDB sekolah untuk verifikasi fisik berkas-berkas pendaftaran berikut:
+              </p>
+              <ul style={{ margin: 0, paddingLeft: '20px', listStyleType: 'disc' }}>
+                <li>Fotokopi Kartu Keluarga (KK)</li>
+                <li>Fotokopi KTP Orang Tua (Ayah &amp; Ibu)</li>
+                <li>Akta Kelahiran asli &amp; Fotokopi</li>
+                <li>Fotokopi Ijazah / Surat Keterangan Lulus (SKL) legalisir</li>
+                <li>Pas foto berwarna terbaru ukuran 3x4 (3 lembar)</li>
+              </ul>
             </div>
 
             {/* ── FOOTER NOTE (print only) ── */}

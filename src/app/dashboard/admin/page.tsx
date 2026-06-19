@@ -86,7 +86,7 @@ function AdminManagementPageContent() {
     }
   }, [activeTab, adminToken]);
 
-  const fetchYsbmoStaff = async (manualToken?: string) => {
+  async function fetchYsbmoStaff(manualToken?: string) {
     if (!adminToken) return;
     try {
       setYsbmoLoading(true);
@@ -282,7 +282,7 @@ function AdminManagementPageContent() {
     }
   };
 
-  const fetchTrashedAdmins = async () => {
+  async function fetchTrashedAdmins() {
     if (!adminToken) return;
     try {
       setTrashLoading(true);

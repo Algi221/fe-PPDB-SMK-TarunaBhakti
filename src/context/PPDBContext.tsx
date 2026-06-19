@@ -203,7 +203,7 @@ export function PPDBProvider({ children }: { children: React.ReactNode }) {
     const token = adminToken || localStorage.getItem("ppdb_admin_token");
     if (!token) return;
     try {
-      const res = await fetch(`${BACKEND_URL}/api/siswa-aktif`, {
+      const res = await fetch(`${BACKEND_URL}/api/applicants`, {
         headers: { "Authorization": `Bearer ${token}` }
       });
       if (res.status === 401) {
@@ -212,7 +212,10 @@ export function PPDBProvider({ children }: { children: React.ReactNode }) {
         return;
       }
       const data = await res.json();
-      if (data.success) setActiveStudents(data.data);
+      if (data.success) {
+        const approved = data.data.filter((a: any) => a.status === 'Approved');
+        setActiveStudents(approved);
+      }
     } catch (err: any) {
       console.warn("Active students API fetch error:", err.message);
     }
@@ -368,7 +371,7 @@ export function PPDBProvider({ children }: { children: React.ReactNode }) {
     const token = adminToken || localStorage.getItem("ppdb_admin_token");
     if (!token) return { success: false, message: "Tidak terautentikasi." };
     try {
-      const res = await fetch(`${BACKEND_URL}/api/siswa-aktif/${id}`, {
+      const res = await fetch(`${BACKEND_URL}/api/applicants/${id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
         body: JSON.stringify(updatedData)
@@ -394,7 +397,7 @@ export function PPDBProvider({ children }: { children: React.ReactNode }) {
     const token = adminToken || localStorage.getItem("ppdb_admin_token");
     if (!token) return;
     try {
-      const res = await fetch(`${BACKEND_URL}/api/siswa-aktif/${id}`, {
+      const res = await fetch(`${BACKEND_URL}/api/applicants/${id}`, {
         method: "DELETE",
         headers: { "Authorization": `Bearer ${token}` }
       });
@@ -538,7 +541,9 @@ export function PPDBProvider({ children }: { children: React.ReactNode }) {
     };
   }, [addToast, addWsLog]);
 
-  connectWsRef.current = connectWs;
+  useEffect(() => {
+    connectWsRef.current = connectWs;
+  }, [connectWs]);
 
   const simulateRegistration = useCallback(async () => {
     const firstNames = ["Ahmad", "Dian", "Budi", "Siti", "Kevin", "Rina", "Fajar", "Ayu", "Giri", "Reza", "Lutfi", "Indah"];
@@ -600,10 +605,12 @@ export function PPDBProvider({ children }: { children: React.ReactNode }) {
   }, [simulationActive, simulateRegistration]);
 
   useEffect(() => {
+
     fetchPublicApplicants();
   }, [fetchPublicApplicants]);
 
   useEffect(() => {
+
     connectWs();
     return () => {
       if (wsRef.current) {
@@ -616,6 +623,7 @@ export function PPDBProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     if (!adminToken) return;
+
     fetchAdminApplicants();
     fetchActiveStudents();
     if (typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'default') {

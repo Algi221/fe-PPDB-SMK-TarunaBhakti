@@ -75,7 +75,6 @@ export default function EditInformasi({ params }: { params: { id: string } }) {
 
   useEffect(() => {
     fetchDetail();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {

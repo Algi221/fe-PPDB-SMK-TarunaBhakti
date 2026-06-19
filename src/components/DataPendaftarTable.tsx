@@ -163,6 +163,12 @@ export default function DataPendaftarTable() {
                       <Sparkles size={12} className="text-blue-500 animate-pulse" /> SCAN UNTUK CEK STATUS
                     </span>
                   </div>
+                  <div className="relative group/badge cursor-default">
+                    <div className="absolute inset-0 bg-amber-500/20 dark:bg-amber-500/40 blur-md opacity-0 group-hover/badge:opacity-100 transition-opacity rounded-full" />
+                    <span className="relative px-4 py-1.5 bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/30 text-amber-600 dark:text-amber-400 text-[10px] font-black uppercase tracking-[0.2em] rounded-full flex items-center gap-2 shadow-sm backdrop-blur-md">
+                      <Clock size={12} className="text-amber-500" /> DALAM PROSES
+                    </span>
+                  </div>
               </div>
             </div>
 
@@ -349,7 +355,9 @@ export default function DataPendaftarTable() {
                     }`}
                   >
                     <td className="px-4 py-3">
-                      <div className="text-xs font-bold text-slate-800 dark:text-white mb-0.5">{item.nama}</div>
+                      <div className={`text-xs font-bold mb-0.5 ${item.status === 'Rejected' ? 'text-red-500 line-through' : 'text-slate-800 dark:text-white'}`}>
+                        {item.nama}
+                      </div>
                     </td>
                     <td className="px-4 py-3">
                       <div className="text-xs font-semibold text-slate-700 dark:text-slate-300">{item.sekolah_asal || item.sekolahAsal}</div>

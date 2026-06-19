@@ -168,6 +168,7 @@ export default function ActiveStudentsDirectory() {
   }, [fetchActiveStudents]);
   const [searchTerm, setSearchTerm] = useState<string>("");
   const [majorFilter, setMajorFilter] = useState<string>("ALL");
+  const [classFilter, setClassFilter] = useState<string>("ALL");
   const [expandedPeriods, setExpandedPeriods] = useState<Record<string, boolean>>({});
 
   const [customPeriods, setCustomPeriods] = useState<string[]>(() => {
@@ -257,18 +258,32 @@ export default function ActiveStudentsDirectory() {
       const schoolMatch = (a.sekolah_asal || a.sekolahAsal || "").toLowerCase().includes(searchTerm.toLowerCase());
       
       const searchMatch = nameMatch || nisnMatch || schoolMatch;
+      if (!searchMatch) return false;
       
-      if (majorFilter === "ALL") return searchMatch;
+      if (majorFilter !== "ALL") {
+        const maj = (a.jurusan || a.jurusan_1 || a.jurusan1 || "").toLowerCase();
+        if (!maj.includes(majorFilter.toLowerCase())) return false;
+      }
       
-      const maj = (a.jurusan || a.jurusan_1 || a.jurusan1 || "").toLowerCase();
-      const target = majorFilter.toLowerCase();
+      if (classFilter !== "ALL") {
+        const kls = a.diterima_kelas || a.diterimaKelas || "";
+        if (kls !== classFilter) return false;
+      }
       
-      const majorMatch = maj.includes(target);
-      return searchMatch && majorMatch;
+      return true;
     });
-  }, [activeApplicants, searchTerm, majorFilter]);
+  }, [activeApplicants, searchTerm, majorFilter, classFilter]);
 
-  const groupedByPeriod = useMemo(() => {
+  const uniqueClasses = useMemo(() => {
+    const classes = new Set<string>();
+    activeApplicants.forEach((a: Applicant) => {
+      const k = a.diterima_kelas || a.diterimaKelas;
+      if (k) classes.add(k);
+    });
+    return Array.from(classes).sort();
+  }, [activeApplicants]);
+
+  const groupedByPeriod = (() => {
     const groups: Record<string, Applicant[]> = {};
 
     customPeriods.forEach(p => {
@@ -288,7 +303,7 @@ export default function ActiveStudentsDirectory() {
     });
 
     return groups;
-  }, [filteredApplicants, customPeriods]);
+  })();
 
   const sortedPeriods = useMemo(() => {
     return Object.keys(groupedByPeriod).sort((a, b) => b.localeCompare(a));
@@ -501,6 +516,21 @@ export default function ActiveStudentsDirectory() {
               <option value="Animasi">Animasi</option>
               <option value="Broadcasting & Perfilman">Broadcasting / BCF</option>
               <option value="Teknik Elektronika">Teknik Elektronika / TE</option>
+            </select>
+          </div>
+
+          {/* Class selection dropdown */}
+          <div className="relative w-full md:w-64">
+            <Filter className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-550 animate-pulse" size={14} />
+            <select
+              value={classFilter}
+              onChange={(e) => setClassFilter(e.target.value)}
+              className="w-full pl-11 pr-4 py-3 bg-slate-50 dark:bg-slate-950/50 border border-slate-200 dark:border-white/5 rounded-2xl text-xs font-bold text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:focus:ring-blue-500/30 transition-all appearance-none cursor-pointer tracking-wider"
+            >
+              <option value="ALL">Semua Kelas</option>
+              {uniqueClasses.map((kls) => (
+                <option key={kls} value={kls}>{kls}</option>
+              ))}
             </select>
           </div>
         </div>

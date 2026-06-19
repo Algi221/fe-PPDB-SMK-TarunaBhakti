@@ -93,8 +93,6 @@ interface Applicant {
   tglLulus?: string;
   jurusan_1?: string;
   jurusan1?: string;
-  jurusan_2?: string;
-  jurusan2?: string;
   nama_ayah?: string;
   namaAyah?: string;
   pekerjaan_ayah?: string;
@@ -184,7 +182,6 @@ interface EditFormState {
   sekolah_asal: string;
   tgl_lulus: string;
   jurusan_1: string;
-  jurusan_2: string;
   nama_ayah: string;
   pekerjaan_ayah: string;
   penghasilan_ayah: string;
@@ -387,7 +384,6 @@ function ApplicantsDirectoryContent() {
       sekolah_asal: a.sekolah_asal || a.sekolahAsal || "",
       tgl_lulus: a.tgl_lulus || a.tglLulus || "",
       jurusan_1: a.jurusan_1 || a.jurusan1 || "",
-      jurusan_2: a.jurusan_2 || a.jurusan2 || "",
       nama_ayah: a.nama_ayah || a.namaAyah || "",
       pekerjaan_ayah: a.pekerjaan_ayah || a.pekerjaanAyah || "",
       penghasilan_ayah: a.penghasilan_ayah || a.penghasilanAyah || "",
@@ -508,7 +504,7 @@ function ApplicantsDirectoryContent() {
       { header: 'NISN', key: 'nisn', width: 25 },
       { header: 'NIK', key: 'nik', width: 25 },
       { header: 'Asal Sekolah', key: 'sekolah', width: 35 },
-      { header: 'Program Studi Pilihan 1', key: 'jurusan1', width: 35 },
+      { header: 'Program Studi Pilihan Utama', key: 'jurusan1', width: 35 },
       { header: 'No. WhatsApp', key: 'whatsapp', width: 25 },
       { header: 'Email', key: 'email', width: 35 },
       { header: 'Status Verifikasi', key: 'status', width: 25 },
@@ -1328,9 +1324,27 @@ function ApplicantsDirectoryContent() {
                     </h4>
                     <div className="flex flex-col gap-3">
                       <div className="bg-slate-50 dark:bg-slate-800/30 rounded-xl p-3 border border-slate-100 dark:border-white/5 hover:border-purple-500/20 transition-colors">
+                        <span className="text-slate-400 dark:text-slate-550 block mb-1 font-bold uppercase text-[9px] tracking-wider">Jenis Prestasi</span>
+                        <span className="text-slate-800 dark:text-white font-bold text-xs">{Array.isArray(selectedApplicant.jenis_prestasi) ? selectedApplicant.jenis_prestasi.join(", ") : selectedApplicant.jenisPrestasi || "Tidak Ada"}</span>
+                      </div>
+                      <div className="bg-slate-50 dark:bg-slate-800/30 rounded-xl p-3 border border-slate-100 dark:border-white/5 hover:border-purple-500/20 transition-colors">
+                        <span className="text-slate-400 dark:text-slate-550 block mb-1 font-bold uppercase text-[9px] tracking-wider">Tingkat Prestasi</span>
+                        <span className="text-slate-800 dark:text-white font-bold text-xs">{Array.isArray(selectedApplicant.tingkat_prestasi) ? selectedApplicant.tingkat_prestasi.join(", ") : selectedApplicant.tingkatPrestasi || "Tidak Ada"}</span>
+                      </div>
+                      <div className="bg-slate-50 dark:bg-slate-800/30 rounded-xl p-3 border border-slate-100 dark:border-white/5 hover:border-purple-500/20 transition-colors">
                         <span className="text-slate-400 dark:text-slate-550 block mb-1 font-bold uppercase text-[9px] tracking-wider">Uraian Prestasi</span>
                         <span className="text-slate-800 dark:text-white font-bold text-xs">{selectedApplicant.uraian_prestasi || selectedApplicant.uraianPrestasi || "Tidak Ada"}</span>
                       </div>
+                      <div className="bg-slate-50 dark:bg-slate-800/30 rounded-xl p-3 border border-slate-100 dark:border-white/5 hover:border-purple-500/20 transition-colors">
+                        <span className="text-slate-400 dark:text-slate-550 block mb-1 font-bold uppercase text-[9px] tracking-wider">Tahun Prestasi</span>
+                        <span className="text-slate-800 dark:text-white font-bold text-xs">{selectedApplicant.tahun_prestasi || selectedApplicant.tahunPrestasi || "Tidak Ada"}</span>
+                      </div>
+                      {selectedApplicant.berkas_prestasi && (
+                        <div className="bg-slate-50 dark:bg-slate-800/30 rounded-xl p-3 border border-slate-100 dark:border-white/5 hover:border-purple-500/20 transition-colors">
+                          <span className="text-slate-400 dark:text-slate-550 block mb-1 font-bold uppercase text-[9px] tracking-wider">Berkas Prestasi</span>
+                          <button onClick={() => window.open(sanitizeSrc(selectedApplicant.berkas_prestasi), "_blank")} className="text-xs font-bold text-blue-500 hover:text-blue-600 underline text-left block w-full truncate">Lihat Sertifikat</button>
+                        </div>
+                      )}
                       <div className="bg-slate-50 dark:bg-slate-800/30 rounded-xl p-3 border border-slate-100 dark:border-white/5 hover:border-purple-500/20 transition-colors">
                         <span className="text-slate-400 dark:text-slate-555 block mb-1 font-bold uppercase text-[9px] tracking-wider">Uraian Beasiswa</span>
                         <span className="text-slate-800 dark:text-white font-bold text-xs">{selectedApplicant.uraian_beasiswa || selectedApplicant.uraianBeasiswa || "Tidak Ada"}</span>
@@ -1701,7 +1715,7 @@ function ApplicantsDirectoryContent() {
                     { label: "Sekolah Asal", key: "sekolah_asal" },
                     { label: "Tanggal Lulus", key: "tgl_lulus", type: "date" },
                     { label: "Gelombang", key: "gelombang", type: "select", options: ["Gelombang 1", "Gelombang 2"] },
-                    { label: "Jurusan Pilihan 1", key: "jurusan_1", type: "select", options: ["Rekayasa Perangkat Lunak", "Teknik Jaringan Komputer & Telekomunikasi", "Desain Komunikasi Visual", "Broadcasting & Perfilman", "Teknik Elektronika", "Animasi"] },
+                    { label: "Program Studi Pilihan Utama", key: "jurusan_1", type: "select", options: ["Rekayasa Perangkat Lunak", "Teknik Jaringan Komputer & Telekomunikasi", "Desain Komunikasi Visual", "Broadcasting & Perfilman", "Teknik Elektronika", "Animasi"] },
                     { label: "Alasan Memilih", key: "alasan_memilih" },
                     { label: "Cita-cita", key: "cita_cita" },
                   ]
@@ -1717,6 +1731,13 @@ function ApplicantsDirectoryContent() {
                     { label: "Telepon Orang Tua", key: "telepon_ortu" },
                   ]
                 },
+                {
+                  section: "Prestasi & Beasiswa", icon: <Layers size={14} />, fields: [
+                    { label: "Uraian Prestasi", key: "uraian_prestasi" },
+                    { label: "Tahun Prestasi", key: "tahun_prestasi" },
+                    { label: "Uraian Beasiswa", key: "uraian_beasiswa" },
+                  ]
+                }
               ].map((section) => (
                 <div key={section.section} className="bg-white dark:bg-slate-900 border border-slate-200/60 dark:border-white/5 rounded-3xl p-6 md:p-8 shadow-sm">
                   <h4 className="text-xs font-black uppercase tracking-widest text-slate-800 dark:text-white mb-6 flex items-center gap-3 border-b border-slate-100 dark:border-white/5 pb-4">

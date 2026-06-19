@@ -161,6 +161,22 @@ export default function ClassDivisionManagement() {
     }
   }, [activeMajors]);
 
+  function generateDefaultClasses(): ClassItem[] {
+    const defaultList: ClassItem[] = [];
+    majors.forEach(m => {
+      
+      defaultList.push({ id: `X-${m.code}-1`, name: `X ${m.code} 1`, majorCode: m.code, maxCapacity: 100 });
+      defaultList.push({ id: `X-${m.code}-2`, name: `X ${m.code} 2`, majorCode: m.code, maxCapacity: 100 });
+      
+      defaultList.push({ id: `XI-${m.code}-1`, name: `XI ${m.code} 1`, majorCode: m.code, maxCapacity: 100 });
+      defaultList.push({ id: `XI-${m.code}-2`, name: `XI ${m.code} 2`, majorCode: m.code, maxCapacity: 100 });
+      
+      defaultList.push({ id: `XII-${m.code}-1`, name: `XII ${m.code} 1`, majorCode: m.code, maxCapacity: 100 });
+      defaultList.push({ id: `XII-${m.code}-2`, name: `XII ${m.code} 2`, majorCode: m.code, maxCapacity: 100 });
+    });
+    return defaultList;
+  }
+
   useEffect(() => {
     setMounted(true);
     const fetchClassesConfig = async () => {
@@ -234,21 +250,7 @@ export default function ClassDivisionManagement() {
     return 10;
   };
 
-  const generateDefaultClasses = (): ClassItem[] => {
-    const defaultList: ClassItem[] = [];
-    majors.forEach(m => {
-      
-      defaultList.push({ id: `X-${m.code}-1`, name: `X ${m.code} 1`, majorCode: m.code, maxCapacity: 100 });
-      defaultList.push({ id: `X-${m.code}-2`, name: `X ${m.code} 2`, majorCode: m.code, maxCapacity: 100 });
-      
-      defaultList.push({ id: `XI-${m.code}-1`, name: `XI ${m.code} 1`, majorCode: m.code, maxCapacity: 100 });
-      defaultList.push({ id: `XI-${m.code}-2`, name: `XI ${m.code} 2`, majorCode: m.code, maxCapacity: 100 });
-      
-      defaultList.push({ id: `XII-${m.code}-1`, name: `XII ${m.code} 1`, majorCode: m.code, maxCapacity: 100 });
-      defaultList.push({ id: `XII-${m.code}-2`, name: `XII ${m.code} 2`, majorCode: m.code, maxCapacity: 100 });
-    });
-    return defaultList;
-  };
+
 
   const showToast = (message: string, type: "success" | "error" | "info" = "success") => {
     setToast({ message, type });
@@ -615,6 +617,7 @@ export default function ClassDivisionManagement() {
 
     worksheet.columns = [
       { header: 'No.', key: 'no', width: 10 },
+      { header: 'No. Pendaftaran', key: 'no_pendaftaran', width: 25 },
       { header: 'Nama Siswa', key: 'nama', width: 35 },
       { header: 'NISN', key: 'nisn', width: 25 },
       { header: 'Asal Sekolah', key: 'sekolah', width: 35 },
@@ -644,6 +647,7 @@ export default function ClassDivisionManagement() {
     classStudents.forEach((s: Applicant, index: number) => {
       worksheet.addRow({
         no: index + 1,
+        no_pendaftaran: s.no_pendaftaran || "-",
         nama: s.nama || "",
         nisn: s.nisn || "",
         sekolah: s.sekolah_asal || s.sekolahAsal || "",
@@ -736,6 +740,7 @@ export default function ClassDivisionManagement() {
 
       const columns = [
         { header: 'No.', key: 'no', width: 8 },
+        { header: 'No. Pendaftaran', key: 'no_pendaftaran', width: 20 },
         { header: 'Nama Lengkap', key: 'nama', width: 35 },
         { header: 'NISN', key: 'nisn', width: 18 },
         { header: 'Sekolah Asal', key: 'sekolah', width: 30 },
@@ -767,6 +772,7 @@ export default function ClassDivisionManagement() {
       classStudents.forEach((s: Applicant, index: number) => {
         worksheet.addRow({
           no: index + 1,
+          no_pendaftaran: s.no_pendaftaran || "-",
           nama: s.nama || "",
           nisn: s.nisn || "",
           sekolah: s.sekolah_asal || s.sekolahAsal || "",

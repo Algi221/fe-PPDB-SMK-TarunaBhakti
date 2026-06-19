@@ -32,6 +32,7 @@ export default function DateRangeCalendar({
 
   useEffect(() => {
     if (startValue) {
+
       setCurrentDate(new Date(startValue));
     }
   }, [startValue]);

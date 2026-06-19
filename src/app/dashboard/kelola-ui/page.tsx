@@ -387,7 +387,7 @@ export default function KelolaUserInterface() {
     setTimeout(() => setToast(null), 4000);
   };
 
-  const fetchCurrentConfig = async () => {
+  async function fetchCurrentConfig() {
     try {
       setLoading(true);
       const res = await fetch("http://localhost:5000/api/config");
@@ -462,7 +462,7 @@ export default function KelolaUserInterface() {
     }
   };
 
-  const fetchRevisions = async () => {
+  async function fetchRevisions() {
     try {
       const token = adminToken || localStorage.getItem("ppdb_admin_token");
       const res = await fetch("http://localhost:5000/api/config/revisions", {
