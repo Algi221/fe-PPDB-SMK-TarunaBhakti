@@ -45,6 +45,19 @@ import {
   Trash2
 } from "lucide-react";
 
+export const formatNoPendaftaran = (periode: string | null | undefined, id: number) => {
+  try {
+    const parts = (periode || "2026-2027").split("-");
+    const year1 = parts[0].slice(-2);
+    const year2 = parts[1].slice(-2);
+    const prefix = `${year1}${year2}`;
+    const sequence = 10000 + id;
+    return `${prefix}${sequence}`;
+  } catch (e) {
+    return `2627${10000 + id}`;
+  }
+};
+
 interface Applicant {
   id: number;
   nama: string;
@@ -201,6 +214,29 @@ export default function ActiveStudentsDirectory() {
     }
   };
 
+  const handleBatalVerifikasi = async (id: number, nama: string) => {
+    if (!confirm(`Apakah Anda yakin ingin membatalkan verifikasi untuk "${nama}"? Siswa ini akan dikembalikan ke daftar pendaftar dengan status Pending.`)) {
+      return;
+    }
+    
+    try {
+      const token = localStorage.getItem("ppdb_admin_token");
+      const res = await fetch(`http://localhost:5000/api/siswa-aktif/${id}`, {
+        method: 'DELETE',
+        headers: { "Authorization": `Bearer ${token}` }
+      });
+      const data = await res.json();
+      if (data.success) {
+        addToast("Berhasil", `${nama} berhasil dikembalikan ke pendaftar.`, "success");
+        if (typeof fetchActiveStudents === 'function') fetchActiveStudents();
+      } else {
+        addToast("Gagal", data.message || "Terjadi kesalahan.", "error");
+      }
+    } catch (err) {
+      addToast("Error", "Gagal terhubung ke server", "error");
+    }
+  };
+
   const [activeTab, setActiveTab] = useState<string>("biodata");
   const [selectedDoc, setSelectedDoc] = useState<string | null>(null);
 
@@ -327,6 +363,8 @@ export default function ActiveStudentsDirectory() {
       const worksheet = workbook.addWorksheet(sheetName);
 
       worksheet.columns = [
+        { header: 'No.', key: 'no', width: 10 },
+        { header: 'No. Pendaftaran', key: 'no_pendaftaran', width: 20 },
         { header: 'Periode Angkatan', key: 'periode', width: 20 },
         { header: 'Nama Lengkap', key: 'nama', width: 35 },
         { header: 'NISN', key: 'nisn', width: 25 },
@@ -355,8 +393,10 @@ export default function ActiveStudentsDirectory() {
       // Sort periodStudents alphabetically by name
       periodStudents.sort((a, b) => (a.nama || "").localeCompare(b.nama || ""));
 
-      periodStudents.forEach((a: Applicant) => {
+      periodStudents.forEach((a: Applicant, idx: number) => {
         worksheet.addRow({
+          no: idx + 1,
+          no_pendaftaran: formatNoPendaftaran(a.periode, a.id),
           periode: a.periode || '2026-2027',
           nama: a.nama || "",
           nisn: a.nisn || "",
@@ -615,11 +655,12 @@ export default function ActiveStudentsDirectory() {
                           <thead>
                             <tr className="border-b border-slate-100 dark:border-white/5 text-slate-400 dark:text-slate-550 uppercase tracking-widest text-[9px]">
                               <th className="py-3 px-3 text-left w-12">No</th>
+                              <th className="py-3 px-4 text-left">Kelas</th>
                               <th className="py-3 px-4 text-left">Nama Siswa</th>
                               <th className="py-3 px-4 text-left">NISN</th>
                               <th className="py-3 px-4 text-left">Asal Sekolah</th>
                               <th className="py-3 px-4 text-left">Jurusan</th>
-                              <th className="py-3 px-3 text-center w-24">Aksi</th>
+                              <th className="py-3 px-3 text-center w-32">Aksi</th>
                             </tr>
                           </thead>
                           <tbody>
@@ -629,6 +670,11 @@ export default function ActiveStudentsDirectory() {
                                 className="border-b border-slate-100/50 dark:border-white/5 hover:bg-slate-50/30 dark:hover:bg-slate-950/10 transition-colors"
                               >
                                 <td className="py-3.5 px-3 text-slate-400 dark:text-slate-600 font-mono">{idx + 1}</td>
+                                <td className="py-3.5 px-4 font-black text-emerald-600 dark:text-emerald-400 uppercase tracking-wider text-xs">
+                                  {student.diterima_kelas || student.diterimaKelas ? student.diterima_kelas || student.diterimaKelas : (
+                                    <span className="text-[9px] px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500">BELUM ADA</span>
+                                  )}
+                                </td>
                                 <td className="py-3.5 px-4">
                                   <div className="font-black text-slate-800 dark:text-white uppercase tracking-wider">{student.nama}</div>
                                   <span className="text-[9px] text-slate-400 dark:text-slate-550 font-bold uppercase tracking-wider block mt-0.5">
@@ -640,23 +686,28 @@ export default function ActiveStudentsDirectory() {
                                 <td className="py-3.5 px-4">
                                   <div className="flex flex-col gap-0.5 text-left">
                                     <span className="text-blue-600 dark:text-blue-400 font-extrabold uppercase">{student.jurusan || student.jurusan_1 || student.jurusan1}</span>
-                                    {(student.diterima_kelas || student.diterimaKelas) && (
-                                      <span className="inline-flex items-center w-fit px-2 py-0.5 rounded-md bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-250 dark:border-emerald-900/40 text-emerald-600 dark:text-emerald-400 text-[8px] font-black uppercase tracking-wider mt-1">
-                                        Kelas: {student.diterima_kelas || student.diterimaKelas}
-                                      </span>
-                                    )}
                                   </div>
                                 </td>
-                                <td className="py-3.5 px-3 text-center">
-                                  <button
-                                    onClick={() => {
-                                      handleViewDetail(student);
-                                      setActiveTab("biodata");
-                                    }}
-                                    className="px-2.5 py-1.5 bg-slate-100 hover:bg-blue-50 hover:text-blue-600 dark:bg-white/5 dark:hover:bg-blue-950/40 border border-slate-200/50 dark:border-white/5 text-slate-600 dark:text-slate-400 rounded-xl transition-all flex items-center justify-center gap-1.5 mx-auto font-black uppercase text-[9px] tracking-wide"
-                                  >
-                                    <Eye size={10} /> Detail
-                                  </button>
+                                <td className="py-3.5 px-3">
+                                  <div className="flex items-center justify-center gap-1.5" onClick={(e) => e.stopPropagation()}>
+                                    <button
+                                      onClick={() => {
+                                        handleViewDetail(student);
+                                        setActiveTab("biodata");
+                                      }}
+                                      className="p-2 bg-slate-100 hover:bg-slate-200 dark:bg-white/5 dark:hover:bg-white/10 text-slate-600 dark:text-slate-355 hover:text-slate-850 dark:hover:text-white rounded-xl transition-all border border-slate-200/50 dark:border-white/5"
+                                      title="Detail Siswa"
+                                    >
+                                      <Eye size={13} />
+                                    </button>
+                                    <button
+                                      onClick={() => handleBatalVerifikasi(student.id, student.nama)}
+                                      className="p-2 bg-rose-50 hover:bg-rose-100 dark:bg-rose-500/10 dark:hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 rounded-xl transition-all border border-rose-200/50 dark:border-rose-500/20"
+                                      title="Batal Verifikasi (Kembalikan ke Pendaftar)"
+                                    >
+                                      <Trash2 size={13} />
+                                    </button>
+                                  </div>
                                 </td>
                               </tr>
                             ))}
@@ -692,6 +743,8 @@ export default function ActiveStudentsDirectory() {
                     </span>
                   </div>
                   <div className="text-xs font-bold text-slate-400 uppercase tracking-widest flex items-center gap-2 flex-wrap">
+                    <span className="text-blue-500 font-mono">NO: {formatNoPendaftaran(selectedApplicant.periode, selectedApplicant.id)}</span>
+                    <span className="w-1 h-1 bg-slate-300 rounded-full"></span>
                     <span className="text-blue-500">NISN: {selectedApplicant.nisn}</span>
                     <span className="w-1 h-1 bg-slate-300 rounded-full"></span>
                     <span>ASAL: {selectedApplicant.sekolah_asal || selectedApplicant.sekolahAsal || "-"}</span>

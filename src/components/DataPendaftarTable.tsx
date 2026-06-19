@@ -110,8 +110,9 @@ export default function DataPendaftarTable() {
         {/* Back navigation header inside mockup browser */}
         <div className="flex items-center justify-between pb-3 mb-3 border-b border-slate-100 dark:border-slate-800 transition-colors">
           <button
-            onClick={() => setSelectedStudent(null)}
-            className="inline-flex items-center gap-1.5 text-xs font-black uppercase tracking-wider text-slate-500 hover:text-blue-600 dark:text-slate-400 dark:hover:text-blue-400 transition-colors"
+            type="button"
+            onClick={(e) => { e.preventDefault(); e.stopPropagation(); setSelectedStudent(null); }}
+            className="inline-flex items-center gap-1.5 text-xs font-black uppercase tracking-wider text-slate-500 hover:text-blue-600 dark:text-slate-400 dark:hover:text-blue-400 transition-colors cursor-pointer relative z-50"
           >
             <ChevronLeft size={16} />
             <span>Kembali ke Daftar</span>
@@ -156,21 +157,12 @@ export default function DataPendaftarTable() {
                 </div>
               </div>
               <div className="w-fit">
-                {selectedStudent.status === "Approved" ? (
                   <div className="relative group/badge cursor-default">
-                    <div className="absolute inset-0 bg-emerald-500/20 dark:bg-emerald-500/40 blur-md opacity-0 group-hover/badge:opacity-100 transition-opacity rounded-full" />
-                    <span className="relative px-4 py-1.5 bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-200 dark:border-emerald-500/30 text-emerald-600 dark:text-emerald-400 text-[10px] font-black uppercase tracking-[0.2em] rounded-full flex items-center gap-2 shadow-sm backdrop-blur-md">
-                      <Sparkles size={12} className="text-emerald-500 animate-pulse" /> TERVERIFIKASI
+                    <div className="absolute inset-0 bg-blue-500/20 dark:bg-blue-500/40 blur-md opacity-0 group-hover/badge:opacity-100 transition-opacity rounded-full" />
+                    <span className="relative px-4 py-1.5 bg-blue-50 dark:bg-blue-500/10 border border-blue-200 dark:border-blue-500/30 text-blue-600 dark:text-blue-400 text-[10px] font-black uppercase tracking-[0.2em] rounded-full flex items-center gap-2 shadow-sm backdrop-blur-md">
+                      <Sparkles size={12} className="text-blue-500 animate-pulse" /> SCAN UNTUK CEK STATUS
                     </span>
                   </div>
-                ) : (
-                  <div className="relative group/badge cursor-default">
-                    <div className="absolute inset-0 bg-amber-500/20 dark:bg-amber-500/40 blur-md opacity-0 group-hover/badge:opacity-100 transition-opacity rounded-full" />
-                    <span className="relative px-4 py-1.5 bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/30 text-amber-600 dark:text-amber-400 text-[10px] font-black uppercase tracking-[0.2em] rounded-full flex items-center gap-2 shadow-sm backdrop-blur-md">
-                      <Clock size={12} className="text-amber-500" /> DALAM PROSES
-                    </span>
-                  </div>
-                )}
               </div>
             </div>
 
@@ -254,15 +246,9 @@ export default function DataPendaftarTable() {
                 <span>LIVE ENCRYPTED TICKET</span>
               </div>
               <div className="flex items-center gap-2">
-                {selectedStudent.status === "Approved" ? (
-                  <span className="text-emerald-500 dark:text-emerald-400 font-black text-[9px] uppercase tracking-wider">
-                    VERIFIKASI SUKSES - BUKTI PENDAFTARAN SAH
+                  <span className="text-blue-500 dark:text-blue-400 font-black text-[9px] uppercase tracking-wider">
+                    SILAKAN SCAN QR CODE UNTUK MELIHAT STATUS PENDAFTARAN
                   </span>
-                ) : (
-                  <span className="text-amber-500 dark:text-amber-400 font-black text-[9px] uppercase tracking-wider">
-                    MASIH PROSES VERIFIKASI MOHON MENUNGGU DARI ADMIN DULU
-                  </span>
-                )}
               </div>
             </div>
 
@@ -345,7 +331,6 @@ export default function DataPendaftarTable() {
               <tr className="border-b border-slate-200/50 dark:border-slate-700/50">
                 <th className="px-4 py-3 text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Nama Lengkap</th>
                 <th className="px-4 py-3 text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Asal Sekolah</th>
-                <th className="px-4 py-3 text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Status</th>
                 <th className="px-4 py-3 text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Aksi</th>
               </tr>
             </thead>
@@ -370,18 +355,10 @@ export default function DataPendaftarTable() {
                       <div className="text-xs font-semibold text-slate-700 dark:text-slate-300">{item.sekolah_asal || item.sekolahAsal}</div>
                     </td>
                     <td className="px-4 py-3">
-                      <span className={`inline-flex px-2.5 py-0.5 rounded-full text-[11px] font-black uppercase tracking-wider border ${
-                        item.status === "Approved"
-                          ? "bg-emerald-50 border-emerald-250 text-emerald-800 dark:bg-emerald-950/60 dark:border-emerald-900/40 dark:text-emerald-300"
-                          : "bg-amber-50 border-amber-250 text-amber-850 dark:bg-amber-950/60 dark:border-amber-900/40 dark:text-amber-300"
-                      }`}>
-                        {item.status === "Approved" ? "Terverifikasi" : "Menunggu Verifikasi"}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3">
                       <button
-                        onClick={(e) => { e.stopPropagation(); setSelectedStudent(item); }}
-                        className="inline-flex items-center gap-1 text-[10px] font-bold text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 transition-colors bg-blue-50/50 dark:bg-blue-900/20 px-2 py-1.5 rounded-md"
+                        type="button"
+                        onClick={(e) => { e.preventDefault(); e.stopPropagation(); setSelectedStudent(item); }}
+                        className="inline-flex items-center gap-1 text-[10px] font-bold text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 transition-colors bg-blue-50/50 dark:bg-blue-900/20 px-2 py-1.5 rounded-md relative z-50 cursor-pointer"
                       >
                         Detail <ArrowRight size={12} />
                       </button>

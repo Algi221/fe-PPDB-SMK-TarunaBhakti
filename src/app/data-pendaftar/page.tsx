@@ -46,15 +46,7 @@ export default function DataPendaftarPage() {
     const matchName = (item.nama || "").toLowerCase().includes(searchTerm.toLowerCase()) || (item.nisn || "").includes(searchTerm);
     const matchJurusan = filterJurusan === "Semua" || (item.jurusan_1 || item.jurusan1 || "").includes(filterJurusan);
     
-    const getNormalizedStatus = (status: string) => {
-      if (status === "Approved" || status === "Terverifikasi") return "Terverifikasi";
-      if (status === "Pending" || status === "Menunggu Verifikasi") return "Menunggu Verifikasi";
-      if (status === "Rejected" || status === "Ditolak") return "Ditolak";
-      return status;
-    };
-    const matchStatus = filterStatus === "Semua" || getNormalizedStatus(item.status) === getNormalizedStatus(filterStatus);
-    
-    return matchName && matchJurusan && matchStatus;
+    return matchName && matchJurusan;
   });
 
   const totalPages = Math.ceil(filteredData.length / itemsPerPage) || 1;
@@ -141,21 +133,6 @@ export default function DataPendaftarPage() {
                 <option value="Teknik Elektronika">Teknik Elektronika</option>
               </select>
             </div>
-            <div className="relative w-full md:w-48 shrink-0">
-              <Filter className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
-              <label htmlFor="pendaftar-filter-status" className="sr-only">Filter Status</label>
-              <select 
-                id="pendaftar-filter-status"
-                value={filterStatus}
-                onChange={(e) => setFilterStatus(e.target.value)}
-                className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl pl-10 pr-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 text-slate-800 dark:text-white appearance-none cursor-pointer transition-all"
-              >
-                <option value="Semua">Semua Status</option>
-                <option value="Terverifikasi">Terverifikasi</option>
-                <option value="Menunggu Verifikasi">Menunggu Verifikasi</option>
-                <option value="Ditolak">Ditolak</option>
-              </select>
-            </div>
           </div>
         </div>
 
@@ -175,7 +152,6 @@ export default function DataPendaftarPage() {
                   <th className="px-6 py-4 text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Nama & NISN</th>
                   <th className="px-6 py-4 text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Asal Sekolah</th>
                   <th className="px-6 py-4 text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Program Studi Pilihan 1</th>
-                  <th className="px-6 py-4 text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Status</th>
                   <th className="px-6 py-4 text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Aksi</th>
                 </tr>
               </thead>
@@ -193,9 +169,6 @@ export default function DataPendaftarPage() {
                       </td>
                       <td className="px-6 py-4">
                         <div className="text-sm font-semibold text-slate-700 dark:text-slate-300">{item.jurusan_1 || item.jurusan1}</div>
-                      </td>
-                      <td className="px-6 py-4">
-                        <StatusBadge status={item.status} />
                       </td>
                       <td className="px-6 py-4">
                         <button 
@@ -284,7 +257,9 @@ export default function DataPendaftarPage() {
                     <span className="flex items-center gap-1.5"><MapPin size={16}/> {selectedStudent.sekolah_asal || selectedStudent.asalSekolah}</span>
                   </div>
                   <div className="inline-flex">
-                    <StatusBadge status={selectedStudent.status} />
+                    <span className="inline-flex items-center gap-1.5 px-3 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 border border-blue-200 dark:border-blue-800">
+                      SCAN QR PADA BUKTI PENDAFTARAN UNTUK CEK STATUS
+                    </span>
                   </div>
                 </div>
               </div>
@@ -319,12 +294,8 @@ export default function DataPendaftarPage() {
                   </h4>
                   <div className="space-y-3">
                     <div>
-                      <div className="text-xs font-semibold text-slate-400">Pilihan 1 (Utama)</div>
+                      <div className="text-xs font-semibold text-slate-400">Program Studi Pilihan</div>
                       <div className="text-sm font-bold text-slate-700 dark:text-slate-300 text-blue-600 dark:text-blue-400">{selectedStudent.jurusan_1 || selectedStudent.jurusan1}</div>
-                    </div>
-                    <div>
-                      <div className="text-xs font-semibold text-slate-400">Pilihan 2 (Alternatif)</div>
-                      <div className="text-sm font-bold text-slate-700 dark:text-slate-300">{selectedStudent.jurusan_2 || selectedStudent.jurusan2 || "-"}</div>
                     </div>
                   </div>
                 </div>

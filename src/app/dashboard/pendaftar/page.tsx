@@ -41,9 +41,21 @@ import {
   Users,
   FileText,
   FileImage,
-  FileWarning,
   School
 } from "lucide-react";
+
+export const formatNoPendaftaran = (periode: string | null | undefined, id: number) => {
+  try {
+    const parts = (periode || "2026-2027").split("-");
+    const year1 = parts[0].slice(-2);
+    const year2 = parts[1].slice(-2);
+    const prefix = `${year1}${year2}`;
+    const sequence = 10000 + id;
+    return `${prefix}${sequence}`;
+  } catch (e) {
+    return `2627${10000 + id}`;
+  }
+};
 
 interface Applicant {
   id: number;
@@ -491,12 +503,12 @@ function ApplicantsDirectoryContent() {
 
     worksheet.columns = [
       { header: 'No.', key: 'no', width: 10 },
+      { header: 'No. Pendaftaran', key: 'no_pendaftaran', width: 20 },
       { header: 'Nama Lengkap', key: 'nama', width: 35 },
       { header: 'NISN', key: 'nisn', width: 25 },
       { header: 'NIK', key: 'nik', width: 25 },
       { header: 'Asal Sekolah', key: 'sekolah', width: 35 },
       { header: 'Program Studi Pilihan 1', key: 'jurusan1', width: 35 },
-      { header: 'Program Studi Pilihan 2', key: 'jurusan2', width: 35 },
       { header: 'No. WhatsApp', key: 'whatsapp', width: 25 },
       { header: 'Email', key: 'email', width: 35 },
       { header: 'Status Verifikasi', key: 'status', width: 25 },
@@ -525,12 +537,12 @@ function ApplicantsDirectoryContent() {
     filteredApplicants.forEach((a: Applicant, index: number) => {
       worksheet.addRow({
         no: index + 1,
+        no_pendaftaran: formatNoPendaftaran(a.periode, a.id),
         nama: a.nama || "",
         nisn: a.nisn || "",
         nik: a.nik || "",
         sekolah: a.sekolah_asal || a.sekolahAsal || "",
         jurusan1: a.jurusan_1 || a.jurusan1 || "",
-        jurusan2: a.jurusan_2 || a.jurusan2 || "",
         whatsapp: a.whatsapp || "",
         email: a.email || "",
         status: a.status === "Approved" ? "Terverifikasi" : a.status === "Rejected" ? "Ditolak" : "Pending",
@@ -733,7 +745,8 @@ function ApplicantsDirectoryContent() {
             <table className="w-full text-left text-xs font-bold text-slate-650 dark:text-slate-355">
               <thead>
                 <tr className="border-b border-slate-100 dark:border-white/5 text-slate-400 dark:text-slate-500 font-black text-[9px] uppercase tracking-widest bg-slate-50/50 dark:bg-slate-950/15">
-                  <th className="py-4 px-6 pl-8">Nama Calon Siswa</th>
+                  <th className="py-4 px-6 pl-8">No. Pendaftaran</th>
+                  <th className="py-4 px-6">Nama Calon Siswa</th>
                   <th className="py-4 px-6">Asal Sekolah</th>
                   <th className="py-4 px-6">Pilihan Jurusan Utama</th>
                   <th className="py-4 px-6 text-center">Status</th>
@@ -748,6 +761,9 @@ function ApplicantsDirectoryContent() {
                     onDoubleClick={() => handleViewDetail(a)}
                   >
                     <td className="py-4 px-6 pl-8">
+                      <div className="font-extrabold text-blue-600 dark:text-blue-400 text-sm font-mono">{formatNoPendaftaran(a.periode, a.id)}</div>
+                    </td>
+                    <td className="py-4 px-6">
                       <div className="font-extrabold text-slate-850 dark:text-white text-sm">{a.nama}</div>
                       <span className="text-[9px] text-slate-400 dark:text-slate-555 font-bold tracking-wide uppercase mt-0.5 block">
                         Daftar: {new Date(a.tgl_daftar || a.createdAt || Date.now()).toLocaleDateString("id-ID")} · {a.gelombang || "Gelombang 1"} · Lahir: {a.tempat_lahir || a.tempatLahir || "-"}, {a.tgl_lahir || a.tglLahir || "-"}
@@ -1106,7 +1122,9 @@ function ApplicantsDirectoryContent() {
                       {selectedApplicant.status === "Approved" ? "Terverifikasi" : selectedApplicant.status === "Rejected" ? "Ditolak" : "Pending"}
                     </span>
                   </h3>
-                  <p className="text-xs text-slate-400 dark:text-slate-555 font-bold uppercase tracking-wider mt-1.5 flex items-center gap-2">
+                  <p className="text-xs text-slate-400 dark:text-slate-555 font-bold uppercase tracking-wider mt-1.5 flex items-center flex-wrap gap-2">
+                    <span className="text-blue-500">No. Pendaftaran:</span> <span className="font-mono text-blue-600 dark:text-blue-400">{formatNoPendaftaran(selectedApplicant.periode, selectedApplicant.id)}</span>
+                    <span className="text-slate-300 dark:text-slate-700">•</span> 
                     <span className="text-blue-500">NISN:</span> {selectedApplicant.nisn} 
                     <span className="text-slate-300 dark:text-slate-700">•</span> 
                     <span className="text-blue-500">Asal:</span> {selectedApplicant.sekolah_asal || selectedApplicant.sekolahAsal}
@@ -1426,10 +1444,6 @@ function ApplicantsDirectoryContent() {
                         <span className="text-blue-700 dark:text-blue-300 text-sm font-black uppercase">{selectedApplicant.jurusan_1 || selectedApplicant.jurusan1}</span>
                       </div>
                       <div className="bg-slate-50 dark:bg-slate-800/30 rounded-xl p-3 border border-slate-100 dark:border-white/5 hover:border-orange-500/20 transition-colors">
-                        <span className="text-slate-400 dark:text-slate-555 block mb-1 font-bold uppercase text-[9px] tracking-wider">Program Studi Pilihan Cadangan</span>
-                        <span className="text-slate-600 dark:text-slate-400 text-xs font-bold uppercase">{selectedApplicant.jurusan_2 || selectedApplicant.jurusan2}</span>
-                      </div>
-                      <div className="bg-slate-50 dark:bg-slate-800/30 rounded-xl p-3 border border-slate-100 dark:border-white/5 hover:border-orange-500/20 transition-colors">
                         <span className="text-slate-400 dark:text-slate-555 block mb-1 font-bold uppercase text-[9px] tracking-wider">Alasan Memilih Jurusan</span>
                         <span className="text-slate-800 dark:text-white font-bold text-xs">{selectedApplicant.alasan_memilih || selectedApplicant.alasanMemilih || "Ingin belajar IT"}</span>
                       </div>
@@ -1688,7 +1702,6 @@ function ApplicantsDirectoryContent() {
                     { label: "Tanggal Lulus", key: "tgl_lulus", type: "date" },
                     { label: "Gelombang", key: "gelombang", type: "select", options: ["Gelombang 1", "Gelombang 2"] },
                     { label: "Jurusan Pilihan 1", key: "jurusan_1", type: "select", options: ["Rekayasa Perangkat Lunak", "Teknik Jaringan Komputer & Telekomunikasi", "Desain Komunikasi Visual", "Broadcasting & Perfilman", "Teknik Elektronika", "Animasi"] },
-                    { label: "Jurusan Pilihan 2", key: "jurusan_2", type: "select", options: ["Rekayasa Perangkat Lunak", "Teknik Jaringan Komputer & Telekomunikasi", "Desain Komunikasi Visual", "Broadcasting & Perfilman", "Teknik Elektronika", "Animasi"] },
                     { label: "Alasan Memilih", key: "alasan_memilih" },
                     { label: "Cita-cita", key: "cita_cita" },
                   ]

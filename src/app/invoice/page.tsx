@@ -16,6 +16,18 @@ const sanitizeUrl = (url: string | undefined | null): string => {
     return "";
   }
 };
+const formatNoPendaftaran = (periode: string | null | undefined, id: number) => {
+  try {
+    const parts = (periode || "2026-2027").split("-");
+    const year1 = parts[0].slice(-2);
+    const year2 = parts[1].slice(-2);
+    const prefix = `${year1}${year2}`;
+    const sequence = 10000 + id;
+    return `${prefix}${sequence}`;
+  } catch (e) {
+    return `2627${10000 + id}`;
+  }
+};
 
 function InvoiceContent() {
   const searchParams = useSearchParams();
@@ -373,7 +385,7 @@ function InvoiceContent() {
                 TANDA BUKTI REGISTRASI & INVOICE PEMBAYARAN
               </h1>
               <p style={{ fontSize: '10px', fontFamily: 'monospace', fontWeight: 700, color: '#64748b', margin: 0 }}>
-                Nomor Dokumen: INV-{data.nisn}
+                Nomor Dokumen: INV-{formatNoPendaftaran(data.periode, data.id)}
               </p>
             </div>
 
@@ -386,8 +398,12 @@ function InvoiceContent() {
             }}>
               <div>
                 <div style={{ display: 'flex', gap: '8px' }}>
+                  <span style={{ color: '#94a3b8', width: '110px', flexShrink: 0 }}>No. Pendaftaran</span>
+                  <span style={{ color: '#0f172a', fontFamily: 'monospace', fontWeight: 800 }}>: {formatNoPendaftaran(data.periode, data.id)}</span>
+                </div>
+                <div style={{ display: 'flex', gap: '8px' }}>
                   <span style={{ color: '#94a3b8', width: '110px', flexShrink: 0 }}>No. Invoice</span>
-                  <span style={{ color: '#0f172a', fontFamily: 'monospace', fontWeight: 800 }}>: INV-{data.nisn}</span>
+                  <span style={{ color: '#0f172a', fontFamily: 'monospace', fontWeight: 800 }}>: INV-{formatNoPendaftaran(data.periode, data.id)}</span>
                 </div>
                 <div style={{ display: 'flex', gap: '8px' }}>
                   <span style={{ color: '#94a3b8', width: '110px', flexShrink: 0 }}>Tanggal Daftar</span>

@@ -179,7 +179,6 @@ export default function DaftarPage() {
     diterimaKelas: "",
     diterimaTanggal: "",
     jurusan1: "",
-    jurusan2: "",
     hobi: [],
     citaCita: "",
     nilaiUSTeori: "",
@@ -581,9 +580,6 @@ export default function DaftarPage() {
       }
       if (!finalData.jurusan1) {
         finalData.jurusan1 = "Rekayasa Perangkat Lunak";
-      }
-      if (!finalData.jurusan2) {
-        finalData.jurusan2 = "Teknik Jaringan Komputer & Telekomunikasi";
       }
       if (!finalData.tglLulus) {
         finalData.tglLulus = "2026-06-10";
@@ -2901,7 +2897,6 @@ export default function DaftarPage() {
                 <div className="text-xs space-y-2.5 font-bold text-slate-655 dark:text-slate-350">
                   <div className="flex justify-between"><span className="text-slate-400">Sekolah Asal:</span><span className="uppercase">{formData.sekolahAsal || "-"}</span></div>
                   <div className="flex justify-between"><span className="text-slate-400">Jurusan Utama:</span><span className="text-blue-600 dark:text-sky-450 uppercase">{formData.jurusan1 || "-"}</span></div>
-                  <div className="flex justify-between"><span className="text-slate-400">Jurusan Alternatif:</span><span className="text-slate-700 dark:text-slate-300 uppercase">{formData.jurusan2 || "-"}</span></div>
                   <div className="flex justify-between"><span className="text-slate-400">Tanggal Lulus:</span><span>{formData.tglLulus || "-"}</span></div>
                 </div>
               </div>
