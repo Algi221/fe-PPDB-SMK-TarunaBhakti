@@ -19,6 +19,30 @@ interface VerificationData {
   alasan_ditolak?: string;
 }
 
+const getMajorLogoUrl = (jurusan: string | null | undefined): string => {
+  if (!jurusan) return "/logo_smktb.png";
+  const upper = jurusan.toUpperCase().trim();
+  if (upper.includes("RPL") || upper.includes("REKAYASA PERANGKAT LUNAK") || upper.includes("PPLG") || upper.includes("PENGEMBANGAN PERANGKAT LUNAK")) {
+    return "/jurusan/pplg.png";
+  }
+  if (upper.includes("TJKT") || upper.includes("TEKNIK JARINGAN KOMPUTER") || upper.includes("TKJ")) {
+    return "/jurusan/tjkt.png";
+  }
+  if (upper.includes("DKV") || upper.includes("DESAIN KOMUNIKASI VISUAL")) {
+    return "/jurusan/dkv.png";
+  }
+  if (upper.includes("BC") || upper.includes("BROADCASTING") || upper.includes("PRODUKSI FILM")) {
+    return "/jurusan/bc.png";
+  }
+  if (upper.includes("ANM") || upper.includes("ANIMASI")) {
+    return "/jurusan/animasi.png";
+  }
+  if (upper.includes("TE") || upper.includes("TEKNIK ELEKTRONIKA") || upper.includes("TEI")) {
+    return "/jurusan/te.png";
+  }
+  return "/logo_smktb.png";
+};
+
 export default function VerificationPage() {
   const params = useParams();
   const id = params?.id;
@@ -198,8 +222,15 @@ export default function VerificationPage() {
                 <div className="absolute -top-8 -right-8 w-32 h-32 bg-blue-500/5 dark:bg-blue-500/10 rounded-full blur-2xl group-hover:bg-blue-500/15 transition-colors duration-500" />
                 <div className="absolute -bottom-8 -left-8 w-32 h-32 bg-indigo-500/5 dark:bg-indigo-500/10 rounded-full blur-2xl group-hover:bg-indigo-500/15 transition-colors duration-500" />
                 
-                <div className="w-12 h-12 rounded-full bg-blue-100 dark:bg-blue-900/40 flex items-center justify-center mb-4 relative z-10 shadow-inner border border-blue-200 dark:border-blue-800">
-                  <Award size={20} className="text-blue-600 dark:text-blue-400" />
+                <div className="w-12 h-12 rounded-full overflow-hidden bg-white dark:bg-slate-900 flex items-center justify-center mb-4 relative z-10 border border-slate-200 dark:border-blue-500/25 p-1 shadow-sm">
+                  <img
+                    src={getMajorLogoUrl(data.jurusan_1)}
+                    alt="Logo Jurusan"
+                    className="w-full h-full object-contain rounded-full"
+                    onError={(e: any) => {
+                      e.target.src = "/logo_smktb.png";
+                    }}
+                  />
                 </div>
                 
                 <span className="text-[9px] font-black text-slate-400 dark:text-slate-500 tracking-[0.2em] uppercase block mb-2 relative z-10 text-center">Program Keahlian</span>
