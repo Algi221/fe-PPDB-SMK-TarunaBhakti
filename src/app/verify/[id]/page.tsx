@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
-import { CheckCircle, XCircle, MapPin, User, Calendar, Award, ArrowLeft } from "lucide-react";
+import { CheckCircle, XCircle, MapPin, User, Calendar, Award, ArrowLeft, Clock } from "lucide-react";
 
 interface VerificationData {
   id: number;
@@ -16,6 +16,7 @@ interface VerificationData {
   tgl_daftar: string;
   jurusan_1: string;
   periode: string;
+  alasan_ditolak?: string;
 }
 
 export default function VerificationPage() {
@@ -145,12 +146,16 @@ export default function VerificationPage() {
             </div>
             <div>
               {data.status === "Approved" ? (
-                <span className="px-3 py-1 bg-emerald-500/10 border border-emerald-500/30 text-emerald-600 dark:text-emerald-400 text-[9px] font-black uppercase tracking-widest rounded-lg">
-                  TERVERIFIKASI
+                <span className="px-3 py-1 bg-emerald-500/10 border border-emerald-500/30 text-emerald-600 dark:text-emerald-400 text-[9px] font-black uppercase tracking-widest rounded-lg flex items-center gap-1">
+                  <CheckCircle size={10} /> TERVERIFIKASI
+                </span>
+              ) : data.status === "Rejected" ? (
+                <span className="px-3 py-1 bg-rose-500/10 border border-rose-500/30 text-rose-600 dark:text-rose-400 text-[9px] font-black uppercase tracking-widest rounded-lg flex items-center gap-1">
+                  <XCircle size={10} /> DITOLAK
                 </span>
               ) : (
-                <span className="px-3 py-1 bg-amber-500/10 border border-amber-500/30 text-amber-500 dark:text-amber-400 text-[9px] font-black uppercase tracking-widest rounded-lg">
-                  DALAM PROSES
+                <span className="px-3 py-1 bg-blue-500/10 border border-blue-500/30 text-blue-600 dark:text-blue-400 text-[9px] font-black uppercase tracking-widest rounded-lg flex items-center gap-1">
+                  <Clock size={10} className="animate-pulse" /> DALAM PROSES
                 </span>
               )}
             </div>
@@ -217,18 +222,50 @@ export default function VerificationPage() {
 
         </div>
 
-        {/* Verification Success Alert Panel (Diletakkan di bawah kartu detail pendaftar sesuai request user) */}
-        <div className="bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-250 dark:border-emerald-900/40 rounded-[28px] p-6 shadow-md text-center flex flex-col items-center gap-3 animate-in fade-in slide-in-from-bottom duration-300">
-          <div className="w-12 h-12 rounded-full bg-emerald-500 text-white flex items-center justify-center shadow-lg shadow-emerald-500/20 shrink-0 border-2 border-white dark:border-slate-900">
-            <CheckCircle size={24} />
+        {/* Verification Alert Panel based on Status */}
+        {data.status === "Approved" ? (
+          <div className="bg-emerald-50/70 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-900/40 rounded-[28px] p-6 shadow-lg text-center flex flex-col items-center gap-3 animate-in fade-in slide-in-from-bottom duration-300">
+            <div className="w-12 h-12 rounded-2xl bg-emerald-500 text-white flex items-center justify-center shadow-lg shadow-emerald-500/20 shrink-0 border border-emerald-400 dark:border-emerald-600">
+              <CheckCircle size={24} />
+            </div>
+            <div className="space-y-1">
+              <h3 className="text-emerald-700 dark:text-emerald-400 text-sm font-black uppercase tracking-wider">Pendaftaran Terverifikasi Sah</h3>
+              <p className="text-slate-700 dark:text-slate-350 text-xs md:text-sm font-bold leading-relaxed max-w-md mx-auto">
+                Selamat, <span className="underline font-black text-slate-800 dark:text-white uppercase tracking-wider">{data.nama}</span>! Data pendaftaran Anda telah secara resmi diverifikasi sah oleh Panitia PPDB SMK Taruna Bhakti.
+              </p>
+            </div>
           </div>
-          <div className="space-y-1">
-            <h3 className="text-emerald-700 dark:text-emerald-400 text-sm font-black uppercase tracking-wider">Pendaftaran Terverifikasi Sah</h3>
-            <p className="text-emerald-600 dark:text-emerald-450 text-xs md:text-sm font-bold leading-relaxed max-w-md mx-auto">
-              Selamat, <span className="underline font-black text-slate-800 dark:text-white uppercase tracking-wider">{data.nama}</span>! Data pendaftaran Anda telah secara resmi diverifikasi sah oleh Panitia PPDB SMK Taruna Bhakti.
-            </p>
+        ) : data.status === "Rejected" ? (
+          <div className="bg-rose-50/70 dark:bg-rose-950/20 border border-rose-250 dark:border-rose-900/40 rounded-[28px] p-6 shadow-lg text-center flex flex-col items-center gap-3 animate-in fade-in slide-in-from-bottom duration-300">
+            <div className="w-12 h-12 rounded-2xl bg-rose-500 text-white flex items-center justify-center shadow-lg shadow-rose-500/20 shrink-0 border border-rose-400 dark:border-rose-600">
+              <XCircle size={24} />
+            </div>
+            <div className="space-y-2">
+              <h3 className="text-rose-750 dark:text-rose-400 text-sm font-black uppercase tracking-wider">Pendaftaran Gugur / Ditolak</h3>
+              <p className="text-slate-700 dark:text-slate-350 text-xs md:text-sm font-bold leading-relaxed max-w-md mx-auto">
+                Mohon maaf, pendaftaran atas nama <span className="font-black text-rose-600 dark:text-rose-450 uppercase tracking-wider">{data.nama}</span> dinyatakan <strong className="text-rose-600 dark:text-rose-400">ditolak / tidak memenuhi syarat</strong>.
+              </p>
+              {data.alasan_ditolak && (
+                <div className="mt-3 p-4 bg-white/80 dark:bg-slate-900 border border-rose-200 dark:border-rose-950/20 rounded-2xl text-left max-w-md mx-auto">
+                  <span className="text-[9px] font-black text-rose-500 dark:text-rose-400 uppercase tracking-wider block mb-1">Alasan Penolakan:</span>
+                  <p className="text-xs font-extrabold text-slate-800 dark:text-white leading-relaxed">{data.alasan_ditolak}</p>
+                </div>
+              )}
+            </div>
           </div>
-        </div>
+        ) : (
+          <div className="bg-blue-50/70 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-900/40 rounded-[28px] p-6 shadow-lg text-center flex flex-col items-center gap-3 animate-in fade-in slide-in-from-bottom duration-300">
+            <div className="w-12 h-12 rounded-2xl bg-blue-500 text-white flex items-center justify-center shadow-lg shadow-blue-500/20 shrink-0 border border-blue-400 dark:border-blue-600">
+              <Clock size={24} className="animate-pulse" />
+            </div>
+            <div className="space-y-1">
+              <h3 className="text-blue-750 dark:text-blue-400 text-sm font-black uppercase tracking-wider">Menunggu Proses Verifikasi</h3>
+              <p className="text-slate-700 dark:text-slate-355 text-xs md:text-sm font-bold leading-relaxed max-w-md mx-auto">
+                Pendaftaran atas nama <span className="font-black text-blue-600 dark:text-blue-400 uppercase tracking-wider">{data.nama}</span> sedang diproses dan menunggu verifikasi berkas oleh Panitia PPDB SMK Taruna Bhakti.
+              </p>
+            </div>
+          </div>
+        )}
 
         {/* Footer links */}
         <div className="text-center">

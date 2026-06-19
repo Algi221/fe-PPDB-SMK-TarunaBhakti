@@ -134,7 +134,7 @@ export default function SimulationSettings() {
           <span>Pengaturan Sistem & Keamanan</span>
         </h1>
         <p className="text-sm font-medium text-slate-500 dark:text-slate-455 mt-1">
-          Perbarui keamanan akun administrator dan kendalikan engine simulasi portal PPDB real-time.
+          Perbarui keamanan akun administrator dan kendalikan konfigurasi biaya pendaftaran serta link WhatsApp.
         </p>
       </div>
 
@@ -258,85 +258,6 @@ export default function SimulationSettings() {
                 </button>
               </div>
             </form>
-          </div>
-
-          {/* Kartu engine simulasi WebSocket */}
-          <div className="bg-white dark:bg-slate-900 border border-slate-200/85 dark:border-slate-800/60 rounded-3xl p-6 md:p-8 shadow-[0_4px_20px_rgba(0,0,0,0.02)] transition-colors duration-300 relative overflow-hidden">
-            <div className="absolute top-[-10%] right-[-10%] w-[250px] h-[250px] rounded-full bg-blue-500/5 blur-[80px] pointer-events-none"></div>
-
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-slate-100 dark:border-slate-800/60 pb-5 mb-6 gap-4">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-2xl bg-blue-50/70 dark:bg-blue-950/40 border border-blue-100 dark:border-blue-900/35 flex items-center justify-center text-blue-500 dark:text-blue-455 shrink-0">
-                  <Wifi size={20} />
-                </div>
-                <div>
-                  <h3 className="text-base font-extrabold text-slate-850 dark:text-white tracking-tight">
-                    Engine Simulasi WebSocket
-                  </h3>
-                  <p className="text-xs text-slate-450 font-semibold mt-0.5">
-                    Lakukan pengetesan respon real-time portal PPDB secara langsung
-                  </p>
-                </div>
-              </div>
-
-              <div className="px-3.5 py-1.5 bg-slate-100 dark:bg-slate-950 border border-slate-200 dark:border-white/5 rounded-full text-[10px] font-bold uppercase tracking-wider flex items-center gap-2 relative self-start sm:self-auto">
-                <span className={`w-2 h-2 rounded-full ${wsStatus === "CONNECTED" ? "bg-emerald-500 animate-ping" : "bg-rose-500"}`} />
-                <span className={`w-2 h-2 rounded-full absolute ${wsStatus === "CONNECTED" ? "bg-emerald-500" : "bg-rose-500"}`} />
-                <span className="pl-3 text-slate-500 dark:text-slate-450">Saluran Live: {wsStatus === "CONNECTED" ? "CONNECTED" : "DISCONNECTED"}</span>
-              </div>
-            </div>
-
-            <div className="space-y-6">
-              {/* Tombol pemicu cepat */}
-              <div className="flex flex-col md:flex-row md:items-center justify-between p-4 bg-slate-50/50 dark:bg-slate-950/20 border border-slate-150/60 dark:border-slate-800 rounded-2xl gap-4">
-                <div>
-                  <h4 className="text-sm font-bold text-slate-800 dark:text-white leading-snug">Simulasi Pendaftaran Baru</h4>
-                  <p className="text-[11px] text-slate-400 dark:text-slate-550 mt-0.5">Memicu pembuatan profil calon siswa baru secara acak dan menyiarkannya via WebSocket.</p>
-                </div>
-                <button
-                  onClick={handleSimulate}
-                  className="px-6 py-3 bg-gradient-to-r from-blue-500 to-sky-400 text-white rounded-2xl text-xs font-bold tracking-wider uppercase transition-all shadow-[0_4px_15_rgba(59,130,246,0.15)] hover:shadow-[0_4px_20_rgba(59,130,246,0.25)] hover:brightness-110 active:scale-[0.98] shrink-0"
-                >
-                  Simulasikan Siswa Baru
-                </button>
-              </div>
-
-              {/* Saklar interval simulasi otomatis */}
-              <div className="flex flex-col md:flex-row md:items-center justify-between p-4 bg-slate-50/50 dark:bg-slate-950/20 border border-slate-150/60 dark:border-slate-800 rounded-2xl gap-4">
-                <div>
-                  <h4 className="text-sm font-bold text-slate-800 dark:text-white leading-snug">Auto-Simulation Interval</h4>
-                  <p className="text-[11px] text-slate-400 dark:text-slate-550 mt-0.5">Secara otomatis menghasilkan pendaftaran calon siswa acak setiap 25 detik untuk simulasi berkelanjutan.</p>
-                </div>
-                <div className="flex items-center shrink-0">
-                  <label className="relative inline-flex items-center cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={simulationActive}
-                      onChange={(e) => setSimulationActive(e.target.checked)}
-                      className="sr-only peer"
-                    />
-                    <div className="w-12 h-6 bg-slate-200 dark:bg-slate-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[4px] after:left-[4px] after:bg-slate-400 after:border-slate-350 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-blue-500 peer-checked:after:bg-white"></div>
-                    <span className="ml-3 text-xs font-black tracking-wide uppercase text-slate-655 dark:text-slate-300">
-                      {simulationActive ? "AKTIF" : "TIDAK AKTIF"}
-                    </span>
-                  </label>
-                </div>
-              </div>
-
-              {/* Peringatan / Tips simulasi */}
-              <div className="p-4 rounded-2xl bg-amber-500/5 dark:bg-amber-500/10 border border-amber-500/20 text-slate-700 dark:text-amber-355 text-xs font-semibold leading-relaxed">
-                <h5 className="font-extrabold text-[10px] uppercase tracking-wider mb-2 flex items-center gap-1.5 text-amber-600 dark:text-amber-400">
-                  💡 Informasi Tips Pengujian
-                </h5>
-                Untuk melihat efek visual yang menakjubkan (real-time synchronized updates):
-                <ul className="list-disc list-inside mt-2 space-y-1.5 pl-1 font-medium text-slate-600 dark:text-slate-350 text-[11px]">
-                  <li>Buka Tab halaman portal beranda PPDB di jendela baru di sebelah dashboard ini.</li>
-                  <li>Klik tombol <strong className="text-blue-600 dark:text-white">"Simulasikan Siswa Baru"</strong> di atas.</li>
-                  <li>Perhatikan bahwa calon siswa baru yang disimulasikan akan langsung muncul di baris tabel beranda utama tanpa memuat ulang halaman!</li>
-                  <li>Cobalah tolak berkas pendaftar tersebut di dashboard admin, dan Anda akan melihat baris nama siswa tersebut di beranda utama <strong className="text-rose-500 dark:text-white font-bold">seketika memudar dan menghilang (fade-out) secara halus!</strong></li>
-                </ul>
-              </div>
-            </div>
           </div>
         </div>
 

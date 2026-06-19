@@ -29,6 +29,7 @@ import {
 } from "lucide-react";
 import DateRangeCalendar from "@/components/DateRangeCalendar";
 import { sanitizeSrc } from "@/utils/security";
+import DOMPurify from "dompurify";
 
 interface AlurItem {
   id: number;
@@ -1029,7 +1030,7 @@ export default function KelolaUserInterface() {
                           <div className="h-40 w-full relative overflow-hidden bg-slate-100 dark:bg-slate-900 flex items-center justify-center border-b border-slate-200/60 dark:border-white/5">
                             {major.banner ? (
                               <img 
-                                src={sanitizeSrc(major.banner)} 
+                                src={DOMPurify.sanitize(sanitizeSrc(major.banner))} 
                                 alt={major.title} 
                                 className="w-full h-full object-cover transition-transform group-hover:scale-105 duration-500" 
                               />
@@ -1064,7 +1065,7 @@ export default function KelolaUserInterface() {
 
                             <div className="absolute bottom-3 left-3 w-10 h-10 rounded-xl overflow-hidden bg-white/90 p-0.5 border shadow border-white/20">
                               {major.logo ? (
-                                <img src={sanitizeSrc(major.logo)} alt="" className="w-full h-full object-cover rounded-lg" />
+                                <img src={DOMPurify.sanitize(sanitizeSrc(major.logo))} alt="" className="w-full h-full object-cover rounded-lg" />
                               ) : (
                                 <div className="w-full h-full flex items-center justify-center bg-slate-200 dark:bg-slate-800 text-slate-400">
                                   <GraduationCap size={18} />
@@ -1131,7 +1132,7 @@ export default function KelolaUserInterface() {
                             {/* Adjusted circular logo size display as requested */}
                             <div className="w-12 h-12 rounded-2xl overflow-hidden bg-white dark:bg-slate-850 border shadow p-0.5 flex items-center justify-center text-slate-400">
                               {editingMajor.logo ? (
-                                <img src={sanitizeSrc(editingMajor.logo)} alt="" className="w-full h-full object-cover rounded-xl" />
+                                <img src={DOMPurify.sanitize(sanitizeSrc(editingMajor.logo))} alt="" className="w-full h-full object-cover rounded-xl" />
                               ) : (
                                 <GraduationCap size={20} />
                               )}
@@ -1240,7 +1241,7 @@ export default function KelolaUserInterface() {
 
                           {editingMajor.video ? (
                             <div className="relative aspect-video w-full rounded-2xl overflow-hidden bg-slate-900 border border-slate-850">
-                              <video src={sanitizeSrc(editingMajor.video)} controls className="w-full h-full object-cover" />
+                              <video src={DOMPurify.sanitize(sanitizeSrc(editingMajor.video))} controls className="w-full h-full object-cover" />
                               <button
                                 type="button"
                                 onClick={() => setEditingMajor({ ...editingMajor, video: "" })}

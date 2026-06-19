@@ -224,7 +224,29 @@ export default function ClassDivisionManagement() {
     fetchClassesConfig();
   }, []);
 
+  const getClassGrade = (className: string): number => {
+    if (!className) return 10;
+    const upper = className.toUpperCase().trim();
+    
+    // Check using regex for exact start pattern (Roman or number) with boundary or simple prefixes
+    const match = upper.match(/^(XII|XI|X|12|11|10)\b/) || upper.match(/^(XII|XI|X|12|11|10)/);
+    if (match) {
+      const val = match[1];
+      if (val === "XII" || val === "12") return 12;
+      if (val === "XI" || val === "11") return 11;
+      if (val === "X" || val === "10") return 10;
+    }
+    
+    return 10;
+  };
+
   const getStudentGrade = (student: Applicant): number => {
+    const baseClass = student.diterima_kelas || student.diterimaKelas;
+    if (baseClass) {
+      const classGrade = getClassGrade(baseClass);
+      if (classGrade) return classGrade;
+    }
+
     const studentPeriod = student.periode || "2026-2027";
     const currentPeriod = schoolPeriod || "2026-2027";
     
@@ -245,25 +267,7 @@ export default function ClassDivisionManagement() {
   };
 
   const getStudentCurrentClass = (student: Applicant): string | null => {
-    const baseClass = student.diterima_kelas || student.diterimaKelas;
-    if (!baseClass) return null;
-    
-    const grade = getStudentGrade(student);
-    let cleanClass = baseClass.replace(/^(XII|XI|X)\s+/i, ""); 
-    
-    if (grade === 10) return `X ${cleanClass}`;
-    if (grade === 11) return `XI ${cleanClass}`;
-    if (grade === 12) return `XII ${cleanClass}`;
-    if (grade === 99) return `LULUS (${cleanClass})`;
-    return baseClass;
-  };
-
-  const getClassGrade = (className: string): number => {
-    const upper = className.toUpperCase().trim();
-    if (upper.startsWith("XII")) return 12;
-    if (upper.startsWith("XI")) return 11;
-    if (upper.startsWith("X")) return 10;
-    return 10;
+    return student.diterima_kelas || student.diterimaKelas || null;
   };
 
 
@@ -1347,35 +1351,21 @@ export default function ClassDivisionManagement() {
                     </td>
 
                     <td className="py-3 px-4 text-right pr-6" onClick={(e) => e.stopPropagation()}>
-                      {assignedClass ? (
-                        <button
-                          onClick={() => {
-                            if (confirm(`Keluarkan ${student.nama} dari kelas ${assignedClass}?`)) {
-                              setSelectedStudentIds([student.id]);
-                              handleAssignSelectedToClass("");
-                            }
-                          }}
-                          className="px-2.5 py-1 text-[9px] uppercase font-bold text-rose-500 bg-rose-500/10 hover:bg-rose-500 hover:text-white rounded-lg border border-rose-500/20 transition-all shadow-sm"
-                        >
-                          Keluarkan
-                        </button>
-                      ) : (
+                      <div className="flex items-center justify-end gap-2">
                         <select
+                          value={assignedClass || ""}
                           onChange={(e) => {
-                            if (e.target.value) {
-                              setSelectedStudentIds([student.id]);
-                              handleAssignSelectedToClass(e.target.value);
-                            }
+                            setSelectedStudentIds([student.id]);
+                            handleAssignSelectedToClass(e.target.value);
                           }}
-                          className="px-2 py-1 text-[9px] uppercase font-black bg-slate-50 hover:bg-slate-100 dark:bg-slate-950/40 dark:text-white border border-slate-250 dark:border-white/5 rounded-lg focus:outline-none cursor-pointer"
-                          defaultValue=""
+                          className="px-2.5 py-1 text-[9px] uppercase font-black bg-slate-50 hover:bg-slate-100 dark:bg-slate-950/40 dark:text-white border border-slate-250 dark:border-white/5 rounded-lg focus:outline-none cursor-pointer"
                         >
-                          <option value="" disabled>Pilih Kelas</option>
+                          <option value="">Belum Diatur</option>
                           {classesOfSelectedMajor.map(c => (
                             <option key={c.id} value={c.name}>{c.name}</option>
                           ))}
                         </select>
-                      )}
+                      </div>
                     </td>
                   </tr>
                 );

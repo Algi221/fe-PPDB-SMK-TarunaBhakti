@@ -390,7 +390,7 @@ export default function Home() {
         <nav className={`navbar ${isNavbarScrolled ? "scrolled" : ""}`}>
           <div className="nav-left">
             <a href="#" className="logo-container">
-              <Image src="/logo_smktb.png" alt="Logo SMK TB" width={36} height={36} className="w-9 h-9 object-contain" priority />
+              <img src="/logo_smktb.png" alt="Logo SMK TB" width={36} height={36} className="w-9 h-9 object-contain" />
               <span className="logo-text font-extrabold">PPDB <span>SMK TB</span></span>
             </a>
           </div>
@@ -444,7 +444,7 @@ export default function Home() {
 
           <div className="flex flex-col items-center gap-6 text-center p-6 w-full max-w-sm relative z-10">
             <Link href="#" onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-2 mb-6">
-              <Image src="/logo_smktb.png" alt="Logo SMK TB" width={48} height={48} className="w-12 h-12 object-contain" />
+              <img src="/logo_smktb.png" alt="Logo SMK TB" width={48} height={48} className="w-12 h-12 object-contain" />
               <span className="text-2xl font-black text-slate-800 dark:text-white">PPDB <span className="text-blue-600 dark:text-blue-400">SMK TB</span></span>
             </Link>
 
@@ -858,7 +858,7 @@ export default function Home() {
 
                 <div className="relative z-10">
                   <div className="w-16 h-16 rounded-2xl overflow-hidden mb-6 flex items-center justify-center group-hover:scale-110 group-hover:rotate-3 transition-all duration-500 bg-white border border-slate-100 shadow-md group-hover:shadow-xl group-hover:shadow-blue-500/20">
-                    <Image
+                    <img
                       src={sanitizeSrc(major.logo) || "/logo_smktb.png"}
                       alt={`Logo ${major.code}`}
                       width={56}
@@ -1122,7 +1122,7 @@ export default function Home() {
             {/* Col 1 */}
             <div className="space-y-4">
               <div className="flex items-center gap-3">
-                <Image src="/logo_smktb.png" alt="Logo SMK TB" width={48} height={48} className="w-12 h-12 object-contain shrink-0" loading="lazy" />
+                <img src="/logo_smktb.png" alt="Logo SMK TB" width={48} height={48} className="w-12 h-12 object-contain shrink-0" />
                 <div>
                   <span className="logo-text font-black text-slate-800 dark:text-white text-lg">PPDB <span className="text-blue-600 dark:text-sky-400">SMK TB</span></span>
                   <span className="block text-[10px] font-bold tracking-widest text-slate-400 dark:text-slate-500 uppercase mt-0.5">SMK Taruna Bhakti</span>

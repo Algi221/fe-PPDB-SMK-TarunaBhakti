@@ -142,14 +142,14 @@ export default function DataPendaftarTable() {
             <div className="absolute inset-0 bg-[linear-gradient(rgba(59,130,246,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(59,130,246,0.03)_1px,transparent_1px)] bg-[size:30px_30px] pointer-events-none opacity-50 dark:bg-[linear-gradient(rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.02)_1px,transparent_1px)]" />
 
             {/* Faint rotating background logo */}
-            <Image src="/logo_smktb.png" alt="" width={288} height={288} className="absolute -right-10 -bottom-10 w-72 h-72 object-contain opacity-[0.03] dark:opacity-[0.05] grayscale animate-[spin_80s_linear_infinite] pointer-events-none" />
+            <img src="/logo_smktb.png" alt="" width={288} height={288} className="absolute -right-10 -bottom-10 w-72 h-72 object-contain opacity-[0.03] dark:opacity-[0.05] grayscale animate-[spin_80s_linear_infinite] pointer-events-none" />
 
             {/* Card Header */}
             <div className="flex flex-col sm:flex-row gap-4 sm:items-center justify-between border-b border-slate-200 dark:border-white/10 pb-4 mb-6 relative z-10">
               <div className="flex items-center gap-3">
                 <div className="relative">
                   <div className="absolute inset-0 bg-blue-500/20 dark:bg-blue-500/50 blur-md rounded-full animate-pulse" />
-                  <Image src="/logo_smktb.png" alt="Logo TB" width={40} height={40} className="w-10 h-10 object-contain relative z-10 drop-shadow-sm" />
+                  <img src="/logo_smktb.png" alt="Logo TB" width={40} height={40} className="w-10 h-10 object-contain relative z-10 drop-shadow-sm" />
                 </div>
                 <div>
                   <h4 className="text-[13px] font-black text-slate-800 dark:text-white uppercase tracking-[0.2em] leading-none">SMK Taruna Bhakti</h4>
