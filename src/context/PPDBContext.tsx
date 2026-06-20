@@ -55,12 +55,32 @@ export function PPDBProvider({ children }: { children: React.ReactNode }) {
   const [publicApplicants, setPublicApplicants] = useState<any[]>([]);
   const [activeStudents, setActiveStudents] = useState<any[]>([]);
   const [adminToken, setAdminToken] = useState<string | null>(() => {
-    if (typeof window !== 'undefined') return localStorage.getItem("ppdb_admin_token") || null;
+    if (typeof window !== 'undefined') {
+      const token = localStorage.getItem("ppdb_admin_token");
+      const lastActive = localStorage.getItem("ppdb_admin_last_active");
+      if (token && lastActive) {
+        const elapsed = Date.now() - parseInt(lastActive, 10);
+        if (elapsed > 60 * 60 * 1000) { // 1 hour
+          localStorage.removeItem("ppdb_admin_token");
+          localStorage.removeItem("ppdb_admin_user");
+          localStorage.removeItem("ppdb_admin_last_active");
+          return null;
+        }
+      }
+      return token || null;
+    }
     return null;
   });
   const [adminUser, setAdminUser] = useState<any | null>(() => {
     if (typeof window !== 'undefined') {
       const saved = localStorage.getItem("ppdb_admin_user");
+      const lastActive = localStorage.getItem("ppdb_admin_last_active");
+      if (saved && lastActive) {
+        const elapsed = Date.now() - parseInt(lastActive, 10);
+        if (elapsed > 60 * 60 * 1000) {
+          return null;
+        }
+      }
       try { return saved ? JSON.parse(saved) : null; } catch (_) { return null; }
     }
     return null;
@@ -178,6 +198,7 @@ export function PPDBProvider({ children }: { children: React.ReactNode }) {
     setAdminUser(null);
     localStorage.removeItem("ppdb_admin_token");
     localStorage.removeItem("ppdb_admin_user");
+    localStorage.removeItem("ppdb_admin_last_active");
   }, []);
 
   const fetchAdminApplicants = useCallback(async () => {
@@ -436,6 +457,7 @@ export function PPDBProvider({ children }: { children: React.ReactNode }) {
         setAdminUser(data.admin);
         localStorage.setItem("ppdb_admin_token", data.token);
         localStorage.setItem("ppdb_admin_user", JSON.stringify(data.admin));
+        localStorage.setItem("ppdb_admin_last_active", Date.now().toString());
         return { success: true };
       } else {
         return { success: false, message: data.message };
