@@ -218,7 +218,7 @@ export default function DataPendaftarTable() {
                       ? `${window.location.origin}/verify/${selectedStudent.id}` 
                       : `http://localhost:3000/verify/${selectedStudent.id}`;
                     return (
-                      <div className="bg-white p-1.5 rounded-2xl relative z-10">
+                      <div className="bg-white p-1.5 rounded-2xl relative z-10" key={selectedStudent.id}>
                         <img 
                           src={`https://api.qrserver.com/v1/create-qr-code/?size=400x400&data=${encodeURIComponent(verifyUrl)}&color=0f172a`} 
                           alt="Verification QR" 
