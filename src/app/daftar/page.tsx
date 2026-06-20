@@ -793,6 +793,7 @@ export default function DaftarPage() {
 
           /* Force light theme colors on the printable invoice container even in dark mode on screen */
           html.dark .printable-invoice-sheet,
+          html.dark .printable-invoice-sheet.bg-white,
           .printable-invoice-sheet {
             background-color: #ffffff !important;
             color: #0f172a !important;
@@ -828,6 +829,11 @@ export default function DaftarPage() {
           html.dark .printable-invoice-sheet .bg-slate-50,
           .printable-invoice-sheet .bg-slate-50 {
             background-color: #f8fafc !important;
+          }
+
+          html.dark .printable-invoice-sheet .bg-white,
+          .printable-invoice-sheet .bg-white {
+            background-color: #ffffff !important;
           }
 
           html.dark .printable-invoice-sheet .border-slate-200,

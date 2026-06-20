@@ -273,7 +273,8 @@ function InvoiceContent() {
         }
 
         /* Force light theme colors on invoice-sheet on screen in dark mode */
-        html.dark .invoice-sheet {
+        html.dark .invoice-sheet,
+        html.dark .invoice-sheet.bg-white {
           background-color: #ffffff !important;
           color: #0f172a !important;
           border-color: #e2e8f0 !important;

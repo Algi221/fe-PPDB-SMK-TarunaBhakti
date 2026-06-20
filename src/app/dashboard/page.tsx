@@ -85,13 +85,13 @@ export default function DashboardOverview() {
 
   const totalMajorsCount = majorDistribution.reduce((acc, curr) => acc + curr.count, 0) || 1; 
 
-  let accumulatedPercent = 0;
-  const donutData = majorDistribution.map((m) => {
+  const donutData = majorDistribution.reduce((acc, m) => {
     const percent = Math.round((m.count / totalMajorsCount) * 100) || 0;
-    const startPercent = accumulatedPercent;
-    accumulatedPercent += percent;
-    return { ...m, percent, startPercent };
-  });
+    const startPercent = acc.accumulatedPercent;
+    acc.result.push({ ...m, percent, startPercent });
+    acc.accumulatedPercent += percent;
+    return acc;
+  }, { accumulatedPercent: 0, result: [] as any[] }).result;
 
   const [trendView, setTrendView] = useState<"hari" | "minggu" | "bulan" | "periode">("hari");
 

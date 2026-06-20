@@ -1,5 +1,7 @@
 {
     "powerquery.client.additionalSymbolsDirectories": [
         "c:/Users/Husein/ppdb_smk/.vscode/excel-pq-symbols"
-    ]
+    ],
+    "css.validate": false,
+    "tailwindCSS.experimental.classRegex": []
 }
