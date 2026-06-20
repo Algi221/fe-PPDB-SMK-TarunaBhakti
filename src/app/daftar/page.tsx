@@ -1045,6 +1045,7 @@ export default function DaftarPage() {
                     periode: schoolPeriod,
                     berkasFotoOk: false,
                     berkasFotoFile: null,
+                    berkasFotoName: "",
                     berkasFotoBase64: "",
                     berkasPrestasiBase64: "",
                   });
@@ -1263,6 +1264,7 @@ export default function DaftarPage() {
                       periode: schoolPeriod,
                       berkasFotoOk: false,
                       berkasFotoFile: null,
+                      berkasFotoName: "",
                       berkasFotoBase64: "",
                       berkasPrestasiBase64: "",
                     });

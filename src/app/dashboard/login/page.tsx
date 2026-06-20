@@ -30,6 +30,17 @@ export default function AdminLogin() {
   }, [adminToken, router]);
 
   useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get("expired") === "true") {
+        setError("Sesi Anda telah berakhir karena tidak ada aktivitas. Silakan login kembali.");
+        const newUrl = window.location.pathname;
+        window.history.replaceState({}, document.title, newUrl);
+      }
+    }
+  }, []);
+
+  useEffect(() => {
     if (!mounted) return;
     
     const ctx = gsap.context(() => {
