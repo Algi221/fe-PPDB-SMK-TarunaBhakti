@@ -239,14 +239,14 @@ function ApplicantsDirectoryContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const activeTabParam = searchParams.get("tab") || "active";
-  const activePageTab = activeTabParam as "active" | "trash";
+  const activePageTab = activeTabParam as "active" | "transfer" | "trash";
 
   const [trashedApplicants, setTrashedApplicants] = useState<Applicant[]>([]);
   const [trashLoading, setTrashLoading] = useState<boolean>(false);
   const [trashError, setTrashError] = useState<string>("");
   const [trashSuccess, setTrashSuccess] = useState<string>("");
 
-  const handleTabChange = (tab: "active" | "trash") => {
+  const handleTabChange = (tab: "active" | "transfer" | "trash") => {
     setTrashError("");
     setTrashSuccess("");
     router.push(`/dashboard/pendaftar?tab=${tab}`);
@@ -436,6 +436,10 @@ function ApplicantsDirectoryContent() {
   }, [bstRoot, searchTerm]);
 
   const filteredApplicants = applicants.filter((a: Applicant) => {
+    // Segregate active (new students) and transfer students
+    const isTransfer = a.diterima_kelas && (a.diterima_kelas.includes("XI") || a.diterima_kelas.includes("XII"));
+    if (activePageTab === "active" && isTransfer) return false;
+    if (activePageTab === "transfer" && !isTransfer) return false;
     
     const matchesSearch = bstMatchedIds === null || bstMatchedIds.has(a.id);
 
@@ -594,7 +598,17 @@ function ApplicantsDirectoryContent() {
               : "border-transparent text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200"
           }`}
         >
-          Data Calon Siswa Aktif
+          Calon Siswa Baru (Kelas X)
+        </button>
+        <button
+          onClick={() => handleTabChange("transfer")}
+          className={`pb-3 text-sm font-bold border-b-2 transition-all ${
+            activePageTab === "transfer"
+              ? "border-blue-500 text-blue-600 dark:text-blue-400"
+              : "border-transparent text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200"
+          }`}
+        >
+          Calon Siswa Pindahan (Kelas XI & XII)
         </button>
         <button
           onClick={() => handleTabChange("trash")}
@@ -621,7 +635,7 @@ function ApplicantsDirectoryContent() {
         </div>
       )}
 
-      {activePageTab === "active" ? (
+      {activePageTab === "active" || activePageTab === "transfer" ? (
         <>
           {/* Search, Filter & Spreadsheet Toggle Toolbar */}
       <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800/60 rounded-3xl p-6 shadow-[0_2px_12px_rgba(0,0,0,0.02)] flex flex-col xl:flex-row gap-4 items-center justify-between transition-colors duration-300">

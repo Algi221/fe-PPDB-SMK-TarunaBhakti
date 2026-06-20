@@ -635,6 +635,21 @@ export default function DaftarPage() {
         finalData.tglLulus = "2026-06-10";
       }
 
+      // Adjust period for transfer students dynamically
+      let calculatedPeriod = finalData.periode || schoolPeriod || "2026-2027";
+      if (finalData.diterimaKelas === "XI (Sebelas)") {
+        const parts = calculatedPeriod.split("-").map(Number);
+        if (parts.length === 2 && !isNaN(parts[0]) && !isNaN(parts[1])) {
+          calculatedPeriod = `${parts[0] - 1}-${parts[1] - 1}`;
+        }
+      } else if (finalData.diterimaKelas === "XII (Dua Belas)") {
+        const parts = calculatedPeriod.split("-").map(Number);
+        if (parts.length === 2 && !isNaN(parts[0]) && !isNaN(parts[1])) {
+          calculatedPeriod = `${parts[0] - 2}-${parts[1] - 2}`;
+        }
+      }
+      finalData.periode = calculatedPeriod;
+
       try {
         const res = await registerApplicant(finalData);
         if (res && res.success) {
@@ -964,7 +979,7 @@ export default function DaftarPage() {
                     tahunSelesaiBeasiswa: "",
                     namaAyah: "",
                     tempatLahirAyah: "",
-                    tglLahirAyah: null,
+                    tglLahirAyah: "",
                     agamaAyah: "",
                     kewarganegaraanAyah: "WNI",
                     pendidikanAyah: "",
@@ -978,7 +993,7 @@ export default function DaftarPage() {
                     statusAyah: "Masih Hidup",
                     namaIbu: "",
                     tempatLahirIbu: "",
-                    tglLahirIbu: null,
+                    tglLahirIbu: "",
                     agamaIbu: "",
                     kewarganegaraanIbu: "WNI",
                     pendidikanIbu: "",
@@ -992,7 +1007,7 @@ export default function DaftarPage() {
                     statusIbu: "Masih Hidup",
                     namaWali: "",
                     tempatLahirWali: "",
-                    tglLahirWali: null,
+                    tglLahirWali: "",
                     agamaWali: "",
                     kewarganegaraanWali: "WNI",
                     pendidikanWali: "",
@@ -1183,7 +1198,7 @@ export default function DaftarPage() {
                       tahunSelesaiBeasiswa: "",
                       namaAyah: "",
                       tempatLahirAyah: "",
-                      tglLahirAyah: null,
+                      tglLahirAyah: "",
                       agamaAyah: "",
                       kewarganegaraanAyah: "WNI",
                       pendidikanAyah: "",
@@ -1197,7 +1212,7 @@ export default function DaftarPage() {
                       statusAyah: "Masih Hidup",
                       namaIbu: "",
                       tempatLahirIbu: "",
-                      tglLahirIbu: null,
+                      tglLahirIbu: "",
                       agamaIbu: "",
                       kewarganegaraanIbu: "WNI",
                       pendidikanIbu: "",
@@ -1211,7 +1226,7 @@ export default function DaftarPage() {
                       statusIbu: "Masih Hidup",
                       namaWali: "",
                       tempatLahirWali: "",
-                      tglLahirWali: null,
+                      tglLahirWali: "",
                       agamaWali: "",
                       kewarganegaraanWali: "WNI",
                       pendidikanWali: "",
