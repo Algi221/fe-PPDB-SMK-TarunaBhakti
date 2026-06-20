@@ -13,8 +13,6 @@ interface Student {
   sekolahAsal?: string;
   jurusan_1?: string;
   jurusan1?: string;
-  jurusan_2?: string;
-  jurusan2?: string;
   status: string;
   whatsapp?: string;
   email?: string;

@@ -94,8 +94,6 @@ interface Applicant {
   tglLulus?: string;
   jurusan_1?: string;
   jurusan1?: string;
-  jurusan_2?: string;
-  jurusan2?: string;
   nama_ayah?: string;
   namaAyah?: string;
   pekerjaan_ayah?: string;
@@ -159,7 +157,7 @@ interface Applicant {
 }
 
 export default function ActiveStudentsDirectory() {
-  const { activeStudents, addToast, fetchActiveStudents } = usePPDB();
+  const { activeStudents, addToast, fetchActiveStudents, updateActiveStudent } = usePPDB();
 
   useEffect(() => {
     if (typeof fetchActiveStudents === "function") {
@@ -198,9 +196,23 @@ export default function ActiveStudentsDirectory() {
   };
 
   const [selectedApplicant, setSelectedApplicant] = useState<Applicant | null>(null);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editForm, setEditForm] = useState({
+    nama: "",
+    nisn: "",
+    nik: "",
+    jurusan: ""
+  });
   
   const handleViewDetail = async (student: Applicant) => {
     setSelectedApplicant(student);
+    setIsEditing(false);
+    setEditForm({
+      nama: student.nama || "",
+      nisn: student.nisn || "",
+      nik: student.nik || "",
+      jurusan: student.jurusan || student.jurusan_1 || student.jurusan1 || ""
+    });
     try {
       const token = localStorage.getItem("ppdb_admin_token");
       const res = await fetch(`http://localhost:5000/api/siswa-aktif/${student.id}`, {
@@ -209,9 +221,73 @@ export default function ActiveStudentsDirectory() {
       const data = await res.json();
       if (data.success && data.data) {
         setSelectedApplicant(data.data);
+        setEditForm({
+          nama: data.data.nama || "",
+          nisn: data.data.nisn || "",
+          nik: data.data.nik || "",
+          jurusan: data.data.jurusan || data.data.jurusan_1 || data.data.jurusan1 || ""
+        });
       }
     } catch (err) {
       console.warn("Failed to lazy load active student detail:", err);
+    }
+  };
+
+  const handleSaveEdit = async () => {
+    if (!selectedApplicant) return;
+    if (!editForm.nama.trim()) {
+      alert("Nama tidak boleh kosong!");
+      return;
+    }
+    if (editForm.nisn.length !== 10) {
+      alert("NISN harus 10 digit!");
+      return;
+    }
+    if (editForm.nik.length !== 16) {
+      alert("NIK harus 16 digit!");
+      return;
+    }
+
+    try {
+      const currentMajor = selectedApplicant.jurusan || selectedApplicant.jurusan_1 || selectedApplicant.jurusan1;
+      const majorChanged = editForm.jurusan !== currentMajor;
+
+      const updatedPayload: any = {
+        nama: editForm.nama,
+        nisn: editForm.nisn,
+        nik: editForm.nik,
+        jurusan1: editForm.jurusan
+      };
+
+      if (majorChanged) {
+        updatedPayload.diterimaKelas = null;
+        updatedPayload.diterima_kelas = null;
+      }
+
+      const res = await updateActiveStudent(selectedApplicant.id, updatedPayload);
+      if (res && res.success) {
+        setIsEditing(false);
+        setSelectedApplicant((prev: any) => {
+          if (!prev) return null;
+          return {
+            ...prev,
+            nama: editForm.nama,
+            nisn: editForm.nisn,
+            nik: editForm.nik,
+            jurusan: editForm.jurusan,
+            jurusan_1: editForm.jurusan,
+            jurusan1: editForm.jurusan,
+            ...(majorChanged ? { diterima_kelas: null, diterimaKelas: null } : {})
+          };
+        });
+        if (typeof fetchActiveStudents === "function") {
+          await fetchActiveStudents();
+        }
+      } else {
+        alert(res?.message || "Gagal menyimpan perubahan.");
+      }
+    } catch (e: any) {
+      alert("Terjadi kesalahan: " + e.message);
     }
   };
 
@@ -547,7 +623,7 @@ export default function ActiveStudentsDirectory() {
             + Tambah Periode
           </button>
 
-          {/* Global Export active student roster */}
+          {/* Global Export active students */}
           <button
             onClick={() => handleExportExcel(filteredApplicants, "semua_periode")}
             disabled={filteredApplicants.length === 0}
@@ -622,7 +698,7 @@ export default function ActiveStudentsDirectory() {
                         handleExportExcel(students, `angkatan_${period.replace("-", "_")}`);
                       }}
                       className="p-2 bg-slate-100 hover:bg-blue-50 hover:text-blue-600 dark:bg-white/5 dark:hover:bg-blue-950/40 border border-slate-200/50 dark:border-white/5 text-slate-500 dark:text-slate-400 rounded-xl transition-all shadow-sm"
-                      title={`Ekspor Roster Excel Periode ${period}`}
+                      title={`Ekspor Daftar Siswa Excel Periode ${period}`}
                     >
                       <Download size={14} />
                     </button>
@@ -767,7 +843,16 @@ export default function ActiveStudentsDirectory() {
                 </div>
                 <div>
                   <div className="flex items-center gap-3 mb-1.5">
-                    <h2 className="text-2xl font-black text-slate-800 uppercase tracking-tight">{selectedApplicant.nama}</h2>
+                    {isEditing ? (
+                      <input
+                        type="text"
+                        className="text-xl font-black text-slate-850 uppercase tracking-tight border border-slate-350 rounded-xl px-3 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+                        value={editForm.nama}
+                        onChange={(e) => setEditForm({ ...editForm, nama: e.target.value })}
+                      />
+                    ) : (
+                      <h2 className="text-2xl font-black text-slate-800 uppercase tracking-tight">{selectedApplicant.nama}</h2>
+                    )}
                     <span className="px-3 py-1 text-[10px] font-bold text-emerald-600 bg-emerald-50 border border-emerald-500/30 rounded-full uppercase tracking-widest whitespace-nowrap">
                       Siswa Aktif
                     </span>
@@ -775,9 +860,35 @@ export default function ActiveStudentsDirectory() {
                   <div className="text-xs font-bold text-slate-400 uppercase tracking-widest flex items-center gap-2 flex-wrap">
                     <span className="text-blue-500 font-mono">NO: {formatNoPendaftaran(selectedApplicant.periode, selectedApplicant.id)}</span>
                     <span className="w-1 h-1 bg-slate-300 rounded-full"></span>
-                    <span className="text-blue-500">NISN: {selectedApplicant.nisn}</span>
+                    <span className="text-blue-500 flex items-center gap-1">
+                      NISN:{" "}
+                      {isEditing ? (
+                        <input
+                          type="text"
+                          maxLength={10}
+                          className="border border-slate-350 rounded-xl px-2.5 py-0.5 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white font-mono w-28"
+                          value={editForm.nisn}
+                          onChange={(e) => setEditForm({ ...editForm, nisn: e.target.value.replace(/\D/g, "") })}
+                        />
+                      ) : (
+                        selectedApplicant.nisn
+                      )}
+                    </span>
                     <span className="w-1 h-1 bg-slate-300 rounded-full"></span>
-                    <span>ASAL: {selectedApplicant.sekolah_asal || selectedApplicant.sekolahAsal || "-"}</span>
+                    <span className="flex items-center gap-1">
+                      NIK:{" "}
+                      {isEditing ? (
+                        <input
+                          type="text"
+                          maxLength={16}
+                          className="border border-slate-350 rounded-xl px-2.5 py-0.5 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white font-mono w-40"
+                          value={editForm.nik}
+                          onChange={(e) => setEditForm({ ...editForm, nik: e.target.value.replace(/\D/g, "") })}
+                        />
+                      ) : (
+                        selectedApplicant.nik || "-"
+                      )}
+                    </span>
                     <span className="w-1 h-1 bg-slate-300 rounded-full"></span>
                     <span>ANGKATAN: {selectedApplicant.periode || "2026-2027"}</span>
                   </div>
@@ -993,7 +1104,27 @@ export default function ActiveStudentsDirectory() {
                       <Layers size={12} className="text-blue-500" /> Pilihan Minat Studi
                     </h4>
                     <div className="space-y-4">
-                      <div><span className="text-slate-400 dark:text-slate-550 block mb-0.5 font-bold uppercase text-[9px] tracking-wider">Kompetensi Keahlian / Jurusan</span> <span className="text-blue-600 dark:text-blue-400 text-sm font-extrabold uppercase">{selectedApplicant.jurusan || selectedApplicant.jurusan_1 || selectedApplicant.jurusan1}</span></div>
+                      <div>
+                        <span className="text-slate-400 dark:text-slate-550 block mb-0.5 font-bold uppercase text-[9px] tracking-wider">Kompetensi Keahlian / Jurusan</span>
+                        {isEditing ? (
+                          <select
+                            className="bg-white dark:bg-slate-800 border border-slate-350 dark:border-white/10 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-850 dark:text-white font-extrabold uppercase mt-1 w-full"
+                            value={editForm.jurusan}
+                            onChange={(e) => setEditForm({ ...editForm, jurusan: e.target.value })}
+                          >
+                            <option value="Rekayasa Perangkat Lunak">Rekayasa Perangkat Lunak</option>
+                            <option value="Teknik Jaringan Komputer & Telekomunikasi">Teknik Jaringan Komputer & Telekomunikasi</option>
+                            <option value="Desain Komunikasi Visual">Desain Komunikasi Visual</option>
+                            <option value="Broadcasting & Perfilman">Broadcasting & Perfilman</option>
+                            <option value="Teknik Elektronika">Teknik Elektronika</option>
+                            <option value="Animasi">Animasi</option>
+                          </select>
+                        ) : (
+                          <span className="text-blue-600 dark:text-blue-400 text-sm font-extrabold uppercase">
+                            {selectedApplicant.jurusan || selectedApplicant.jurusan_1 || selectedApplicant.jurusan1}
+                          </span>
+                        )}
+                      </div>
                       <div><span className="text-slate-400 dark:text-slate-555 block mb-0.5 font-bold uppercase text-[9px] tracking-wider">Alasan Memilih Jurusan</span> <span className="text-slate-800 dark:text-white font-extrabold">{selectedApplicant.alasan_memilih || selectedApplicant.alasanMemilih || "Ingin belajar IT"}</span></div>
                     </div>
                   </div>
@@ -1035,7 +1166,40 @@ export default function ActiveStudentsDirectory() {
             </div>
 
             {/* Modal Action Controls Footer */}
-            <div className="px-8 py-5 border-t border-slate-100 flex items-center justify-end bg-white shrink-0">
+            <div className="px-8 py-5 border-t border-slate-100 flex items-center justify-between bg-white shrink-0">
+              <div>
+                {isEditing ? (
+                  <div className="flex gap-2">
+                    <button
+                      onClick={handleSaveEdit}
+                      className="px-6 py-2.5 rounded-[12px] font-bold text-[11px] uppercase tracking-widest bg-emerald-600 hover:bg-emerald-700 text-white shadow-md transition-colors"
+                    >
+                      Simpan
+                    </button>
+                    <button
+                      onClick={() => setIsEditing(false)}
+                      className="px-6 py-2.5 rounded-[12px] font-bold text-[11px] uppercase tracking-widest bg-slate-100 text-slate-655 hover:bg-slate-200 transition-colors"
+                    >
+                      Batal
+                    </button>
+                  </div>
+                ) : (
+                  <button
+                    onClick={() => {
+                      setEditForm({
+                        nama: selectedApplicant.nama || "",
+                        nisn: selectedApplicant.nisn || "",
+                        nik: selectedApplicant.nik || "",
+                        jurusan: selectedApplicant.jurusan || selectedApplicant.jurusan_1 || selectedApplicant.jurusan1 || ""
+                      });
+                      setIsEditing(true);
+                    }}
+                    className="px-6 py-2.5 rounded-[12px] font-bold text-[11px] uppercase tracking-widest bg-blue-600 hover:bg-blue-700 text-white shadow-md transition-colors"
+                  >
+                    Edit Data
+                  </button>
+                )}
+              </div>
               <div className="flex items-center gap-3">
                 <button
                   onClick={() => setSelectedApplicant(null)}

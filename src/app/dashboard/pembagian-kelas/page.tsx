@@ -637,7 +637,7 @@ export default function ClassDivisionManagement() {
     }
 
     const workbook = new ExcelJS.Workbook();
-    const worksheet = workbook.addWorksheet(`Roster_${className}`);
+    const worksheet = workbook.addWorksheet(`Kelas_${className}`);
 
     worksheet.columns = [
       { header: 'No.', key: 'no', width: 10 },
@@ -710,7 +710,7 @@ export default function ClassDivisionManagement() {
 
     const buffer = await workbook.xlsx.writeBuffer();
     const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
-    saveAs(blob, `Roster_Kelas_${className.replace(/\s+/g, "_")}_${Date.now()}.xlsx`);
+    saveAs(blob, `Daftar_Kelas_${className.replace(/\s+/g, "_")}_${Date.now()}.xlsx`);
   };
 
   const handleExportAllClasses = async () => {
@@ -737,7 +737,7 @@ export default function ClassDivisionManagement() {
       worksheet.mergeCells('A3:G3');
       worksheet.mergeCells('A4:G4');
 
-      worksheet.getCell('A1').value = 'DAFTAR PESERTA DIDIK (ROSTER)';
+      worksheet.getCell('A1').value = 'DAFTAR PESERTA DIDIK';
       worksheet.getCell('A2').value = `JURUSAN: ${activeMajors.find(m => m.code === selectedMajor)?.name.toUpperCase() || selectedMajor}`;
       worksheet.getCell('A3').value = `PERIODE AKADEMIK: ${schoolPeriod || '2026-2027'}`;
       worksheet.getCell('A4').value = `KELAS: ${c.name}`;
@@ -840,7 +840,7 @@ export default function ClassDivisionManagement() {
 
     const buffer = await workbook.xlsx.writeBuffer();
     const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
-    saveAs(blob, `Roster_Semua_Kelas_${selectedMajor}_${schoolPeriod || '2026-2027'}.xlsx`);
+    saveAs(blob, `Daftar_Semua_Kelas_${selectedMajor}_${schoolPeriod || '2026-2027'}.xlsx`);
     showToast(`Berhasil mengekspor semua kelas jurusan ${selectedMajor} (${totalStudentsExported} siswa)!`, "success");
   };
 
@@ -855,7 +855,7 @@ export default function ClassDivisionManagement() {
 
       // Sheet title
       worksheet.mergeCells('A1:G1');
-      worksheet.getCell('A1').value = `LAPORAN ROSTER KELAS - JURUSAN ${m.name.toUpperCase()}`;
+      worksheet.getCell('A1').value = `LAPORAN DAFTAR KELAS - JURUSAN ${m.name.toUpperCase()}`;
       worksheet.getCell('A1').alignment = { horizontal: 'center', vertical: 'middle' };
       worksheet.getCell('A1').font = {
         bold: true,
@@ -989,7 +989,7 @@ export default function ClassDivisionManagement() {
 
     const buffer = await workbook.xlsx.writeBuffer();
     const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
-    saveAs(blob, `Roster_Semua_Jurusan_PPDB_${schoolPeriod || '2026-2027'}.xlsx`);
+    saveAs(blob, `Daftar_Semua_Jurusan_PPDB_${schoolPeriod || '2026-2027'}.xlsx`);
     showToast(`Berhasil mengekspor semua jurusan (${totalStudentsExported} siswa)!`, "success");
   };
 
@@ -1198,7 +1198,7 @@ export default function ClassDivisionManagement() {
                     <button
                       onClick={() => setSelectedClassDetail(c)}
                       className="p-1.5 text-slate-400 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-slate-900 rounded-lg transition-all"
-                      title="Lihat Detail Roster"
+                      title="Lihat Detail Kelas"
                     >
                       <Eye size={13} />
                     </button>
@@ -1215,7 +1215,7 @@ export default function ClassDivisionManagement() {
                 </div>
 
                 <div className="mt-3 flex justify-between items-center text-[10px] font-black uppercase tracking-wider text-blue-500">
-                  <span>Lihat Roster</span>
+                  <span>Lihat Daftar Kelas</span>
                   <ChevronRight size={12} className="group-hover:translate-x-1 transition-transform" />
                 </div>
               </div>
@@ -1393,7 +1393,7 @@ export default function ClassDivisionManagement() {
             <div className="p-6 border-b border-slate-100 dark:border-white/5 flex items-center justify-between shrink-0 bg-slate-50/50 dark:bg-slate-950/15">
               <div>
                 <h3 className="text-base font-black text-slate-850 dark:text-white flex items-center gap-3 uppercase tracking-wide">
-                  <span>Roster Kelas: {selectedClassDetail.name}</span>
+                  <span>Daftar Kelas: {selectedClassDetail.name}</span>
                   <span className="px-2.5 py-0.5 rounded-full text-[9px] font-black border border-blue-200 dark:border-blue-900 bg-blue-50 dark:bg-blue-950 text-blue-600 dark:text-blue-400 uppercase tracking-widest">
                     {enrolledStudentsInDetail.length} Siswa Terdaftar
                   </span>
@@ -1428,7 +1428,7 @@ export default function ClassDivisionManagement() {
                 className="w-full sm:w-auto px-4 py-2 bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-950/40 border border-emerald-250 dark:border-emerald-900/40 hover:bg-emerald-600/10 text-emerald-600 dark:text-emerald-400 rounded-xl text-xs font-black uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 shrink-0"
               >
                 <Download size={14} />
-                <span>Cetak Roster (XLS)</span>
+                <span>Cetak Daftar Kelas (XLS)</span>
               </button>
             </div>
 
