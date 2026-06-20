@@ -203,7 +203,6 @@ export default function ActiveStudentsDirectory() {
   
   const handleViewDetail = async (student: Applicant) => {
     setSelectedApplicant(student);
-    setIsEditing(false);
     setEditForm({
       nama: student.nama || "",
       nisn: student.nisn || "",
@@ -250,9 +249,17 @@ export default function ActiveStudentsDirectory() {
       const currentMajor = editApplicant.jurusan || editApplicant.jurusan_1 || editApplicant.jurusan1;
       const majorChanged = editForm.jurusan_1 !== currentMajor;
 
+      // Sanitize null values by simply omitting them, so backend falls back to existing or defaults
+      const sanitizedForm: any = {};
+      for (const key in editForm) {
+        if (editForm[key] !== null) {
+          sanitizedForm[key] = editForm[key];
+        }
+      }
+
       const updatedPayload: any = {
-        ...editForm,
-        jurusan1: editForm.jurusan_1 || editForm.jurusan
+        ...sanitizedForm,
+        jurusan1: sanitizedForm.jurusan_1 || sanitizedForm.jurusan
       };
 
       if (majorChanged) {
