@@ -843,16 +843,7 @@ export default function ActiveStudentsDirectory() {
                 </div>
                 <div>
                   <div className="flex items-center gap-3 mb-1.5">
-                    {isEditing ? (
-                      <input
-                        type="text"
-                        className="text-xl font-black text-slate-850 uppercase tracking-tight border border-slate-350 rounded-xl px-3 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
-                        value={editForm.nama}
-                        onChange={(e) => setEditForm({ ...editForm, nama: e.target.value })}
-                      />
-                    ) : (
-                      <h2 className="text-2xl font-black text-slate-800 uppercase tracking-tight">{selectedApplicant.nama}</h2>
-                    )}
+                    <h2 className="text-2xl font-black text-slate-800 uppercase tracking-tight">{selectedApplicant.nama}</h2>
                     <span className="px-3 py-1 text-[10px] font-bold text-emerald-600 bg-emerald-50 border border-emerald-500/30 rounded-full uppercase tracking-widest whitespace-nowrap">
                       Siswa Aktif
                     </span>
@@ -861,33 +852,11 @@ export default function ActiveStudentsDirectory() {
                     <span className="text-blue-500 font-mono">NO: {formatNoPendaftaran(selectedApplicant.periode, selectedApplicant.id)}</span>
                     <span className="w-1 h-1 bg-slate-300 rounded-full"></span>
                     <span className="text-blue-500 flex items-center gap-1">
-                      NISN:{" "}
-                      {isEditing ? (
-                        <input
-                          type="text"
-                          maxLength={10}
-                          className="border border-slate-350 rounded-xl px-2.5 py-0.5 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white font-mono w-28"
-                          value={editForm.nisn}
-                          onChange={(e) => setEditForm({ ...editForm, nisn: e.target.value.replace(/\D/g, "") })}
-                        />
-                      ) : (
-                        selectedApplicant.nisn
-                      )}
+                      NISN: {selectedApplicant.nisn}
                     </span>
                     <span className="w-1 h-1 bg-slate-300 rounded-full"></span>
                     <span className="flex items-center gap-1">
-                      NIK:{" "}
-                      {isEditing ? (
-                        <input
-                          type="text"
-                          maxLength={16}
-                          className="border border-slate-350 rounded-xl px-2.5 py-0.5 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white font-mono w-40"
-                          value={editForm.nik}
-                          onChange={(e) => setEditForm({ ...editForm, nik: e.target.value.replace(/\D/g, "") })}
-                        />
-                      ) : (
-                        selectedApplicant.nik || "-"
-                      )}
+                      NIK: {selectedApplicant.nik || "-"}
                     </span>
                     <span className="w-1 h-1 bg-slate-300 rounded-full"></span>
                     <span>ANGKATAN: {selectedApplicant.periode || "2026-2027"}</span>
@@ -946,12 +915,42 @@ export default function ActiveStudentsDirectory() {
 
                     <div className="bg-slate-50 rounded-[16px] p-4 border border-slate-100">
                       <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Nama Lengkap</div>
-                      <div className="text-sm font-bold text-slate-800">{selectedApplicant.nama}</div>
+                      {isEditing ? (
+                        <input
+                          type="text"
+                          className="w-full bg-white border border-slate-350 rounded-xl px-3 py-1.5 text-sm font-bold text-slate-850 uppercase tracking-tight focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          value={editForm.nama}
+                          onChange={(e) => setEditForm({ ...editForm, nama: e.target.value })}
+                        />
+                      ) : (
+                        <div className="text-sm font-bold text-slate-800">{selectedApplicant.nama}</div>
+                      )}
                     </div>
 
                     <div className="bg-slate-50 rounded-[16px] p-4 border border-slate-100">
                       <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">NISN / NIK</div>
-                      <div className="text-sm font-bold text-slate-600">{selectedApplicant.nisn} / {selectedApplicant.nik || "-"}</div>
+                      {isEditing ? (
+                        <div className="flex gap-2">
+                          <input
+                            type="text"
+                            maxLength={10}
+                            placeholder="NISN"
+                            className="w-full bg-white border border-slate-350 rounded-xl px-3 py-1.5 text-sm font-bold text-slate-850 font-mono focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            value={editForm.nisn}
+                            onChange={(e) => setEditForm({ ...editForm, nisn: e.target.value.replace(/\D/g, "") })}
+                          />
+                          <input
+                            type="text"
+                            maxLength={16}
+                            placeholder="NIK"
+                            className="w-full bg-white border border-slate-350 rounded-xl px-3 py-1.5 text-sm font-bold text-slate-850 font-mono focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            value={editForm.nik}
+                            onChange={(e) => setEditForm({ ...editForm, nik: e.target.value.replace(/\D/g, "") })}
+                          />
+                        </div>
+                      ) : (
+                        <div className="text-sm font-bold text-slate-600">{selectedApplicant.nisn} / {selectedApplicant.nik || "-"}</div>
+                      )}
                     </div>
 
                     <div className="bg-slate-50 rounded-[16px] p-4 border border-slate-100">
