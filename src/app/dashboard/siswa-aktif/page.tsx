@@ -42,7 +42,8 @@ import {
   BookOpen, 
   School,
   Sparkles,
-  Trash2
+  Trash2,
+  Pencil
 } from "lucide-react";
 
 export const formatNoPendaftaran = (periode: string | null | undefined, id: number) => {
@@ -196,17 +197,12 @@ export default function ActiveStudentsDirectory() {
   };
 
   const [selectedApplicant, setSelectedApplicant] = useState<Applicant | null>(null);
-  const [isEditing, setIsEditing] = useState(false);
-  const [editForm, setEditForm] = useState({
-    nama: "",
-    nisn: "",
-    nik: "",
-    jurusan: ""
-  });
+  const [editApplicant, setEditApplicant] = useState<Applicant | null>(null);
+  const [editForm, setEditForm] = useState<Partial<Applicant>>({});
+  const [isSaving, setIsSaving] = useState(false);
   
   const handleViewDetail = async (student: Applicant) => {
     setSelectedApplicant(student);
-    setIsEditing(false);
     setEditForm({
       nama: student.nama || "",
       nisn: student.nisn || "",
@@ -234,29 +230,36 @@ export default function ActiveStudentsDirectory() {
   };
 
   const handleSaveEdit = async () => {
-    if (!selectedApplicant) return;
-    if (!editForm.nama.trim()) {
+    if (!editApplicant) return;
+    if (!editForm.nama?.trim()) {
       alert("Nama tidak boleh kosong!");
       return;
     }
-    if (editForm.nisn.length !== 10) {
+    if (editForm.nisn?.length !== 10) {
       alert("NISN harus 10 digit!");
       return;
     }
-    if (editForm.nik.length !== 16) {
-      alert("NIK harus 16 digit!");
+    if (editForm.nik && editForm.nik.length !== 16) {
+      alert("NIK harus 16 digit jika diisi!");
       return;
     }
 
     try {
-      const currentMajor = selectedApplicant.jurusan || selectedApplicant.jurusan_1 || selectedApplicant.jurusan1;
-      const majorChanged = editForm.jurusan !== currentMajor;
+      setIsSaving(true);
+      const currentMajor = editApplicant.jurusan || editApplicant.jurusan_1 || editApplicant.jurusan1;
+      const majorChanged = editForm.jurusan_1 !== currentMajor;
+
+      // Sanitize null values by simply omitting them, so backend falls back to existing or defaults
+      const sanitizedForm: any = {};
+      for (const key in editForm) {
+        if (editForm[key] !== null) {
+          sanitizedForm[key] = editForm[key];
+        }
+      }
 
       const updatedPayload: any = {
-        nama: editForm.nama,
-        nisn: editForm.nisn,
-        nik: editForm.nik,
-        jurusan1: editForm.jurusan
+        ...sanitizedForm,
+        jurusan1: sanitizedForm.jurusan_1 || sanitizedForm.jurusan
       };
 
       if (majorChanged) {
@@ -264,22 +267,14 @@ export default function ActiveStudentsDirectory() {
         updatedPayload.diterima_kelas = null;
       }
 
-      const res = await updateActiveStudent(selectedApplicant.id, updatedPayload);
+      const res = await updateActiveStudent(editApplicant.id, updatedPayload);
+      setIsSaving(false);
       if (res && res.success) {
-        setIsEditing(false);
-        setSelectedApplicant((prev: any) => {
-          if (!prev) return null;
-          return {
-            ...prev,
-            nama: editForm.nama,
-            nisn: editForm.nisn,
-            nik: editForm.nik,
-            jurusan: editForm.jurusan,
-            jurusan_1: editForm.jurusan,
-            jurusan1: editForm.jurusan,
-            ...(majorChanged ? { diterima_kelas: null, diterimaKelas: null } : {})
-          };
-        });
+        setEditApplicant(null);
+        if (selectedApplicant?.id === editApplicant.id) {
+          // close detail modal too or let it update
+          setSelectedApplicant(null);
+        }
         if (typeof fetchActiveStudents === "function") {
           await fetchActiveStudents();
         }
@@ -287,6 +282,7 @@ export default function ActiveStudentsDirectory() {
         alert(res?.message || "Gagal menyimpan perubahan.");
       }
     } catch (e: any) {
+      setIsSaving(false);
       alert("Terjadi kesalahan: " + e.message);
     }
   };
@@ -915,42 +911,12 @@ export default function ActiveStudentsDirectory() {
 
                     <div className="bg-slate-50 rounded-[16px] p-4 border border-slate-100">
                       <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Nama Lengkap</div>
-                      {isEditing ? (
-                        <input
-                          type="text"
-                          className="w-full bg-white border border-slate-350 rounded-xl px-3 py-1.5 text-sm font-bold text-slate-850 uppercase tracking-tight focus:outline-none focus:ring-2 focus:ring-blue-500"
-                          value={editForm.nama}
-                          onChange={(e) => setEditForm({ ...editForm, nama: e.target.value })}
-                        />
-                      ) : (
-                        <div className="text-sm font-bold text-slate-800">{selectedApplicant.nama}</div>
-                      )}
+                      <div className="text-sm font-bold text-slate-800">{selectedApplicant.nama}</div>
                     </div>
 
                     <div className="bg-slate-50 rounded-[16px] p-4 border border-slate-100">
                       <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">NISN / NIK</div>
-                      {isEditing ? (
-                        <div className="flex gap-2">
-                          <input
-                            type="text"
-                            maxLength={10}
-                            placeholder="NISN"
-                            className="w-full bg-white border border-slate-350 rounded-xl px-3 py-1.5 text-sm font-bold text-slate-850 font-mono focus:outline-none focus:ring-2 focus:ring-blue-500"
-                            value={editForm.nisn}
-                            onChange={(e) => setEditForm({ ...editForm, nisn: e.target.value.replace(/\D/g, "") })}
-                          />
-                          <input
-                            type="text"
-                            maxLength={16}
-                            placeholder="NIK"
-                            className="w-full bg-white border border-slate-350 rounded-xl px-3 py-1.5 text-sm font-bold text-slate-850 font-mono focus:outline-none focus:ring-2 focus:ring-blue-500"
-                            value={editForm.nik}
-                            onChange={(e) => setEditForm({ ...editForm, nik: e.target.value.replace(/\D/g, "") })}
-                          />
-                        </div>
-                      ) : (
-                        <div className="text-sm font-bold text-slate-600">{selectedApplicant.nisn} / {selectedApplicant.nik || "-"}</div>
-                      )}
+                      <div className="text-sm font-bold text-slate-600">{selectedApplicant.nisn} / {selectedApplicant.nik || "-"}</div>
                     </div>
 
                     <div className="bg-slate-50 rounded-[16px] p-4 border border-slate-100">
@@ -1105,24 +1071,9 @@ export default function ActiveStudentsDirectory() {
                     <div className="space-y-4">
                       <div>
                         <span className="text-slate-400 dark:text-slate-550 block mb-0.5 font-bold uppercase text-[9px] tracking-wider">Kompetensi Keahlian / Jurusan</span>
-                        {isEditing ? (
-                          <select
-                            className="bg-white dark:bg-slate-800 border border-slate-350 dark:border-white/10 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-850 dark:text-white font-extrabold uppercase mt-1 w-full"
-                            value={editForm.jurusan}
-                            onChange={(e) => setEditForm({ ...editForm, jurusan: e.target.value })}
-                          >
-                            <option value="Rekayasa Perangkat Lunak">Rekayasa Perangkat Lunak</option>
-                            <option value="Teknik Jaringan Komputer & Telekomunikasi">Teknik Jaringan Komputer & Telekomunikasi</option>
-                            <option value="Desain Komunikasi Visual">Desain Komunikasi Visual</option>
-                            <option value="Broadcasting & Perfilman">Broadcasting & Perfilman</option>
-                            <option value="Teknik Elektronika">Teknik Elektronika</option>
-                            <option value="Animasi">Animasi</option>
-                          </select>
-                        ) : (
-                          <span className="text-blue-600 dark:text-blue-400 text-sm font-extrabold uppercase">
-                            {selectedApplicant.jurusan || selectedApplicant.jurusan_1 || selectedApplicant.jurusan1}
-                          </span>
-                        )}
+                        <span className="text-blue-600 dark:text-blue-400 text-sm font-extrabold uppercase">
+                          {selectedApplicant.jurusan || selectedApplicant.jurusan_1 || selectedApplicant.jurusan1}
+                        </span>
                       </div>
                       <div><span className="text-slate-400 dark:text-slate-555 block mb-0.5 font-bold uppercase text-[9px] tracking-wider">Alasan Memilih Jurusan</span> <span className="text-slate-800 dark:text-white font-extrabold">{selectedApplicant.alasan_memilih || selectedApplicant.alasanMemilih || "Ingin belajar IT"}</span></div>
                     </div>
@@ -1167,37 +1118,38 @@ export default function ActiveStudentsDirectory() {
             {/* Modal Action Controls Footer */}
             <div className="px-8 py-5 border-t border-slate-100 flex items-center justify-between bg-white shrink-0">
               <div>
-                {isEditing ? (
-                  <div className="flex gap-2">
-                    <button
-                      onClick={handleSaveEdit}
-                      className="px-6 py-2.5 rounded-[12px] font-bold text-[11px] uppercase tracking-widest bg-emerald-600 hover:bg-emerald-700 text-white shadow-md transition-colors"
-                    >
-                      Simpan
-                    </button>
-                    <button
-                      onClick={() => setIsEditing(false)}
-                      className="px-6 py-2.5 rounded-[12px] font-bold text-[11px] uppercase tracking-widest bg-slate-100 text-slate-655 hover:bg-slate-200 transition-colors"
-                    >
-                      Batal
-                    </button>
-                  </div>
-                ) : (
-                  <button
-                    onClick={() => {
-                      setEditForm({
-                        nama: selectedApplicant.nama || "",
-                        nisn: selectedApplicant.nisn || "",
-                        nik: selectedApplicant.nik || "",
-                        jurusan: selectedApplicant.jurusan || selectedApplicant.jurusan_1 || selectedApplicant.jurusan1 || ""
-                      });
-                      setIsEditing(true);
-                    }}
-                    className="px-6 py-2.5 rounded-[12px] font-bold text-[11px] uppercase tracking-widest bg-blue-600 hover:bg-blue-700 text-white shadow-md transition-colors"
-                  >
-                    Edit Data
-                  </button>
-                )}
+                <button
+                  onClick={() => {
+                    setEditApplicant(selectedApplicant);
+                    setEditForm({
+                      ...selectedApplicant,
+                      jurusan_1: selectedApplicant.jurusan || selectedApplicant.jurusan_1 || selectedApplicant.jurusan1 || "",
+                      tinggi_badan: String(selectedApplicant.tinggi_badan || selectedApplicant.tinggiBadan || ""),
+                      berat_badan: String(selectedApplicant.berat_badan || selectedApplicant.beratBadan || ""),
+                      tempat_lahir: selectedApplicant.tempat_lahir || selectedApplicant.tempatLahir || "",
+                      tgl_lahir: selectedApplicant.tgl_lahir || selectedApplicant.tglLahir || "",
+                      jenis_kelamin: selectedApplicant.jenis_kelamin || selectedApplicant.jenisKelamin || "",
+                      rt_rw: selectedApplicant.rt_rw || selectedApplicant.rtRw || "",
+                      kode_pos: selectedApplicant.kode_pos || selectedApplicant.kodePos || "",
+                      tinggal_dengan: selectedApplicant.tinggal_dengan || selectedApplicant.tinggalDengan || "",
+                      golongan_darah: selectedApplicant.golongan_darah || selectedApplicant.golonganDarah || "",
+                      sekolah_asal: selectedApplicant.sekolah_asal || selectedApplicant.sekolahAsal || "",
+                      tgl_lulus: selectedApplicant.tgl_lulus || selectedApplicant.tglLulus || "",
+                      nama_ayah: selectedApplicant.nama_ayah || selectedApplicant.namaAyah || "",
+                      pekerjaan_ayah: selectedApplicant.pekerjaan_ayah || selectedApplicant.pekerjaanAyah || "",
+                      penghasilan_ayah: selectedApplicant.penghasilan_ayah || selectedApplicant.penghasilanAyah || "",
+                      nama_ibu: selectedApplicant.nama_ibu || selectedApplicant.namaIbu || "",
+                      pekerjaan_ibu: selectedApplicant.pekerjaan_ibu || selectedApplicant.pekerjaanIbu || "",
+                      penghasilan_ibu: selectedApplicant.penghasilan_ibu || selectedApplicant.penghasilanIbu || "",
+                      telepon_ortu: selectedApplicant.telepon_ortu || selectedApplicant.teleponOrtu || "",
+                      cita_cita: selectedApplicant.cita_cita || selectedApplicant.citaCita || "",
+                      alasan_memilih: selectedApplicant.alasan_memilih || selectedApplicant.alasanMemilih || "",
+                    });
+                  }}
+                  className="px-6 py-2.5 rounded-[12px] font-bold text-[11px] uppercase tracking-widest bg-blue-600 hover:bg-blue-700 text-white shadow-md transition-colors"
+                >
+                  Edit Data
+                </button>
               </div>
               <div className="flex items-center gap-3">
                 <button
@@ -1265,6 +1217,142 @@ export default function ActiveStudentsDirectory() {
           </div>
         </div>
       )}
+      {/* ===== EDIT MODAL ===== */}
+      {editApplicant && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 lg:p-8 bg-black/70 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-white/10 rounded-3xl w-full max-w-4xl max-h-[90vh] flex flex-col shadow-2xl overflow-hidden animate-in zoom-in-95 transition-all">
+            {/* Header */}
+            <div className="p-6 md:p-8 border-b border-slate-100 dark:border-white/5 flex items-start justify-between bg-white dark:bg-slate-900 shrink-0 relative">
+              <div className="absolute inset-0 bg-gradient-to-r from-blue-50/50 to-transparent dark:from-blue-900/10 dark:to-transparent pointer-events-none"></div>
+              
+              <div className="flex items-center gap-5 relative z-10">
+                <div className="w-14 h-14 rounded-2xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 flex items-center justify-center text-slate-700 dark:text-slate-200 shadow-sm shrink-0">
+                  <Pencil size={24} />
+                </div>
+                <div>
+                  <h3 className="text-xl md:text-2xl font-black text-slate-850 dark:text-white uppercase tracking-wide">
+                    Edit Data — {editApplicant.nama}
+                  </h3>
+                  <p className="text-xs text-slate-400 font-bold uppercase tracking-wider mt-1.5 flex items-center gap-2">
+                    <span className="text-blue-500">NISN:</span> {editApplicant.nisn}
+                  </p>
+                </div>
+              </div>
+              <button onClick={() => setEditApplicant(null)} className="w-10 h-10 rounded-full bg-slate-100 hover:bg-slate-200 dark:bg-white/5 dark:hover:bg-white/10 border border-slate-200 dark:border-white/5 text-slate-500 hover:text-rose-500 flex items-center justify-center transition-all relative z-10 shrink-0">
+                <X size={16} />
+              </button>
+            </div>
+
+            {/* Body — scrollable form */}
+            <div className="flex-1 overflow-y-auto p-6 md:p-8 space-y-6 bg-slate-50/50 dark:bg-slate-950/20 hide-scrollbar">
+              {[
+                {
+                  section: "Identitas Diri", icon: <User size={14} />, fields: [
+                    { label: "Nama Lengkap", key: "nama" },
+                    { label: "NISN", key: "nisn" },
+                    { label: "NIK", key: "nik" },
+                    { label: "Tempat Lahir", key: "tempat_lahir" },
+                    { label: "Tanggal Lahir", key: "tgl_lahir", type: "date" },
+                    { label: "Jenis Kelamin", key: "jenis_kelamin", type: "select", options: ["L", "P", "Laki-laki", "Perempuan"] },
+                    { label: "Agama", key: "agama", type: "select", options: ["Islam", "Kristen", "Katolik", "Hindu", "Buddha", "Konghucu"] },
+                    { label: "Golongan Darah", key: "golongan_darah", type: "select", options: ["A", "B", "AB", "O", "-"] },
+                  ]
+                },
+                {
+                  section: "Alamat & Kontak", icon: <School size={14} />, fields: [
+                    { label: "Alamat", key: "alamat" },
+                    { label: "RT/RW", key: "rt_rw" },
+                    { label: "Kelurahan", key: "kelurahan" },
+                    { label: "Kecamatan", key: "kecamatan" },
+                    { label: "Kode Pos", key: "kode_pos" },
+                    { label: "WhatsApp", key: "whatsapp" },
+                    { label: "Email", key: "email" },
+                    { label: "Tinggal Dengan", key: "tinggal_dengan" },
+                    { label: "Transportasi", key: "transportasi" },
+                  ]
+                },
+                {
+                  section: "Data Fisik", icon: <Heart size={14} />, fields: [
+                    { label: "Tinggi Badan (cm)", key: "tinggi_badan", type: "number" },
+                    { label: "Berat Badan (kg)", key: "berat_badan", type: "number" },
+                  ]
+                },
+                {
+                  section: "Akademik & Jurusan", icon: <Layers size={14} />, fields: [
+                    { label: "Sekolah Asal", key: "sekolah_asal" },
+                    { label: "Tanggal Lulus", key: "tgl_lulus", type: "date" },
+                    { label: "Program Studi", key: "jurusan_1", type: "select", options: ["Rekayasa Perangkat Lunak", "Teknik Jaringan Komputer & Telekomunikasi", "Desain Komunikasi Visual", "Broadcasting & Perfilman", "Teknik Elektronika", "Animasi"] },
+                    { label: "Alasan Memilih", key: "alasan_memilih" },
+                    { label: "Cita-cita", key: "cita_cita" },
+                  ]
+                },
+                {
+                  section: "Data Orang Tua", icon: <Users size={14} />, fields: [
+                    { label: "Nama Ayah", key: "nama_ayah" },
+                    { label: "Pekerjaan Ayah", key: "pekerjaan_ayah" },
+                    { label: "Penghasilan Ayah", key: "penghasilan_ayah" },
+                    { label: "Nama Ibu", key: "nama_ibu" },
+                    { label: "Pekerjaan Ibu", key: "pekerjaan_ibu" },
+                    { label: "Penghasilan Ibu", key: "penghasilan_ibu" },
+                    { label: "Telepon Orang Tua", key: "telepon_ortu" },
+                  ]
+                }
+              ].map((section) => (
+                <div key={section.section} className="bg-white dark:bg-slate-900 border border-slate-200/60 dark:border-white/5 rounded-3xl p-6 md:p-8 shadow-sm">
+                  <h4 className="text-xs font-black uppercase tracking-widest text-slate-800 dark:text-white mb-6 flex items-center gap-3 border-b border-slate-100 dark:border-white/5 pb-4">
+                    <div className="w-8 h-8 rounded-xl bg-blue-50 dark:bg-blue-500/10 flex items-center justify-center text-blue-500">
+                      {section.icon}
+                    </div>
+                    {section.section}
+                  </h4>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                    {section.fields.map((f) => (
+                      <div key={f.key} className="group">
+                        <label className="block text-[10px] font-black uppercase tracking-widest text-slate-455 dark:text-slate-450 mb-2 group-focus-within:text-blue-500 dark:group-focus-within:text-blue-400 transition-colors">{f.label}</label>
+                        {f.type === "select" ? (
+                          <select
+                            value={(editForm as any)[f.key] || ""}
+                            onChange={e => setEditForm(prev => ({ ...prev, [f.key]: e.target.value }))}
+                            className="w-full bg-slate-50 hover:bg-slate-100/80 dark:bg-slate-800 border border-slate-200/80 dark:border-white/10 rounded-xl px-4 py-3 text-xs font-bold text-slate-700 dark:text-white focus:outline-none focus:ring-4 focus:ring-blue-500/15 focus:border-blue-500 transition-all cursor-pointer"
+                          >
+                            {(f.options || []).map(o => <option key={o} value={o}>{o}</option>)}
+                          </select>
+                        ) : (
+                          <input
+                            type={f.type || "text"}
+                            value={(editForm as any)[f.key] || ""}
+                            onChange={e => setEditForm(prev => ({ ...prev, [f.key]: e.target.value }))}
+                            className="w-full bg-slate-50 hover:bg-slate-100/80 dark:bg-slate-800 border border-slate-200/80 dark:border-white/10 rounded-xl px-4 py-3 text-xs font-bold text-slate-700 dark:text-white focus:outline-none focus:ring-4 focus:ring-blue-500/15 focus:border-blue-500 transition-all"
+                          />
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Footer */}
+            <div className="p-6 border-t border-slate-100 dark:border-white/5 bg-slate-50/80 dark:bg-slate-950/40 flex items-center justify-end gap-4 shrink-0">
+              <button
+                onClick={() => setEditApplicant(null)}
+                className="px-6 py-3 bg-white hover:bg-slate-100 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 rounded-xl text-xs font-black uppercase tracking-wider transition-all border border-slate-200 dark:border-white/5"
+              >
+                Batal
+              </button>
+              <button
+                onClick={handleSaveEdit}
+                disabled={isSaving}
+                className="px-8 py-3 bg-blue-600 hover:bg-blue-500 disabled:opacity-60 text-white rounded-xl text-xs font-black uppercase tracking-wider transition-all shadow-[0_8px_20px_rgba(37,99,235,0.25)] flex items-center gap-2"
+              >
+                {isSaving ? "Menyimpan..." : "Simpan Perubahan"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
     </div>
+
   );
 }

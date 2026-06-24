@@ -405,7 +405,7 @@ export function PPDBProvider({ children }: { children: React.ReactNode }) {
         body: JSON.stringify(updatedData)
       });
       const data = await res.json();
-      if (data.success) {
+      if (data.success) { 
         addToast("Data Diperbarui", `Data siswa aktif ${updatedData.nama || '#' + id} berhasil disimpan.`, "success");
         await fetchActiveStudents();
         await fetchAdminApplicants();
