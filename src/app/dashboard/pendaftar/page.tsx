@@ -230,6 +230,7 @@ function ApplicantsDirectoryContent() {
   const [statusFilter, setStatusFilter] = useState<string>("ALL");
   const [majorFilter, setMajorFilter] = useState<string>("ALL");
   const [gelombangFilter, setGelombangFilter] = useState<string>("ALL");
+  const [genderFilter, setGenderFilter] = useState<string>("ALL");
 
   const [selectedApplicant, setSelectedApplicant] = useState<Applicant | null>(null);
   const [rejectingApplicantId, setRejectingApplicantId] = useState<number | null>(null);
@@ -457,7 +458,12 @@ function ApplicantsDirectoryContent() {
       gelombangFilter === "ALL" ||
       (a.gelombang || "Gelombang 1") === gelombangFilter;
 
-    return matchesSearch && matchesStatus && matchesMajor && matchesGelombang;
+    const matchesGender =
+      genderFilter === "ALL" ||
+      (genderFilter === "L" && (a.jenis_kelamin || a.jenisKelamin || "").toLowerCase().startsWith("l")) ||
+      (genderFilter === "P" && (a.jenis_kelamin || a.jenisKelamin || "").toLowerCase().startsWith("p"));
+
+    return matchesSearch && matchesStatus && matchesMajor && matchesGelombang && matchesGender;
   });
 
   const [currentPage, setCurrentPage] = useState<number>(1);
@@ -465,7 +471,7 @@ function ApplicantsDirectoryContent() {
 
   useEffect(() => {
     setCurrentPage(1);
-  }, [searchTerm, statusFilter, majorFilter, gelombangFilter]);
+  }, [searchTerm, statusFilter, majorFilter, gelombangFilter, genderFilter]);
 
   const totalPages = Math.max(1, Math.ceil(filteredApplicants.length / itemsPerPage));
   const paginatedApplicants = filteredApplicants.slice(
@@ -507,6 +513,7 @@ function ApplicantsDirectoryContent() {
       { header: 'No.', key: 'no', width: 10 },
       { header: 'No. Pendaftaran', key: 'no_pendaftaran', width: 20 },
       { header: 'Nama Lengkap', key: 'nama', width: 35 },
+      { header: 'Jenis Kelamin', key: 'jk', width: 15 },
       { header: 'NISN', key: 'nisn', width: 25 },
       { header: 'NIK', key: 'nik', width: 25 },
       { header: 'Asal Sekolah', key: 'sekolah', width: 35 },
@@ -541,6 +548,7 @@ function ApplicantsDirectoryContent() {
         no: index + 1,
         no_pendaftaran: formatNoPendaftaran(a.periode, a.id),
         nama: a.nama || "",
+        jk: (a.jenis_kelamin || a.jenisKelamin || "").toLowerCase().startsWith("l") ? "Laki-laki" : (a.jenis_kelamin || a.jenisKelamin || "").toLowerCase().startsWith("p") ? "Perempuan" : "-",
         nisn: a.nisn || "",
         nik: a.nik || "",
         sekolah: a.sekolah_asal || a.sekolahAsal || "",
@@ -710,6 +718,20 @@ function ApplicantsDirectoryContent() {
             ))}
           </div>
 
+          {/* Gender Filter */}
+          <div className="flex items-center gap-2 bg-slate-50 dark:bg-slate-950/40 border border-slate-200 dark:border-white/5 rounded-2xl px-3 py-1.5 shrink-0">
+            <User size={13} className="text-slate-400" />
+            <select
+              value={genderFilter}
+              onChange={(e) => setGenderFilter(e.target.value)}
+              className="bg-transparent text-slate-600 dark:text-slate-350 text-xs focus:outline-none transition-all font-extrabold uppercase tracking-wide cursor-pointer max-w-[140px]"
+            >
+              <option value="ALL">Semua Gender</option>
+              <option value="L">Laki-Laki</option>
+              <option value="P">Perempuan</option>
+            </select>
+          </div>
+
           {/* Toggle View: Standard Table vs Excel Spreadsheet Grid */}
           <div className="flex items-center bg-slate-100 dark:bg-slate-950 p-1.5 rounded-2xl border border-slate-200/50 dark:border-white/5 shrink-0 shadow-inner">
             <button
@@ -759,6 +781,7 @@ function ApplicantsDirectoryContent() {
                 <tr className="border-b border-slate-100 dark:border-white/5 text-slate-400 dark:text-slate-500 font-black text-[9px] uppercase tracking-widest bg-slate-50/50 dark:bg-slate-950/15">
                   <th className="py-4 px-6 pl-8">No. Pendaftaran</th>
                   <th className="py-4 px-6">Nama Calon Siswa</th>
+                  <th className="py-4 px-6 text-center w-20">L/P</th>
                   <th className="py-4 px-6">Asal Sekolah</th>
                   <th className="py-4 px-6">Pilihan Jurusan Utama</th>
                   <th className="py-4 px-6 text-center">Status</th>
@@ -782,6 +805,19 @@ function ApplicantsDirectoryContent() {
                         {a.status === "Approved" && a.verified_by && ` · Diverifikasi: ${a.verified_by}`}
                         {a.status === "Rejected" && a.rejected_by && ` · Digugurkan: ${a.rejected_by}`}
                       </span>
+                    </td>
+                    <td className="py-4 px-6 text-center">
+                      {(a.jenis_kelamin || a.jenisKelamin) ? (
+                        <span className={`inline-flex items-center justify-center px-1.5 py-0.5 rounded text-[9px] font-extrabold uppercase border shadow-sm ${
+                          (a.jenis_kelamin || a.jenisKelamin || "").toLowerCase().startsWith("l")
+                            ? "bg-blue-50 text-blue-600 border-blue-200 dark:bg-blue-900/20 dark:border-blue-800/50 dark:text-blue-400"
+                            : "bg-pink-50 text-pink-600 border-pink-200 dark:bg-pink-900/20 dark:border-pink-800/50 dark:text-pink-400"
+                        }`}>
+                          {(a.jenis_kelamin || a.jenisKelamin || "").toLowerCase().startsWith("l") ? "L" : "P"}
+                        </span>
+                      ) : (
+                        <span className="text-slate-400">-</span>
+                      )}
                     </td>
                     <td className="py-4 px-6 text-slate-600 dark:text-slate-400 font-semibold">{a.sekolah_asal || a.sekolahAsal}</td>
                     <td className="py-4 px-6">
@@ -890,7 +926,8 @@ function ApplicantsDirectoryContent() {
                   <th className="py-2 px-4 border-r border-slate-200 dark:border-slate-800 w-[180px]">D (JURUSAN_UTAMA)</th>
                   <th className="py-2 px-4 border-r border-slate-200 dark:border-slate-800 w-[130px] text-center font-mono">E (NO_WA)</th>
                   <th className="py-2 px-4 border-r border-slate-200 dark:border-slate-800 w-[120px] text-center font-mono">F (STATUS)</th>
-                  <th className="py-2 px-4 w-[160px] text-center font-mono">G (TANGGAL_LAHIR)</th>
+                  <th className="py-2 px-4 border-r border-slate-200 dark:border-slate-800 w-[160px] text-center font-mono">G (TANGGAL_LAHIR)</th>
+                  <th className="py-2 px-4 w-[60px] text-center font-mono">H (L/P)</th>
                 </tr>
               </thead>
               <tbody>
@@ -967,10 +1004,27 @@ function ApplicantsDirectoryContent() {
                     {/* Column G: Tanggal Lahir */}
                     <td
                       onClick={() => setActiveCell({ row: rowIdx, col: 7 })}
-                      className={`py-2.5 px-4 text-center text-xs font-mono font-bold text-slate-600 dark:text-slate-355 ${activeCell?.row === rowIdx && activeCell?.col === 7 ? "bg-blue-500/10 outline outline-2 outline-blue-500" : ""
+                      className={`py-2.5 px-4 text-center border-r border-slate-200 dark:border-slate-800 text-xs font-mono font-bold text-slate-600 dark:text-slate-355 ${activeCell?.row === rowIdx && activeCell?.col === 7 ? "bg-blue-500/10 outline outline-2 outline-blue-500" : ""
                         }`}
                     >
                       {a.tgl_lahir || a.tglLahir || "-"}
+                    </td>
+
+                    {/* Column H: Gender */}
+                    <td
+                      onClick={() => setActiveCell({ row: rowIdx, col: 8 })}
+                      className={`py-2.5 px-4 text-center text-xs font-mono font-bold text-slate-600 dark:text-slate-355 ${activeCell?.row === rowIdx && activeCell?.col === 8 ? "bg-blue-500/10 outline outline-2 outline-blue-500" : ""
+                        }`}
+                    >
+                      {(a.jenis_kelamin || a.jenisKelamin) ? (
+                        <span className={`inline-flex items-center justify-center px-1.5 py-0.5 rounded text-[8px] font-extrabold uppercase border shadow-sm ${
+                          (a.jenis_kelamin || a.jenisKelamin || "").toLowerCase().startsWith("l")
+                            ? "bg-blue-50 text-blue-600 border-blue-200 dark:bg-blue-900/20 dark:border-blue-800/50 dark:text-blue-400"
+                            : "bg-pink-50 text-pink-600 border-pink-200 dark:bg-pink-900/20 dark:border-pink-800/50 dark:text-pink-400"
+                        }`}>
+                          {(a.jenis_kelamin || a.jenisKelamin || "").toLowerCase().startsWith("l") ? "L" : "P"}
+                        </span>
+                      ) : "-"}
                     </td>
                   </tr>
                 ))}
@@ -1027,6 +1081,7 @@ function ApplicantsDirectoryContent() {
                 <thead>
                   <tr className="border-b border-slate-100 dark:border-white/5 text-slate-400 dark:text-slate-500 font-black text-[9px] uppercase tracking-widest bg-slate-50/50 dark:bg-slate-950/15">
                     <th className="py-4 px-6 pl-8">Nama Calon Siswa</th>
+                    <th className="py-4 px-6 text-center w-20">L/P</th>
                     <th className="py-4 px-6">Asal Sekolah</th>
                     <th className="py-4 px-6">Pilihan Jurusan Utama</th>
                     <th className="py-4 px-6 text-center">Status Sebelumnya</th>
@@ -1042,6 +1097,19 @@ function ApplicantsDirectoryContent() {
                           NISN: {a.nisn} · Lahir: {a.tempat_lahir || a.tempatLahir || "-"}, {a.tgl_lahir || a.tglLahir || "-"}
                           {a.deleted_by && ` · Dihapus: ${a.deleted_by}`}
                         </span>
+                      </td>
+                      <td className="py-4 px-6 text-center">
+                        {(a.jenis_kelamin || a.jenisKelamin) ? (
+                          <span className={`inline-flex items-center justify-center px-1.5 py-0.5 rounded text-[9px] font-extrabold uppercase border shadow-sm ${
+                            (a.jenis_kelamin || a.jenisKelamin || "").toLowerCase().startsWith("l")
+                              ? "bg-blue-50 text-blue-600 border-blue-200 dark:bg-blue-900/20 dark:border-blue-800/50 dark:text-blue-400"
+                              : "bg-pink-50 text-pink-600 border-pink-200 dark:bg-pink-900/20 dark:border-pink-800/50 dark:text-pink-400"
+                          }`}>
+                            {(a.jenis_kelamin || a.jenisKelamin || "").toLowerCase().startsWith("l") ? "L" : "P"}
+                          </span>
+                        ) : (
+                          <span className="text-slate-400">-</span>
+                        )}
                       </td>
                       <td className="py-4 px-6 text-slate-600 dark:text-slate-400 font-semibold">{a.sekolah_asal || a.sekolahAsal}</td>
                       <td className="py-4 px-6">

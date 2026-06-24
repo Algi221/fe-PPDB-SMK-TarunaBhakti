@@ -16,6 +16,7 @@ const sanitizeUrl = (url: string | undefined | null): string => {
 };
 
 const sanitizeSrc = (src: string | undefined | null): string => sanitizeUrl(src);
+import { generateNipdMap } from "@/utils/nipd";
 import { motion, AnimatePresence } from "framer-motion";
 import ExcelJS from 'exceljs';
 import { saveAs } from 'file-saver';
@@ -168,6 +169,7 @@ export default function ActiveStudentsDirectory() {
   const [searchTerm, setSearchTerm] = useState<string>("");
   const [majorFilter, setMajorFilter] = useState<string>("ALL");
   const [classFilter, setClassFilter] = useState<string>("ALL");
+  const [genderFilter, setGenderFilter] = useState<string>("ALL");
   const [expandedPeriods, setExpandedPeriods] = useState<Record<string, boolean>>({});
 
   const [customPeriods, setCustomPeriods] = useState<string[]>(() => {
@@ -341,19 +343,37 @@ export default function ActiveStudentsDirectory() {
         const kls = a.diterima_kelas || a.diterimaKelas || "";
         if (kls !== classFilter) return false;
       }
+
+      if (genderFilter !== "ALL") {
+        const jk = (a.jenis_kelamin || a.jenisKelamin || "").toLowerCase();
+        if (genderFilter === "L" && !jk.startsWith("l")) return false;
+        if (genderFilter === "P" && !jk.startsWith("p")) return false;
+      }
       
       return true;
     });
-  }, [activeApplicants, searchTerm, majorFilter, classFilter]);
+  }, [activeApplicants, searchTerm, majorFilter, classFilter, genderFilter]);
 
-  const uniqueClasses = useMemo(() => {
-    const classes = new Set<string>();
+  const nipdMap = useMemo(() => generateNipdMap(activeApplicants), [activeApplicants]);
+
+  const classStats = useMemo(() => {
+    const stats: Record<string, { L: number, P: number, total: number }> = {};
     activeApplicants.forEach((a: Applicant) => {
       const k = a.diterima_kelas || a.diterimaKelas;
-      if (k) classes.add(k);
+      if (k) {
+        if (!stats[k]) stats[k] = { L: 0, P: 0, total: 0 };
+        stats[k].total += 1;
+        const jk = (a.jenis_kelamin || a.jenisKelamin || "").toLowerCase();
+        if (jk.startsWith("l")) stats[k].L += 1;
+        else if (jk.startsWith("p")) stats[k].P += 1;
+      }
     });
-    return Array.from(classes).sort();
+    return stats;
   }, [activeApplicants]);
+
+  const uniqueClasses = useMemo(() => {
+    return Object.keys(classStats).sort();
+  }, [classStats]);
 
   const groupedByPeriod = (() => {
     const groups: Record<string, Applicant[]> = {};
@@ -451,9 +471,11 @@ export default function ActiveStudentsDirectory() {
 
       worksheet.columns = [
         { header: 'No.', key: 'no', width: 10 },
+        { header: 'NIPD', key: 'nipd', width: 20 },
         { header: 'No. Pendaftaran', key: 'no_pendaftaran', width: 20 },
         { header: 'Periode Angkatan', key: 'periode', width: 20 },
         { header: 'Nama Lengkap', key: 'nama', width: 35 },
+        { header: 'Jenis Kelamin', key: 'jk', width: 15 },
         { header: 'NISN', key: 'nisn', width: 25 },
         { header: 'NIK', key: 'nik', width: 25 },
         { header: 'Asal Sekolah', key: 'sekolah', width: 35 },
@@ -483,9 +505,11 @@ export default function ActiveStudentsDirectory() {
       periodStudents.forEach((a: Applicant, idx: number) => {
         worksheet.addRow({
           no: idx + 1,
+          nipd: nipdMap.get(a.id) || "-",
           no_pendaftaran: formatNoPendaftaran(a.periode, a.id),
           periode: a.periode || '2026-2027',
           nama: a.nama || "",
+          jk: (a.jenis_kelamin || a.jenisKelamin || "").toLowerCase().startsWith("l") ? "Laki-laki" : (a.jenis_kelamin || a.jenisKelamin || "").toLowerCase().startsWith("p") ? "Perempuan" : "-",
           nisn: a.nisn || "",
           nik: a.nik || "",
           sekolah: a.sekolah_asal || a.sekolahAsal || "",
@@ -601,8 +625,22 @@ export default function ActiveStudentsDirectory() {
             >
               <option value="ALL">Semua Kelas</option>
               {uniqueClasses.map((kls) => (
-                <option key={kls} value={kls}>{kls}</option>
+                <option key={kls} value={kls}>{kls} (L: {classStats[kls].L}, P: {classStats[kls].P})</option>
               ))}
+            </select>
+          </div>
+
+          {/* Gender selection dropdown */}
+          <div className="relative w-full md:w-48">
+            <Filter className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-550 animate-pulse" size={14} />
+            <select
+              value={genderFilter}
+              onChange={(e) => setGenderFilter(e.target.value)}
+              className="w-full pl-11 pr-4 py-3 bg-slate-50 dark:bg-slate-950/50 border border-slate-200 dark:border-white/5 rounded-2xl text-xs font-bold text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:focus:ring-blue-500/30 transition-all appearance-none cursor-pointer tracking-wider"
+            >
+              <option value="ALL">Semua Gender</option>
+              <option value="L">Laki-Laki</option>
+              <option value="P">Perempuan</option>
             </select>
           </div>
         </div>
@@ -757,8 +795,10 @@ export default function ActiveStudentsDirectory() {
                           <thead>
                             <tr className="border-b border-slate-100 dark:border-white/5 text-slate-400 dark:text-slate-550 uppercase tracking-widest text-[9px]">
                               <th className="py-3 px-3 text-left w-12">No</th>
+                              <th className="py-3 px-4 text-left">NIPD</th>
                               <th className="py-3 px-4 text-left">Kelas</th>
                               <th className="py-3 px-4 text-left">Nama Siswa</th>
+                              <th className="py-3 px-4 text-center w-20">L/P</th>
                               <th className="py-3 px-4 text-left">NISN</th>
                               <th className="py-3 px-4 text-left">Asal Sekolah</th>
                               <th className="py-3 px-4 text-left">Jurusan</th>
@@ -772,6 +812,7 @@ export default function ActiveStudentsDirectory() {
                                 className="border-b border-slate-100/50 dark:border-white/5 hover:bg-slate-50/30 dark:hover:bg-slate-950/10 transition-colors"
                               >
                                 <td className="py-3.5 px-3 text-slate-400 dark:text-slate-600 font-mono">{idx + 1}</td>
+                                <td className="py-3.5 px-4 font-mono text-[11px] text-blue-600 dark:text-blue-400 font-bold">{nipdMap.get(student.id) || "-"}</td>
                                 <td className="py-3.5 px-4 font-black text-emerald-600 dark:text-emerald-400 uppercase tracking-wider text-xs">
                                   {student.diterima_kelas || student.diterimaKelas ? student.diterima_kelas || student.diterimaKelas : (
                                     <span className="text-[9px] px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500">BELUM ADA</span>
@@ -782,6 +823,19 @@ export default function ActiveStudentsDirectory() {
                                   <span className="text-[9px] text-slate-400 dark:text-slate-550 font-bold uppercase tracking-wider block mt-0.5">
                                     Lahir: {student.tempat_lahir || student.tempatLahir || "-"}, {student.tgl_lahir || student.tglLahir || "-"}
                                   </span>
+                                </td>
+                                <td className="py-3.5 px-4 text-center">
+                                  {(student.jenis_kelamin || student.jenisKelamin) ? (
+                                    <span className={`inline-flex items-center justify-center px-1.5 py-0.5 rounded text-[9px] font-extrabold uppercase border shadow-sm ${
+                                      (student.jenis_kelamin || student.jenisKelamin || "").toLowerCase().startsWith("l")
+                                        ? "bg-blue-50 text-blue-600 border-blue-200 dark:bg-blue-900/20 dark:border-blue-800/50 dark:text-blue-400"
+                                        : "bg-pink-50 text-pink-600 border-pink-200 dark:bg-pink-900/20 dark:border-pink-800/50 dark:text-pink-400"
+                                    }`}>
+                                      {(student.jenis_kelamin || student.jenisKelamin || "").toLowerCase().startsWith("l") ? "L" : "P"}
+                                    </span>
+                                  ) : (
+                                    <span className="text-slate-400">-</span>
+                                  )}
                                 </td>
                                 <td className="py-3.5 px-4 font-mono">{student.nisn}</td>
                                 <td className="py-3.5 px-4 uppercase">{student.sekolah_asal || student.sekolahAsal || "-"}</td>
@@ -845,7 +899,11 @@ export default function ActiveStudentsDirectory() {
                     </span>
                   </div>
                   <div className="text-xs font-bold text-slate-400 uppercase tracking-widest flex items-center gap-2 flex-wrap">
-                    <span className="text-blue-500 font-mono">NO: {formatNoPendaftaran(selectedApplicant.periode, selectedApplicant.id)}</span>
+                    <span className="text-blue-500 font-mono">NIPD: {nipdMap.get(selectedApplicant.id) || "-"}</span>
+                  </div>
+                  <div className="flex items-center gap-1.5 px-3 py-1 bg-white/5 rounded-lg border border-white/10 shadow-sm backdrop-blur-md transition-all hover:bg-white/10 cursor-default">
+                    <BookOpen size={13} className="text-blue-400" />
+                    <span className="text-blue-500 font-mono">NO. DAFTAR: {formatNoPendaftaran(selectedApplicant.periode, selectedApplicant.id)}</span>
                     <span className="w-1 h-1 bg-slate-300 rounded-full"></span>
                     <span className="text-blue-500 flex items-center gap-1">
                       NISN: {selectedApplicant.nisn}

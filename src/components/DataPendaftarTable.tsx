@@ -13,6 +13,8 @@ interface Student {
   sekolahAsal?: string;
   jurusan_1?: string;
   jurusan1?: string;
+  jenis_kelamin?: string;
+  jenisKelamin?: string;
   status: string;
   whatsapp?: string;
   email?: string;
@@ -273,7 +275,7 @@ export default function DataPendaftarTable() {
     const matchJurusan = 
       filterJurusan === "Semua" || 
       (item.jurusan_1 || item.jurusan1 || "").includes(filterJurusan);
-    
+      
     return matchName && matchJurusan;
   });
 

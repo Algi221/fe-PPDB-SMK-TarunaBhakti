@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
-import { CheckCircle, XCircle, MapPin, User, Calendar, Award, ArrowLeft, Clock } from "lucide-react";
+import { CheckCircle, XCircle, MapPin, User, ArrowLeft, Clock, MessageCircle } from "lucide-react";
 
 interface VerificationData {
   id: number;
@@ -50,6 +50,7 @@ export default function VerificationPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [data, setData] = useState<VerificationData | null>(null);
+  const [waAdmin, setWaAdmin] = useState<string>("6281292244456");
   const [isDark, setIsDark] = useState(false);
 
   useEffect(() => {
@@ -65,16 +66,26 @@ export default function VerificationPage() {
   useEffect(() => {
     if (!id) return;
 
-    const fetchVerificationData = async () => {
+    const fetchData = async () => {
       try {
         setLoading(true);
-        const res = await fetch(`http://localhost:5000/api/applicants/verify/${id}`);
-        const json = await res.json();
+        const [resVerify, resConfig] = await Promise.all([
+          fetch(`http://localhost:5000/api/applicants/verify/${id}`),
+          fetch(`http://localhost:5000/api/config`).catch(() => null)
+        ]);
         
-        if (json.success && json.data) {
-          setData(json.data);
+        const jsonVerify = await resVerify.json();
+        if (jsonVerify.success && jsonVerify.data) {
+          setData(jsonVerify.data);
         } else {
-          setError(json.message || "Data pendaftar tidak ditemukan.");
+          setError(jsonVerify.message || "Data pendaftar tidak ditemukan.");
+        }
+
+        if (resConfig && resConfig.ok) {
+          const jsonConfig = await resConfig.json();
+          if (jsonConfig.success && jsonConfig.data?.ppdb_wa_admin) {
+            setWaAdmin(jsonConfig.data.ppdb_wa_admin);
+          }
         }
       } catch (err) {
         console.error("Fetch verification error:", err);
@@ -84,7 +95,7 @@ export default function VerificationPage() {
       }
     };
 
-    fetchVerificationData();
+    fetchData();
   }, [id]);
 
   const getGenderLabel = (g: string | null | undefined) => {
@@ -151,7 +162,7 @@ export default function VerificationPage() {
       <div className="absolute top-0 right-0 w-80 h-80 bg-blue-500/10 dark:bg-blue-500/15 rounded-full blur-[100px] pointer-events-none" />
       <div className="absolute bottom-0 left-0 w-80 h-80 bg-indigo-500/10 dark:bg-indigo-500/15 rounded-full blur-[100px] pointer-events-none" />
 
-      <div className="max-w-xl md:max-w-2xl w-full space-y-6 relative z-10 animate-in fade-in zoom-in-95 duration-500">
+      <div className="max-w-xl md:max-w-2xl w-full space-y-6 relative z-10 duration-500">
         
         {/* Premium flex ticket card display (same layout as DataPendaftarTable detail but read-only) */}
         <div className="w-full bg-gradient-to-br from-white via-slate-50/50 to-blue-50/20 dark:from-slate-950 dark:via-slate-900/90 dark:to-indigo-950/30 border border-slate-200 dark:border-blue-500/20 rounded-[32px] p-6 shadow-2xl relative overflow-hidden flex flex-col justify-between transition-colors duration-300">
@@ -255,7 +266,7 @@ export default function VerificationPage() {
 
         {/* Verification Alert Panel based on Status */}
         {data.status === "Approved" ? (
-          <div className="bg-emerald-50/70 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-900/40 rounded-[28px] p-6 shadow-lg text-center flex flex-col items-center gap-3 animate-in fade-in slide-in-from-bottom duration-300">
+          <div className="bg-emerald-50/70 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-900/40 rounded-[28px] p-6 shadow-lg text-center flex flex-col items-center gap-3 duration-300">
             <div className="w-12 h-12 rounded-2xl bg-emerald-500 text-white flex items-center justify-center shadow-lg shadow-emerald-500/20 shrink-0 border border-emerald-400 dark:border-emerald-600">
               <CheckCircle size={24} />
             </div>
@@ -267,7 +278,7 @@ export default function VerificationPage() {
             </div>
           </div>
         ) : data.status === "Rejected" ? (
-          <div className="bg-rose-50/70 dark:bg-rose-950/20 border border-rose-250 dark:border-rose-900/40 rounded-[28px] p-6 shadow-lg text-center flex flex-col items-center gap-3 animate-in fade-in slide-in-from-bottom duration-300">
+          <div className="bg-rose-50/70 dark:bg-rose-950/20 border border-rose-250 dark:border-rose-900/40 rounded-[28px] p-6 shadow-lg text-center flex flex-col items-center gap-3 duration-300">
             <div className="w-12 h-12 rounded-2xl bg-rose-500 text-white flex items-center justify-center shadow-lg shadow-rose-500/20 shrink-0 border border-rose-400 dark:border-rose-600">
               <XCircle size={24} />
             </div>
@@ -285,7 +296,7 @@ export default function VerificationPage() {
             </div>
           </div>
         ) : (
-          <div className="bg-blue-50/70 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-900/40 rounded-[28px] p-6 shadow-lg text-center flex flex-col items-center gap-3 animate-in fade-in slide-in-from-bottom duration-300">
+          <div className="bg-blue-50/70 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-900/40 rounded-[28px] p-6 shadow-lg text-center flex flex-col items-center gap-3 duration-300">
             <div className="w-12 h-12 rounded-2xl bg-blue-500 text-white flex items-center justify-center shadow-lg shadow-blue-500/20 shrink-0 border border-blue-400 dark:border-blue-600">
               <Clock size={24} className="animate-pulse" />
             </div>
@@ -299,14 +310,24 @@ export default function VerificationPage() {
         )}
 
         {/* Footer links */}
-        <div className="text-center">
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
           <Link 
             href="/"
-            className="inline-flex items-center gap-2 px-5 py-3 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 hover:border-slate-350 hover:bg-slate-50 text-xs font-black uppercase tracking-wider text-slate-600 dark:text-slate-300 transition-all shadow-sm"
+            className="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 hover:border-slate-350 hover:bg-slate-50 text-xs font-black uppercase tracking-wider text-slate-600 dark:text-slate-300 transition-all shadow-sm w-full sm:w-auto"
           >
-            <ArrowLeft size={12} />
-            Ke Halaman Utama PPDB
+            <ArrowLeft size={14} />
+            Ke Halaman Utama
           </Link>
+          
+          <a
+            href={`https://wa.me/${waAdmin.replace(/\D/g, '')}?text=Halo%20Admin%20PPDB%20SMK%20Taruna%20Bhakti.%20Saya%20ingin%20bertanya%20terkait%20status%20pendaftaran%20atas%20nama%20${encodeURIComponent(data.nama)}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-2xl bg-[#25D366]/10 border border-[#25D366]/30 hover:bg-[#25D366] hover:text-white text-xs font-black uppercase tracking-wider text-[#075E54] dark:text-[#25D366] transition-all shadow-sm w-full sm:w-auto"
+          >
+            <MessageCircle size={14} />
+            Hubungi Admin WA
+          </a>
         </div>
 
       </div>

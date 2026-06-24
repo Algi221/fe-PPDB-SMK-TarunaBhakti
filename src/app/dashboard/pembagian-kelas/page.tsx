@@ -4,6 +4,7 @@ import React, { useState, useEffect, useMemo } from "react";
 import { usePPDB } from "@/context/PPDBContext";
 import ExcelJS from 'exceljs';
 import { saveAs } from 'file-saver';
+import { generateNipdMap } from "@/utils/nipd";
 import { 
   Users, 
   Layers, 
@@ -114,6 +115,7 @@ export default function ClassDivisionManagement() {
   const [schoolPeriod, setSchoolPeriod] = useState("2026-2027");
   const [searchTerm, setSearchTerm] = useState("");
   const [assignmentFilter, setAssignmentFilter] = useState<"ALL" | "UNASSIGNED" | "ASSIGNED">("ALL");
+  const [genderFilter, setGenderFilter] = useState<"ALL" | "L" | "P">("ALL");
 
   const [selectedStudentIds, setSelectedStudentIds] = useState<number[]>([]);
   const [targetClass, setTargetClass] = useState<string>("");
@@ -373,6 +375,12 @@ export default function ClassDivisionManagement() {
 
       const currentClass = getStudentCurrentClass(a);
 
+      if (genderFilter !== "ALL") {
+        const jk = (a.jenis_kelamin || a.jenisKelamin || "").toLowerCase();
+        if (genderFilter === "L" && !jk.startsWith("l")) return false;
+        if (genderFilter === "P" && !jk.startsWith("p")) return false;
+      }
+
       if (assignmentFilter === "UNASSIGNED") {
         return searchMatch && !currentClass;
       }
@@ -381,37 +389,42 @@ export default function ClassDivisionManagement() {
       }
       return searchMatch;
     });
-  }, [approvedApplicantsOfMajor, searchTerm, assignmentFilter, selectedGrade, schoolPeriod]);
+  }, [approvedApplicantsOfMajor, searchTerm, assignmentFilter, genderFilter, selectedGrade, schoolPeriod]);
 
   const classesOfSelectedMajor = useMemo(() => {
     return classes.filter(c => c.majorCode === selectedMajor && getClassGrade(c.name) === selectedGrade);
   }, [classes, selectedMajor, selectedGrade]);
 
   const classEnrollments = useMemo(() => {
-    const enrollmentCounts: Record<string, number> = {};
+    const enrollmentCounts: Record<string, { total: number, L: number, P: number }> = {};
 
     classesOfSelectedMajor.forEach(c => {
-      enrollmentCounts[c.name] = 0;
+      enrollmentCounts[c.name] = { total: 0, L: 0, P: 0 };
     });
 
     applicants.forEach((a: Applicant) => {
       if (a.status === 'Rejected') return;
       const cls = getStudentCurrentClass(a);
       if (cls && enrollmentCounts[cls] !== undefined) {
-        enrollmentCounts[cls]++;
+        enrollmentCounts[cls].total++;
+        const jk = (a.jenis_kelamin || a.jenisKelamin || "").toLowerCase();
+        if (jk.startsWith("l")) enrollmentCounts[cls].L++;
+        else if (jk.startsWith("p")) enrollmentCounts[cls].P++;
       }
     });
 
     return enrollmentCounts;
   }, [applicants, classesOfSelectedMajor, schoolPeriod]);
 
+  const nipdMap = useMemo(() => generateNipdMap(applicants), [applicants]);
+
   const totalClassesFilled = useMemo(() => {
-    return classesOfSelectedMajor.filter(c => (classEnrollments[c.name] || 0) > 0).length;
+    return classesOfSelectedMajor.filter(c => (classEnrollments[c.name]?.total || 0) > 0).length;
   }, [classesOfSelectedMajor, classEnrollments]);
 
   const enrolledStudentsInDetail = useMemo(() => {
     if (!selectedClassDetail) return [];
-    return applicants.filter((a: Applicant) => {
+    const filtered = applicants.filter((a: Applicant) => {
       if (a.status === 'Rejected') return false;
       const cls = getStudentCurrentClass(a);
       const isClassMatch = cls === selectedClassDetail.name;
@@ -421,6 +434,8 @@ export default function ClassDivisionManagement() {
                             (a.nisn || "").includes(classSearchTerm);
       return matchesSearch;
     });
+
+    return filtered.sort((a, b) => (a.nama || "").localeCompare(b.nama || ""));
   }, [applicants, selectedClassDetail, classSearchTerm, schoolPeriod]);
 
   const handleSelectAll = () => {
@@ -596,7 +611,7 @@ export default function ClassDivisionManagement() {
   };
 
   const handleDeleteClass = (id: string, name: string) => {
-    const count = classEnrollments[name] || 0;
+    const count = classEnrollments[name]?.total || 0;
     if (count > 0) {
       showToast(`Gagal menghapus: Masih ada ${count} siswa terdaftar di dalam kelas ${name}.`, "error");
       return;
@@ -629,7 +644,7 @@ export default function ClassDivisionManagement() {
       if (a.status === 'Rejected') return false;
       const cls = getStudentCurrentClass(a);
       return cls === className;
-    });
+    }).sort((a, b) => (a.nama || "").localeCompare(b.nama || ""));
 
     if (classStudents.length === 0) {
       showToast("Kelas kosong, tidak ada data untuk diekspor.", "error");
@@ -642,7 +657,9 @@ export default function ClassDivisionManagement() {
     worksheet.columns = [
       { header: 'No.', key: 'no', width: 10 },
       { header: 'No. Pendaftaran', key: 'no_pendaftaran', width: 25 },
+      { header: 'NIPD', key: 'nipd', width: 20 },
       { header: 'Nama Siswa', key: 'nama', width: 35 },
+      { header: 'L/P', key: 'jk', width: 10 },
       { header: 'NISN', key: 'nisn', width: 25 },
       { header: 'Asal Sekolah', key: 'sekolah', width: 35 },
       { header: 'No. WhatsApp', key: 'whatsapp', width: 25 },
@@ -672,7 +689,9 @@ export default function ClassDivisionManagement() {
       worksheet.addRow({
         no: index + 1,
         no_pendaftaran: s.no_pendaftaran || "-",
+        nipd: nipdMap.get(s.id) || "-",
         nama: s.nama || "",
+        jk: (s.jenis_kelamin || s.jenisKelamin || "").toLowerCase().startsWith("l") ? "L" : (s.jenis_kelamin || s.jenisKelamin || "").toLowerCase().startsWith("p") ? "P" : "-",
         nisn: s.nisn || "",
         sekolah: s.sekolah_asal || s.sekolahAsal || "",
         whatsapp: s.whatsapp || "",
@@ -727,7 +746,7 @@ export default function ClassDivisionManagement() {
       const classStudents = applicants.filter((a: Applicant) => {
         if (a.status === 'Rejected') return false;
         return getStudentCurrentClass(a) === c.name;
-      });
+      }).sort((a, b) => (a.nama || "").localeCompare(b.nama || ""));
 
       const sheetName = c.name.replace(/\s+/g, "_").substring(0, 30);
       const worksheet = workbook.addWorksheet(sheetName);
@@ -766,7 +785,9 @@ export default function ClassDivisionManagement() {
       const columns = [
         { header: 'No.', key: 'no', width: 8 },
         { header: 'No. Pendaftaran', key: 'no_pendaftaran', width: 20 },
+        { header: 'NIPD', key: 'nipd', width: 20 },
         { header: 'Nama Lengkap', key: 'nama', width: 35 },
+        { header: 'L/P', key: 'jk', width: 10 },
         { header: 'NISN', key: 'nisn', width: 18 },
         { header: 'Sekolah Asal', key: 'sekolah', width: 30 },
         { header: 'No. WhatsApp', key: 'whatsapp', width: 20 },
@@ -798,7 +819,9 @@ export default function ClassDivisionManagement() {
         worksheet.addRow({
           no: index + 1,
           no_pendaftaran: s.no_pendaftaran || "-",
+          nipd: nipdMap.get(s.id) || "-",
           nama: s.nama || "",
+          jk: (s.jenis_kelamin || s.jenisKelamin || "").toLowerCase().startsWith("l") ? "L" : (s.jenis_kelamin || s.jenisKelamin || "").toLowerCase().startsWith("p") ? "P" : "-",
           nisn: s.nisn || "",
           sekolah: s.sekolah_asal || s.sekolahAsal || "",
           whatsapp: s.whatsapp || "",
@@ -871,7 +894,7 @@ export default function ClassDivisionManagement() {
         const classStudents = applicants.filter((a: Applicant) => {
           if (a.status === 'Rejected') return false;
           return getStudentCurrentClass(a) === c.name;
-        });
+        }).sort((a, b) => (a.nama || "").localeCompare(b.nama || ""));
 
         worksheet.mergeCells(`A${currentRowIndex}:G${currentRowIndex}`);
         const classHeaderCell = worksheet.getCell(`A${currentRowIndex}`);
@@ -885,7 +908,9 @@ export default function ClassDivisionManagement() {
         const columns = [
           { header: 'No.', key: 'no', width: 8 },
           { header: 'No. Pendaftaran', key: 'no_pendaftaran', width: 20 },
+          { header: 'NIPD', key: 'nipd', width: 20 },
           { header: 'Nama Lengkap', key: 'nama', width: 35 },
+          { header: 'L/P', key: 'jk', width: 10 },
           { header: 'NISN', key: 'nisn', width: 18 },
           { header: 'Sekolah Asal', key: 'sekolah', width: 30 },
           { header: 'No. WhatsApp', key: 'whatsapp', width: 20 },
@@ -921,7 +946,9 @@ export default function ClassDivisionManagement() {
             const values = {
               no: index + 1,
               no_pendaftaran: formatNoPendaftaran(s.periode, s.id),
+              nipd: nipdMap.get(s.id) || "-",
               nama: s.nama || "",
+              jk: (s.jenis_kelamin || s.jenisKelamin || "").toLowerCase().startsWith("l") ? "L" : (s.jenis_kelamin || s.jenisKelamin || "").toLowerCase().startsWith("p") ? "P" : "-",
               nisn: s.nisn || "",
               sekolah: s.sekolah_asal || s.sekolahAsal || "",
               whatsapp: s.whatsapp || "",
@@ -1170,7 +1197,7 @@ export default function ClassDivisionManagement() {
         {/* Classes Cards Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4">
           {classesOfSelectedMajor.map((c) => {
-            const count = classEnrollments[c.name] || 0;
+            const enroll = classEnrollments[c.name] || { total: 0, L: 0, P: 0 };
             
             return (
               <div 
@@ -1191,7 +1218,12 @@ export default function ClassDivisionManagement() {
                 <div className="flex justify-between items-start gap-2 mb-4">
                   <div>
                     <h4 className="font-extrabold text-slate-850 dark:text-white text-sm group-hover:text-blue-500 transition-colors">{c.name}</h4>
-                    <span className="text-[9px] text-slate-400 font-bold uppercase tracking-wider block mt-1">Terdaftar: {count} Siswa</span>
+                    <span className="text-[9px] text-slate-400 font-bold uppercase tracking-wider block mt-1">Terdaftar: {enroll.total} Siswa</span>
+                    {enroll.total > 0 && (
+                      <span className="text-[9px] text-slate-400 font-bold uppercase tracking-wider block mt-0.5">
+                        (L: {enroll.L}, P: {enroll.P})
+                      </span>
+                    )}
                   </div>
 
                   <div className="flex items-center gap-1.5" onClick={(e) => e.stopPropagation()}>
@@ -1202,7 +1234,7 @@ export default function ClassDivisionManagement() {
                     >
                       <Eye size={13} />
                     </button>
-                    {count === 0 && (
+                    {enroll.total === 0 && (
                       <button
                         onClick={() => handleDeleteClass(c.id, c.name)}
                         className="p-1.5 text-slate-400 hover:text-rose-500 hover:bg-rose-500/10 rounded-lg transition-all"
@@ -1263,6 +1295,20 @@ export default function ClassDivisionManagement() {
                 <option value="ASSIGNED">Sudah Ada Kelas</option>
               </select>
             </div>
+
+            {/* Gender Filter */}
+            <div className="flex items-center gap-2 bg-slate-50 dark:bg-slate-950/40 border border-slate-200 dark:border-white/5 rounded-xl px-2.5 py-1.5 text-xs font-bold text-slate-500">
+              <Filter size={11} />
+              <select
+                value={genderFilter}
+                onChange={(e) => setGenderFilter(e.target.value as any)}
+                className="bg-transparent focus:outline-none cursor-pointer uppercase tracking-wider font-extrabold text-[9px]"
+              >
+                <option value="ALL">Semua Gender</option>
+                <option value="L">Laki-laki (L)</option>
+                <option value="P">Perempuan (P)</option>
+              </select>
+            </div>
           </div>
 
         </div>
@@ -1285,7 +1331,9 @@ export default function ClassDivisionManagement() {
                     )}
                   </button>
                 </th>
+                <th className="py-3.5 px-4 text-center">NIPD</th>
                 <th className="py-3.5 px-4">Nama Lengkap Siswa</th>
+                <th className="py-3.5 px-4 text-center w-16">L/P</th>
                 <th className="py-3.5 px-4 text-center">NISN</th>
                 <th className="py-3.5 px-4">Asal Sekolah SMP</th>
                 <th className="py-3.5 px-4 text-center">Pilihan Keahlian</th>
@@ -1317,11 +1365,29 @@ export default function ClassDivisionManagement() {
                       />
                     </td>
 
+                    <td className="py-3 px-4 text-center font-mono text-[11px] text-blue-600 dark:text-blue-400 font-bold">
+                      {nipdMap.get(student.id) || "-"}
+                    </td>
+
                     <td className="py-3 px-4">
                       <div className="font-extrabold text-slate-850 dark:text-white text-sm">{student.nama}</div>
                       <span className="text-[9px] text-slate-400 font-bold uppercase tracking-wider block mt-0.5">
                         Lahir: {student.tempat_lahir || student.tempatLahir || "-"}, {student.tgl_lahir || student.tglLahir || "-"} · Periode Daftar: {student.periode || "2026-2027"}
                       </span>
+                    </td>
+
+                    <td className="py-3 px-4 text-center">
+                      {(student.jenis_kelamin || student.jenisKelamin) ? (
+                        <span className={`inline-flex items-center justify-center px-1.5 py-0.5 rounded text-[9px] font-extrabold uppercase border shadow-sm ${
+                          (student.jenis_kelamin || student.jenisKelamin || "").toLowerCase().startsWith("l")
+                            ? "bg-blue-50 text-blue-600 border-blue-200 dark:bg-blue-900/20 dark:border-blue-800/50 dark:text-blue-400"
+                            : "bg-pink-50 text-pink-600 border-pink-200 dark:bg-pink-900/20 dark:border-pink-800/50 dark:text-pink-400"
+                        }`}>
+                          {(student.jenis_kelamin || student.jenisKelamin || "").toLowerCase().startsWith("l") ? "L" : "P"}
+                        </span>
+                      ) : (
+                        <span className="text-slate-400">-</span>
+                      )}
                     </td>
 
                     <td className="py-3 px-4 text-center font-mono text-[11px] text-slate-600 dark:text-slate-300">
@@ -1438,7 +1504,9 @@ export default function ClassDivisionManagement() {
                 <thead>
                   <tr className="border-b border-slate-100 dark:border-white/5 text-slate-400 dark:text-slate-500 font-black text-[9px] uppercase tracking-widest">
                     <th className="py-2.5 px-3 text-left w-12">No</th>
+                    <th className="py-2.5 px-4 text-center">NIPD</th>
                     <th className="py-2.5 px-4">Nama Lengkap</th>
+                    <th className="py-2.5 px-4 text-center w-16">L/P</th>
                     <th className="py-2.5 px-4 text-center">NISN</th>
                     <th className="py-2.5 px-4">Asal Sekolah</th>
                     <th className="py-2.5 px-3 text-center w-32">Aksi</th>
@@ -1448,11 +1516,25 @@ export default function ClassDivisionManagement() {
                   {enrolledStudentsInDetail.map((student, idx) => (
                     <tr key={student.id} className="hover:bg-slate-50/50 dark:hover:bg-white/5 transition-all">
                       <td className="py-3 px-3 text-slate-400 font-mono">{idx + 1}</td>
+                      <td className="py-3 px-4 text-center font-mono text-[11px] text-blue-600 dark:text-blue-400 font-bold">{nipdMap.get(student.id) || "-"}</td>
                       <td className="py-3 px-4">
                         <div className="font-extrabold text-slate-850 dark:text-white uppercase tracking-wider">{student.nama}</div>
                         <span className="text-[9px] text-slate-400 font-bold uppercase tracking-wider block mt-0.5">
                           Lahir: {student.tempat_lahir || student.tempatLahir || "-"}, {student.tgl_lahir || student.tglLahir || "-"}
                         </span>
+                      </td>
+                      <td className="py-3 px-4 text-center">
+                        {(student.jenis_kelamin || student.jenisKelamin) ? (
+                          <span className={`inline-flex items-center justify-center px-1.5 py-0.5 rounded text-[9px] font-extrabold uppercase border shadow-sm ${
+                            (student.jenis_kelamin || student.jenisKelamin || "").toLowerCase().startsWith("l")
+                              ? "bg-blue-50 text-blue-600 border-blue-200 dark:bg-blue-900/20 dark:border-blue-800/50 dark:text-blue-400"
+                              : "bg-pink-50 text-pink-600 border-pink-200 dark:bg-pink-900/20 dark:border-pink-800/50 dark:text-pink-400"
+                          }`}>
+                            {(student.jenis_kelamin || student.jenisKelamin || "").toLowerCase().startsWith("l") ? "L" : "P"}
+                          </span>
+                        ) : (
+                          <span className="text-slate-400">-</span>
+                        )}
                       </td>
                       <td className="py-3 px-4 text-center font-mono text-[11px]">{student.nisn}</td>
                       <td className="py-3 px-4 uppercase">{student.sekolah_asal || student.sekolahAsal || "-"}</td>
