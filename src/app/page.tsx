@@ -436,10 +436,10 @@ export default function Home() {
       <div className="navbar-wrapper">
         <nav className={`navbar ${isNavbarScrolled ? "scrolled" : ""}`}>
           <div className="nav-left">
-            <a href="#" className="logo-container">
+            <Link href="/" className="logo-container">
               <SafeImage src="/logo_smktb.png" alt="Logo SMK TB" width={36} height={36} className="w-9 h-9 object-contain" />
               <span className="logo-text font-extrabold">PPDB <span>SMK TB</span></span>
-            </a>
+            </Link>
           </div>
 
           <div className="hidden md:flex items-center gap-2">
@@ -490,7 +490,7 @@ export default function Home() {
           <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] rounded-full bg-amber-500/10 blur-[80px] pointer-events-none"></div>
 
           <div className="flex flex-col items-center gap-6 text-center p-6 w-full max-w-sm relative z-10">
-            <Link href="#" onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-2 mb-6">
+            <Link href="/" onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-2 mb-6">
               <SafeImage src="/logo_smktb.png" alt="Logo SMK TB" width={48} height={48} className="w-12 h-12 object-contain" />
               <span className="text-2xl font-black text-slate-800 dark:text-white">PPDB <span className="text-blue-600 dark:text-blue-400">SMK TB</span></span>
             </Link>
@@ -1239,8 +1239,8 @@ export default function Home() {
             <div className="space-y-4">
               <h4 className="text-xs font-black uppercase tracking-wider text-slate-800 dark:text-white">Link Terkait</h4>
               <ul className="space-y-2 text-xs font-semibold">
-                <li><a href="#" className="hover:text-blue-600 dark:hover:text-sky-400 transition-colors">Brosur PPDB {schoolPeriod.split("-")[0]}</a></li>
-                <li><a href="#" className="hover:text-blue-600 dark:hover:text-sky-400 transition-colors">Syarat Pendaftaran</a></li>
+                <li><Link href="#alur" className="hover:text-blue-600 dark:hover:text-sky-400 transition-colors">Brosur PPDB {schoolPeriod.split("-")[0]}</Link></li>
+                <li><Link href="#alur" className="hover:text-blue-600 dark:hover:text-sky-400 transition-colors">Syarat Pendaftaran</Link></li>
                 <li><Link href="/forum" className="hover:text-blue-600 dark:hover:text-sky-400 transition-colors">Forum Informasi</Link></li>
                 <li><a href="https://smktarunabhakti.sch.id/" target="_blank" rel="noopener noreferrer" className="hover:text-blue-600 dark:hover:text-sky-400 transition-colors">Company Profil Sekolah</a></li>
               </ul>
@@ -1262,9 +1262,9 @@ export default function Home() {
           <div className="border-t border-slate-200/50 dark:border-slate-900 mt-12 pt-8 flex flex-col md:flex-row items-center justify-between gap-4 text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">
             <div>© {new Date().getFullYear()} SMK Taruna Bhakti Depok. All Rights Reserved.</div>
             <div className="flex gap-4">
-              <a href="#" className="hover:text-slate-600 dark:hover:text-slate-400 transition-colors">Kebijakan Privasi</a>
+              <Link href="/" className="hover:text-slate-600 dark:hover:text-slate-400 transition-colors">Kebijakan Privasi</Link>
               <span>·</span>
-              <a href="#" className="hover:text-slate-600 dark:hover:text-slate-400 transition-colors">Syarat &amp; Ketentuan</a>
+              <Link href="/" className="hover:text-slate-600 dark:hover:text-slate-400 transition-colors">Syarat &amp; Ketentuan</Link>
             </div>
           </div>
         </div>
