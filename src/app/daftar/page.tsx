@@ -87,6 +87,7 @@ export default function DaftarPage() {
   const [wizardStep, setWizardStep] = useState(1);
   const [isSuccess, setIsSuccess] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [kuotaData, setKuotaData] = useState<any[] | null>(null);
 
   const [formData, setFormData] = useState({
     nama: "",
@@ -347,6 +348,20 @@ export default function DaftarPage() {
       }
     };
     loadLiveConfig();
+
+    const loadKuota = async () => {
+      try {
+        const BACKEND_URL = typeof window !== 'undefined' ? `http://${window.location.hostname}:5000` : "http://localhost:5000";
+        const res = await fetch(`${BACKEND_URL}/api/kuota`);
+        const json = await res.json();
+        if (json.success && json.data) {
+          setKuotaData(json.data.pendaftar);
+        }
+      } catch (err) {
+        console.log("Failed to fetch kuota data:", err);
+      }
+    };
+    loadKuota();
 
     if (typeof window !== "undefined") {
       const savedSuccess = localStorage.getItem('ppdb_registration_success');
@@ -1997,7 +2012,7 @@ export default function DaftarPage() {
         <p className="text-slate-500 dark:text-slate-400 font-medium bg-white/60 dark:bg-slate-900/60 backdrop-blur-md inline-block px-4 py-1.5 rounded-full border border-white/60 dark:border-slate-800/60 shadow-sm mt-2">SMK Taruna Bhakti Tahun Ajaran 2026/2027</p>
       </div>
 
-      <div className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border border-white/60 dark:border-slate-800/60 shadow-[0_20px_50px_rgba(0,102,255,0.06)] dark:shadow-[0_20px_50px_rgba(0,0,0,0.3)] rounded-[2.5rem] p-6 md:p-10 max-w-4xl w-full relative z-10">
+      <div className="bg-white dark:bg-slate-900 backdrop-blur-xl border border-slate-200 dark:border-slate-800 shadow-2xl rounded-[2.5rem] p-6 md:p-10 max-w-4xl w-full relative z-10">
 
         <div className="flex justify-between items-center mb-12 relative px-4">
           <div className="absolute top-1/2 left-0 w-full h-[3px] bg-slate-100 dark:bg-slate-800/80 -translate-y-1/2 z-0 rounded-full"></div>
@@ -2521,18 +2536,35 @@ export default function DaftarPage() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   {majors.map((major) => {
                     const option = `${major.title} (${major.code})`;
+                    
+                    let isFull = false;
+                    let remaining = -1;
+                    if (kuotaData) {
+                      const k = kuotaData.find((k: any) => k.key === major.title);
+                      if (k && k.target > 0) {
+                        isFull = k.jumlah >= k.target;
+                        remaining = k.target - k.jumlah;
+                      }
+                    }
+
                     return (
-                      <label key={option} className={`flex items-center gap-3 p-3 rounded-xl border transition-all cursor-pointer ${formData.jurusan1 === option ? "bg-blue-50 border-blue-400 text-blue-700 shadow-sm" : "bg-slate-50 border-slate-200 text-slate-600 hover:bg-slate-100 hover:border-slate-300"
-                        }`}>
+                      <label key={option} className={`flex items-center gap-3 p-3 rounded-xl border transition-all ${isFull ? 'bg-slate-100 border-slate-200 opacity-60 cursor-not-allowed grayscale' : formData.jurusan1 === option ? "bg-blue-50 border-blue-400 text-blue-700 shadow-sm cursor-pointer" : "bg-slate-50 border-slate-200 text-slate-600 hover:bg-slate-100 hover:border-slate-300 cursor-pointer"}`}>
                         <input
                           type="radio"
                           name="jurusan1"
                           value={option}
-                          checked={formData.jurusan1 === option}
-                          onChange={handleInputChange}
-                          className="w-4 h-4 text-blue-600 border-slate-300 focus:ring-blue-500"
+                          checked={formData.jurusan1 === option && !isFull}
+                          onChange={(e) => {
+                            if (!isFull) handleInputChange(e);
+                          }}
+                          disabled={isFull}
+                          className="w-4 h-4 text-blue-600 border-slate-300 focus:ring-blue-500 disabled:opacity-50"
                         />
-                        <span className="text-xs font-bold">{option}</span>
+                        <div className="flex flex-col">
+                          <span className="text-xs font-bold">{option}</span>
+                          {isFull && <span className="text-[10px] font-black text-red-500 tracking-wider uppercase mt-0.5">KUOTA PENUH</span>}
+                          {!isFull && remaining > 0 && <span className="text-[10px] font-semibold text-emerald-600 mt-0.5">Tersisa {remaining} kursi</span>}
+                        </div>
                       </label>
                     );
                   })}

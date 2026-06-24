@@ -370,6 +370,7 @@ export default function MajorPage() {
   const [major, setMajor] = useState<any>(null);
   const [nextMajor, setNextMajor] = useState<any>(null);
   const [isDark, setIsDark] = useState(false);
+  const [kuotaData, setKuotaData] = useState<any[] | null>(null);
 
   useEffect(() => {
     const saved = localStorage.getItem("ppdb-theme");
@@ -484,6 +485,22 @@ export default function MajorPage() {
       loadDynamicConfig();
     }
   }, [code, nextCode]);
+
+  useEffect(() => {
+    const loadKuota = async () => {
+      try {
+        const BACKEND_URL = typeof window !== 'undefined' ? `http://${window.location.hostname}:5000` : "http://localhost:5000";
+        const res = await fetch(`${BACKEND_URL}/api/kuota`);
+        const json = await res.json();
+        if (json.success && json.data) {
+          setKuotaData(json.data.pendaftar);
+        }
+      } catch (err) {
+        console.log("Failed to fetch kuota data:", err);
+      }
+    };
+    loadKuota();
+  }, []);
 
   const toggleDark = () => {
     const next = !isDark;
@@ -675,10 +692,75 @@ export default function MajorPage() {
             {major.desc}
           </p>
 
-          <div className="pt-2 flex flex-wrap gap-4">
-            <Link href="/daftar" className="btn-primary-pill py-3.5 px-8 flex items-center gap-2 rounded-2xl">
-              Daftar Jurusan Ini <ArrowRight size={18} />
-            </Link>
+          <div className="pt-2 flex flex-wrap gap-4 items-center">
+            {(() => {
+              let isFull = false;
+              let remaining = -1;
+              let target = 0;
+              let jumlah = 0;
+              if (kuotaData && major) {
+                const k = kuotaData.find((k: any) => k.key === major.title);
+                if (k && k.target > 0) {
+                  isFull = k.jumlah >= k.target;
+                  remaining = k.target - k.jumlah;
+                  target = k.target;
+                  jumlah = k.jumlah;
+                }
+              }
+
+              return (
+                <div className="flex flex-col w-full gap-5 mt-2">
+                  {target > 0 && (
+                    <div className="flex items-center gap-4 bg-white/60 dark:bg-slate-900/40 backdrop-blur-sm border border-slate-200/60 dark:border-slate-800/60 p-3 pr-6 rounded-3xl shadow-sm w-fit group">
+                      <div className="relative w-14 h-14 flex items-center justify-center">
+                        <svg viewBox="0 0 42 42" className="w-full h-full transform -rotate-90 drop-shadow-sm">
+                          <circle cx="21" cy="21" r="15.915" fill="transparent" stroke="currentColor" className="text-slate-200 dark:text-slate-800/80" strokeWidth="5" />
+                          <circle 
+                            cx="21" cy="21" r="15.915" fill="transparent" 
+                            stroke={isFull ? "#ef4444" : "var(--major-accent, #10b981)"} 
+                            strokeWidth="5" 
+                            strokeDasharray={`${Math.round((jumlah / target) * 100) || 0} ${100 - (Math.round((jumlah / target) * 100) || 0)}`} 
+                            className="transition-all duration-1000 ease-out" 
+                            strokeLinecap="round"
+                          />
+                        </svg>
+                        <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+                          <span className="text-[11px] font-black text-slate-700 dark:text-slate-200 leading-none">{Math.round((jumlah / target) * 100) || 0}%</span>
+                        </div>
+                      </div>
+                      <div className="flex flex-col justify-center">
+                        <div className="flex items-center gap-1.5 mb-0.5">
+                          <span className={`w-1.5 h-1.5 rounded-full ${isFull ? 'bg-red-500 animate-pulse' : 'major-bg-accent animate-pulse'}`} style={!isFull ? { backgroundColor: 'var(--major-accent)' } : {}}></span>
+                          <span className="text-[10px] font-black uppercase tracking-widest text-slate-500 dark:text-slate-400">
+                            {isFull ? "KUOTA PENUH" : "Kapasitas Pendaftar"}
+                          </span>
+                        </div>
+                        <div className="flex items-baseline gap-1">
+                          <span className="text-lg font-black text-slate-800 dark:text-white leading-none">{jumlah}</span>
+                          <span className="text-xs font-bold text-slate-400">/ {target} Siswa</span>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  <div className="flex flex-wrap items-center gap-4">
+                    <div className="relative group/btn">
+                      <Link 
+                        href={isFull ? "#" : "/daftar"} 
+                        className={`btn-primary-pill py-3.5 px-8 flex items-center gap-2 rounded-2xl ${isFull ? 'opacity-50 cursor-not-allowed pointer-events-none grayscale' : ''}`}
+                      >
+                        {isFull ? "Pendaftaran Ditutup" : "Daftar Jurusan Ini"} <ArrowRight size={18} />
+                      </Link>
+                    </div>
+
+                    <Link href="/" className="inline-flex items-center gap-2 text-sm font-bold text-slate-600 dark:text-slate-300 hover:text-slate-800 dark:hover:text-white transition-colors py-3.5 px-6 rounded-2xl bg-white/50 dark:bg-slate-900/50 border border-slate-200/50 dark:border-slate-800 backdrop-blur-md">
+                      <ArrowLeft size={16} /> Lihat Jurusan Lain
+                    </Link>
+                  </div>
+                </div>
+              );
+            })()}
+
             <Link href="/" className="inline-flex items-center gap-2 text-sm font-bold text-slate-600 dark:text-slate-300 hover:text-slate-800 dark:hover:text-white transition-colors py-3.5 px-6 rounded-2xl bg-white/50 dark:bg-slate-900/50 border border-slate-200/50 dark:border-slate-800 backdrop-blur-md">
               <ArrowLeft size={16} /> Lihat Jurusan Lain
             </Link>

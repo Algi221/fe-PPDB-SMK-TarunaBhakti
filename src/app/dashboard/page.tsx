@@ -2,9 +2,10 @@
 
 import React, { useState, useEffect } from "react";
 import { usePPDB } from "@/context/PPDBContext";
-import { Users, ShieldCheck, Clock, AlertTriangle, TrendingUp, BookOpen, ArrowRight } from "lucide-react";
+import { Users, ShieldCheck, Clock, AlertTriangle, TrendingUp, BookOpen, ArrowRight, BarChart, Pencil } from "lucide-react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
+import KuotaTab from "@/components/KuotaTab";
 
 interface MajorItem {
   name: string;
@@ -267,37 +268,27 @@ export default function DashboardOverview() {
         </div>
       </div>
 
-      {/* Two Column Layout: Trend Chart + Major Donut */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      {/* Top Main Section - Trend Chart & Overall Capacity */}
+      <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
         
-        {/* Trend Area Chart (Col span 2) */}
-        <div className="lg:col-span-2 bg-white dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800/40 rounded-3xl p-6 shadow-[0_2px_12px_rgba(0,0,0,0.02)] flex flex-col justify-between transition-colors duration-300">
-          <div className="mb-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        {/* Registration Trend Chart */}
+        <div className="lg:col-span-3 bg-white dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800/40 rounded-3xl p-6 shadow-[0_2px_12px_rgba(0,0,0,0.02)] flex flex-col transition-colors duration-300">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
             <div>
-              <h3 className="text-xs font-black text-slate-800 dark:text-white tracking-wider uppercase">
-                {trendView === "hari" && "Tren Registrasi Harian"}
-                {trendView === "minggu" && "Tren Registrasi Mingguan"}
-                {trendView === "bulan" && "Tren Registrasi Bulanan"}
-                {trendView === "periode" && "Tren Registrasi Per Periode"}
-              </h3>
-              <p className="text-[11px] text-slate-400 dark:text-slate-550 font-bold">
-                {trendView === "hari" && "Statistik pendaftaran calon siswa 7 hari terakhir"}
-                {trendView === "minggu" && "Statistik pendaftaran calon siswa 4 minggu terakhir"}
-                {trendView === "bulan" && "Statistik pendaftaran calon siswa 6 bulan terakhir"}
-                {trendView === "periode" && "Perbandingan jumlah pendaftar antar periode akademik"}
-              </p>
+              <h3 className="text-xs font-black text-slate-800 dark:text-white tracking-wider uppercase">Tren Registrasi Harian</h3>
+              <p className="text-[11px] text-slate-400 dark:text-slate-500 font-bold">Statistik pendaftaran calon siswa {trendView === "hari" ? "7 hari terakhir" : trendView === "minggu" ? "4 minggu terakhir" : trendView === "bulan" ? "6 bulan terakhir" : "per periode"}</p>
             </div>
             
-            {/* Filter Buttons */}
-            <div className="flex bg-slate-100 dark:bg-slate-950 p-1 rounded-2xl border border-slate-200/45 dark:border-white/5 shrink-0 shadow-inner">
+            {/* View Toggle */}
+            <div className="flex bg-slate-100 dark:bg-slate-950 p-1 rounded-xl border border-slate-200/45 dark:border-white/5 shrink-0 shadow-inner">
               {(["hari", "minggu", "bulan", "periode"] as const).map((view) => (
                 <button
                   key={view}
                   onClick={() => setTrendView(view)}
-                  className={`px-3 py-1.5 rounded-xl text-[9px] font-black uppercase tracking-wider transition-all ${
+                  className={`px-3 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-wider transition-all ${
                     trendView === view
-                      ? "bg-white dark:bg-slate-900 text-blue-600 dark:text-white shadow-sm border border-slate-200/40 dark:border-white/5"
-                      : "text-slate-500 dark:text-slate-400 hover:text-slate-850 dark:hover:text-white"
+                      ? "bg-white dark:bg-slate-900 text-blue-600 dark:text-white shadow-sm border border-slate-200/20"
+                      : "text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white"
                   }`}
                 >
                   {view}
@@ -306,94 +297,70 @@ export default function DashboardOverview() {
             </div>
           </div>
 
-          {/* SVG Line/Area Chart */}
-          <div className="relative w-full h-[380px] mt-4 flex items-end">
+          {/* SVG Line Chart */}
+          <div className="flex-1 w-full min-h-[220px] relative">
             <svg viewBox={`0 0 ${width} ${height}`} className="w-full h-full overflow-visible">
-              {/* Grid Lines */}
-              {[0, 0.25, 0.5, 0.75, 1].map((ratio, idx) => {
-                const yVal = padding + ratio * (height - padding * 2);
-                return (
-                  <line
-                    key={idx}
-                    x1={padding}
-                    y1={yVal}
-                    x2={width - padding}
-                    y2={yVal}
-                    stroke="currentColor"
-                    className="text-slate-100 dark:text-slate-800/30"
-                    strokeWidth="1"
-                    strokeDasharray="4 4"
-                  />
-                );
-              })}
-
-              {/* Area Gradient */}
               <defs>
-                <linearGradient id="chartGlow" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="#3b82f6" stopOpacity="0.25" />
-                  <stop offset="100%" stopColor="#3b82f6" stopOpacity="0.0" />
+                <linearGradient id="lineGradient" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="#3b82f6" stopOpacity="0.3" />
+                  <stop offset="100%" stopColor="#3b82f6" stopOpacity="0" />
                 </linearGradient>
+                <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+                  <feGaussianBlur stdDeviation="3" result="blur" />
+                  <feComposite in="SourceGraphic" in2="blur" operator="over" />
+                </filter>
               </defs>
-
-              {/* Interactive Dashed Guideline */}
-              {hoveredTrendIdx !== null && points[hoveredTrendIdx] && (
-                <g>
-                  <line
-                    x1={points[hoveredTrendIdx].x}
-                    y1={padding}
-                    x2={points[hoveredTrendIdx].x}
-                    y2={height - padding}
-                    stroke="#3b82f6"
-                    strokeWidth="1.5"
-                    strokeDasharray="4 4"
-                    className="text-blue-500/60"
-                  />
-                  <circle
-                    cx={points[hoveredTrendIdx].x}
-                    cy={points[hoveredTrendIdx].y}
-                    r="9"
-                    fill="#3b82f6"
-                    className="opacity-25 animate-ping"
-                  />
-                </g>
-              )}
-
-              {/* Glowing Area Fill */}
-              {areaPath && <path d={areaPath} fill="url(#chartGlow)" />}
-
-              {/* Smooth Stroke Line */}
-              {linePath && (
-                <path
-                  d={linePath}
-                  fill="none"
-                  stroke="#3b82f6"
-                  strokeWidth="3.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              )}
-
-              {/* Interacting Data Dots */}
+              
+              {/* Gradient Fill under the line */}
+              <path
+                d={`${linePath} L ${points[points.length - 1]?.x} ${height - 20} L ${points[0]?.x} ${height - 20} Z`}
+                fill="url(#lineGradient)"
+                className="transition-all duration-500 ease-in-out"
+              />
+              
+              {/* Line */}
+              <path
+                d={linePath}
+                fill="none"
+                stroke="#3b82f6"
+                strokeWidth="3.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="transition-all duration-500 ease-in-out"
+                filter="url(#glow)"
+              />
+              
+              {/* Data Points */}
               {points.map((p, idx) => (
-                <g 
-                  key={idx} 
-                  className="cursor-pointer"
-                  onMouseEnter={() => setHoveredTrendIdx(idx)}
-                  onMouseLeave={() => setHoveredTrendIdx(null)}
-                >
+                <g key={idx} className="transition-all duration-300">
                   <circle
                     cx={p.x}
                     cy={p.y}
                     r={hoveredTrendIdx === idx ? "7" : "5"}
-                    fill={hoveredTrendIdx === idx ? "#ffffff" : "#3b82f6"}
+                    fill={hoveredTrendIdx === idx ? "#3b82f6" : "#ffffff"}
                     stroke="#3b82f6"
-                    className="transition-all duration-200"
-                    strokeWidth="3"
+                    strokeWidth="2.5"
+                    className="cursor-pointer transition-all duration-300 ease-out"
+                    onMouseEnter={() => setHoveredTrendIdx(idx)}
+                    onMouseLeave={() => setHoveredTrendIdx(null)}
                   />
+                  {/* Outer glow ring on hover */}
+                  {hoveredTrendIdx === idx && (
+                    <circle
+                      cx={p.x}
+                      cy={p.y}
+                      r="12"
+                      fill="transparent"
+                      stroke="#3b82f6"
+                      strokeWidth="1.5"
+                      strokeOpacity="0.3"
+                      className="animate-ping"
+                    />
+                  )}
                 </g>
               ))}
-
-              {/* Day/Period Labels */}
+              
+              {/* Labels (X-axis) */}
               {points.map((p, idx) => (
                 <text
                   key={idx}
@@ -451,106 +418,24 @@ export default function DashboardOverview() {
           </div>
         </div>
 
-        {/* Major Distribution Donut & Bar Chart */}
-        <div className="bg-white dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800/40 rounded-3xl p-6 shadow-[0_2px_12px_rgba(0,0,0,0.02)] flex flex-col justify-between transition-colors duration-300">
+        <div className="lg:col-span-2 bg-white dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800/40 rounded-3xl p-6 shadow-[0_2px_12px_rgba(0,0,0,0.02)] flex flex-col justify-between transition-colors duration-300">
           <div className="flex justify-between items-start mb-4">
             <div>
-              <h3 className="text-xs font-black text-slate-800 dark:text-white tracking-wider uppercase">Sebaran Jurusan</h3>
-              <p className="text-[11px] text-slate-400 dark:text-slate-550 font-bold">Perbandingan minat pilihan program keahlian utama</p>
+              <h3 className="text-xs font-black text-slate-800 dark:text-white tracking-wider uppercase">Data Keseluruhan</h3>
+              <p className="text-[11px] text-slate-400 dark:text-slate-550 font-bold">Status pengisian kuota seluruh jurusan</p>
             </div>
-            
-            {/* Toggle Donut / Bar Chart */}
-            <div className="flex bg-slate-100 dark:bg-slate-950 p-1 rounded-xl border border-slate-200/45 dark:border-white/5 shrink-0 shadow-inner">
-              {(["donut", "bar"] as const).map((type) => (
-                <button
-                  key={type}
-                  onClick={() => setChartType(type)}
-                  className={`px-2 py-1 rounded-lg text-[8px] font-black uppercase tracking-wider transition-all ${
-                    chartType === type
-                      ? "bg-white dark:bg-slate-900 text-blue-600 dark:text-white shadow-sm border border-slate-200/20"
-                      : "text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white"
-                  }`}
-                >
-                  {type === "donut" ? "Donut" : "Batang"}
-                </button>
-              ))}
-            </div>
+            <Link 
+              href="/dashboard/pendaftar?tab=kuota" 
+              className="p-2 bg-blue-50 hover:bg-blue-100 dark:bg-blue-900/30 dark:hover:bg-blue-900/50 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-800/50 rounded-xl transition-all"
+              title="Edit Target Kuota"
+            >
+              <Pencil size={14} />
+            </Link>
           </div>
-
-          {chartType === "donut" ? (
-            <>
-              <div className="flex items-center justify-center my-6 relative">
-                <svg width="140" height="140" viewBox="0 0 42 42" className="transform -rotate-90">
-                  <circle cx="21" cy="21" r="15.915" fill="transparent" stroke="currentColor" className="text-slate-50 dark:text-slate-800/40" strokeWidth="4" />
-                  {donutData.map((d, idx) => {
-                    if (d.percent === 0) return null;
-                    const strokeDashValue = `${d.percent} ${100 - d.percent}`;
-                    const strokeDashOffset = 100 - d.startPercent;
-                    return (
-                      <circle
-                        key={idx}
-                        cx="21"
-                        cy="21"
-                        r="15.915"
-                        fill="transparent"
-                        stroke={d.color}
-                        strokeWidth={hoveredSegment === idx ? 5 : 4}
-                        strokeDasharray={strokeDashValue}
-                        strokeDashoffset={strokeDashOffset}
-                        className="transition-all duration-300 cursor-pointer"
-                        onMouseEnter={() => setHoveredSegment(idx)}
-                        onMouseLeave={() => setHoveredSegment(null)}
-                      />
-                    );
-                  })}
-                </svg>
-                <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                  <span className="text-[9px] text-slate-400 dark:text-slate-500 font-bold uppercase tracking-wider">Total</span>
-                  <span className="text-2xl font-black text-slate-800 dark:text-white leading-none mt-0.5">{totalCount}</span>
-                </div>
-              </div>
-
-              {/* Color Legend list */}
-              <div className="grid grid-cols-2 gap-1 text-xs font-bold">
-                {donutData.map((d, idx) => (
-                  <div
-                    key={idx}
-                    className={`flex items-center gap-2 p-1 rounded-xl border border-transparent transition-all ${
-                      hoveredSegment === idx ? "bg-slate-50 dark:bg-white/5" : ""
-                    }`}
-                    onMouseEnter={() => setHoveredSegment(idx)}
-                    onMouseLeave={() => setHoveredSegment(null)}
-                  >
-                    <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: d.color }} />
-                    <span className="text-slate-500 dark:text-slate-400 text-[10px] truncate flex-1 font-semibold">{d.name}</span>
-                    <span className="text-slate-800 dark:text-white text-[10px] font-extrabold pr-1">{d.percent}%</span>
-                  </div>
-                ))}
-              </div>
-            </>
-          ) : (
-            <div className="space-y-4 my-6 flex-1 flex flex-col justify-center">
-              {donutData.map((d, idx) => (
-                <div key={idx} className="space-y-1 text-left">
-                  <div className="flex justify-between text-[10px] font-bold uppercase tracking-wider">
-                    <span className="text-slate-700 dark:text-slate-350">{d.name}</span>
-                    <span className="text-slate-500 dark:text-slate-400">{d.count} Siswa ({d.percent}%)</span>
-                  </div>
-                  <div className="w-full bg-slate-100 dark:bg-slate-800 h-2.5 rounded-full overflow-hidden relative border border-slate-200/40 dark:border-white/5">
-                    <div 
-                      className="h-full rounded-full transition-all duration-500 ease-out" 
-                      style={{ 
-                        width: `${d.percent}%`,
-                        backgroundColor: d.color 
-                      }} 
-                    />
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
+          <div className="flex-1 flex flex-col items-center justify-center -mt-6">
+            <KuotaTab type="keseluruhan" variant="minimal" />
+          </div>
         </div>
-
       </div>
 
       {/* Two Column Layout Below */}
@@ -611,6 +496,32 @@ export default function DashboardOverview() {
           </div>
         </div>
 
+      </div>
+
+      {/* Kuota Summary Tables Section */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 pt-4">
+        <div className="bg-white dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800/40 rounded-3xl p-6 shadow-[0_2px_12px_rgba(0,0,0,0.02)] flex flex-col transition-colors duration-300">
+           <div className="mb-4">
+            <h3 className="text-xs font-black text-slate-800 dark:text-white tracking-wider uppercase flex items-center gap-2">
+              <BarChart size={14} className="text-blue-500" />
+              Progress Calon Siswa
+            </h3>
+          </div>
+          <div className="-mx-4 sm:mx-0">
+            <KuotaTab type="pendaftar" variant="minimal" />
+          </div>
+        </div>
+        <div className="bg-white dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800/40 rounded-3xl p-6 shadow-[0_2px_12px_rgba(0,0,0,0.02)] flex flex-col transition-colors duration-300">
+          <div className="mb-4">
+            <h3 className="text-xs font-black text-slate-800 dark:text-white tracking-wider uppercase flex items-center gap-2">
+              <ShieldCheck size={14} className="text-emerald-500" />
+              Progress Siswa Aktif
+            </h3>
+          </div>
+          <div className="-mx-4 sm:mx-0">
+             <KuotaTab type="siswa-aktif" variant="minimal" />
+          </div>
+        </div>
       </div>
 
     </div>

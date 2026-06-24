@@ -19,27 +19,16 @@ const sanitizeUrl = (url: string | undefined | null): string => {
 const sanitizeSrc = (src: string | undefined | null): string => sanitizeUrl(src);
 import ExcelJS from 'exceljs';
 import { saveAs } from 'file-saver';
+import { Check, X, Eye, FileText, Download, Upload, Filter, Search, TableProperties, FileSpreadsheet, Trash2, Layers, Pencil, PieChart, CloudLightning } from "lucide-react";
+import KuotaTab from "@/components/KuotaTab";
 import {
-  Search,
-  Filter,
-  Download,
-  TableProperties,
-  CloudLightning,
-  FileSpreadsheet,
-  Check,
-  X,
-  Trash2,
-  Eye,
-  Pencil,
   Info,
   Calendar,
-  Layers,
   Heart,
   HelpCircle,
   FileCheck,
   User,
   Users,
-  FileText,
   FileImage,
   School
 } from "lucide-react";
@@ -240,14 +229,14 @@ function ApplicantsDirectoryContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const activeTabParam = searchParams.get("tab") || "active";
-  const activePageTab = activeTabParam as "active" | "transfer" | "trash";
+  const activePageTab = activeTabParam as "active" | "transfer" | "trash" | "kuota";
 
   const [trashedApplicants, setTrashedApplicants] = useState<Applicant[]>([]);
   const [trashLoading, setTrashLoading] = useState<boolean>(false);
   const [trashError, setTrashError] = useState<string>("");
   const [trashSuccess, setTrashSuccess] = useState<string>("");
 
-  const handleTabChange = (tab: "active" | "transfer" | "trash") => {
+  const handleTabChange = (tab: "active" | "transfer" | "trash" | "kuota") => {
     setTrashError("");
     setTrashSuccess("");
     router.push(`/dashboard/pendaftar?tab=${tab}`);
@@ -629,6 +618,17 @@ function ApplicantsDirectoryContent() {
           <Trash2 size={15} />
           Sampah / Calon Siswa Dihapus
         </button>
+        <button
+          onClick={() => handleTabChange("kuota")}
+          className={`pb-3 text-sm font-bold border-b-2 transition-all flex items-center gap-1.5 ${
+            activePageTab === "kuota"
+              ? "border-blue-500 text-blue-600 dark:text-blue-400"
+              : "border-transparent text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200"
+          }`}
+        >
+          <PieChart size={15} />
+          Data Kuota
+        </button>
       </div>
 
       {trashError && (
@@ -643,7 +643,9 @@ function ApplicantsDirectoryContent() {
         </div>
       )}
 
-      {activePageTab === "active" || activePageTab === "transfer" ? (
+      {activePageTab === "kuota" ? (
+        <KuotaTab type="pendaftar" />
+      ) : activePageTab === "active" || activePageTab === "transfer" ? (
         <>
           {/* Search, Filter & Spreadsheet Toggle Toolbar */}
       <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800/60 rounded-3xl p-6 shadow-[0_2px_12px_rgba(0,0,0,0.02)] flex flex-col xl:flex-row gap-4 items-center justify-between transition-colors duration-300">
