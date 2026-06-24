@@ -72,6 +72,45 @@ interface FaqItem {
   a: string;
 }
 
+interface PartnerItem {
+  id: number;
+  name: string;
+  logo: string;
+  url: string;
+  h: string;
+}
+
+const DEFAULT_PARTNERS: PartnerItem[] = [
+  { id: 1, name: "TOA", logo: "https://smktarunabhakti.sch.id/wp-content/uploads/2023/11/PT-TOA.png", url: "https://toa.co.id/", h: "h-8" },
+  { id: 2, name: "Biznet", logo: "https://smktarunabhakti.sch.id/wp-content/uploads/2023/11/biznet_vertical_logo.png", url: "https://www.biznetnetworks.com/", h: "h-20" },
+  { id: 3, name: "Icon+", logo: "https://smktarunabhakti.sch.id/wp-content/uploads/2023/11/56e83c6db8cd5587e87161281dfba75b.webp", url: "https://plniconplus.co.id/", h: "h-14" },
+  { id: 4, name: "MD Animation", logo: "https://smktarunabhakti.sch.id/wp-content/uploads/2023/11/Logo_md_animation.png", url: "https://mdentertainment.com/", h: "h-8" },
+  { id: 5, name: "Hompimpa Animworks", logo: "https://www.google.com/s2/favicons?domain=hompimpa.co.id&sz=256", url: "https://hompimpa.co.id/", h: "h-12" },
+  { id: 6, name: "Monsterdata", logo: "https://www.google.com/s2/favicons?domain=monsterdata.asia&sz=256", url: "https://monsterdata.asia/?utm_source=chatgpt.com", h: "h-12" },
+  { id: 7, name: "Ciptadrasoft", logo: "https://www.google.com/s2/favicons?domain=citcom.id&sz=256", url: "https://citcom.id/", h: "h-12" },
+  { id: 8, name: "Assemblr", logo: "https://smktarunabhakti.sch.id/wp-content/uploads/2023/11/6156e76e275fa19ed9a33fa3_Group-33959.png", url: "https://assemblrworld.com/", h: "h-20" },
+  { id: 9, name: "Daun Biru Engineering", logo: "https://smktarunabhakti.sch.id/wp-content/uploads/2023/11/E-Learning-5.png", url: "https://daunbiru.co.id/", h: "h-12" },
+  { id: 10, name: "Citra Film School", logo: "https://smktarunabhakti.sch.id/wp-content/uploads/2023/11/cropped-Logo-baru-citra.png", url: "https://citrafilmschool.net/", h: "h-20" },
+  { id: 11, name: "Prasimax", logo: "https://smktarunabhakti.sch.id/wp-content/uploads/2023/11/Prasimax_Logo.png", url: "https://prasimax.com/", h: "h-10" },
+  { id: 12, name: "Panasonic", logo: "https://smktarunabhakti.sch.id/wp-content/uploads/2023/11/8225.png", url: "https://www.panasonic.com/id/", h: "h-8" },
+  { id: 13, name: "LUWES INOVASI MANDIRI", logo: "https://luwesinovasimandiri.com/_astro/logo.DBn-6O1s.webp", url: "https://luwesinovasimandiri.com/", h: "h-12" },
+  { id: 14, name: "PUDAK SCIENTIFIC", logo: "https://www.google.com/s2/favicons?domain=pudak-scientific.com&sz=256", url: "https://www.pudak-scientific.com/", h: "h-12" },
+  { id: 15, name: "Pupuk Kujang Cikampek", logo: "https://www.google.com/s2/favicons?domain=pupuk-kujang.co.id&sz=256", url: "https://www.pupuk-kujang.co.id/", h: "h-12" },
+  { id: 16, name: "Rasil AM 720", logo: "https://www.google.com/s2/favicons?domain=radiosilaturahim.com&sz=256", url: "https://www.radiosilaturahim.com/", h: "h-12" },
+  { id: 17, name: "Beyond Films", logo: "https://www.google.com/s2/favicons?domain=beyondfilms.co.id&sz=256", url: "http://www.beyondfilms.co.id", h: "h-12" },
+  { id: 18, name: "POSTPLAY", logo: "https://www.google.com/s2/favicons?domain=linktr.ee&sz=256", url: "https://linktr.ee/postplayindonesia?utm_source=chatgpt.com", h: "h-12" },
+  { id: 19, name: "VISI 8", logo: "https://www.google.com/s2/favicons?domain=visi8.com&sz=256", url: "https://visi8.com/", h: "h-12" },
+  { id: 20, name: "MEMENTO", logo: "https://www.google.com/s2/favicons?domain=mementoworks.id&sz=256", url: "https://mementoworks.id", h: "h-12" },
+  { id: 21, name: "SKYNET", logo: "https://www.google.com/s2/favicons?domain=sky.net.id&sz=256", url: "https://sky.net.id/?utm_source=chatgpt.com", h: "h-12" },
+  { id: 22, name: "Museum Nasional Indonesia", logo: "https://www.google.com/s2/favicons?domain=museumnasional.or.id&sz=256", url: "https://www.museumnasional.or.id/", h: "h-12" },
+  { id: 23, name: "ANIMO", logo: "https://www.google.com/s2/favicons?domain=fiverr.com&sz=256", url: "https://www.fiverr.com/animo_studio?utm_source=chatgpt.com", h: "h-12" },
+  { id: 24, name: "PIONICON", logo: "/partners/pionicon.jpg", url: "https://pionicon.com/", h: "h-12" },
+  { id: 25, name: "Circle Logo", logo: "https://www.google.com/s2/favicons?domain=seamolec.org&sz=256", url: "https://seamolec.org/", h: "h-12" },
+  { id: 26, name: "mvnet", logo: "https://www.google.com/s2/favicons?domain=mvnet.co.id&sz=256", url: "https://mvnet.co.id/", h: "h-12" },
+  { id: 27, name: "SADA TECHNOLOGY", logo: "https://www.google.com/s2/favicons?domain=sada.id&sz=256", url: "https://sada.id/", h: "h-12" },
+  { id: 28, name: "LIGHT CODE DIGITAL", logo: "https://www.google.com/s2/favicons?domain=lightcodedigital.com&sz=256", url: "https://lightcodedigital.com/", h: "h-12" },
+];
+
 const formatRupiah = (value: string) => {
   if (!value) return "Rp ";
   const clean = value.replace(/[^0-9]/g, "");
@@ -306,7 +345,7 @@ const DEFAULT_MAJORS: MajorItem[] = [
 export default function KelolaUserInterface() {
   const { adminToken } = usePPDB();
   const [mounted, setMounted] = useState(false);
-  const [activeTab, setActiveTab] = useState<"hero" | "majors" | "alur" | "form" | "faq" | "revisions" | "bank">("hero");
+  const [activeTab, setActiveTab] = useState<"hero" | "majors" | "alur" | "form" | "faq" | "revisions" | "bank" | "partners">("hero");
 
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -348,6 +387,7 @@ export default function KelolaUserInterface() {
 
   const [alurList, setAlurList] = useState<AlurItem[]>(DEFAULT_ALUR);
   const [majorsList, setMajorsList] = useState<MajorItem[]>(DEFAULT_MAJORS);
+  const [partnersList, setPartnersList] = useState<PartnerItem[]>(DEFAULT_PARTNERS);
   const [revisions, setRevisions] = useState<RevisionLog[]>([]);
   const [faqList, setFaqList] = useState<FaqItem[]>([]);
 
@@ -405,6 +445,7 @@ export default function KelolaUserInterface() {
       ppdb_alur_config: alurList,
       ppdb_majors_config: majorsList,
       ppdb_faq_config: faqList,
+      ppdb_partners_config: partnersList,
     };
 
     localStorage.setItem("ppdb_ui_editor_draft", JSON.stringify(draft));
@@ -427,6 +468,7 @@ export default function KelolaUserInterface() {
     alurList,
     majorsList,
     faqList,
+    partnersList,
   ]);
 
   const showToastMsg = (message: string, type: "success" | "error" | "info" = "success") => {
@@ -471,6 +513,11 @@ export default function KelolaUserInterface() {
         setFaqList(activeConfig.ppdb_faq_config);
       } else {
         setFaqList(DEFAULT_FAQ);
+      }
+      if (activeConfig.ppdb_partners_config && Array.isArray(activeConfig.ppdb_partners_config)) {
+        setPartnersList(activeConfig.ppdb_partners_config);
+      } else {
+        setPartnersList(DEFAULT_PARTNERS);
       }
       if (activeConfig.ppdb_majors_config && Array.isArray(activeConfig.ppdb_majors_config)) {
         const dbMajors = activeConfig.ppdb_majors_config;
@@ -681,7 +728,8 @@ export default function KelolaUserInterface() {
         ppdb_majors_config: finalMajors,
         ppdb_faq_config: faqList,
         ppdb_gelombang_config: gelombangConfig,
-        ppdb_bank_config: bankConfigList
+        ppdb_bank_config: bankConfigList,
+        ppdb_partners_config: partnersList
       };
 
       const token = adminToken || localStorage.getItem("ppdb_admin_token");
@@ -707,6 +755,7 @@ export default function KelolaUserInterface() {
           localStorage.setItem("ppdb_majors_config", JSON.stringify(finalMajors));
           localStorage.setItem("ppdb_alur_config", JSON.stringify(alurList));
           localStorage.setItem("ppdb_faq_config", JSON.stringify(faqList));
+          localStorage.setItem("ppdb_partners_config", JSON.stringify(partnersList));
           localStorage.setItem("ppdb_reg_cost", formFee);
           localStorage.setItem("ppdb_school_period", schoolPeriod);
           localStorage.setItem("ppdb_wa_group_url", waGroupUrl);
@@ -866,6 +915,7 @@ export default function KelolaUserInterface() {
           { id: "form", label: "Form & Panduan", icon: Info },
           { id: "bank", label: "Rekening Bank Sekolah", icon: Database },
           { id: "faq", label: "Pertanyaan (FAQ)", icon: HelpCircle },
+          { id: "partners", label: "Partner Industri", icon: Briefcase },
           { id: "revisions", label: "Riwayat Perubahan", icon: Clock }
         ].map((tab) => {
           const Icon = tab.icon;
@@ -2025,6 +2075,127 @@ export default function KelolaUserInterface() {
                   {bankConfigList.length === 0 && (
                     <div className="col-span-2 text-center py-10 border-2 border-dashed border-slate-200 dark:border-slate-800 rounded-3xl text-slate-400 font-bold uppercase text-[10px] tracking-wider">
                       Belum ada rekening bank yang dikonfigurasi. Tambah rekening baru dengan tombol diatas.
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+            {/* TAB: Partner Industri */}
+            {activeTab === "partners" && (
+              <div className="space-y-6 animate-in fade-in duration-300">
+                <div className="flex items-center justify-between border-b border-slate-100 dark:border-white/5 pb-4 mb-4">
+                  <div>
+                    <h3 className="text-sm font-black uppercase text-slate-850 dark:text-white tracking-wider flex items-center gap-2">
+                      <Briefcase size={16} className="text-blue-500" />
+                      <span>Daftar Partner Industri</span>
+                    </h3>
+                    <p className="text-[10px] text-slate-400 font-bold uppercase mt-1">Kelola logo, nama, URL, dan ukuran logo perusahaan industri (Hanya tampil 20 di Landing Page, sisanya dipaginasi)</p>
+                  </div>
+
+                  <button
+                    onClick={() => {
+                      const nextId = partnersList.length > 0 ? Math.max(...partnersList.map(p => p.id)) + 1 : 1;
+                      setPartnersList(prev => [{ id: nextId, name: "Partner Baru", logo: "", url: "#", h: "h-12" }, ...prev]);
+                    }}
+                    className="flex items-center gap-1.5 px-4.5 py-2.5 rounded-xl bg-slate-50 hover:bg-slate-100 dark:bg-slate-950 border border-slate-200 dark:border-white/5 text-[10px] uppercase font-bold text-slate-700 dark:text-slate-300 transition-all shadow-sm"
+                  >
+                    <Plus size={14} />
+                    <span>Tambah Partner</span>
+                  </button>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {partnersList.map((partner, idx) => (
+                    <div 
+                      key={partner.id}
+                      className="bg-slate-50 dark:bg-slate-950/40 border border-slate-200/60 dark:border-white/5 rounded-3xl p-5 relative overflow-hidden transition-all duration-300"
+                    >
+                      <div className="absolute top-4 right-4 flex items-center gap-2">
+                        <button
+                          onClick={() => setPartnersList(prev => prev.filter(p => p.id !== partner.id))}
+                          className="p-1.5 text-rose-500 hover:bg-rose-500/10 rounded-lg transition-all"
+                          title="Hapus Partner"
+                        >
+                          <Trash2 size={14} />
+                        </button>
+                      </div>
+
+                      <div className="space-y-4 pt-2">
+                        <div className="flex flex-col items-center gap-3">
+                          <div className="w-20 h-20 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl flex items-center justify-center p-2">
+                            {partner.logo ? (
+                              <img src={DOMPurify.sanitize(sanitizeSrc(partner.logo) || "") || undefined} alt="" className="max-w-full max-h-full object-contain" />
+                            ) : (
+                              <ImageIcon size={24} className="text-slate-300" />
+                            )}
+                          </div>
+                          
+                          <input
+                            type="text"
+                            value={partner.logo}
+                            onChange={(e) => {
+                              const val = e.target.value;
+                              setPartnersList(prev => prev.map(p => p.id === partner.id ? { ...p, logo: val } : p));
+                            }}
+                            placeholder="URL Logo (https://...)"
+                            className="w-full px-3 py-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/5 rounded-xl text-slate-800 dark:text-white font-semibold text-[10px] focus:outline-none focus:border-blue-500 text-center"
+                          />
+                        </div>
+
+                        <div className="space-y-2">
+                          <label className="text-[9px] uppercase font-bold text-slate-450 tracking-wider">Nama Partner</label>
+                          <input
+                            type="text"
+                            value={partner.name}
+                            onChange={(e) => {
+                              const val = e.target.value;
+                              setPartnersList(prev => prev.map(p => p.id === partner.id ? { ...p, name: val } : p));
+                            }}
+                            placeholder="Contoh: PT Telkom"
+                            className="w-full px-3 py-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/5 rounded-xl text-slate-800 dark:text-white font-semibold text-xs focus:outline-none focus:border-blue-500"
+                          />
+                        </div>
+
+                        <div className="space-y-2">
+                          <label className="text-[9px] uppercase font-bold text-slate-450 tracking-wider">Link Website</label>
+                          <input
+                            type="text"
+                            value={partner.url}
+                            onChange={(e) => {
+                              const val = e.target.value;
+                              setPartnersList(prev => prev.map(p => p.id === partner.id ? { ...p, url: val } : p));
+                            }}
+                            placeholder="https://"
+                            className="w-full px-3 py-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/5 rounded-xl text-slate-800 dark:text-white font-semibold text-xs focus:outline-none focus:border-blue-500"
+                          />
+                        </div>
+
+                        <div className="space-y-2">
+                          <label className="text-[9px] uppercase font-bold text-slate-450 tracking-wider">Ukuran Logo</label>
+                          <select
+                            value={partner.h}
+                            onChange={(e) => {
+                              const val = e.target.value;
+                              setPartnersList(prev => prev.map(p => p.id === partner.id ? { ...p, h: val } : p));
+                            }}
+                            className="w-full px-3 py-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/5 rounded-xl text-slate-800 dark:text-white font-semibold text-xs focus:outline-none focus:border-blue-500"
+                          >
+                            <option value="h-8">Sangat Kecil (h-8)</option>
+                            <option value="h-10">Kecil (h-10)</option>
+                            <option value="h-12">Sedang (h-12)</option>
+                            <option value="h-14">Besar (h-14)</option>
+                            <option value="h-16">Sangat Besar (h-16)</option>
+                            <option value="h-20">Raksasa (h-20)</option>
+                          </select>
+                        </div>
+                        
+                      </div>
+                    </div>
+                  ))}
+
+                  {partnersList.length === 0 && (
+                    <div className="col-span-3 text-center py-10 border-2 border-dashed border-slate-200 dark:border-slate-800 rounded-3xl text-slate-400 font-bold uppercase text-[10px] tracking-wider">
+                      Belum ada partner industri. Tambah partner baru dengan tombol diatas.
                     </div>
                   )}
                 </div>
