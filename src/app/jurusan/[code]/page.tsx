@@ -744,6 +744,10 @@ export default function MajorPage() {
                   )}
 
                   <div className="flex flex-wrap items-center gap-4">
+                    <Link href="/" className="inline-flex items-center gap-2 text-sm font-bold text-slate-600 dark:text-slate-300 hover:text-slate-800 dark:hover:text-white transition-colors py-3.5 px-6 rounded-2xl bg-white/50 dark:bg-slate-900/50 border border-slate-200/50 dark:border-slate-800 backdrop-blur-md">
+                      <ArrowLeft size={16} /> Lihat Jurusan Lain
+                    </Link>
+
                     <div className="relative group/btn">
                       <Link 
                         href={isFull ? "#" : "/daftar"} 
@@ -752,18 +756,10 @@ export default function MajorPage() {
                         {isFull ? "Pendaftaran Ditutup" : "Daftar Jurusan Ini"} <ArrowRight size={18} />
                       </Link>
                     </div>
-
-                    <Link href="/" className="inline-flex items-center gap-2 text-sm font-bold text-slate-600 dark:text-slate-300 hover:text-slate-800 dark:hover:text-white transition-colors py-3.5 px-6 rounded-2xl bg-white/50 dark:bg-slate-900/50 border border-slate-200/50 dark:border-slate-800 backdrop-blur-md">
-                      <ArrowLeft size={16} /> Lihat Jurusan Lain
-                    </Link>
                   </div>
                 </div>
               );
             })()}
-
-            <Link href="/" className="inline-flex items-center gap-2 text-sm font-bold text-slate-600 dark:text-slate-300 hover:text-slate-800 dark:hover:text-white transition-colors py-3.5 px-6 rounded-2xl bg-white/50 dark:bg-slate-900/50 border border-slate-200/50 dark:border-slate-800 backdrop-blur-md">
-              <ArrowLeft size={16} /> Lihat Jurusan Lain
-            </Link>
           </div>
         </div>
 

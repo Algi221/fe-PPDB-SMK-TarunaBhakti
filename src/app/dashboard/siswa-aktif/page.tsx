@@ -44,8 +44,13 @@ import {
   School,
   Sparkles,
   Trash2,
-  Pencil
+  Pencil,
+  PieChart
 } from "lucide-react";
+
+import { useRouter, useSearchParams } from "next/navigation";
+import { Suspense } from "react";
+import KuotaTab from "@/components/KuotaTab";
 
 export const formatNoPendaftaran = (periode: string | null | undefined, id: number) => {
   try {
@@ -158,7 +163,15 @@ interface Applicant {
   [key: string]: any;
 }
 
-export default function ActiveStudentsDirectory() {
+function ActiveStudentsDirectoryContent() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const activePageTab = searchParams.get("tab") || "active";
+
+  const handleTabChange = (tab: "active" | "kuota") => {
+    router.push(`/dashboard/siswa-aktif?tab=${tab}`);
+  };
+
   const { activeStudents, addToast, fetchActiveStudents, updateActiveStudent } = usePPDB();
 
   useEffect(() => {
@@ -545,7 +558,36 @@ export default function ActiveStudentsDirectory() {
 
   return (
     <div className="space-y-6 animate-in fade-in duration-500 text-left">
-      
+      <div className="flex flex-wrap items-center gap-6 border-b border-slate-200 dark:border-slate-800/60 mb-6 px-2">
+        <button
+          onClick={() => handleTabChange("active")}
+          className={`pb-3 text-sm font-bold border-b-2 transition-all ${
+            activePageTab === "active"
+              ? "border-blue-500 text-blue-600 dark:text-blue-400"
+              : "border-transparent text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200"
+          }`}
+        >
+          Data Siswa Aktif
+        </button>
+        <button
+          onClick={() => handleTabChange("kuota")}
+          className={`pb-3 text-sm font-bold border-b-2 transition-all flex items-center gap-1.5 ${
+            activePageTab === "kuota"
+              ? "border-blue-500 text-blue-600 dark:text-blue-400"
+              : "border-transparent text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200"
+          }`}
+        >
+          <PieChart size={15} />
+          Data Kuota
+        </button>
+      </div>
+
+      {activePageTab === "kuota" ? (
+        <div className="animate-in fade-in zoom-in-95 duration-300">
+          <KuotaTab />
+        </div>
+      ) : (
+        <>
       {/* Executive Statistics Grid */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
         <div className="bg-gradient-to-br from-indigo-500 to-indigo-600 dark:from-indigo-950/60 dark:to-indigo-900/40 border border-indigo-400/20 dark:border-indigo-850/40 rounded-3xl p-6 shadow-sm text-white flex items-center justify-between transition-all duration-300 hover:shadow-md">
@@ -1410,7 +1452,16 @@ export default function ActiveStudentsDirectory() {
         </div>
       )}
 
+        </>
+      )}
     </div>
+  );
+}
 
+export default function ActiveStudentsDirectory() {
+  return (
+    <Suspense fallback={<div className="p-8 text-center text-slate-500 font-bold animate-pulse">Memuat direktori siswa...</div>}>
+      <ActiveStudentsDirectoryContent />
+    </Suspense>
   );
 }
