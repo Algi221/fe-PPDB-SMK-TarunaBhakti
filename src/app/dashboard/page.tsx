@@ -18,7 +18,66 @@ interface MajorItem {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Area Chart Component
+// Animated counter hook
+// ─────────────────────────────────────────────────────────────────────────────
+function useCountUp(target: number, duration = 1400, trigger = false) {
+  const [value, setValue] = useState(0);
+  useEffect(() => {
+    if (!trigger || target === 0) { setValue(target); return; }
+    let start: number | null = null;
+    const raf = (ts: number) => {
+      if (!start) start = ts;
+      const p = Math.min((ts - start) / duration, 1);
+      const eased = 1 - Math.pow(1 - p, 3); // cubic ease-out
+      setValue(Math.round(eased * target));
+      if (p < 1) requestAnimationFrame(raf);
+    };
+    requestAnimationFrame(raf);
+  }, [target, duration, trigger]);
+  return value;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Animated Stat Card
+// ─────────────────────────────────────────────────────────────────────────────
+function StatCard({
+  label, value, sub, color, icon, delay = 0, trigger = false
+}: {
+  label: string; value: number; sub: string; color: string;
+  icon: React.ReactNode; delay?: number; trigger?: boolean;
+}) {
+  const displayValue = useCountUp(value, 1300 + delay * 80, trigger);
+  const colorMap: Record<string, { bg: string; text: string; icon: string; border: string; ring: string }> = {
+    blue:    { bg: "bg-blue-50/70 dark:bg-blue-950/30",    text: "text-blue-600 dark:text-blue-400",    icon: "bg-blue-100 dark:bg-blue-950/60 text-blue-500 dark:text-blue-400",    border: "hover:border-blue-200 dark:hover:border-blue-800", ring: "ring-blue-500/20" },
+    emerald: { bg: "bg-emerald-50/70 dark:bg-emerald-950/30", text: "text-emerald-600 dark:text-emerald-400", icon: "bg-emerald-100 dark:bg-emerald-950/60 text-emerald-500 dark:text-emerald-400", border: "hover:border-emerald-200 dark:hover:border-emerald-800", ring: "ring-emerald-500/20" },
+    amber:   { bg: "bg-amber-50/70 dark:bg-amber-950/30",   text: "text-amber-600 dark:text-amber-400",   icon: "bg-amber-100 dark:bg-amber-950/60 text-amber-500 dark:text-amber-400",   border: "hover:border-amber-200 dark:hover:border-amber-800", ring: "ring-amber-500/20" },
+    rose:    { bg: "bg-rose-50/70 dark:bg-rose-950/30",     text: "text-rose-600 dark:text-rose-400",     icon: "bg-rose-100 dark:bg-rose-950/60 text-rose-500 dark:text-rose-400",     border: "hover:border-rose-200 dark:hover:border-rose-800", ring: "ring-rose-500/20" },
+  };
+  const c = colorMap[color] ?? colorMap.blue;
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 28, scale: 0.96 }}
+      animate={{ opacity: 1, y: 0, scale: 1 }}
+      transition={{ duration: 0.5, delay: delay * 0.1, ease: [0.22, 1, 0.36, 1] }}
+      className={`bg-white dark:bg-[#111827] border border-slate-200/60 dark:border-slate-800/40 rounded-2xl p-5
+        relative overflow-hidden shadow-sm hover:shadow-lg ${c.border} transition-all duration-300 group cursor-default`}
+    >
+      <div className={`absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 ${c.bg}`} />
+      <div className="relative">
+        <div className="flex items-center justify-between mb-3">
+          <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400 dark:text-slate-500">{label}</span>
+          <div className={`w-9 h-9 rounded-xl flex items-center justify-center ${c.icon}`}>{icon}</div>
+        </div>
+        <h3 className={`text-3xl font-black leading-none mb-1 tabular-nums ${c.text}`}>{displayValue}</h3>
+        <span className="text-[9px] text-slate-400 dark:text-slate-500 font-bold uppercase tracking-wider">{sub}</span>
+      </div>
+    </motion.div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Area Chart with draw-in animation
 // ─────────────────────────────────────────────────────────────────────────────
 function AreaChart({
   data,
@@ -30,7 +89,9 @@ function AreaChart({
   color?: string;
 }) {
   const svgRef = useRef<SVGSVGElement>(null);
+  const lineRef = useRef<SVGPathElement>(null);
   const [hovered, setHovered] = useState<{ idx: number; x: number; y: number } | null>(null);
+  const [lineLength, setLineLength] = useState(0);
   const [animated, setAnimated] = useState(false);
 
   const W = 1000;
@@ -61,20 +122,30 @@ function AreaChart({
 
   const areaPath = `${linePath} L ${pts[pts.length - 1]?.x ?? 0} ${H - PAD_B} L ${pts[0]?.x ?? 0} ${H - PAD_B} Z`;
 
-  // Y-axis ticks
   const yTicks = Array.from({ length: 5 }, (_, i) => {
     const val = Math.round(minVal + (range / 4) * (4 - i));
     const y = PAD_T + (i / 4) * (H - PAD_T - PAD_B);
     return { val, y };
   });
 
-  // Handle mouse move for crosshair
+  // Measure line length for stroke animation
+  useEffect(() => {
+    if (lineRef.current) {
+      try { setLineLength(lineRef.current.getTotalLength()); } catch {}
+    }
+  }, [data]);
+
+  // Animate line draw-in
+  useEffect(() => {
+    const timer = setTimeout(() => setAnimated(true), 300);
+    return () => clearTimeout(timer);
+  }, [data]);
+
   const handleMouseMove = useCallback(
     (e: React.MouseEvent<SVGSVGElement>) => {
       const rect = svgRef.current?.getBoundingClientRect();
       if (!rect) return;
       const rawX = ((e.clientX - rect.left) / rect.width) * W;
-      // Find nearest point
       let nearest = 0;
       let minDist = Infinity;
       pts.forEach((p, i) => {
@@ -85,11 +156,6 @@ function AreaChart({
     },
     [pts]
   );
-
-  useEffect(() => {
-    const timer = setTimeout(() => setAnimated(true), 100);
-    return () => clearTimeout(timer);
-  }, []);
 
   const gradId = `ag-${color.replace("#", "")}`;
   const hovPt = hovered ? pts[hovered.idx] : null;
@@ -117,11 +183,9 @@ function AreaChart({
         {/* Grid lines */}
         {yTicks.map((t, i) => (
           <g key={i}>
-            <line
-              x1={PAD_L} y1={t.y} x2={W - PAD_R} y2={t.y}
+            <line x1={PAD_L} y1={t.y} x2={W - PAD_R} y2={t.y}
               stroke="currentColor" strokeOpacity="0.06" strokeWidth="1"
-              className="text-slate-900 dark:text-white"
-            />
+              className="text-slate-900 dark:text-white" />
             <text x={PAD_L - 8} y={t.y + 4} textAnchor="end" fill="currentColor"
               fontSize="11" className="text-slate-400 fill-slate-400 dark:fill-slate-600" opacity="0.7">
               {t.val}
@@ -129,14 +193,25 @@ function AreaChart({
           </g>
         ))}
 
-        {/* Area fill */}
-        <path d={areaPath} fill={`url(#${gradId})`} className={`transition-opacity duration-700 ${animated ? "opacity-100" : "opacity-0"}`} />
-
-        {/* Line */}
+        {/* Area fill – fades in */}
         <path
-          d={linePath} fill="none" stroke={color}
-          strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"
-          className={`transition-all duration-700 ${animated ? "opacity-100" : "opacity-0"}`}
+          d={areaPath}
+          fill={`url(#${gradId})`}
+          className={`transition-opacity duration-700 ${animated ? "opacity-100" : "opacity-0"}`}
+        />
+
+        {/* Line – draw-in via stroke-dashoffset */}
+        <path
+          ref={lineRef}
+          d={linePath}
+          fill="none"
+          stroke={color}
+          strokeWidth="2.5"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeDasharray={lineLength || undefined}
+          strokeDashoffset={animated ? 0 : (lineLength || 999)}
+          style={{ transition: animated ? "stroke-dashoffset 1.2s cubic-bezier(0.22,1,0.36,1)" : "none" }}
         />
 
         {/* X-axis labels */}
@@ -197,7 +272,7 @@ function AreaChart({
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Bar Chart Component
+// Bar Chart with animated grow-up bars
 // ─────────────────────────────────────────────────────────────────────────────
 function BarChart({
   data,
@@ -205,6 +280,7 @@ function BarChart({
   data: { label: string; value: number; color: string }[];
 }) {
   const [hovered, setHovered] = useState<number | null>(null);
+  const [animated, setAnimated] = useState(false);
   const maxVal = Math.max(...data.map((d) => d.value), 1);
   const total = data.reduce((s, d) => s + d.value, 0) || 1;
 
@@ -222,6 +298,11 @@ function BarChart({
     val: Math.round(maxVal * frac),
     y: PAD_T + (1 - frac) * (H - PAD_T - PAD_B),
   }));
+
+  useEffect(() => {
+    const t = setTimeout(() => setAnimated(true), 400);
+    return () => clearTimeout(t);
+  }, []);
 
   return (
     <div className="relative w-full" style={{ height: 200 }}>
@@ -241,8 +322,9 @@ function BarChart({
 
         {data.map((d, i) => {
           const cx = PAD_L + gap * i + gap / 2;
-          const barH = ((d.value / maxVal) * (H - PAD_T - PAD_B));
-          const barY = H - PAD_B - barH;
+          const fullBarH = ((d.value / maxVal) * (H - PAD_T - PAD_B));
+          const barH = animated ? fullBarH : 0;
+          const barY = H - PAD_B - (animated ? fullBarH : 0);
           const isHov = hovered === i;
 
           return (
@@ -251,29 +333,32 @@ function BarChart({
               onMouseLeave={() => setHovered(null)}
               className="cursor-pointer"
             >
-              {/* Bar background (full height ghost) */}
-              <rect
-                x={cx - barW / 2} y={PAD_T} width={barW}
+              {/* Ghost bg */}
+              <rect x={cx - barW / 2} y={PAD_T} width={barW}
                 height={H - PAD_T - PAD_B}
                 rx="6" fill={d.color} opacity={isHov ? 0.08 : 0}
-                className="transition-opacity duration-200"
-              />
-              {/* Main bar */}
+                className="transition-opacity duration-200" />
+              {/* Bar - animated height */}
               <rect
-                x={cx - barW / 2} y={barY} width={barW} height={barH}
+                x={cx - barW / 2}
+                y={barY}
+                width={barW}
+                height={barH}
                 rx="6"
-                fill={isHov ? d.color : d.color}
-                opacity={isHov ? 1 : 0.75}
-                className="transition-all duration-200"
+                fill={d.color}
+                opacity={isHov ? 1 : 0.78}
+                style={{
+                  transition: "height 0.7s cubic-bezier(0.22,1,0.36,1), y 0.7s cubic-bezier(0.22,1,0.36,1), opacity 0.2s"
+                }}
               />
-              {/* Value on top */}
-              {isHov && (
-                <text x={cx} y={barY - 6} textAnchor="middle"
+              {/* Value on hover */}
+              {isHov && animated && (
+                <text x={cx} y={H - PAD_B - fullBarH - 7} textAnchor="middle"
                   fontSize="12" fontWeight="bold" fill={d.color}>
                   {d.value}
                 </text>
               )}
-              {/* X-label */}
+              {/* X label */}
               <text x={cx} y={H - PAD_B + 16} textAnchor="middle"
                 fontSize="11" className="fill-slate-500 dark:fill-slate-400">
                 {d.label}
@@ -319,6 +404,7 @@ function BarChart({
 export default function DashboardOverview() {
   const { applicants, activeStudents } = usePPDB();
   const [trendView, setTrendView] = useState<"hari" | "minggu" | "bulan" | "periode">("hari");
+  const [counterTrigger, setCounterTrigger] = useState(false);
 
   const totalCount = applicants.length;
   const approvedCount = activeStudents.length;
@@ -333,6 +419,12 @@ export default function DashboardOverview() {
     { name: "Elektronika", dbName: "Teknik Elektronika", color: "#10b981" },
     { name: "Animasi", dbName: "Animasi", color: "#ec4899" },
   ]);
+
+  // Trigger counters shortly after mount
+  useEffect(() => {
+    const t = setTimeout(() => setCounterTrigger(true), 200);
+    return () => clearTimeout(t);
+  }, []);
 
   useEffect(() => {
     const saved = localStorage.getItem("ppdb_majors_config");
@@ -411,54 +503,45 @@ export default function DashboardOverview() {
 
   const trend = getTrendData();
 
-  // ── Major Distribution for Bar Chart ───────────────────────────────────────
   const barData = majorsList.map((m) => ({
     label: m.name,
     color: m.color,
     value: applicants.filter((a: any) => a.jurusan_1 === m.dbName || a.jurusan1 === m.dbName || a.jurusan_1 === m.name).length,
   }));
 
-  // ── Stat Cards ──────────────────────────────────────────────────────────────
   const stats = [
-    { label: "Total Pendaftar", value: totalCount, sub: "Calon Siswa Baru", color: "blue", icon: <Users size={20} /> },
-    { label: "Terverifikasi", value: approvedCount, sub: "Berkas Lolos Validasi", color: "emerald", icon: <ShieldCheck size={20} /> },
-    { label: "Menunggu", value: pendingCount, sub: "Perlu Pemeriksaan", color: "amber", icon: <Clock size={20} /> },
-    { label: "Ditolak / Gugur", value: rejectedCount, sub: "Tidak Memenuhi Syarat", color: "rose", icon: <AlertTriangle size={20} /> },
+    { label: "Total Pendaftar",   value: totalCount,    sub: "Calon Siswa Baru",          color: "blue",    icon: <Users size={20} /> },
+    { label: "Terverifikasi",      value: approvedCount, sub: "Berkas Lolos Validasi",      color: "emerald", icon: <ShieldCheck size={20} /> },
+    { label: "Menunggu",           value: pendingCount,  sub: "Perlu Pemeriksaan",          color: "amber",   icon: <Clock size={20} /> },
+    { label: "Ditolak / Gugur",    value: rejectedCount, sub: "Tidak Memenuhi Syarat",      color: "rose",    icon: <AlertTriangle size={20} /> },
   ];
 
-  const colorMap: Record<string, { bg: string; text: string; icon: string; border: string }> = {
-    blue:    { bg: "bg-blue-50/70 dark:bg-blue-950/30",    text: "text-blue-600 dark:text-blue-400",    icon: "bg-blue-50 dark:bg-blue-950/40 text-blue-500 dark:text-blue-400",    border: "hover:border-blue-200 dark:hover:border-blue-800" },
-    emerald: { bg: "bg-emerald-50/70 dark:bg-emerald-950/30", text: "text-emerald-600 dark:text-emerald-400", icon: "bg-emerald-50 dark:bg-emerald-950/40 text-emerald-500 dark:text-emerald-400", border: "hover:border-emerald-200 dark:hover:border-emerald-800" },
-    amber:   { bg: "bg-amber-50/70 dark:bg-amber-950/30",   text: "text-amber-600 dark:text-amber-400",   icon: "bg-amber-50 dark:bg-amber-950/40 text-amber-500 dark:text-amber-400",   border: "hover:border-amber-200 dark:hover:border-amber-800" },
-    rose:    { bg: "bg-rose-50/70 dark:bg-rose-950/30",     text: "text-rose-600 dark:text-rose-400",     icon: "bg-rose-50 dark:bg-rose-950/40 text-rose-500 dark:text-rose-400",     border: "hover:border-rose-200 dark:hover:border-rose-800" },
-  };
-
   return (
-    <div className="space-y-6 animate-in fade-in duration-500">
+    <div className="space-y-6">
 
-      {/* ── Stats Cards ───────────────────────────────────────────────────────── */}
+      {/* ── Stats Cards ──────────────────────────────────────────────────────── */}
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
-        {stats.map((s) => {
-          const c = colorMap[s.color];
-          return (
-            <div key={s.label} className={`bg-white dark:bg-[#111827] border border-slate-200/60 dark:border-slate-800/40 rounded-2xl p-5 relative overflow-hidden shadow-sm hover:shadow-md ${c.border} transition-all duration-300 group`}>
-              <div className={`absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 ${c.bg}`} />
-              <div className="relative">
-                <div className="flex items-center justify-between mb-3">
-                  <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400 dark:text-slate-500">{s.label}</span>
-                  <div className={`w-9 h-9 rounded-xl flex items-center justify-center ${c.icon}`}>{s.icon}</div>
-                </div>
-                <h3 className={`text-3xl font-black leading-none mb-1 ${c.text}`}>{s.value}</h3>
-                <span className="text-[9px] text-slate-400 dark:text-slate-500 font-bold uppercase tracking-wider">{s.sub}</span>
-              </div>
-            </div>
-          );
-        })}
+        {stats.map((s, i) => (
+          <StatCard
+            key={s.label}
+            label={s.label}
+            value={s.value}
+            sub={s.sub}
+            color={s.color}
+            icon={s.icon}
+            delay={i}
+            trigger={counterTrigger}
+          />
+        ))}
       </div>
 
-      {/* ── Area Chart + Kuota ─────────────────────────────────────────────────── */}
-      <div className="grid grid-cols-1 lg:grid-cols-5 gap-4">
-
+      {/* ── Area Chart + Kuota ──────────────────────────────────────────────── */}
+      <motion.div
+        className="grid grid-cols-1 lg:grid-cols-5 gap-4"
+        initial={{ opacity: 0, y: 24 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.55, delay: 0.45, ease: [0.22, 1, 0.36, 1] }}
+      >
         {/* Area Chart */}
         <div className="lg:col-span-3 bg-white dark:bg-[#111827] border border-slate-200/60 dark:border-slate-800/40 rounded-2xl p-6 shadow-sm flex flex-col gap-4">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
@@ -482,7 +565,6 @@ export default function DashboardOverview() {
               ))}
             </div>
           </div>
-
           <AreaChart data={trend.counts} labels={trend.labels} color="#3b82f6" />
         </div>
 
@@ -505,10 +587,15 @@ export default function DashboardOverview() {
             <KuotaTab type="keseluruhan" variant="minimal" />
           </div>
         </div>
-      </div>
+      </motion.div>
 
-      {/* ── Bar Chart – Distribusi Jurusan ──────────────────────────────────────── */}
-      <div className="bg-white dark:bg-[#111827] border border-slate-200/60 dark:border-slate-800/40 rounded-2xl p-6 shadow-sm">
+      {/* ── Bar Chart – Distribusi Jurusan ──────────────────────────────────── */}
+      <motion.div
+        className="bg-white dark:bg-[#111827] border border-slate-200/60 dark:border-slate-800/40 rounded-2xl p-6 shadow-sm"
+        initial={{ opacity: 0, y: 24 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.55, delay: 0.6, ease: [0.22, 1, 0.36, 1] }}
+      >
         <div className="flex justify-between items-start mb-5">
           <div>
             <h3 className="text-xs font-black text-slate-800 dark:text-white tracking-wider uppercase flex items-center gap-2">
@@ -528,11 +615,15 @@ export default function DashboardOverview() {
           </div>
         </div>
         <BarChart data={barData} />
-      </div>
+      </motion.div>
 
-      {/* ── Recent Applicants + Kuota Progress ─────────────────────────────────── */}
-      <div className="grid grid-cols-1 lg:grid-cols-5 gap-4">
-
+      {/* ── Recent Applicants + Kuota Progress ──────────────────────────────── */}
+      <motion.div
+        className="grid grid-cols-1 lg:grid-cols-5 gap-4"
+        initial={{ opacity: 0, y: 24 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.55, delay: 0.75, ease: [0.22, 1, 0.36, 1] }}
+      >
         {/* Recent Table */}
         <div className="lg:col-span-3 bg-white dark:bg-[#111827] border border-slate-200/60 dark:border-slate-800/40 rounded-2xl p-6 shadow-sm">
           <div className="flex items-center justify-between mb-4">
@@ -556,7 +647,13 @@ export default function DashboardOverview() {
               </thead>
               <tbody className="divide-y divide-slate-50 dark:divide-white/5">
                 {applicants.slice(0, 5).map((a: any, idx: number) => (
-                  <tr key={a.id || idx} className="hover:bg-slate-50/60 dark:hover:bg-white/3 transition-all">
+                  <motion.tr
+                    key={a.id || idx}
+                    initial={{ opacity: 0, x: -10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 0.8 + idx * 0.06, duration: 0.35 }}
+                    className="hover:bg-slate-50/60 dark:hover:bg-white/3 transition-all"
+                  >
                     <td className="py-2.5 pl-2 font-bold text-slate-800 dark:text-white max-w-[130px] truncate">{a.nama}</td>
                     <td className="py-2.5 truncate max-w-[110px] text-slate-500 dark:text-slate-400 font-medium">{a.sekolah_asal || a.sekolahAsal}</td>
                     <td className="py-2.5">
@@ -573,7 +670,7 @@ export default function DashboardOverview() {
                         {a.status === "Approved" ? "Terverifikasi" : a.status === "Rejected" ? "Ditolak" : "Pending"}
                       </span>
                     </td>
-                  </tr>
+                  </motion.tr>
                 ))}
                 {applicants.length === 0 && (
                   <tr><td colSpan={4} className="text-center py-8 text-slate-400 font-bold uppercase tracking-wider text-[10px]">Belum ada data pendaftar</td></tr>
@@ -598,7 +695,7 @@ export default function DashboardOverview() {
             <KuotaTab type="siswa-aktif" variant="minimal" />
           </div>
         </div>
-      </div>
+      </motion.div>
 
     </div>
   );
