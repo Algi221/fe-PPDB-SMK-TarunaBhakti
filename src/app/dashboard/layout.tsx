@@ -4,36 +4,41 @@ import React, { useEffect, useState, Suspense } from "react";
 import { usePPDB } from "@/context/PPDBContext";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { Sun, Moon, LogOut, LayoutDashboard, Users, Settings, Globe, Megaphone, GraduationCap, ChevronLeft, ChevronRight, Palette, Layers, Shield, Menu } from "lucide-react";
+import {
+  Sun, Moon, LogOut, LayoutDashboard, Users, Settings,
+  Globe, Megaphone, GraduationCap, ChevronLeft, ChevronRight,
+  Palette, Layers, Shield, Menu, ChevronDown, UserCircle
+} from "lucide-react";
 
+// ─── Breadcrumbs ──────────────────────────────────────────────────────────────
 function Breadcrumbs({ pathname }: { pathname: string }) {
   const searchParams = useSearchParams();
   const activeTab = searchParams.get("tab");
 
-  const paths = pathname.split('/').filter(p => p);
+  const paths = pathname.split("/").filter((p) => p);
   const labelMap: Record<string, string> = {
     dashboard: "Dashboard",
-    admin: "users",
-    pendaftar: "pendaftar",
-    "siswa-aktif": "siswa-aktif",
-    informasi: "informasi",
-    "kelola-ui": "kelola-ui",
-    "pembagian-kelas": "pembagian-kelas",
-    settings: "settings"
+    admin: "Manajemen Admin",
+    pendaftar: "Data Calon Siswa",
+    "siswa-aktif": "Siswa Aktif",
+    informasi: "Kelola Informasi",
+    "kelola-ui": "Kelola UI/Data",
+    "pembagian-kelas": "Pembagian Kelas",
+    settings: "Pengaturan",
+    profile: "Profil Saya",
   };
 
   const breadcrumbs: { label: string; href: string }[] = [];
   paths.forEach((path, idx) => {
     const label = labelMap[path] || path;
-    const href = '/' + paths.slice(0, idx + 1).join('/');
+    const href = "/" + paths.slice(0, idx + 1).join("/");
     breadcrumbs.push({ label, href });
   });
 
-  if (pathname === "/dashboard/admin" && activeTab === "trash") {
-    breadcrumbs.push({ label: "trashed", href: "/dashboard/admin?tab=trash" });
-  } else if (pathname === "/dashboard/pendaftar" && activeTab === "trash") {
-    breadcrumbs.push({ label: "trashed", href: "/dashboard/pendaftar?tab=trash" });
-  }
+  if (pathname === "/dashboard/admin" && activeTab === "trash")
+    breadcrumbs.push({ label: "Sampah", href: "/dashboard/admin?tab=trash" });
+  else if (pathname === "/dashboard/pendaftar" && activeTab === "trash")
+    breadcrumbs.push({ label: "Sampah", href: "/dashboard/pendaftar?tab=trash" });
 
   return (
     <div className="flex items-center gap-1.5 text-xs text-slate-400 dark:text-slate-500 font-medium tracking-wide select-none">
@@ -41,7 +46,7 @@ function Breadcrumbs({ pathname }: { pathname: string }) {
         const isLast = idx === breadcrumbs.length - 1;
         return (
           <React.Fragment key={idx}>
-            {idx > 0 && <span className="text-slate-300 dark:text-slate-700">&gt;</span>}
+            {idx > 0 && <span className="text-slate-300 dark:text-slate-700">›</span>}
             {isLast ? (
               <span className="text-slate-650 dark:text-slate-300 font-semibold">{bc.label}</span>
             ) : (
@@ -56,16 +61,30 @@ function Breadcrumbs({ pathname }: { pathname: string }) {
   );
 }
 
+// ─── Main Layout ──────────────────────────────────────────────────────────────
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
-  const { adminToken, adminUser, logoutAdmin, wsStatus } = usePPDB();
+  const { adminToken, adminUser, logoutAdmin, wsStatus, ppdbLogo, ppdbTitle } = usePPDB();
   const router = useRouter();
   const pathname = usePathname();
+
   const [mounted, setMounted] = useState(false);
   const [isDark, setIsDark] = useState(false);
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
+  const [showUserDropdown, setShowUserDropdown] = useState(false);
+  const userDropdownRef = React.useRef<HTMLDivElement>(null);
 
+  // ── Close user dropdown on outside click ─────────────────────────────────
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (userDropdownRef.current && !userDropdownRef.current.contains(e.target as Node)) {
+        setShowUserDropdown(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   useEffect(() => {
     setIsMobileMenuOpen(false);
@@ -84,7 +103,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       document.documentElement.classList.remove("dark");
       setIsDark(false);
     }
-
     const savedCollapse = localStorage.getItem("ppdb-sidebar-collapsed");
     if (savedCollapse === "true") {
       setIsCollapsed(true);
@@ -97,13 +115,22 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     localStorage.setItem("ppdb-sidebar-collapsed", String(nextVal));
   };
 
+  const getTimeoutDuration = () => {
+    if (typeof window === "undefined") return 60 * 60 * 1000;
+    const saved = localStorage.getItem("ppdb_session_timeout");
+    if (!saved) return 60 * 60 * 1000;
+    const minutes = parseInt(saved, 10);
+    return isNaN(minutes) ? 60 * 60 * 1000 : minutes * 60 * 1000;
+  };
+
   useEffect(() => {
     if (mounted) {
       const token = localStorage.getItem("ppdb_admin_token");
       const lastActive = localStorage.getItem("ppdb_admin_last_active");
       if (token && lastActive) {
         const elapsed = Date.now() - parseInt(lastActive, 10);
-        if (elapsed > 60 * 60 * 1000) { // 1 hour
+        const limit = getTimeoutDuration();
+        if (elapsed > limit) {
           logoutAdmin();
           router.push("/dashboard/login?expired=true");
           return;
@@ -113,47 +140,35 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         router.push("/dashboard/login");
       }
     }
-  }, [adminToken, mounted, router, logoutAdmin]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [adminToken, mounted]);
 
-  // Inactivity timeout of 1 hour (60 minutes)
   useEffect(() => {
     if (!adminToken || pathname === "/dashboard/login") return;
-
     let timeoutId: NodeJS.Timeout;
     let lastStorageUpdate = Date.now();
-
     const resetTimer = () => {
       clearTimeout(timeoutId);
+      const limit = getTimeoutDuration();
       timeoutId = setTimeout(() => {
         logoutAdmin();
         router.push("/dashboard/login?expired=true");
-      }, 60 * 60 * 1000); // 1 hour (60 minutes)
-
+      }, limit);
       const now = Date.now();
-      if (now - lastStorageUpdate > 10000) { // Update localStorage at most once every 10 seconds
+      if (now - lastStorageUpdate > 10000) {
         localStorage.setItem("ppdb_admin_last_active", now.toString());
         lastStorageUpdate = now;
       }
     };
-
     const events = ["mousedown", "mousemove", "keypress", "scroll", "touchstart"];
-    
-    // Set initial timer
     resetTimer();
-
-    // Add event listeners
-    events.forEach((event) => {
-      window.addEventListener(event, resetTimer);
-    });
-
-    // Cleanup on unmount
+    events.forEach((ev) => window.addEventListener(ev, resetTimer));
     return () => {
       clearTimeout(timeoutId);
-      events.forEach((event) => {
-        window.removeEventListener(event, resetTimer);
-      });
+      events.forEach((ev) => window.removeEventListener(ev, resetTimer));
     };
-  }, [adminToken, pathname, router, logoutAdmin]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [adminToken, pathname]);
 
   const toggleTheme = () => {
     setIsDark(!isDark);
@@ -166,12 +181,19 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     }
   };
 
+  const handleLogout = () => {
+    setShowUserDropdown(false);
+    setShowLogoutConfirm(true);
+  };
+
+  const confirmLogout = () => {
+    logoutAdmin();
+    setShowLogoutConfirm(false);
+    router.push("/dashboard/login");
+  };
+
   if (!mounted) return null;
-
-  if (pathname === "/dashboard/login") {
-    return <>{children}</>;
-  }
-
+  if (pathname === "/dashboard/login") return <>{children}</>;
   if (!adminToken) {
     return (
       <div className="min-h-screen bg-[#f7f7f7] dark:bg-slate-950 flex items-center justify-center text-slate-800 dark:text-white transition-colors duration-300">
@@ -186,33 +208,71 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     );
   }
 
+  const userInitial = adminUser?.nama ? adminUser.nama.charAt(0).toUpperCase() : "A";
 
-  const handleLogout = () => {
-    setShowLogoutConfirm(true);
+  // ── Nav link helper ──────────────────────────────────────────────────────
+  const navLink = (
+    href: string,
+    icon: React.ReactNode,
+    label: string,
+    exact = false
+  ) => {
+    const isActive = exact ? pathname === href : (pathname === href || pathname.startsWith(href + "/"));
+    return (
+      <Link
+        href={href}
+        className={`flex items-center rounded-2xl text-xs font-bold uppercase tracking-wider transition-all duration-200 border ${
+          isCollapsed ? "justify-center p-3" : "px-4 py-3"
+        } ${
+          isActive
+            ? "bg-blue-50/70 dark:bg-blue-950/40 border-blue-100/80 dark:border-blue-900/40 text-blue-600 dark:text-blue-400 font-extrabold"
+            : "border-transparent text-slate-500 dark:text-slate-400 hover:text-blue-500 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-slate-800/60"
+        }`}
+        title={isCollapsed ? label : undefined}
+      >
+        <span className="shrink-0">{icon}</span>
+        <span className={`transition-all duration-300 ease-in-out overflow-hidden whitespace-nowrap ${
+          isCollapsed ? "max-w-0 opacity-0 ml-0" : "max-w-[200px] opacity-100 ml-3"
+        }`}>
+          {label}
+        </span>
+      </Link>
+    );
   };
 
-  const confirmLogout = () => {
-    logoutAdmin();
-    setShowLogoutConfirm(false);
-    router.push("/dashboard/login");
-  };
+  // ── Section header helper ─────────────────────────────────────────────────
+  const sectionHeader = (label: string) => (
+    <div className="flex items-center py-2 overflow-hidden min-h-[32px]">
+      <div className={`flex items-center w-full transition-all duration-300 ${isCollapsed ? "justify-center px-0" : "px-4 gap-2"}`}>
+        <span className={`text-[10px] font-black text-slate-400 dark:text-slate-555 uppercase tracking-widest select-none transition-all duration-300 ease-in-out overflow-hidden whitespace-nowrap ${
+          isCollapsed ? "max-w-0 opacity-0" : "max-w-[150px] opacity-100"
+        }`}>
+          {label}
+        </span>
+        <div className={`h-px bg-slate-300 dark:bg-slate-700 transition-all duration-300 ${isCollapsed ? "w-8" : "flex-1"}`} />
+      </div>
+    </div>
+  );
 
   return (
     <div className="h-screen bg-[#f7f7f7] dark:bg-[#0b0f19] text-slate-800 dark:text-slate-100 flex font-sans overflow-hidden transition-colors duration-300">
-      {/* Sidebar Navigation */}
+
       {/* Mobile Overlay */}
       {isMobileMenuOpen && (
-        <div 
+        <div
           className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-40 md:hidden"
           onClick={() => setIsMobileMenuOpen(false)}
         />
       )}
+
+      {/* ── SIDEBAR ─────────────────────────────────────────────────────────── */}
       <aside className={`fixed inset-y-0 left-0 z-50 md:sticky md:top-0 h-screen bg-white dark:bg-slate-900 border-r border-slate-300 dark:border-slate-700 flex flex-col shrink-0 transition-all duration-300 ease-in-out ${
-        isCollapsed ? "w-20" : "w-64"
+        isCollapsed ? "w-20" : "w-72"
       } ${
         isMobileMenuOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"
       }`}>
-        {/* Toggle Collapse Button (Desktop Only) */}
+
+        {/* Toggle Collapse Button */}
         <button
           onClick={handleToggleCollapse}
           className="hidden md:flex absolute top-[24px] -right-4 w-8 h-8 rounded-full border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-500 hover:text-blue-500 dark:text-slate-400 dark:hover:text-blue-400 items-center justify-center transition-all duration-300 shadow-sm z-50 hover:scale-110 cursor-pointer"
@@ -223,251 +283,58 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
         {/* Brand Header */}
         <div className={`py-4 flex items-center border-b border-slate-300 dark:border-slate-700 min-h-[73px] transition-all duration-300 ${
-          isCollapsed ? "px-[22px]" : "px-4"
+          isCollapsed ? "justify-center px-0" : "px-5"
         }`}>
           <Link href="/dashboard" className="flex items-center group">
             <img
-              src="/logo_smktb.png"
-              alt="Logo SMK Taruna Bhakti"
+              src={ppdbLogo || "/logo_smktb.png"}
+              alt="Logo Sekolah"
               className="w-9 h-9 object-contain shrink-0 transition-transform duration-300 group-hover:scale-105"
             />
             <div className={`transition-all duration-300 ease-in-out overflow-hidden flex flex-col min-w-0 ${
               isCollapsed ? "max-w-0 opacity-0 ml-0" : "max-w-[150px] opacity-100 ml-3"
             }`}>
-              <h2 className="text-sm font-black tracking-wider leading-none text-slate-800 dark:text-white uppercase whitespace-nowrap">SMK TB</h2>
+              <h2 className="text-sm font-black tracking-wider leading-none text-slate-800 dark:text-white uppercase whitespace-nowrap">
+                {ppdbTitle ? ppdbTitle.replace(/^(ppdb\s+)/i, '') : "SMK TB"}
+              </h2>
               <span className="text-[10px] text-blue-600 dark:text-blue-400 font-bold uppercase tracking-widest mt-1 block whitespace-nowrap">PPDB Admin Portal</span>
             </div>
           </Link>
         </div>
 
-        {/* Navigation Links */}
+        {/* Navigation */}
         <nav className={`flex-1 py-6 space-y-1.5 overflow-y-auto transition-all duration-300 ${
           isCollapsed ? "px-2" : "px-4"
         }`}>
-          {/* KATEGORI 1: MANAJEMEN SISWA */}
-          <div className="flex items-center py-2 overflow-hidden min-h-[32px]">
-            <div className={`flex items-center w-full transition-all duration-300 ${isCollapsed ? "justify-center px-0" : "px-4 gap-2"}`}>
-              <span className={`text-[10px] font-black text-slate-400 dark:text-slate-555 uppercase tracking-widest select-none transition-all duration-300 ease-in-out overflow-hidden whitespace-nowrap ${
-                isCollapsed ? "max-w-0 opacity-0" : "max-w-[150px] opacity-100"
-              }`}>
-                Manajemen Siswa
-              </span>
-              <div className={`h-px bg-slate-300 dark:bg-slate-700 transition-all duration-300 ${isCollapsed ? "w-8" : "flex-1"}`} />
-            </div>
-          </div>
-          
-          <Link
-            href="/dashboard"
-            className={`flex items-center rounded-2xl text-xs font-bold uppercase tracking-wider transition-all duration-300 border ${
-              isCollapsed ? "px-[31px] py-3" : "px-4 py-3"
-            } ${pathname === "/dashboard"
-                ? "bg-blue-50/70 dark:bg-blue-950/40 border-blue-100/80 dark:border-blue-900/40 text-blue-600 dark:text-blue-400 font-extrabold"
-                : "border-transparent text-slate-500 dark:text-slate-400 hover:text-blue-500 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-slate-800/60"
-              }`}
-            title={isCollapsed ? "Ringkasan" : undefined}
-          >
-            <LayoutDashboard size={18} className="shrink-0" />
-            <span className={`transition-all duration-300 ease-in-out overflow-hidden whitespace-nowrap ${
-              isCollapsed ? "max-w-0 opacity-0 ml-0" : "max-w-[200px] opacity-100 ml-3"
-            }`}>
-              Ringkasan
-            </span>
-          </Link>
- 
-          <Link
-            href="/dashboard/pendaftar"
-            className={`flex items-center rounded-2xl text-xs font-bold uppercase tracking-wider transition-all duration-300 border ${
-              isCollapsed ? "px-[31px] py-3" : "px-4 py-3"
-            } ${pathname === "/dashboard/pendaftar"
-                ? "bg-blue-50/70 dark:bg-blue-950/40 border-blue-100/80 dark:border-blue-900/40 text-blue-600 dark:text-blue-400 font-extrabold"
-                : "border-transparent text-slate-500 dark:text-slate-400 hover:text-blue-500 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-slate-800/60"
-              }`}
-            title={isCollapsed ? "Data Calon Siswa" : undefined}
-          >
-            <Users size={18} className="shrink-0" />
-            <span className={`transition-all duration-300 ease-in-out overflow-hidden whitespace-nowrap ${
-              isCollapsed ? "max-w-0 opacity-0 ml-0" : "max-w-[200px] opacity-100 ml-3"
-            }`}>
-              Data Calon Siswa
-            </span>
-          </Link>
 
-          <Link
-            href="/dashboard/pembagian-kelas"
-            className={`flex items-center rounded-2xl text-xs font-bold uppercase tracking-wider transition-all duration-300 border ${
-              isCollapsed ? "px-[31px] py-3" : "px-4 py-3"
-            } ${pathname === "/dashboard/pembagian-kelas"
-                ? "bg-blue-50/70 dark:bg-blue-950/40 border-blue-100/80 dark:border-blue-900/40 text-blue-600 dark:text-blue-400 font-extrabold"
-                : "border-transparent text-slate-500 dark:text-slate-400 hover:text-blue-500 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-slate-800/60"
-              }`}
-            title={isCollapsed ? "Pembagian Kelas" : undefined}
-          >
-            <Layers size={18} className="shrink-0" />
-            <span className={`transition-all duration-300 ease-in-out overflow-hidden whitespace-nowrap ${
-              isCollapsed ? "max-w-0 opacity-0 ml-0" : "max-w-[200px] opacity-100 ml-3"
-            }`}>
-              Pembagian Kelas
-            </span>
-          </Link>
- 
-          <Link
-            href="/dashboard/siswa-aktif"
-            className={`flex items-center rounded-2xl text-xs font-bold uppercase tracking-wider transition-all duration-300 border ${
-              isCollapsed ? "px-[31px] py-3" : "px-4 py-3"
-            } ${pathname === "/dashboard/siswa-aktif"
-                ? "bg-blue-50/70 dark:bg-blue-950/40 border-blue-100/80 dark:border-blue-900/40 text-blue-600 dark:text-blue-400 font-extrabold"
-                : "border-transparent text-slate-500 dark:text-slate-400 hover:text-blue-500 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-slate-800/60"
-              }`}
-            title={isCollapsed ? "Siswa Aktif" : undefined}
-          >
-            <GraduationCap size={18} className="shrink-0" />
-            <span className={`transition-all duration-300 ease-in-out overflow-hidden whitespace-nowrap ${
-              isCollapsed ? "max-w-0 opacity-0 ml-0" : "max-w-[200px] opacity-100 ml-3"
-            }`}>
-              Siswa Aktif
-            </span>
-          </Link>
+          {/* MANAJEMEN SISWA */}
+          {sectionHeader("Manajemen Siswa")}
+          {navLink("/dashboard", <LayoutDashboard size={18} />, "Ringkasan", true)}
+          {navLink("/dashboard/pendaftar", <Users size={18} />, "Data Calon Siswa")}
+          {navLink("/dashboard/pembagian-kelas", <Layers size={18} />, "Pembagian Kelas")}
+          {navLink("/dashboard/siswa-aktif", <GraduationCap size={18} />, "Siswa Aktif")}
 
-          {/* KATEGORI 2: KONTEN PORTAL */}
-          <div className="flex items-center py-2 overflow-hidden min-h-[32px]">
-            <div className={`flex items-center w-full transition-all duration-300 ${isCollapsed ? "justify-center px-0" : "px-4 gap-2"}`}>
-              <span className={`text-[10px] font-black text-slate-400 dark:text-slate-550 uppercase tracking-widest select-none transition-all duration-300 ease-in-out overflow-hidden whitespace-nowrap ${
-                isCollapsed ? "max-w-0 opacity-0" : "max-w-[150px] opacity-100"
-              }`}>
-                Konten Portal
-              </span>
-              <div className={`h-px bg-slate-300 dark:bg-slate-700 transition-all duration-300 ${isCollapsed ? "w-8" : "flex-1"}`} />
-            </div>
-          </div>
- 
-          <Link
-            href="/dashboard/informasi"
-            className={`flex items-center rounded-2xl text-xs font-bold uppercase tracking-wider transition-all duration-300 border ${
-              isCollapsed ? "px-[31px] py-3" : "px-4 py-3"
-            } ${pathname === "/dashboard/informasi"
-                ? "bg-blue-50/70 dark:bg-blue-950/40 border-blue-100/80 dark:border-blue-900/40 text-blue-600 dark:text-blue-400 font-extrabold"
-                : "border-transparent text-slate-500 dark:text-slate-400 hover:text-blue-500 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-slate-800/60"
-              }`}
-            title={isCollapsed ? "Kelola Informasi" : undefined}
-          >
-            <Megaphone size={18} className="shrink-0" />
-            <span className={`transition-all duration-300 ease-in-out overflow-hidden whitespace-nowrap ${
-              isCollapsed ? "max-w-0 opacity-0 ml-0" : "max-w-[200px] opacity-100 ml-3"
-            }`}>
-              Kelola Informasi
-            </span>
-          </Link>
- 
-          <Link
-            href="/dashboard/kelola-ui"
-            className={`flex items-center rounded-2xl text-xs font-bold uppercase tracking-wider transition-all duration-300 border ${
-              isCollapsed ? "px-[31px] py-3" : "px-4 py-3"
-            } ${pathname === "/dashboard/kelola-ui"
-                ? "bg-blue-50/70 dark:bg-blue-950/40 border-blue-100/80 dark:border-blue-900/40 text-blue-600 dark:text-blue-400 font-extrabold"
-                : "border-transparent text-slate-500 dark:text-slate-400 hover:text-blue-500 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-slate-800/60"
-              }`}
-            title={isCollapsed ? "Kelola User Interface" : undefined}
-          >
-            <Palette size={18} className="shrink-0" />
-            <span className={`transition-all duration-300 ease-in-out overflow-hidden whitespace-nowrap ${
-              isCollapsed ? "max-w-0 opacity-0 ml-0" : "max-w-[200px] opacity-100 ml-3"
-            }`}>
-              Kelola UI
-            </span>
-          </Link>
+          {/* KONTEN PORTAL */}
+          {sectionHeader("Konten Portal")}
+          {navLink("/dashboard/informasi", <Megaphone size={18} />, "Kelola Informasi")}
+          {navLink("/dashboard/kelola-ui", <Palette size={18} />, "Kelola UI/Data")}
 
-          {/* KATEGORI 3: SISTEM & PENGATURAN */}
-          <div className="flex items-center py-2 overflow-hidden min-h-[32px]">
-            <div className={`flex items-center w-full transition-all duration-300 ${isCollapsed ? "justify-center px-0" : "px-4 gap-2"}`}>
-              <span className={`text-[10px] font-black text-slate-400 dark:text-slate-555 uppercase tracking-widest select-none transition-all duration-300 ease-in-out overflow-hidden whitespace-nowrap ${
-                isCollapsed ? "max-w-0 opacity-0" : "max-w-[150px] opacity-100"
-              }`}>
-                Pengaturan Sistem
-              </span>
-              <div className={`h-px bg-slate-300 dark:bg-slate-700 transition-all duration-300 ${isCollapsed ? "w-8" : "flex-1"}`} />
-            </div>
-          </div>
- 
-          {adminUser?.role === 'superadmin' && (
-            <Link
-              href="/dashboard/admin"
-              className={`flex items-center rounded-2xl text-xs font-bold uppercase tracking-wider transition-all duration-300 border ${
-                isCollapsed ? "px-[31px] py-3" : "px-4 py-3"
-              } ${pathname === "/dashboard/admin"
-                  ? "bg-blue-50/70 dark:bg-blue-950/40 border-blue-100/80 dark:border-blue-900/40 text-blue-600 dark:text-blue-400 font-extrabold"
-                  : "border-transparent text-slate-500 dark:text-slate-400 hover:text-blue-500 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-slate-800/60"
-                }`}
-              title={isCollapsed ? "Manajemen Admin" : undefined}
-            >
-              <Shield size={18} className="shrink-0" />
-              <span className={`transition-all duration-300 ease-in-out overflow-hidden whitespace-nowrap ${
-                isCollapsed ? "max-w-0 opacity-0 ml-0" : "max-w-[200px] opacity-100 ml-3"
-              }`}>
-                Manajemen Admin
-              </span>
-            </Link>
-          )}
- 
-          <Link
-            href="/dashboard/settings"
-            className={`flex items-center rounded-2xl text-xs font-bold uppercase tracking-wider transition-all duration-300 border ${
-              isCollapsed ? "px-[31px] py-3" : "px-4 py-3"
-            } ${pathname === "/dashboard/settings"
-                ? "bg-blue-50/70 dark:bg-blue-950/40 border-blue-100/80 dark:border-blue-900/40 text-blue-600 dark:text-blue-400 font-extrabold"
-                : "border-transparent text-slate-500 dark:text-slate-400 hover:text-blue-500 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-slate-800/60"
-              }`}
-            title={isCollapsed ? "Pengaturan" : undefined}
-          >
-            <Settings size={18} className="shrink-0" />
-            <span className={`transition-all duration-300 ease-in-out overflow-hidden whitespace-nowrap ${
-              isCollapsed ? "max-w-0 opacity-0 ml-0" : "max-w-[200px] opacity-100 ml-3"
-            }`}>
-              Pengaturan
-            </span>
-          </Link>
+          {/* SISTEM & PENGATURAN */}
+          {sectionHeader("Pengaturan Sistem")}
+          {adminUser?.role === "superadmin" && navLink("/dashboard/admin", <Shield size={18} />, "Manajemen Admin")}
+          {navLink("/dashboard/settings", <Settings size={18} />, "Pengaturan")}
         </nav>
 
-        {/* Sidebar Footer (Admin Profile) */}
-        <div className={`py-4 border-t border-slate-300 dark:border-slate-700 bg-[#f7f7f7]/40 dark:bg-slate-950/20 flex flex-col gap-3 transition-all duration-300 ${
-          isCollapsed ? "px-[20px] items-center" : "px-4 items-stretch"
-        }`}>
-          <div className="flex items-center transition-all duration-300 w-full">
-            <div
-              className="w-10 h-10 rounded-2xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 flex items-center justify-center font-black text-slate-750 dark:text-slate-200 shrink-0 shadow-sm"
-              title={adminUser?.nama || "Admin TB"}
-            >
-              {adminUser?.nama ? adminUser.nama.charAt(0).toUpperCase() : "A"}
-            </div>
-            <div className={`transition-all duration-300 ease-in-out overflow-hidden flex flex-col min-w-0 ${
-              isCollapsed ? "max-w-0 opacity-0 ml-0" : "max-w-[150px] opacity-100 ml-3"
-            }`}>
-              <h4 className="text-xs font-bold text-slate-800 dark:text-white truncate leading-snug whitespace-nowrap">{adminUser?.nama || "Admin TB"}</h4>
-              <span className="text-[10px] text-slate-400 dark:text-slate-550 font-bold truncate leading-none uppercase tracking-wider block mt-0.5 whitespace-nowrap">@{adminUser?.username || "admin_tb"}</span>
-            </div>
-          </div>
-          <button
-            onClick={handleLogout}
-            className={`py-2.5 bg-slate-50 hover:bg-rose-500/10 hover:text-rose-600 dark:bg-white/5 dark:hover:bg-rose-500/10 dark:hover:text-rose-300 text-slate-500 dark:text-slate-400 rounded-xl text-xs font-bold transition-all duration-300 flex items-center justify-center border border-slate-200/60 dark:border-white/5 hover:border-rose-500/20 ${
-              isCollapsed ? "w-10 h-10 px-0" : "w-full px-3"
-            }`}
-            title={isCollapsed ? "Keluar Sesi" : undefined}
-          >
-            <LogOut size={14} className="shrink-0" />
-            <span className={`transition-all duration-300 ease-in-out overflow-hidden whitespace-nowrap ${
-              isCollapsed ? "max-w-0 opacity-0 ml-0" : "max-w-[150px] opacity-100 ml-2"
-            }`}>
-              Keluar Sesi
-            </span>
-          </button>
-        </div>
+        {/* Sidebar Footer - Empty as requested */}
       </aside>
 
-      {/* Main Panel Area */}
+      {/* ── MAIN PANEL ──────────────────────────────────────────────────────── */}
       <div className="flex-1 flex flex-col min-w-0 relative overflow-hidden">
-        {/* Top Header Panel */}
+
+        {/* Top Header */}
         <header className="h-16 border-b border-slate-200/80 dark:border-slate-800/60 bg-white/70 dark:bg-slate-900/60 backdrop-blur-xl flex items-center justify-between px-4 md:px-8 shrink-0 z-40 sticky top-0 transition-colors duration-300">
           <div className="flex items-center gap-3">
-            <button 
+            <button
               className="md:hidden p-1.5 -ml-1 text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors"
               onClick={() => setIsMobileMenuOpen(true)}
             >
@@ -480,8 +347,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             </div>
           </div>
 
-          <div className="flex items-center gap-3">
-            {/* WebSocket Status Indicator */}
+          <div className="flex items-center gap-2">
+            {/* WS Status */}
             <div className="relative flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-100 dark:bg-slate-950/40 border border-slate-200/50 dark:border-white/5 text-xs font-bold transition-colors duration-300">
               <span className={`w-2 h-2 rounded-full ${wsStatus === "CONNECTED" ? "bg-emerald-500 animate-ping" : wsStatus === "CONNECTING" ? "bg-amber-500 animate-pulse" : "bg-rose-500"}`} />
               <span className={`w-2 h-2 rounded-full absolute ${wsStatus === "CONNECTED" ? "bg-emerald-500" : wsStatus === "CONNECTING" ? "bg-amber-500" : "bg-rose-500"}`} />
@@ -490,7 +357,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               </span>
             </div>
 
-            {/* Dark Mode Toggle Switch */}
+            {/* Theme toggle */}
             <button
               onClick={toggleTheme}
               className="w-9 h-9 rounded-full bg-white dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700/60 flex items-center justify-center text-slate-500 dark:text-slate-400 hover:text-blue-500 dark:hover:text-blue-400 hover:bg-slate-50 dark:hover:bg-slate-800/80 transition-all shadow-sm hover:shadow"
@@ -498,7 +365,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             >
               {isDark ? <Sun size={16} /> : <Moon size={16} />}
             </button>
-            <div className="h-6 w-px bg-slate-200/80 dark:bg-slate-800/60 mx-1"></div>
+
+            {/* View Web */}
             <Link
               href="/"
               target="_blank"
@@ -507,6 +375,96 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               <Globe size={14} />
               <span>Lihat Web</span>
             </Link>
+
+            <div className="h-6 w-px bg-slate-200/80 dark:bg-slate-800/60 mx-1" />
+
+            {/* ── User Avatar Dropdown ──────────────────────────────────── */}
+            <div className="relative" ref={userDropdownRef}>
+              <button
+                onClick={() => setShowUserDropdown((v) => !v)}
+                className="flex items-center gap-2 px-2 py-1.5 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 transition-all"
+              >
+                <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center font-black text-white text-sm shadow-sm overflow-hidden shrink-0">
+                  {adminUser?.foto_profil ? (
+                    <img src={adminUser.foto_profil} alt="Profil" className="w-full h-full object-cover" />
+                  ) : (
+                    userInitial
+                  )}
+                </div>
+                <span className="hidden md:block text-xs font-bold text-slate-700 dark:text-slate-300 whitespace-nowrap">
+                  {adminUser?.nama?.split(" ")[0] || "Admin"}
+                </span>
+                <ChevronDown
+                  size={13}
+                  className={`hidden md:block text-slate-400 transition-transform duration-200 ${showUserDropdown ? "rotate-180" : ""}`}
+                />
+              </button>
+
+              {/* Dropdown */}
+              {showUserDropdown && (
+                <div className="absolute right-0 top-[calc(100%+8px)] w-56 bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-700/60 rounded-2xl shadow-xl shadow-slate-200/60 dark:shadow-slate-900/60 z-50 overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+                  {/* User info */}
+                  <div className="px-4 py-3 border-b border-slate-100 dark:border-slate-800">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center font-black text-white text-base shadow-sm shrink-0 overflow-hidden">
+                        {adminUser?.foto_profil ? (
+                          <img src={adminUser.foto_profil} alt="Profil" className="w-full h-full object-cover" />
+                        ) : (
+                          userInitial
+                        )}
+                      </div>
+                      <div className="min-w-0">
+                        <p className="text-sm font-bold text-slate-800 dark:text-white truncate">{adminUser?.nama || "Admin TB"}</p>
+                        <p className="text-[10px] text-slate-400 dark:text-slate-500 font-medium truncate">@{adminUser?.username || "admin"}</p>
+                        <span className={`inline-block mt-0.5 px-1.5 py-0.5 rounded text-[8px] font-black uppercase tracking-wider ${adminUser?.role === "superadmin" ? "bg-purple-100 dark:bg-purple-950/50 text-purple-600 dark:text-purple-400" : "bg-blue-100 dark:bg-blue-950/50 text-blue-600 dark:text-blue-400"}`}>
+                          {adminUser?.role || "admin"}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Menu items */}
+                  <div className="py-1">
+                    <Link
+                      href="/dashboard/profile"
+                      onClick={() => setShowUserDropdown(false)}
+                      className="flex items-center gap-3 px-4 py-2.5 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-white/5 hover:text-slate-800 dark:hover:text-white transition-colors"
+                    >
+                      <UserCircle size={15} className="text-slate-400 shrink-0" />
+                      <span className="text-xs font-semibold">Profil Saya</span>
+                    </Link>
+                    <Link
+                      href="/dashboard/settings"
+                      onClick={() => setShowUserDropdown(false)}
+                      className="flex items-center gap-3 px-4 py-2.5 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-white/5 hover:text-slate-800 dark:hover:text-white transition-colors"
+                    >
+                      <Settings size={15} className="text-slate-400 shrink-0" />
+                      <span className="text-xs font-semibold">Pengaturan</span>
+                    </Link>
+                    <Link
+                      href="/"
+                      target="_blank"
+                      onClick={() => setShowUserDropdown(false)}
+                      className="flex items-center gap-3 px-4 py-2.5 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-white/5 hover:text-slate-800 dark:hover:text-white transition-colors"
+                    >
+                      <Globe size={15} className="text-slate-400 shrink-0" />
+                      <span className="text-xs font-semibold">Lihat Website</span>
+                    </Link>
+                  </div>
+
+                  {/* Sign out */}
+                  <div className="border-t border-slate-100 dark:border-slate-800 py-1">
+                    <button
+                      onClick={handleLogout}
+                      className="flex items-center gap-3 w-full px-4 py-2.5 text-left text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/30 transition-colors"
+                    >
+                      <LogOut size={15} className="shrink-0" />
+                      <span className="text-xs font-bold">Keluar Sesi</span>
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
         </header>
 
@@ -518,21 +476,19 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         </main>
       </div>
 
-      {/* Logout Confirmation Modal */}
+      {/* ── Logout Confirmation Modal ──────────────────────────────────────── */}
       {showLogoutConfirm && (
         <div className="fixed inset-0 z-[100] bg-black/60 backdrop-blur-md flex items-center justify-center animate-in fade-in duration-300">
           <div className="bg-white/80 dark:bg-slate-900/80 border border-slate-200 dark:border-white/10 rounded-3xl p-8 shadow-2xl flex flex-col items-center gap-6 text-center max-w-sm w-full mx-4 backdrop-blur-xl animate-in zoom-in-95 duration-200">
             <div className="w-16 h-16 bg-rose-50 dark:bg-rose-950/40 rounded-full flex items-center justify-center text-rose-550 dark:text-rose-500 border border-rose-100 dark:border-rose-900/40 shadow-inner">
               <LogOut size={28} className="animate-pulse" />
             </div>
-            
             <div className="space-y-2">
               <h3 className="text-base font-black text-slate-800 dark:text-white uppercase tracking-wider">Konfirmasi Keluar</h3>
               <p className="text-xs text-slate-500 dark:text-slate-400 font-medium leading-relaxed">
                 Apakah Anda yakin ingin keluar dari sesi admin portal PPDB? Anda perlu memasukkan kredensial lagi untuk masuk.
               </p>
             </div>
-            
             <div className="flex w-full gap-3">
               <button
                 type="button"
@@ -552,9 +508,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           </div>
         </div>
       )}
-
-
-
     </div>
   );
 }

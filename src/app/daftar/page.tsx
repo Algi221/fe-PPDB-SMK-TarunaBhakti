@@ -82,12 +82,122 @@ const getMajorDetails = (majorName: string) => {
   };
 };
 
+const DEFAULT_FIELDS_CONFIG: Record<string, { label: string; required: boolean; active: boolean }> = {
+  nama: { label: "Nama Lengkap", required: true, active: true },
+  nisn: { label: "NISN", required: true, active: true },
+  nik: { label: "NIK", required: true, active: true },
+  tempatLahir: { label: "Tempat Lahir", required: true, active: true },
+  tglLahir: { label: "Tanggal Lahir", required: true, active: true },
+  jenisKelamin: { label: "Jenis Kelamin", required: true, active: true },
+  agama: { label: "Agama", required: true, active: true },
+  kewarganegaraan: { label: "Kewarganegaraan", required: true, active: true },
+  alamat: { label: "Alamat Lengkap", required: true, active: true },
+  rtRw: { label: "RT / RW", required: true, active: true },
+  kelurahan: { label: "Kelurahan", required: true, active: true },
+  kecamatan: { label: "Kecamatan", required: true, active: true },
+  kodePos: { label: "Kode Pos", required: true, active: true },
+  whatsapp: { label: "Nomor WhatsApp (Calon Siswa)", required: true, active: true },
+  email: { label: "Alamat Email", required: false, active: true },
+  tinggalDengan: { label: "Tinggal Dengan", required: true, active: true },
+  transportasi: { label: "Transportasi Ke Sekolah", required: true, active: true },
+  tinggiBadan: { label: "Tinggi Badan (cm)", required: true, active: true },
+  beratBadan: { label: "Berat Badan (kg)", required: true, active: true },
+  golonganDarah: { label: "Golongan Darah", required: true, active: true },
+  penyakitDiderita: { label: "Penyakit Diderita", required: false, active: true },
+  kebutuhanKhusus: { label: "Berkebutuhan Khusus", required: false, active: true },
+  jenisPrestasi: { label: "Jenis Prestasi", required: false, active: true },
+  tingkatPrestasi: { label: "Tingkat Prestasi", required: false, active: true },
+  uraianPrestasi: { label: "Uraian Prestasi", required: false, active: true },
+  tahunPrestasi: { label: "Tahun Prestasi", required: false, active: true },
+  penyelenggara: { label: "Penyelenggara Prestasi", required: false, active: true },
+  berkasPrestasi: { label: "Himbauan Sertifikat Prestasi", required: false, active: true },
+  jenisBeasiswa: { label: "Jenis Beasiswa", required: false, active: true },
+  uraianBeasiswa: { label: "Uraian/Nama Beasiswa", required: false, active: true },
+  tahunMulaiBeasiswa: { label: "Tahun Mulai Beasiswa", required: false, active: true },
+  tahunSelesaiBeasiswa: { label: "Tahun Selesai Beasiswa", required: false, active: true },
+  sekolahAsal: { label: "Nama SMP/MTs Asal", required: true, active: true },
+  tglLulus: { label: "Tanggal Lulus SMP/MTs", required: true, active: true },
+  noIjazah: { label: "Nomor Seri Ijazah", required: false, active: true },
+  noSKHUN: { label: "Nomor Seri SKHUN", required: false, active: true },
+  noPesertaUN: { label: "Nomor Peserta UN", required: false, active: true },
+  lamaBelajar: { label: "Lama Belajar (Tahun)", required: true, active: true },
+  pindahanDari: { label: "Pindahan Dari", required: false, active: true },
+  alasanPindah: { label: "Alasan Pindah Sekolah", required: false, active: true },
+  diterimaKelas: { label: "Diterima di Tingkat/Kelas", required: true, active: true },
+  jurusan1: { label: "Program Keahlian (Jurusan)", required: true, active: true },
+  alasanMemilih: { label: "Alasan Memilih Jurusan", required: false, active: true },
+  namaAyah: { label: "Nama Lengkap Ayah", required: true, active: true },
+  tempatLahirAyah: { label: "Tempat Lahir Ayah", required: true, active: true },
+  tglLahirAyah: { label: "Tanggal Lahir Ayah", required: true, active: true },
+  agamaAyah: { label: "Agama Ayah", required: true, active: true },
+  kewarganegaraanAyah: { label: "Kewarganegaraan Ayah", required: true, active: true },
+  pendidikanAyah: { label: "Pendidikan Terakhir Ayah", required: true, active: true },
+  pekerjaanAyah: { label: "Pekerjaan Ayah", required: true, active: true },
+  penghasilanAyah: { label: "Penghasilan Bulanan Ayah", required: true, active: true },
+  alamatAyah: { label: "Alamat Lengkap Ayah", required: true, active: true },
+  statusAyah: { label: "Status Ayah", required: true, active: true },
+  namaIbu: { label: "Nama Lengkap Ibu", required: true, active: true },
+  tempatLahirIbu: { label: "Tempat Lahir Ibu", required: true, active: true },
+  tglLahirIbu: { label: "Tanggal Lahir Ibu", required: true, active: true },
+  agamaIbu: { label: "Agama Ibu", required: true, active: true },
+  kewarganegaraanIbu: { label: "Kewarganegaraan Ibu", required: true, active: true },
+  pendidikanIbu: { label: "Pendidikan Terakhir Ibu", required: true, active: true },
+  pekerjaanIbu: { label: "Pekerjaan Ibu", required: true, active: true },
+  penghasilanIbu: { label: "Penghasilan Bulanan Ibu", required: true, active: true },
+  alamatIbu: { label: "Alamat Lengkap Ibu", required: true, active: true },
+  statusIbu: { label: "Status Ibu", required: true, active: true },
+  namaWali: { label: "Nama Lengkap Wali", required: false, active: true },
+  tempatLahirWali: { label: "Tempat Lahir Wali", required: false, active: true },
+  tglLahirWali: { label: "Tanggal Lahir Wali", required: false, active: true },
+  agamaWali: { label: "Agama Wali", required: false, active: true },
+  kewarganegaraanWali: { label: "Kewarganegaraan Wali", required: false, active: true },
+  pendidikanWali: { label: "Pendidikan Terakhir Wali", required: false, active: true },
+  pekerjaanWali: { label: "Pekerjaan Wali", required: false, active: true },
+  penghasilanWali: { label: "Penghasilan Bulanan Wali", required: false, active: true },
+  alamatWali: { label: "Alamat Lengkap Wali", required: false, active: true },
+  statusWali: { label: "Status Wali", required: false, active: true },
+  teleponOrtu: { label: "Nomor Telepon Orang Tua", required: true, active: true },
+  nilaiUSTeori: { label: "Nilai US Teori", required: false, active: true },
+  nilaiUSPraktik: { label: "Nilai US Praktik", required: false, active: true },
+  nilaiMuatanLokal: { label: "Nilai Muatan Lokal", required: false, active: true },
+  citaCita: { label: "Cita-cita Utama", required: false, active: true },
+  hobi: { label: "Hobi", required: false, active: true },
+  pelajaranDisenangi: { label: "Pelajaran Yang Disenangi", required: false, active: true },
+  alasanDisenangi: { label: "Alasan Menyenangi Pelajaran", required: false, active: true },
+  kesulitanBelajar: { label: "Kesulitan Belajar Yang Dialami", required: false, active: true },
+  citaCitaSetelahLulus: { label: "Rencana Setelah Lulus", required: false, active: true },
+  punyaKPS: { label: "Status KPS", required: false, active: true },
+  noKPS: { label: "Nomor KPS", required: false, active: true },
+  punyaKIP: { label: "Status KIP", required: false, active: true },
+  noKIP: { label: "Nomor KIP", required: false, active: true }
+};
+
 export default function DaftarPage() {
-  const { registerApplicant, checkPaymentStatus, fetchPublicApplicants, addToast } = usePPDB();
+  const { registerApplicant, checkPaymentStatus, fetchPublicApplicants, addToast, ppdbLogo, ppdbTitle } = usePPDB();
   const [wizardStep, setWizardStep] = useState(1);
   const [isSuccess, setIsSuccess] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [kuotaData, setKuotaData] = useState<any[] | null>(null);
+  const [portalStatus, setPortalStatus] = useState("open");
+  const [fieldsConfig, setFieldsConfig] = useState<Record<string, { label: string; required: boolean; active: boolean }>>({});
+
+  const getFieldLabel = (key: string, defaultLabel: string) => {
+    return fieldsConfig[key]?.label || defaultLabel;
+  };
+  const isFieldRequired = (key: string) => {
+    const configVal = fieldsConfig[key];
+    if (configVal === undefined) {
+      return DEFAULT_FIELDS_CONFIG[key]?.required !== false;
+    }
+    return configVal.required;
+  };
+  const isFieldActive = (key: string) => {
+    const configVal = fieldsConfig[key];
+    if (configVal === undefined) {
+      return DEFAULT_FIELDS_CONFIG[key]?.active !== false;
+    }
+    return configVal.active;
+  };
 
   const [formData, setFormData] = useState({
     nama: "",
@@ -251,7 +361,6 @@ export default function DaftarPage() {
     const saved = localStorage.getItem('ppdb-theme');
     if (saved === 'dark') {
       document.documentElement.classList.add('dark');
-      
       setIsDark(true);
     }
 
@@ -270,6 +379,21 @@ export default function DaftarPage() {
     const savedWaGroup = localStorage.getItem('ppdb_wa_group_url');
     if (savedWaGroup) {
       setWaGroupUrl(savedWaGroup);
+    }
+
+    const savedPortalStatus = localStorage.getItem('ppdb_portal_status');
+    if (savedPortalStatus) {
+      setPortalStatus(savedPortalStatus);
+    }
+
+    const savedFieldsConfig = localStorage.getItem('ppdb_fields_config');
+    if (savedFieldsConfig) {
+      try {
+        const parsed = JSON.parse(savedFieldsConfig);
+        if (parsed && typeof parsed === 'object') {
+          setFieldsConfig(parsed);
+        }
+      } catch (e) {}
     }
 
     const savedMajors = localStorage.getItem('ppdb_majors_config');
@@ -321,6 +445,14 @@ export default function DaftarPage() {
             if (config.ppdb_wa_group_url) {
               setWaGroupUrl(config.ppdb_wa_group_url);
               localStorage.setItem('ppdb_wa_group_url', config.ppdb_wa_group_url);
+            }
+            if (config.ppdb_portal_status) {
+              setPortalStatus(config.ppdb_portal_status);
+              localStorage.setItem('ppdb_portal_status', config.ppdb_portal_status);
+            }
+            if (config.ppdb_fields_config) {
+              setFieldsConfig(config.ppdb_fields_config);
+              localStorage.setItem('ppdb_fields_config', JSON.stringify(config.ppdb_fields_config));
             }
             if (config.ppdb_majors_config && Array.isArray(config.ppdb_majors_config) && config.ppdb_majors_config.length > 0) {
               setMajors(config.ppdb_majors_config);
@@ -595,59 +727,59 @@ export default function DaftarPage() {
       setIsSubmitting(true);
       
       const finalData = { ...formData };
-      if (!finalData.nama || finalData.nama.trim() === "") {
-        finalData.nama = "Calon Siswa Test " + Math.floor(1000 + Math.random() * 9000);
+
+      // Validate all required and active fields configured by admin
+      const requiredErrors: string[] = [];
+      Object.keys(DEFAULT_FIELDS_CONFIG).forEach((key) => {
+        const conf = fieldsConfig[key] || DEFAULT_FIELDS_CONFIG[key];
+        if (conf && conf.active !== false && conf.required === true) {
+          const val = (finalData as any)[key];
+          const isEmpty = val === undefined || val === null || (typeof val === "string" && val.trim() === "") || (Array.isArray(val) && val.length === 0);
+          if (isEmpty) {
+            requiredErrors.push(conf.label || key);
+          }
+        }
+      });
+
+      if (requiredErrors.length > 0) {
+        alert(`Harap lengkapi kolom wajib berikut:\n- ${requiredErrors.slice(0, 10).join("\n- ")}${requiredErrors.length > 10 ? `\n...dan ${requiredErrors.length - 10} kolom lainnya` : ""}`);
+        setIsSubmitting(false);
+        return;
       }
-      if (!finalData.nisn || finalData.nisn.trim() === "" || finalData.nisn.length !== 10) {
-        finalData.nisn = Math.floor(1000000000 + Math.random() * 9000000000).toString();
-      }
-      if (!finalData.nik || finalData.nik.trim() === "" || finalData.nik.length !== 16) {
-        finalData.nik = Math.floor(1000000000000000 + Math.random() * 9000000000000000).toString();
-      }
-      if (!finalData.tempatLahir || finalData.tempatLahir.trim() === "") {
-        finalData.tempatLahir = "Depok";
-      }
-      if (!finalData.tglLahir || finalData.tglLahir.trim() === "") {
-        finalData.tglLahir = "2010-06-05";
-      }
-      if (!finalData.jenisKelamin) {
-        finalData.jenisKelamin = "L";
-      }
-      if (!finalData.agama) {
-        finalData.agama = "Islam";
-      }
-      if (!finalData.sekolahAsal || finalData.sekolahAsal.trim() === "") {
-        finalData.sekolahAsal = "SMP Test Taruna Bhakti";
-      }
-      if (!finalData.whatsapp || finalData.whatsapp.trim() === "") {
-        finalData.whatsapp = "08123456789";
-      }
-      if (!finalData.email || finalData.email.trim() === "") {
-        finalData.email = "test@example.com";
-      }
-      if (!finalData.alamat || finalData.alamat.trim() === "") {
-        finalData.alamat = "Jl. Raya Pekapuran, Tapos, Depok";
-      }
-      if (!finalData.rtRw || finalData.rtRw.trim() === "") {
-        finalData.rtRw = "01/01";
-      }
-      if (!finalData.kelurahan || finalData.kelurahan.trim() === "") {
-        finalData.kelurahan = "Curug";
-      }
-      if (!finalData.kecamatan || finalData.kecamatan.trim() === "") {
-        finalData.kecamatan = "Cimanggis";
-      }
-      if (!finalData.kodePos || finalData.kodePos.trim() === "") {
-        finalData.kodePos = "16453";
-      }
-      if (!finalData.teleponOrtu || finalData.teleponOrtu.trim() === "") {
-        finalData.teleponOrtu = "08123456789";
-      }
+
+      // Safe fallbacks to keep PostgreSQL NOT NULL database columns happy
+      if (!finalData.nama || finalData.nama.trim() === "") finalData.nama = "Calon Siswa";
+      if (!finalData.nisn || finalData.nisn.trim() === "") finalData.nisn = Math.floor(1000000000 + Math.random() * 9000000000).toString();
+      if (!finalData.nik || finalData.nik.trim() === "") finalData.nik = Math.floor(1000000000000000 + Math.random() * 9000000000000000).toString();
+      if (!finalData.tempatLahir || finalData.tempatLahir.trim() === "") finalData.tempatLahir = "-";
+      if (!finalData.tglLahir || finalData.tglLahir.trim() === "") finalData.tglLahir = "2010-01-01";
+      if (!finalData.jenisKelamin) finalData.jenisKelamin = "L";
+      if (!finalData.agama) finalData.agama = "Islam";
+      if (!finalData.kewarganegaraan) finalData.kewarganegaraan = "WNI";
+      if (!finalData.alamat || finalData.alamat.trim() === "") finalData.alamat = "-";
+      if (!finalData.rtRw || finalData.rtRw.trim() === "") finalData.rtRw = "01/01";
+      if (!finalData.kelurahan || finalData.kelurahan.trim() === "") finalData.kelurahan = "-";
+      if (!finalData.kecamatan || finalData.kecamatan.trim() === "") finalData.kecamatan = "-";
+      if (!finalData.kodePos || finalData.kodePos.trim() === "") finalData.kodePos = "00000";
+      if (!finalData.whatsapp || finalData.whatsapp.trim() === "") finalData.whatsapp = "-";
+      if (!finalData.tinggalDengan) finalData.tinggalDengan = "Orang Tua";
+      if (!finalData.transportasi) finalData.transportasi = "Lainnya";
+      if (!finalData.tinggiBadan) finalData.tinggiBadan = "0";
+      if (!finalData.beratBadan) finalData.beratBadan = "0";
+      if (!finalData.jarakSekolah) finalData.jarakSekolah = "Kurang dari 1 km";
+      if (!finalData.jarakKm) finalData.jarakKm = "0";
+      if (!finalData.waktuJam) finalData.waktuJam = "0";
+      if (!finalData.waktuMenit) finalData.waktuMenit = "0";
+      if (!finalData.jumlahSaudara) finalData.jumlahSaudara = "0";
+      if (!finalData.golonganDarah) finalData.golonganDarah = "O";
+      if (!finalData.teleponOrtu || finalData.teleponOrtu.trim() === "") finalData.teleponOrtu = "-";
+      if (!finalData.sekolahAsal || finalData.sekolahAsal.trim() === "") finalData.sekolahAsal = "-";
+      if (!finalData.tglLulus) finalData.tglLulus = "2026-06-10";
+      if (!finalData.lamaBelajar) finalData.lamaBelajar = "3";
+      if (!finalData.diterimaKelas) finalData.diterimaKelas = "X (Sepuluh)";
       if (!finalData.jurusan1) {
-        finalData.jurusan1 = "Rekayasa Perangkat Lunak";
-      }
-      if (!finalData.tglLulus) {
-        finalData.tglLulus = "2026-06-10";
+        const firstMajor = majors[0];
+        finalData.jurusan1 = firstMajor ? `${firstMajor.title} (${firstMajor.code})` : "Rekayasa Perangkat Lunak (RPL)";
       }
 
       // Adjust period for transfer students dynamically
@@ -697,6 +829,33 @@ export default function DaftarPage() {
 
     setWizardStep(step);
   };
+
+  if (portalStatus === "closed") {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center bg-slate-50 dark:bg-slate-950 p-6 text-center">
+        <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800/60 rounded-3xl p-8 max-w-md w-full shadow-2xl space-y-6">
+          <div className="w-16 h-16 bg-red-50 dark:bg-red-950/40 rounded-2xl flex items-center justify-center text-red-500 border border-red-100 dark:border-red-900/40 mx-auto">
+            <Clock size={32} />
+          </div>
+          <div className="space-y-2">
+            <h2 className="text-xl font-black text-slate-850 dark:text-white uppercase tracking-wider">Pendaftaran Ditutup</h2>
+            <p className="text-xs text-slate-500 dark:text-slate-400 font-semibold leading-relaxed">
+              Mohon maaf, portal Penerimaan Peserta Didik Baru (PPDB) SMK Taruna Bhakti Depok saat ini sedang ditutup.
+            </p>
+          </div>
+          <div className="pt-2">
+            <Link
+              href="/"
+              className="w-full inline-flex justify-center items-center gap-2 py-3.5 bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs rounded-xl shadow-lg shadow-blue-500/10 transition-all uppercase tracking-wider cursor-pointer"
+            >
+              <Home size={14} />
+              <span>Kembali Ke Beranda</span>
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   if (isSuccess) {
     if (!successData) {
@@ -1330,10 +1489,12 @@ export default function DaftarPage() {
 
             {/* School Letterhead */}
             <div className="flex items-center gap-4 border-b-4 border-double border-slate-800 pb-4 mb-6">
-              <img src="/logo_smktb.png" alt="Logo SMK Taruna Bhakti" className="w-14 h-14 object-contain" onError={(e:any) => e.target.src = "https://smktarunabhakti.sch.id/wp-content/uploads/2019/02/cropped-logo-tb-32x32.png"} />
+              <img src={ppdbLogo || "/logo_smktb.png"} alt="Logo Sekolah" className="w-14 h-14 object-contain" onError={(e:any) => e.target.src = "https://smktarunabhakti.sch.id/wp-content/uploads/2019/02/cropped-logo-tb-32x32.png"} />
               <div className="text-left">
                 <h4 className="text-xs font-black uppercase tracking-widest text-slate-500 mb-0.5">Panitia Penerimaan Peserta Didik Baru</h4>
-                <h2 className="text-lg font-black text-slate-900 leading-tight">SMK TARUNA BHAKTI DEPOK</h2>
+                <h2 className="text-lg font-black text-slate-900 leading-tight">
+                  {ppdbTitle ? ppdbTitle.replace(/^(ppdb\s+)/i, '').toUpperCase() : "SMK TARUNA BHAKTI DEPOK"}
+                </h2>
                 <p className="text-[9px] font-bold text-slate-500">Terakreditasi A · Jl. Pekapuran No. 22, Cimanggis, Depok, Jawa Barat</p>
                 <p className="text-[9px] text-slate-400">Telp: (021) 874 7475 · Website: www.smktarunabhakti.sch.id</p>
               </div>

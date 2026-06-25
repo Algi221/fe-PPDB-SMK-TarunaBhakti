@@ -154,7 +154,7 @@ const DEFAULT_ALUR: AlurItem[] = [
 ];
 
 export default function Home() {
-  const { publicApplicants, wsStatus } = usePPDB();
+  const { publicApplicants, wsStatus, ppdbLogo, ppdbTitle } = usePPDB();
   
   const [isNavbarScrolled, setIsNavbarScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -478,8 +478,8 @@ export default function Home() {
         <nav className={`navbar ${isNavbarScrolled ? "scrolled" : ""}`}>
           <div className="nav-left">
             <Link href="/" className="logo-container">
-              <SafeImage src="/logo_smktb.png" alt="Logo SMK TB" width={36} height={36} className="w-9 h-9 object-contain" />
-              <span className="logo-text font-extrabold">PPDB <span>SMK TB</span></span>
+              <SafeImage src={ppdbLogo} alt="Logo Sekolah" width={36} height={36} className="w-9 h-9 object-contain" />
+              <span className="logo-text font-extrabold">{ppdbTitle}</span>
             </Link>
           </div>
 
@@ -532,8 +532,8 @@ export default function Home() {
 
           <div className="flex flex-col items-center gap-6 text-center p-6 w-full max-w-sm relative z-10">
             <Link href="/" onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-2 mb-6">
-              <SafeImage src="/logo_smktb.png" alt="Logo SMK TB" width={48} height={48} className="w-12 h-12 object-contain" />
-              <span className="text-2xl font-black text-slate-800 dark:text-white">PPDB <span className="text-blue-600 dark:text-blue-400">SMK TB</span></span>
+              <SafeImage src={ppdbLogo} alt="Logo Sekolah" width={48} height={48} className="w-12 h-12 object-contain" />
+              <span className="text-2xl font-black text-slate-800 dark:text-white">{ppdbTitle}</span>
             </Link>
 
             <a
@@ -1053,7 +1053,7 @@ export default function Home() {
                       return (
                         <a
                           key={partner.id || idx}
-                          href={partner.url}
+                          href={sanitizeUrl(partner.url) || "#"}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="group inline-flex items-center justify-center p-2 transition-transform duration-300 hover:scale-110 hover:-translate-y-1"
@@ -1224,9 +1224,9 @@ export default function Home() {
             {/* Col 1 */}
             <div className="space-y-4">
               <div className="flex items-center gap-3">
-                <SafeImage src="/logo_smktb.png" alt="Logo SMK TB" width={48} height={48} className="w-12 h-12 object-contain shrink-0" />
+                <SafeImage src={ppdbLogo} alt="Logo Sekolah" width={48} height={48} className="w-12 h-12 object-contain shrink-0" />
                 <div>
-                  <span className="logo-text font-black text-slate-800 dark:text-white text-lg">PPDB <span className="text-blue-600 dark:text-sky-400">SMK TB</span></span>
+                  <span className="logo-text font-black text-slate-800 dark:text-white text-lg">{ppdbTitle}</span>
                   <span className="block text-[10px] font-bold tracking-widest text-slate-400 dark:text-slate-500 uppercase mt-0.5">SMK Taruna Bhakti</span>
                 </div>
               </div>

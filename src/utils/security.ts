@@ -1,3 +1,4 @@
+import dompurify from "dompurify";
 
 export function sanitizeUrl(url: string | undefined | null): string {
   if (!url) return "#";
@@ -8,21 +9,14 @@ export function sanitizeUrl(url: string | undefined | null): string {
     return cleaned;
   }
 
-  if (cleaned.toLowerCase().startsWith("data:")) {
-    if (
-      /^data:image\/(png|jpeg|jpg|gif|webp);base64,/i.test(cleaned) ||
-      /^data:application\/pdf;base64,/i.test(cleaned)
-    ) {
-      return cleaned;
-    }
+  try {
+    const sanitized = dompurify.sanitize(cleaned, {
+      ALLOWED_URI_REGEXP: /^(?:https?:\/\/|\/|data:image\/(png|jpeg|jpg|gif|webp);base64,|data:application\/pdf;base64,|data:video\/)/i
+    });
+    return sanitized || "#";
+  } catch (e) {
     return "#";
   }
-
-  if (/^(https?|mailto|tel):/i.test(cleaned)) {
-    return cleaned;
-  }
-
-  return "#";
 }
 
 export function sanitizeSrc(src: string | undefined | null): string {
@@ -30,4 +24,3 @@ export function sanitizeSrc(src: string | undefined | null): string {
   const sanitized = sanitizeUrl(src);
   return sanitized === "#" ? "" : sanitized;
 }
-

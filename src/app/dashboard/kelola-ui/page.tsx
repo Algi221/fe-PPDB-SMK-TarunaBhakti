@@ -25,7 +25,8 @@ import {
   Briefcase,
   ArrowLeft,
   Calendar,
-  Database
+  Database,
+  Building
 } from "lucide-react";
 import DateRangeCalendar from "@/components/DateRangeCalendar";
 import { sanitizeSrc } from "@/utils/security";
@@ -343,7 +344,7 @@ const DEFAULT_MAJORS: MajorItem[] = [
 ];
 
 export default function KelolaUserInterface() {
-  const { adminToken } = usePPDB();
+  const { adminToken, fetchConfigs } = usePPDB();
   const [mounted, setMounted] = useState(false);
   const [activeTab, setActiveTab] = useState<"hero" | "majors" | "alur" | "form" | "faq" | "revisions" | "bank" | "partners">("hero");
 
@@ -365,6 +366,8 @@ export default function KelolaUserInterface() {
   const [waAdmin, setWaAdmin] = useState("6281292244456");
   const [formGuideline, setFormGuideline] = useState("Silakan isi formulir pendaftaran calon siswa dengan lengkap dan benar. Berkas persyaratan wajib diunggah dalam format gambar (PNG/JPG) maksimal 2MB.");
   const [formFee, setFormFee] = useState("250000");
+  const [schoolLogo, setSchoolLogo] = useState("/logo_smktb.png");
+  const [schoolTitle, setSchoolTitle] = useState("PPDB SMK TB");
 
   const [gelombangConfig, setGelombangConfig] = useState({
     gelombang1: { start: "2026-06-03", end: "2026-07-24" },
@@ -446,6 +449,8 @@ export default function KelolaUserInterface() {
       ppdb_majors_config: majorsList,
       ppdb_faq_config: faqList,
       ppdb_partners_config: partnersList,
+      ppdb_logo_url: schoolLogo,
+      ppdb_title: schoolTitle,
     };
 
     localStorage.setItem("ppdb_ui_editor_draft", JSON.stringify(draft));
@@ -505,6 +510,8 @@ export default function KelolaUserInterface() {
       if (activeConfig.ppdb_wa_admin) setWaAdmin(formatPhoneNumber(activeConfig.ppdb_wa_admin));
       if (activeConfig.ppdb_form_guideline) setFormGuideline(activeConfig.ppdb_form_guideline);
       if (activeConfig.ppdb_form_fee) setFormFee(activeConfig.ppdb_form_fee);
+      if (activeConfig.ppdb_logo_url) setSchoolLogo(activeConfig.ppdb_logo_url);
+      if (activeConfig.ppdb_title) setSchoolTitle(activeConfig.ppdb_title);
       
       if (activeConfig.ppdb_alur_config && Array.isArray(activeConfig.ppdb_alur_config)) {
         setAlurList(activeConfig.ppdb_alur_config);
@@ -643,6 +650,26 @@ export default function KelolaUserInterface() {
     reader.readAsDataURL(file);
   };
 
+  const handleSchoolLogoChange = (file: File) => {
+    const fileExt = file.name.split('.').pop()?.toLowerCase() || '';
+    const allowedImgExts = ['jpg', 'jpeg', 'png', 'webp', 'svg', 'gif'];
+    if (!file.type.startsWith("image/") && !allowedImgExts.includes(fileExt)) {
+      showToastMsg("Hanya file gambar (JPG/PNG/WEBP) yang diperbolehkan.", "error");
+      return;
+    }
+    if (file.size > 2 * 1024 * 1024) {
+      showToastMsg("Ukuran file gambar maksimal adalah 2MB.", "error");
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const base64 = event.target?.result as string;
+      setSchoolLogo(base64);
+      showToastMsg("Logo sekolah berhasil dimuat. Klik Simpan Perubahan di pojok kanan atas.");
+    };
+    reader.readAsDataURL(file);
+  };
+
   const handleAddAlur = () => {
     const nextId = alurList.length > 0 ? Math.max(...alurList.map(a => a.id)) + 1 : 1;
     setAlurList([...alurList, { id: nextId, title: "Langkah Baru", desc: "Deskripsi langkah pendaftaran baru..." }]);
@@ -729,7 +756,9 @@ export default function KelolaUserInterface() {
         ppdb_faq_config: faqList,
         ppdb_gelombang_config: gelombangConfig,
         ppdb_bank_config: bankConfigList,
-        ppdb_partners_config: partnersList
+        ppdb_partners_config: partnersList,
+        ppdb_logo_url: schoolLogo,
+        ppdb_title: schoolTitle
       };
 
       const token = adminToken || localStorage.getItem("ppdb_admin_token");
@@ -750,6 +779,7 @@ export default function KelolaUserInterface() {
         showToastMsg("Semua perubahan UI berhasil disimpan dan tercatat.");
         setChangeDescription("");
         localStorage.removeItem("ppdb_ui_editor_draft");
+        fetchConfigs().catch(console.error);
         
         try {
           localStorage.setItem("ppdb_majors_config", JSON.stringify(finalMajors));
@@ -955,6 +985,67 @@ export default function KelolaUserInterface() {
             {activeTab === "hero" && (
               <div className="space-y-6">
                 <div className="border-b border-slate-100 dark:border-white/5 pb-4 mb-4">
+                  <h3 className="text-sm font-black uppercase text-slate-850 dark:text-white tracking-wider flex items-center gap-2">
+                    <Building size={16} className="text-blue-500" />
+                    <span>Logo &amp; Nama Instansi (Header Website)</span>
+                  </h3>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-center bg-slate-50 dark:bg-slate-950/40 p-6 rounded-3xl border border-slate-200/60 dark:border-white/5">
+                  {/* Logo Drag & Drop */}
+                  <div className="md:col-span-1 flex flex-col items-center gap-2">
+                    <label className="text-[9px] uppercase font-bold text-slate-450 tracking-wider">Logo Instansi (Header)</label>
+                    <div
+                      className={`w-24 h-24 border-2 border-dashed rounded-3xl flex flex-col items-center justify-center p-2 relative overflow-hidden transition-all duration-300 ${
+                        dragActiveStates["school_logo"]
+                          ? "border-blue-500 bg-blue-500/5"
+                          : "border-slate-200 dark:border-white/10 hover:border-slate-350 dark:hover:border-white/20 bg-white dark:bg-slate-900"
+                      }`}
+                      onDragEnter={(e) => handleDragState(e, "school_logo", true)}
+                      onDragOver={(e) => handleDragState(e, "school_logo", true)}
+                      onDragLeave={(e) => handleDragState(e, "school_logo", false)}
+                      onDrop={(e) => {
+                        handleDragState(e, "school_logo", false);
+                        const file = e.dataTransfer.files?.[0];
+                        if (file) handleSchoolLogoChange(file);
+                      }}
+                    >
+                      {schoolLogo ? (
+                        <img src={schoolLogo} alt="Logo Sekolah" className="w-full h-full object-contain rounded-2xl" />
+                      ) : (
+                        <div className="text-center text-slate-400">
+                          <Upload size={20} className="mx-auto mb-1 text-slate-300" />
+                          <span className="text-[9px] font-bold">Upload Logo</span>
+                        </div>
+                      )}
+                      <input
+                        type="file"
+                        accept="image/*"
+                        className="absolute inset-0 opacity-0 cursor-pointer"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (file) handleSchoolLogoChange(file);
+                        }}
+                      />
+                    </div>
+                  </div>
+
+                  {/* Nama Sekolah / Title */}
+                  <div className="md:col-span-2 space-y-4 text-left">
+                    <div className="space-y-2">
+                      <label className="text-[9px] uppercase font-bold text-slate-450 tracking-wider">Nama Instansi / Singkatan (Header)</label>
+                      <input
+                        type="text"
+                        value={schoolTitle}
+                        onChange={(e) => setSchoolTitle(e.target.value)}
+                        placeholder="Contoh: PPDB SMK TB"
+                        className="w-full px-4 py-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/5 rounded-2xl text-slate-800 dark:text-white font-semibold text-xs focus:outline-none focus:border-blue-500"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <div className="border-b border-slate-100 dark:border-white/5 pb-4 mt-8 mb-4">
                   <h3 className="text-sm font-black uppercase text-slate-850 dark:text-white tracking-wider flex items-center gap-2">
                     <FileText size={16} className="text-blue-500" />
                     <span>Hero Section &amp; Header Utama</span>
