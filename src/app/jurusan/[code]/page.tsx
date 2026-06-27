@@ -16,7 +16,13 @@ const sanitizeUrl = (url: string | undefined | null): string | null => {
   }
 };
 
-const sanitizeSrc = (src: string | undefined | null): string | null => sanitizeUrl(src);
+const sanitizeSrc = (src: string | undefined | null): string | null => {
+  let url = sanitizeUrl(src);
+  if (url && url.startsWith("/jurusan/")) {
+    url = url.replace("/jurusan/", "/assets/jurusan/");
+  }
+  return url;
+};
 import { 
   ArrowLeft, 
   Sun, 

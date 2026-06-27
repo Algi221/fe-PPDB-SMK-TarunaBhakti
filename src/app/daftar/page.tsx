@@ -17,6 +17,14 @@ const sanitizeUrl = (url: string | undefined | null): string => {
   }
 };
 
+const sanitizeSrc = (src: string | undefined | null): string => {
+  let url = sanitizeUrl(src);
+  if (url && url.startsWith("/jurusan/")) {
+    url = url.replace("/jurusan/", "/assets/jurusan/");
+  }
+  return url;
+};
+
 const getMajorDetails = (majorName: string) => {
   const nameLower = (majorName || "").toLowerCase();
   if (nameLower.includes("rekayasa") || nameLower.includes("rpl") || nameLower.includes("perangkat lunak")) {
@@ -2738,7 +2746,7 @@ export default function DaftarPage() {
                         {/* Logo jurusan */}
                         {majorDetails.logoPath ? (
                           <img
-                            src={(major as any).logo || majorDetails.logoPath}
+                            src={sanitizeSrc((major as any).logo) || majorDetails.logoPath}
                             alt={major.code}
                             className="w-9 h-9 object-contain rounded-lg shrink-0"
                             onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }}
