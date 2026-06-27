@@ -90,6 +90,17 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
   const [openDropdowns, setOpenDropdowns] = useState<Record<string, boolean>>({});
 
+  // ── Auto-open dropdown for current active sections ─────────────────────────
+  useEffect(() => {
+    if (pathname) {
+      if (pathname.startsWith("/dashboard/pendaftar")) {
+        setOpenDropdowns((prev) => ({ ...prev, "/dashboard/pendaftar": true }));
+      } else if (pathname.startsWith("/dashboard/kelola-ui")) {
+        setOpenDropdowns((prev) => ({ ...prev, "/dashboard/kelola-ui": true }));
+      }
+    }
+  }, [pathname]);
+
   useEffect(() => {
     setIsMobileMenuOpen(false);
   }, [pathname]);
@@ -210,16 +221,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
   const userInitial = adminUser?.nama ? adminUser.nama.charAt(0).toUpperCase() : "A";
 
-  // ── Auto-open dropdown for current active sections ─────────────────────────
-  useEffect(() => {
-    if (pathname) {
-      if (pathname.startsWith("/dashboard/pendaftar")) {
-        setOpenDropdowns((prev) => ({ ...prev, "/dashboard/pendaftar": true }));
-      } else if (pathname.startsWith("/dashboard/kelola-ui")) {
-        setOpenDropdowns((prev) => ({ ...prev, "/dashboard/kelola-ui": true }));
-      }
-    }
-  }, [pathname]);
 
   // ── Menu Configuration with Submenus ───────────────────────────────────────
   const menuStructure = [
