@@ -114,7 +114,7 @@ const majorsData: Record<string, MajorDetail> = {
     bgAccent: "bg-blue-500/10 dark:bg-blue-500/20",
     textAccent: "text-blue-600 dark:text-blue-400",
     glowColor: "rgba(0,102,255,0.15)",
-    logo: "/jurusan/pplg.png",
+    logo: "/assets/jurusan/pplg.png",
     banner: "https://images.unsplash.com/photo-1555066931-4365d14bab8c?q=80&w=1200&auto=format&fit=crop",
     syllabus: [
       { subject: "Modern Web Programming", desc: "HTML5, CSS3, ES6+ JavaScript, TailwindCSS, React.js, Next.js, Node.js, RESTful API." },
@@ -156,7 +156,7 @@ const majorsData: Record<string, MajorDetail> = {
     bgAccent: "bg-sky-500/10 dark:bg-sky-500/20",
     textAccent: "text-sky-600 dark:text-sky-400",
     glowColor: "rgba(14,165,233,0.15)",
-    logo: "/jurusan/tjkt.png",
+    logo: "/assets/jurusan/tjkt.png",
     banner: "https://images.unsplash.com/photo-1544197150-b99a580bb7a8?q=80&w=1200&auto=format&fit=crop",
     syllabus: [
       { subject: "Enterprise Network Design", desc: "Kurikulum CISCO CCNA & MikroTik MTCNA, routing, switching, VLAN, OSPF." },
@@ -198,7 +198,7 @@ const majorsData: Record<string, MajorDetail> = {
     bgAccent: "bg-indigo-500/10 dark:bg-indigo-500/20",
     textAccent: "text-indigo-600 dark:text-indigo-400",
     glowColor: "rgba(99,102,241,0.15)",
-    logo: "/jurusan/dkv.png",
+    logo: "/assets/jurusan/dkv.png",
     banner: "https://images.unsplash.com/photo-1561070791-26c113006238?q=80&w=1200&auto=format&fit=crop",
     syllabus: [
       { subject: "UI/UX & Web Interaction", desc: "Design system Figma, low/high-fidelity wireframes, interactive prototyping, user flow." },
@@ -240,7 +240,7 @@ const majorsData: Record<string, MajorDetail> = {
     bgAccent: "bg-amber-500/10 dark:bg-amber-500/20",
     textAccent: "text-amber-600 dark:text-amber-400",
     glowColor: "rgba(245,158,11,0.15)",
-    logo: "/jurusan/bc.png",
+    logo: "/assets/jurusan/bc.png",
     banner: "https://images.unsplash.com/photo-1536440136628-849c177e76a1?q=80&w=1200&auto=format&fit=crop",
     syllabus: [
       { subject: "Creative Writing & Directing", desc: "Storytelling, scriptwriting, storyboard creation, shot analysis, blocking." },
@@ -282,7 +282,7 @@ const majorsData: Record<string, MajorDetail> = {
     bgAccent: "bg-pink-500/10 dark:bg-pink-500/20",
     textAccent: "text-pink-600 dark:text-pink-400",
     glowColor: "rgba(236,72,153,0.15)",
-    logo: "/jurusan/animasi.png",
+    logo: "/assets/jurusan/animasi.png",
     banner: "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=1200&auto=format&fit=crop",
     syllabus: [
       { subject: "3D Assets Modeling", desc: "ZBrush sculpting, Blender/Autodesk Maya 3D polygon structures, texturing." },
@@ -324,7 +324,7 @@ const majorsData: Record<string, MajorDetail> = {
     bgAccent: "bg-emerald-500/10 dark:bg-emerald-500/20",
     textAccent: "text-emerald-600 dark:text-emerald-400",
     glowColor: "rgba(16,185,129,0.15)",
-    logo: "/jurusan/te.png",
+    logo: "/assets/jurusan/te.png",
     banner: "https://images.unsplash.com/photo-1517055726410-dcbbb989d595?q=80&w=1200&auto=format&fit=crop",
     syllabus: [
       { subject: "IoT & Embedded System", desc: "Arduino IDE, Python script, sensor calibration, wireless transceivers (LoRa, Zigbee, Wi-Fi)." },
@@ -710,40 +710,8 @@ export default function MajorPage() {
 
               return (
                 <div className="flex flex-col w-full gap-5 mt-2">
-                  {target > 0 && (
-                    <div className="flex items-center gap-4 bg-white/60 dark:bg-slate-900/40 backdrop-blur-sm border border-slate-200/60 dark:border-slate-800/60 p-3 pr-6 rounded-3xl shadow-sm w-fit group">
-                      <div className="relative w-14 h-14 flex items-center justify-center">
-                        <svg viewBox="0 0 42 42" className="w-full h-full transform -rotate-90 drop-shadow-sm">
-                          <circle cx="21" cy="21" r="15.915" fill="transparent" stroke="currentColor" className="text-slate-200 dark:text-slate-800/80" strokeWidth="5" />
-                          <circle 
-                            cx="21" cy="21" r="15.915" fill="transparent" 
-                            stroke={isFull ? "#ef4444" : "var(--major-accent, #10b981)"} 
-                            strokeWidth="5" 
-                            strokeDasharray={`${Math.round((jumlah / target) * 100) || 0} ${100 - (Math.round((jumlah / target) * 100) || 0)}`} 
-                            className="transition-all duration-1000 ease-out" 
-                            strokeLinecap="round"
-                          />
-                        </svg>
-                        <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                          <span className="text-[11px] font-black text-slate-700 dark:text-slate-200 leading-none">{Math.round((jumlah / target) * 100) || 0}%</span>
-                        </div>
-                      </div>
-                      <div className="flex flex-col justify-center">
-                        <div className="flex items-center gap-1.5 mb-0.5">
-                          <span className={`w-1.5 h-1.5 rounded-full ${isFull ? 'bg-red-500 animate-pulse' : 'major-bg-accent animate-pulse'}`} style={!isFull ? { backgroundColor: 'var(--major-accent)' } : {}}></span>
-                          <span className="text-[10px] font-black uppercase tracking-widest text-slate-500 dark:text-slate-400">
-                            {isFull ? "KUOTA PENUH" : "Kapasitas Pendaftar"}
-                          </span>
-                        </div>
-                        <div className="flex items-baseline gap-1">
-                          <span className="text-lg font-black text-slate-800 dark:text-white leading-none">{jumlah}</span>
-                          <span className="text-xs font-bold text-slate-400">/ {target} Siswa</span>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-
                   <div className="flex flex-wrap items-center gap-4">
+
                     <Link href="/" className="inline-flex items-center gap-2 text-sm font-bold text-slate-600 dark:text-slate-300 hover:text-slate-800 dark:hover:text-white transition-colors py-3.5 px-6 rounded-2xl bg-white/50 dark:bg-slate-900/50 border border-slate-200/50 dark:border-slate-800 backdrop-blur-md">
                       <ArrowLeft size={16} /> Lihat Jurusan Lain
                     </Link>

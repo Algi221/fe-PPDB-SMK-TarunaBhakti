@@ -44,8 +44,6 @@ export default function AdminLogin() {
   const containerRef = useRef<HTMLDivElement>(null);
   const leftPanelRef = useRef<HTMLDivElement>(null);
   const rightPanelRef = useRef<HTMLDivElement>(null);
-  const splitLeftRef = useRef<HTMLDivElement>(null);
-  const splitRightRef = useRef<HTMLDivElement>(null);
   const formElementsRef = useRef<(HTMLElement | null)[]>([]);
   const lottieRef = useRef<any>(null);
 
@@ -111,26 +109,21 @@ export default function AdminLogin() {
 
   // ── Split curtain on successful login ─────────────────────────────────────
   const triggerSplitAnimation = useCallback(() => {
-    if (!splitLeftRef.current || !splitRightRef.current) return;
+    if (!leftPanelRef.current || !rightPanelRef.current) return;
 
-    // Step 1: Show both panels covering full screen from center
-    gsap.set(splitLeftRef.current,  { display: "block", x: "-100%", opacity: 1 });
-    gsap.set(splitRightRef.current, { display: "block", x: "100%",  opacity: 1 });
-
+    const isMobile = window.innerWidth < 1024; // lg breakpoint is 1024px
     const tl = gsap.timeline({ onComplete: () => router.push("/dashboard") });
 
-    // Fade out the login content fast
-    tl.to([leftPanelRef.current, rightPanelRef.current], {
-      opacity: 0, scale: 1.02, duration: 0.25, ease: "power2.in"
-    }, 0)
-    // Panels sweep inward to cover screen
-    .to(splitLeftRef.current,  { x: "0%", duration: 0.45, ease: "power3.inOut" }, 0.1)
-    .to(splitRightRef.current, { x: "0%", duration: 0.45, ease: "power3.inOut" }, 0.1)
-    // Brief hold then sweep apart to reveal dashboard
-    .to(splitLeftRef.current,  { x: "-100%", duration: 0.55, ease: "power3.inOut" }, 0.7)
-    .to(splitRightRef.current, { x:  "100%", duration: 0.55, ease: "power3.inOut" }, 0.7);
+    if (isMobile) {
+      // On mobile, they are stacked vertically. Slide top panel UP and bottom panel DOWN.
+      tl.to(leftPanelRef.current, { y: "-100%", duration: 0.85, ease: "power3.inOut" }, 0)
+        .to(rightPanelRef.current, { y: "100%", duration: 0.85, ease: "power3.inOut" }, 0);
+    } else {
+      // On desktop, they are side-by-side. Split left panel LEFT and right panel RIGHT.
+      tl.to(leftPanelRef.current, { x: "-100%", duration: 0.85, ease: "power3.inOut" }, 0)
+        .to(rightPanelRef.current, { x: "100%", duration: 0.85, ease: "power3.inOut" }, 0);
+    }
   }, [router]);
-
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -163,27 +156,15 @@ export default function AdminLogin() {
   if (!mounted) return null;
 
   return (
-    <div ref={containerRef} className="relative min-h-screen w-full flex flex-col lg:flex-row overflow-hidden">
-
-      {/* ── Split Curtain Overlays (full screen, slide out on login) ─────────── */}
-      <div
-        ref={splitLeftRef}
-        className="fixed inset-y-0 left-0 w-1/2 z-[999] pointer-events-none"
-        style={{ display: "none", background: "linear-gradient(135deg, #1e3a8a 0%, #1d4ed8 100%)" }}
-      />
-      <div
-        ref={splitRightRef}
-        className="fixed inset-y-0 right-0 w-1/2 z-[999] pointer-events-none"
-        style={{ display: "none", background: "linear-gradient(225deg, #1e3a8a 0%, #1d4ed8 100%)" }}
-      />
+    <div ref={containerRef} className="relative min-h-screen w-full flex flex-col lg:flex-row overflow-hidden bg-slate-100 dark:bg-[#0B1120] transition-colors duration-300">
 
       {/* ── Left Panel – Branding + Lottie ──────────────────────────────────── */}
       <div
         ref={leftPanelRef}
         className="relative w-full lg:w-[46%] xl:w-[48%] min-h-[50vh] lg:min-h-screen
-          bg-slate-50 dark:bg-slate-900
+          bg-slate-50 dark:bg-slate-900 z-10
           border-b lg:border-b-0 lg:border-r border-slate-200/60 dark:border-white/5
-          overflow-hidden flex flex-col justify-between p-8 md:p-12 lg:p-14"
+          overflow-hidden flex flex-col justify-between p-8 md:p-12 lg:p-14 transition-colors duration-300"
       >
         {/* Background grid pattern */}
         <div className="absolute inset-0 opacity-[0.04] dark:opacity-[0.07]
@@ -209,7 +190,7 @@ export default function AdminLogin() {
             Portal Admin <br />
             <span className="text-blue-600 dark:text-blue-400">SMK Taruna Bhakti</span>
           </h1>
-          <p className="brand-element text-slate-500 dark:text-slate-400 text-sm leading-relaxed max-w-xs">
+          <p className="brand-element text-slate-500 dark:text-slate-400 text-sm leading-relaxed max-w-xs font-semibold">
             Sistem Informasi Manajemen Penerimaan Peserta Didik Baru (PPDB) terintegrasi.
           </p>
         </div>
@@ -246,7 +227,7 @@ export default function AdminLogin() {
               <div className="text-xl font-black text-blue-600 dark:text-blue-400">
                 {s.value}{s.suffix}
               </div>
-              <div className="text-[9px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mt-0.5">
+              <div className="text-[9px] font-bold text-slate-400 dark:text-slate-550 uppercase tracking-wider mt-0.5">
                 {s.label}
               </div>
             </div>
@@ -257,10 +238,10 @@ export default function AdminLogin() {
       {/* ── Right Panel – Login Form ─────────────────────────────────────────── */}
       <div
         ref={rightPanelRef}
-        className="w-full lg:w-[54%] xl:w-[52%] min-h-[60vh] lg:min-h-screen
+        className="w-full lg:w-[54%] xl:w-[52%] min-h-[60vh] lg:min-h-screen z-10
           flex items-center justify-center
           p-6 md:p-12
-          bg-white dark:bg-[#0B1120]"
+          bg-white dark:bg-[#0B1120] transition-colors duration-300"
       >
         <div className="w-full max-w-[420px]">
 
@@ -275,7 +256,7 @@ export default function AdminLogin() {
             <h2 className="text-3xl font-black text-slate-900 dark:text-white mb-2 tracking-tight">
               Selamat Datang
             </h2>
-            <p className="text-slate-500 dark:text-slate-400 text-sm">
+            <p className="text-slate-500 dark:text-slate-400 text-sm font-semibold">
               Masukkan kredensial Anda untuk melanjutkan ke dashboard.
             </p>
           </div>
@@ -293,7 +274,7 @@ export default function AdminLogin() {
 
             {/* Username */}
             <div ref={el => { formElementsRef.current[1] = el as HTMLDivElement; }} className="space-y-1.5">
-              <label className="text-xs font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
+              <label className="text-xs font-bold text-slate-600 dark:text-slate-350 uppercase tracking-wider">
                 Username
               </label>
               <div className="relative group">
@@ -308,9 +289,9 @@ export default function AdminLogin() {
                   onChange={(e) => setUsername(e.target.value)}
                   className="w-full pl-10 pr-4 py-3 bg-slate-50 dark:bg-slate-900/50
                     border border-slate-200 dark:border-slate-800 rounded-xl
-                    text-slate-900 dark:text-white placeholder:text-slate-400 text-sm
+                    text-slate-900 dark:text-white placeholder:text-slate-450 text-sm
                     transition-all focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10
-                    shadow-sm font-medium"
+                    shadow-sm font-semibold"
                   placeholder="Masukkan username"
                   autoComplete="username"
                 />
@@ -319,7 +300,7 @@ export default function AdminLogin() {
 
             {/* Password */}
             <div ref={el => { formElementsRef.current[2] = el as HTMLDivElement; }} className="space-y-1.5">
-              <label className="text-xs font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
+              <label className="text-xs font-bold text-slate-600 dark:text-slate-350 uppercase tracking-wider">
                 Password
               </label>
               <div className="relative group">
@@ -334,9 +315,9 @@ export default function AdminLogin() {
                   onChange={(e) => setPassword(e.target.value)}
                   className="w-full pl-10 pr-11 py-3 bg-slate-50 dark:bg-slate-900/50
                     border border-slate-200 dark:border-slate-800 rounded-xl
-                    text-slate-900 dark:text-white placeholder:text-slate-400 text-sm
+                    text-slate-900 dark:text-white placeholder:text-slate-450 text-sm
                     transition-all focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10
-                    shadow-sm font-medium"
+                    shadow-sm font-semibold"
                   placeholder="Masukkan password"
                   autoComplete="current-password"
                 />
@@ -385,7 +366,7 @@ export default function AdminLogin() {
           <div ref={el => { formElementsRef.current[4] = el as HTMLDivElement; }} className="mt-7 text-center">
             <Link
               href="/"
-              className="inline-flex items-center gap-1.5 text-sm font-medium
+              className="inline-flex items-center gap-1.5 text-sm font-semibold
                 text-slate-400 hover:text-blue-600 dark:hover:text-blue-400
                 transition-colors"
             >

@@ -209,7 +209,7 @@ export default function Home() {
       code: "RPL",
       title: "Rekayasa Perangkat Lunak",
       icon: Cpu,
-      logo: "/jurusan/pplg.png",
+      logo: "/assets/jurusan/pplg.png",
       desc: "Belajar pemrograman web, aplikasi mobile, game development, cloud computing, serta kecerdasan buatan (AI) dengan teknologi mutakhir.",
       color: "#0066ff",
       careers: "Software Engineer, Web Developer, Mobile Developer, Game Designer, AI Specialist",
@@ -219,7 +219,7 @@ export default function Home() {
       code: "TJKT",
       title: "Teknik Jaringan Komputer & Telekomunikasi",
       icon: Layers,
-      logo: "/jurusan/tjkt.png",
+      logo: "/assets/jurusan/tjkt.png",
       desc: "Fokus pada perancangan jaringan, administrasi server Linux & Windows, keamanan cyber, infrastruktur cloud, dan sertifikasi CISCO.",
       color: "#0ea5e9",
       careers: "Network Engineer, Cloud Administrator, Cybersecurity Analyst, System Administrator",
@@ -229,7 +229,7 @@ export default function Home() {
       code: "DKV",
       title: "Desain Komunikasi Visual",
       icon: BookOpen,
-      logo: "/jurusan/dkv.png",
+      logo: "/assets/jurusan/dkv.png",
       desc: "Ekspresikan kreativitas lewat UI/UX design, desain grafis, ilustrasi digital, videografi, fotografi komersil, serta branding korporat.",
       color: "#6366f1",
       careers: "UI/UX Designer, Graphic Designer, Illustrator, Creative Director, Brand Specialist",
@@ -239,7 +239,7 @@ export default function Home() {
       code: "BC",
       title: "Broadcasting & Perfilman",
       icon: Video,
-      logo: "/jurusan/bc.png",
+      logo: "/assets/jurusan/bc.png",
       desc: "Pelajari dunia penyiaran televisi, podcasting, penulisan naskah, penyutradaraan film, tata kamera, serta editing video profesional.",
       color: "#f59e0b",
       careers: "Video Editor, Cameraman, Director, Scriptwriter, Podcast Producer, Content Creator",
@@ -249,7 +249,7 @@ export default function Home() {
       code: "ANM",
       title: "Animasi",
       icon: Palette,
-      logo: "/jurusan/animasi.png",
+      logo: "/assets/jurusan/animasi.png",
       desc: "Kuasai seni pemodelan 2D/3D, karakter rigging, rendering, digital sculpting, storyboard, serta visual effects (VFX) standar industri perfilman.",
       color: "#ec4899",
       careers: "3D Animator, 2D Animator, 3D Modeler, Storyboard Artist, VFX Compositor, Character Designer",
@@ -259,7 +259,7 @@ export default function Home() {
       code: "TE",
       title: "Teknik Elektronika",
       icon: Cpu,
-      logo: "/jurusan/te.png",
+      logo: "/assets/jurusan/te.png",
       desc: "Pelajari teknologi mikroprosesor, Internet of Things (IoT), robotika cerdas, automasi industri, dan smart home system.",
       color: "#10b981",
       careers: "IoT Engineer, Robotics Technician, Automation Programmer, Hardware Specialist",
@@ -281,7 +281,7 @@ export default function Home() {
 
   const [loadVideo, setLoadVideo] = useState(false);
   const [currentVideo, setCurrentVideo] = useState(0);
-  const videos = ["/videos/vid1.webm", "/videos/vid2.webm"];
+  const videos = ["/assets/videos/vid1.webm", "/assets/videos/vid2.webm"];
   const videoRef = useRef<HTMLVideoElement>(null);
 
   const handleVideoEnded = () => {

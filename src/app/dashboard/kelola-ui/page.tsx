@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import { useSearchParams } from "next/navigation";
 import { usePPDB } from "@/context/PPDBContext";
 import { 
   Palette, 
@@ -191,7 +192,7 @@ const DEFAULT_MAJORS: MajorItem[] = [
       "AWS Cloud Academy Learning Station",
       "Google Developer Partner Studio Lab"
     ],
-    logo: "/jurusan/pplg.png",
+    logo: "/assets/jurusan/pplg.png",
     banner: "https://images.unsplash.com/photo-1555066931-4365d14bab8c?q=80&w=1200&auto=format&fit=crop",
     video: "",
     gallery: [
@@ -219,7 +220,7 @@ const DEFAULT_MAJORS: MajorItem[] = [
       "FTTH & Fiber Optic Splicing Lab",
       "Virtualization & Private Cloud Server Sandbox"
     ],
-    logo: "/jurusan/tjkt.png",
+    logo: "/assets/jurusan/tjkt.png",
     banner: "https://images.unsplash.com/photo-1544197150-b99a580bb7a8?q=80&w=1200&auto=format&fit=crop",
     video: "",
     gallery: [
@@ -247,7 +248,7 @@ const DEFAULT_MAJORS: MajorItem[] = [
       "Adobe Certified Professional Lab",
       "Large-Format Digital Printing Center"
     ],
-    logo: "/jurusan/dkv.png",
+    logo: "/assets/jurusan/dkv.png",
     banner: "https://images.unsplash.com/photo-1561070791-26c113006238?q=80&w=1200&auto=format&fit=crop",
     video: "",
     gallery: [
@@ -275,7 +276,7 @@ const DEFAULT_MAJORS: MajorItem[] = [
       "Soundproof Podcasting & Sound Design Studio",
       "High-End Camera Equipment Gear Room"
     ],
-    logo: "/jurusan/bc.png",
+    logo: "/assets/jurusan/bc.png",
     banner: "https://images.unsplash.com/photo-1536440136628-849c177e76a1?q=80&w=1200&auto=format&fit=crop",
     video: "",
     gallery: [
@@ -303,7 +304,7 @@ const DEFAULT_MAJORS: MajorItem[] = [
       "Professional Sound Dubbing & Sound FX Studio",
       "VFX Processing & Rendering Farm Node Cluster"
     ],
-    logo: "/jurusan/animasi.png",
+    logo: "/assets/jurusan/animasi.png",
     banner: "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=1200&auto=format&fit=crop",
     video: "",
     gallery: [
@@ -331,7 +332,7 @@ const DEFAULT_MAJORS: MajorItem[] = [
       "Precision Soldering & Osciloscope Lab Station",
       "Microcontroller sandbox environment"
     ],
-    logo: "/jurusan/te.png",
+    logo: "/assets/jurusan/te.png",
     banner: "https://images.unsplash.com/photo-1517055726410-dcbbb989d595?q=80&w=1200&auto=format&fit=crop",
     video: "",
     gallery: [
@@ -347,6 +348,14 @@ export default function KelolaUserInterface() {
   const { adminToken, fetchConfigs } = usePPDB();
   const [mounted, setMounted] = useState(false);
   const [activeTab, setActiveTab] = useState<"hero" | "majors" | "alur" | "form" | "faq" | "revisions" | "bank" | "partners">("hero");
+  const searchParams = useSearchParams();
+
+  useEffect(() => {
+    const tab = searchParams.get("tab");
+    if (tab && ["hero", "majors", "alur", "form", "faq", "revisions", "bank", "partners"].includes(tab)) {
+      setActiveTab(tab as any);
+    }
+  }, [searchParams]);
 
   // ── Form Fields Config (Task 3) ───────────────────────────────────────────
   const DEFAULT_FIELDS_CONFIG_UI: Record<string, { label: string; required: boolean; active: boolean }> = {
