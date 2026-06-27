@@ -348,6 +348,61 @@ export default function KelolaUserInterface() {
   const [mounted, setMounted] = useState(false);
   const [activeTab, setActiveTab] = useState<"hero" | "majors" | "alur" | "form" | "faq" | "revisions" | "bank" | "partners">("hero");
 
+  // ── Form Fields Config (Task 3) ───────────────────────────────────────────
+  const DEFAULT_FIELDS_CONFIG_UI: Record<string, { label: string; required: boolean; active: boolean }> = {
+    nama: { label: "Nama Lengkap", required: true, active: true },
+    nisn: { label: "NISN", required: true, active: true },
+    nik: { label: "NIK", required: true, active: true },
+    tempatLahir: { label: "Tempat Lahir", required: true, active: true },
+    tglLahir: { label: "Tanggal Lahir", required: true, active: true },
+    jenisKelamin: { label: "Jenis Kelamin", required: true, active: true },
+    agama: { label: "Agama", required: true, active: true },
+    alamat: { label: "Alamat Lengkap", required: true, active: true },
+    whatsapp: { label: "Nomor WhatsApp", required: true, active: true },
+    email: { label: "Alamat Email", required: false, active: true },
+    tinggalDengan: { label: "Tinggal Dengan", required: true, active: true },
+    transportasi: { label: "Transportasi", required: true, active: true },
+    tinggiBadan: { label: "Tinggi Badan (cm)", required: true, active: true },
+    beratBadan: { label: "Berat Badan (kg)", required: true, active: true },
+    golonganDarah: { label: "Golongan Darah", required: true, active: true },
+    penyakitDiderita: { label: "Penyakit Diderita", required: false, active: true },
+    kebutuhanKhusus: { label: "Berkebutuhan Khusus", required: false, active: true },
+    jenisPrestasi: { label: "Jenis Prestasi", required: false, active: true },
+    tingkatPrestasi: { label: "Tingkat Prestasi", required: false, active: true },
+    uraianPrestasi: { label: "Uraian Prestasi", required: false, active: true },
+    tahunPrestasi: { label: "Tahun Prestasi", required: false, active: true },
+    penyelenggara: { label: "Penyelenggara Prestasi", required: false, active: true },
+    jenisBeasiswa: { label: "Jenis Beasiswa", required: false, active: true },
+    uraianBeasiswa: { label: "Uraian Beasiswa", required: false, active: true },
+    sekolahAsal: { label: "Sekolah Asal (SMP/MTs)", required: true, active: true },
+    tglLulus: { label: "Tanggal Lulus SMP", required: true, active: true },
+    noIjazah: { label: "No. Seri Ijazah", required: false, active: true },
+    noSKHUN: { label: "No. Seri SKHUN", required: false, active: true },
+    noPesertaUN: { label: "No. Peserta UN", required: false, active: true },
+    jurusan1: { label: "Program Keahlian (Jurusan)", required: true, active: true },
+    alasanMemilih: { label: "Alasan Memilih Jurusan", required: false, active: true },
+    namaAyah: { label: "Nama Ayah", required: true, active: true },
+    pendidikanAyah: { label: "Pendidikan Ayah", required: true, active: true },
+    pekerjaanAyah: { label: "Pekerjaan Ayah", required: true, active: true },
+    penghasilanAyah: { label: "Penghasilan Ayah", required: true, active: true },
+    namaIbu: { label: "Nama Ibu", required: true, active: true },
+    pendidikanIbu: { label: "Pendidikan Ibu", required: true, active: true },
+    pekerjaanIbu: { label: "Pekerjaan Ibu", required: true, active: true },
+    penghasilanIbu: { label: "Penghasilan Ibu", required: true, active: true },
+    namaWali: { label: "Nama Wali", required: false, active: true },
+    teleponOrtu: { label: "Telepon Orang Tua", required: true, active: true },
+    nilaiUSTeori: { label: "Nilai US Teori", required: false, active: true },
+    nilaiUSPraktik: { label: "Nilai US Praktik", required: false, active: true },
+    nilaiMuatanLokal: { label: "Nilai Muatan Lokal", required: false, active: true },
+    citaCita: { label: "Cita-cita", required: false, active: true },
+    hobi: { label: "Hobi", required: false, active: true },
+    pelajaranDisenangi: { label: "Pelajaran Disenangi", required: false, active: true },
+    kesulitanBelajar: { label: "Kesulitan Belajar", required: false, active: true },
+    punyaKPS: { label: "Status KPS", required: false, active: true },
+    punyaKIP: { label: "Status KIP", required: false, active: true },
+  };
+  const [fieldsConfigUI, setFieldsConfigUI] = useState<Record<string, { label: string; required: boolean; active: boolean }>>(DEFAULT_FIELDS_CONFIG_UI);
+
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [toast, setToast] = useState<{ message: string; type: "success" | "error" | "info" } | null>(null);
@@ -565,6 +620,9 @@ export default function KelolaUserInterface() {
           setBankConfigList([bankData]);
         }
       }
+      if (activeConfig.ppdb_fields_config && typeof activeConfig.ppdb_fields_config === "object") {
+        setFieldsConfigUI(prev => ({ ...prev, ...activeConfig.ppdb_fields_config }));
+      }
 
       if (draft) {
         showToastMsg("Draf perubahan berhasil dipulihkan dari sesi sebelumnya.", "info");
@@ -758,7 +816,8 @@ export default function KelolaUserInterface() {
         ppdb_bank_config: bankConfigList,
         ppdb_partners_config: partnersList,
         ppdb_logo_url: schoolLogo,
-        ppdb_title: schoolTitle
+        ppdb_title: schoolTitle,
+        ppdb_fields_config: fieldsConfigUI
       };
 
       const token = adminToken || localStorage.getItem("ppdb_admin_token");
@@ -1919,6 +1978,79 @@ export default function KelolaUserInterface() {
                       placeholder="Tuliskan catatan panduan yang akan tampil diatas form pengisian wizard..."
                       className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-white/5 rounded-2xl text-slate-800 dark:text-white font-semibold text-xs focus:outline-none focus:border-blue-500 resize-y"
                     />
+                  </div>
+                </div>
+
+                {/* ── Konfigurasi Field Form Pendaftaran */}
+                <div className="border-t border-slate-100 dark:border-white/5 pt-6">
+                  <div className="flex items-center justify-between mb-4">
+                    <div>
+                      <h4 className="text-xs font-black uppercase text-slate-800 dark:text-white tracking-wider flex items-center gap-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4 text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" /></svg>
+                        Konfigurasi Field Form Pendaftaran
+                      </h4>
+                      <p className="text-[9px] text-slate-400 font-bold uppercase tracking-wider mt-0.5">Atur field mana yang aktif dan apakah wajib diisi atau opsional</p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setFieldsConfigUI(DEFAULT_FIELDS_CONFIG_UI)}
+                      className="px-3 py-1.5 text-[9px] font-black uppercase tracking-wider border border-slate-200 dark:border-white/5 rounded-xl text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-900 transition-all"
+                    >
+                      Reset Default
+                    </button>
+                  </div>
+
+                  <div className="overflow-x-auto rounded-2xl border border-slate-200/60 dark:border-white/5">
+                    <table className="w-full text-left text-xs">
+                      <thead>
+                        <tr className="bg-slate-50 dark:bg-slate-950/60 border-b border-slate-200 dark:border-white/5">
+                          <th className="px-4 py-3 font-black uppercase tracking-wider text-[9px] text-slate-500 dark:text-slate-400">Field / Kolom</th>
+                          <th className="px-4 py-3 font-black uppercase tracking-wider text-[9px] text-slate-500 dark:text-slate-400 text-center">Aktif</th>
+                          <th className="px-4 py-3 font-black uppercase tracking-wider text-[9px] text-slate-500 dark:text-slate-400 text-center">Wajib Diisi</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-slate-100 dark:divide-white/5">
+                        {Object.entries(fieldsConfigUI).map(([key, cfg]) => (
+                          <tr key={key} className="hover:bg-slate-50/60 dark:hover:bg-white/3 transition-colors">
+                            <td className="px-4 py-2.5">
+                              <div>
+                                <span className="font-bold text-slate-800 dark:text-white text-xs">{cfg.label}</span>
+                                <span className="ml-2 text-[9px] text-slate-400 font-mono bg-slate-100 dark:bg-slate-900 px-1.5 py-0.5 rounded">{key}</span>
+                              </div>
+                            </td>
+                            <td className="px-4 py-2.5 text-center">
+                              <button
+                                type="button"
+                                onClick={() => setFieldsConfigUI(prev => ({ ...prev, [key]: { ...prev[key], active: !prev[key].active } }))}
+                                className={`w-9 h-5 rounded-full relative transition-colors duration-200 ${
+                                  cfg.active ? 'bg-blue-500' : 'bg-slate-200 dark:bg-slate-700'
+                                }`}
+                                title={cfg.active ? 'Nonaktifkan field' : 'Aktifkan field'}
+                              >
+                                <span className={`absolute top-0.5 w-4 h-4 rounded-full bg-white shadow transition-all duration-200 ${
+                                  cfg.active ? 'left-[18px]' : 'left-0.5'
+                                }`} />
+                              </button>
+                            </td>
+                            <td className="px-4 py-2.5 text-center">
+                              <button
+                                type="button"
+                                disabled={!cfg.active}
+                                onClick={() => setFieldsConfigUI(prev => ({ ...prev, [key]: { ...prev[key], required: !prev[key].required } }))}
+                                className={`w-9 h-5 rounded-full relative transition-colors duration-200 disabled:opacity-40 disabled:cursor-not-allowed ${
+                                  cfg.required && cfg.active ? 'bg-emerald-500' : 'bg-slate-200 dark:bg-slate-700'
+                                }`}
+                                title={cfg.required ? 'Jadikan opsional' : 'Jadikan wajib'}
+                              >
+                                <span className={`absolute top-0.5 w-4 h-4 rounded-full bg-white shadow transition-all duration-200 ${
+                                  cfg.required && cfg.active ? 'left-[18px]' : 'left-0.5'
+                                }`} />
+                              </button>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
                   </div>
                 </div>
               </div>

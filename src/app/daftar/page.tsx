@@ -23,7 +23,7 @@ const getMajorDetails = (majorName: string) => {
     return {
       icon: <Code className="w-5 h-5 text-blue-500" />,
       logoText: "RPL",
-      logoPath: "/jurusan/pplg.png",
+      logoPath: "/assets/jurusan/pplg.png",
       bg: "bg-blue-50 dark:bg-blue-950/45",
       textColor: "text-blue-600 dark:text-sky-400"
     };
@@ -32,7 +32,7 @@ const getMajorDetails = (majorName: string) => {
     return {
       icon: <Monitor className="w-5 h-5 text-amber-500" />,
       logoText: "TJKT",
-      logoPath: "/jurusan/tjkt.png",
+      logoPath: "/assets/jurusan/tjkt.png",
       bg: "bg-amber-50 dark:bg-amber-950/45",
       textColor: "text-amber-600 dark:text-amber-400"
     };
@@ -41,7 +41,7 @@ const getMajorDetails = (majorName: string) => {
     return {
       icon: <Palette className="w-5 h-5 text-purple-500" />,
       logoText: "DKV",
-      logoPath: "/jurusan/dkv.png",
+      logoPath: "/assets/jurusan/dkv.png",
       bg: "bg-purple-50 dark:bg-purple-950/45",
       textColor: "text-purple-600 dark:text-purple-400"
     };
@@ -50,7 +50,7 @@ const getMajorDetails = (majorName: string) => {
     return {
       icon: <Sparkles className="w-5 h-5 text-pink-500" />,
       logoText: "ANM",
-      logoPath: "/jurusan/animasi.png",
+      logoPath: "/assets/jurusan/animasi.png",
       bg: "bg-pink-50 dark:bg-pink-950/45",
       textColor: "text-pink-600 dark:text-pink-400"
     };
@@ -59,7 +59,7 @@ const getMajorDetails = (majorName: string) => {
     return {
       icon: <Film className="w-5 h-5 text-red-500" />,
       logoText: "BC",
-      logoPath: "/jurusan/bc.png",
+      logoPath: "/assets/jurusan/bc.png",
       bg: "bg-red-50 dark:bg-red-950/45",
       textColor: "text-red-600 dark:text-red-400"
     };
@@ -68,7 +68,7 @@ const getMajorDetails = (majorName: string) => {
     return {
       icon: <Cpu className="w-5 h-5 text-emerald-500" />,
       logoText: "TE",
-      logoPath: "/jurusan/te.png",
+      logoPath: "/assets/jurusan/te.png",
       bg: "bg-emerald-50 dark:bg-emerald-950/45",
       textColor: "text-emerald-600 dark:text-emerald-400"
     };
@@ -2554,11 +2554,20 @@ export default function DaftarPage() {
             </div>
 
             <div className="form-group">
-              <label className="block text-xs font-bold text-slate-600 mb-1.5">6. Upload Bukti Prestasi (Sertifikat/Piagam)</label>
-              <input type="file" accept=".pdf,image/*" onChange={(e) => handleFileChange(e, 'berkasPrestasiBase64')} className="w-full bg-white border border-slate-300 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100" />
-              {formData.berkasPrestasiBase64 && (
-                <p className="mt-2 text-xs text-green-600 font-bold">✓ File telah dipilih</p>
-              )}
+              <label className="block text-xs font-bold text-slate-600 mb-1.5">6. Bukti Prestasi</label>
+              <div className="flex items-start gap-3 p-4 bg-amber-50 border border-amber-200 rounded-xl shadow-sm">
+                <div className="shrink-0 mt-0.5">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M13 16h-1v-4h-1m1-4h.01M12 2a10 10 0 110 20A10 10 0 0112 2z" />
+                  </svg>
+                </div>
+                <div>
+                  <p className="text-xs font-bold text-amber-700 mb-1">Himbauan Sertifikat Prestasi</p>
+                  <p className="text-xs text-amber-600 leading-relaxed">
+                    Jika Anda memiliki sertifikat, piagam, atau bukti prestasi lainnya, harap <strong>membawa dokumen fisik asli ke sekolah</strong> pada saat daftar ulang. Dokumen akan diverifikasi oleh panitia PPDB secara langsung.
+                  </p>
+                </div>
+              </div>
             </div>
           </div>
         )}
@@ -2697,19 +2706,24 @@ export default function DaftarPage() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   {majors.map((major) => {
                     const option = `${major.title} (${major.code})`;
+                    const majorDetails = getMajorDetails(major.title || major.code);
                     
                     let isFull = false;
-                    let remaining = -1;
                     if (kuotaData) {
                       const k = kuotaData.find((k: any) => k.key === major.title);
                       if (k && k.target > 0) {
                         isFull = k.jumlah >= k.target;
-                        remaining = k.target - k.jumlah;
                       }
                     }
 
                     return (
-                      <label key={option} className={`flex items-center gap-3 p-3 rounded-xl border transition-all ${isFull ? 'bg-slate-100 border-slate-200 opacity-60 cursor-not-allowed grayscale' : formData.jurusan1 === option ? "bg-blue-50 border-blue-400 text-blue-700 shadow-sm cursor-pointer" : "bg-slate-50 border-slate-200 text-slate-600 hover:bg-slate-100 hover:border-slate-300 cursor-pointer"}`}>
+                      <label key={option} className={`flex items-center gap-3 p-3.5 rounded-2xl border-2 transition-all ${
+                        isFull
+                          ? 'bg-slate-100 border-slate-200 opacity-60 cursor-not-allowed grayscale'
+                          : formData.jurusan1 === option
+                          ? `${majorDetails.bg} border-current ${majorDetails.textColor} shadow-md cursor-pointer ring-2 ring-current/20`
+                          : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50 hover:border-slate-300 cursor-pointer'
+                      }`}>
                         <input
                           type="radio"
                           name="jurusan1"
@@ -2719,12 +2733,28 @@ export default function DaftarPage() {
                             if (!isFull) handleInputChange(e);
                           }}
                           disabled={isFull}
-                          className="w-4 h-4 text-blue-600 border-slate-300 focus:ring-blue-500 disabled:opacity-50"
+                          className="w-4 h-4 text-blue-600 border-slate-300 focus:ring-blue-500 disabled:opacity-50 shrink-0"
                         />
-                        <div className="flex flex-col">
-                          <span className="text-xs font-bold">{option}</span>
-                          {isFull && <span className="text-[10px] font-black text-red-500 tracking-wider uppercase mt-0.5">KUOTA PENUH</span>}
-                          {!isFull && remaining > 0 && <span className="text-[10px] font-semibold text-emerald-600 mt-0.5">Tersisa {remaining} kursi</span>}
+                        {/* Logo jurusan */}
+                        {majorDetails.logoPath ? (
+                          <img
+                            src={(major as any).logo || majorDetails.logoPath}
+                            alt={major.code}
+                            className="w-9 h-9 object-contain rounded-lg shrink-0"
+                            onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }}
+                          />
+                        ) : (
+                          <div className={`w-9 h-9 rounded-lg flex items-center justify-center shrink-0 ${majorDetails.bg}`}>
+                            {majorDetails.icon}
+                          </div>
+                        )}
+                        <div className="flex flex-col min-w-0">
+                          <span className="text-xs font-extrabold leading-tight">{option}</span>
+                          <span className={`text-[9px] font-black uppercase tracking-wider mt-0.5 ${
+                            isFull ? 'text-red-500' : majorDetails.textColor
+                          }`}>
+                            {isFull ? 'KUOTA PENUH' : major.code}
+                          </span>
                         </div>
                       </label>
                     );

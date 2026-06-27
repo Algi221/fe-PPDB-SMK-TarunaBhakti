@@ -109,29 +109,28 @@ export default function AdminLogin() {
     return () => ctx.revert();
   }, [mounted]);
 
-  // ── Split curtain reveal on successful login ───────────────────────────────
+  // ── Split curtain on successful login ─────────────────────────────────────
   const triggerSplitAnimation = useCallback(() => {
     if (!splitLeftRef.current || !splitRightRef.current) return;
 
-    // Make split overlays visible
-    gsap.set([splitLeftRef.current, splitRightRef.current], { display: "block", opacity: 1 });
+    // Step 1: Show both panels covering full screen from center
+    gsap.set(splitLeftRef.current,  { display: "block", x: "-100%", opacity: 1 });
+    gsap.set(splitRightRef.current, { display: "block", x: "100%",  opacity: 1 });
 
-    const tl = gsap.timeline({
-      onComplete: () => router.push("/dashboard")
-    });
+    const tl = gsap.timeline({ onComplete: () => router.push("/dashboard") });
 
-    // Both panels slide apart
-    tl.to(splitLeftRef.current, {
-      x: "-100%", duration: 0.65, ease: "power3.inOut"
+    // Fade out the login content fast
+    tl.to([leftPanelRef.current, rightPanelRef.current], {
+      opacity: 0, scale: 1.02, duration: 0.25, ease: "power2.in"
     }, 0)
-    .to(splitRightRef.current, {
-      x: "100%", duration: 0.65, ease: "power3.inOut"
-    }, 0)
-    // Meanwhile fade out form
-    .to(rightPanelRef.current, {
-      opacity: 0, scale: 1.03, duration: 0.35, ease: "power2.in"
-    }, 0);
+    // Panels sweep inward to cover screen
+    .to(splitLeftRef.current,  { x: "0%", duration: 0.45, ease: "power3.inOut" }, 0.1)
+    .to(splitRightRef.current, { x: "0%", duration: 0.45, ease: "power3.inOut" }, 0.1)
+    // Brief hold then sweep apart to reveal dashboard
+    .to(splitLeftRef.current,  { x: "-100%", duration: 0.55, ease: "power3.inOut" }, 0.7)
+    .to(splitRightRef.current, { x:  "100%", duration: 0.55, ease: "power3.inOut" }, 0.7);
   }, [router]);
+
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -166,16 +165,16 @@ export default function AdminLogin() {
   return (
     <div ref={containerRef} className="relative min-h-screen w-full flex flex-col lg:flex-row overflow-hidden">
 
-      {/* ── Split Curtain Overlays (hidden until login success) ──────────────── */}
+      {/* ── Split Curtain Overlays (full screen, slide out on login) ─────────── */}
       <div
         ref={splitLeftRef}
-        className="fixed inset-y-0 left-0 w-1/2 z-50 bg-slate-900 dark:bg-slate-950 hidden"
-        style={{ display: "none" }}
+        className="fixed inset-y-0 left-0 w-1/2 z-[999] pointer-events-none"
+        style={{ display: "none", background: "linear-gradient(135deg, #1e3a8a 0%, #1d4ed8 100%)" }}
       />
       <div
         ref={splitRightRef}
-        className="fixed inset-y-0 right-0 w-1/2 z-50 bg-slate-100 dark:bg-[#0B1120] hidden"
-        style={{ display: "none" }}
+        className="fixed inset-y-0 right-0 w-1/2 z-[999] pointer-events-none"
+        style={{ display: "none", background: "linear-gradient(225deg, #1e3a8a 0%, #1d4ed8 100%)" }}
       />
 
       {/* ── Left Panel – Branding + Lottie ──────────────────────────────────── */}
@@ -216,9 +215,9 @@ export default function AdminLogin() {
         </div>
 
         {/* Lottie Animation */}
-        <div className="lottie-container relative z-10 my-6 lg:my-0 flex items-center justify-center">
+        <div className="lottie-container relative z-10 my-4 lg:my-0 flex items-center justify-center flex-1">
           {lottieData ? (
-            <div className="w-full max-w-[340px] mx-auto">
+            <div className="w-full max-w-[520px] mx-auto">
               <Lottie
                 lottieRef={lottieRef}
                 animationData={lottieData}
@@ -229,7 +228,7 @@ export default function AdminLogin() {
             </div>
           ) : (
             /* Skeleton while loading */
-            <div className="w-64 h-64 bg-slate-200/60 dark:bg-slate-800/60 rounded-3xl animate-pulse" />
+            <div className="w-80 h-80 bg-slate-200/60 dark:bg-slate-800/60 rounded-3xl animate-pulse" />
           )}
         </div>
 
