@@ -310,37 +310,7 @@ export default function SimulationSettings() {
             </div>
           </div>
 
-          {/* Kartu statistik data & penyimpanan */}
-          <div className="bg-white dark:bg-slate-900 border border-slate-200/85 dark:border-slate-800/60 rounded-3xl p-6 shadow-[0_4px_20px_rgba(0,0,0,0.02)] transition-colors duration-300">
-            <h4 className="text-xs font-black uppercase tracking-wider text-slate-455 border-b border-slate-100 dark:border-slate-800/60 pb-3 mb-4 flex items-center gap-1.5">
-              <HardDrive size={14} className="text-blue-500" />
-              Status Penyimpanan Data
-            </h4>
-            
-            <div className="space-y-4">
-              <div className="p-4 bg-slate-50 dark:bg-slate-950/20 border border-slate-150/60 dark:border-slate-800 rounded-2xl">
-                <span className="text-slate-400 dark:text-slate-500 block text-[10px] font-extrabold uppercase tracking-wide">Total Calon Siswa (Local State)</span>
-                <span className="text-slate-850 dark:text-white font-extrabold text-xl leading-none mt-1 block">
-                  {applicants.length} Data
-                </span>
-              </div>
-              
-              <div className="p-4 bg-slate-50 dark:bg-slate-950/20 border border-slate-150/60 dark:border-slate-800 rounded-2xl">
-                <span className="text-slate-400 dark:text-slate-500 block text-[10px] font-extrabold uppercase tracking-wide">Penyimpanan Terpasang</span>
-                <div className="text-blue-600 dark:text-blue-400 font-extrabold text-xs uppercase tracking-wider mt-1.5 flex items-center gap-1.5">
-                  <Database size={12} />
-                  Dual-Buffer IndexedDB API
-                </div>
-              </div>
 
-              <div className="p-4 bg-slate-50 dark:bg-slate-950/20 border border-slate-150/60 dark:border-slate-800 rounded-2xl">
-                <span className="text-slate-400 dark:text-slate-500 block text-[10px] font-extrabold uppercase tracking-wide">Autentikasi Sesi</span>
-                <div className="text-emerald-600 dark:text-emerald-455 font-extrabold text-[10px] uppercase tracking-wider mt-1.5 flex items-center gap-1">
-                  <CheckCircle size={12} /> JSON Web Token (JWT)
-                </div>
-              </div>
-            </div>
-          </div>
 
         </div>
 

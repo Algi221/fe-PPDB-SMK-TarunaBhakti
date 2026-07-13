@@ -43,6 +43,10 @@ interface PPDBContextType {
   simulateRegistration: () => Promise<void>;
   addToast: (title: string, message: string, type?: string) => void;
   checkPaymentStatus: (nisn: string) => Promise<any>;
+  setAdminUser: React.Dispatch<React.SetStateAction<any | null>>;
+  ppdbLogo: string;
+  ppdbTitle: string;
+  fetchConfigs: () => Promise<void>;
 }
 
 const PPDBContext = createContext<PPDBContextType | null>(null);
@@ -89,6 +93,29 @@ export function PPDBProvider({ children }: { children: React.ReactNode }) {
   const [toasts, setToasts] = useState<Toast[]>([]);
   const [wsLogs, setWsLogs] = useState<WsLog[]>([]);
   const [simulationActive, setSimulationActive] = useState<boolean>(false);
+  const [ppdbLogo, setPpdbLogo] = useState<string>("/logo_smktb.png");
+  const [ppdbTitle, setPpdbTitle] = useState<string>("PPDB SMK TB");
+
+  const fetchConfigs = useCallback(async () => {
+    try {
+      const res = await fetch(`${BACKEND_URL}/api/config`);
+      const data = await res.json();
+      if (data.success && data.data) {
+        if (data.data.ppdb_logo_url) {
+          setPpdbLogo(data.data.ppdb_logo_url);
+        }
+        if (data.data.ppdb_title) {
+          setPpdbTitle(data.data.ppdb_title);
+        }
+      }
+    } catch (err) {
+      console.error("Gagal mengambil config:", err);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchConfigs();
+  }, [fetchConfigs]);
 
   const wsRef = useRef<WebSocket | null>(null);
   const reconnectTimeoutRef = useRef<any>(null);
@@ -683,6 +710,7 @@ export function PPDBProvider({ children }: { children: React.ReactNode }) {
         activeStudents,
         adminToken,
         adminUser,
+        setAdminUser,
         wsStatus,
         toasts,
         wsLogs,
@@ -702,7 +730,10 @@ export function PPDBProvider({ children }: { children: React.ReactNode }) {
         fetchActiveStudents,
         simulateRegistration,
         addToast,
-        checkPaymentStatus
+        checkPaymentStatus,
+        ppdbLogo,
+        ppdbTitle,
+        fetchConfigs
       }}
     >
       {children}

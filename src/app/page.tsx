@@ -69,7 +69,13 @@ const sanitizeUrl = (url: string | undefined | null): string | null => {
   }
 };
 
-const sanitizeSrc = (src: string | undefined | null): string | null => sanitizeUrl(src);
+const sanitizeSrc = (src: string | undefined | null): string | null => {
+  let url = sanitizeUrl(src);
+  if (url && url.startsWith("/jurusan/")) {
+    url = url.replace("/jurusan/", "/assets/jurusan/");
+  }
+  return url;
+};
 
 const SafeImage = ({ src, alt, width, height, className, onError, ...props }: any) => {
   const [useFallbackImg, setUseFallbackImg] = useState(false);
@@ -154,7 +160,7 @@ const DEFAULT_ALUR: AlurItem[] = [
 ];
 
 export default function Home() {
-  const { publicApplicants, wsStatus } = usePPDB();
+  const { publicApplicants, wsStatus, ppdbLogo, ppdbTitle } = usePPDB();
   
   const [isNavbarScrolled, setIsNavbarScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -209,7 +215,7 @@ export default function Home() {
       code: "RPL",
       title: "Rekayasa Perangkat Lunak",
       icon: Cpu,
-      logo: "/jurusan/pplg.png",
+      logo: "/assets/jurusan/pplg.png",
       desc: "Belajar pemrograman web, aplikasi mobile, game development, cloud computing, serta kecerdasan buatan (AI) dengan teknologi mutakhir.",
       color: "#0066ff",
       careers: "Software Engineer, Web Developer, Mobile Developer, Game Designer, AI Specialist",
@@ -219,7 +225,7 @@ export default function Home() {
       code: "TJKT",
       title: "Teknik Jaringan Komputer & Telekomunikasi",
       icon: Layers,
-      logo: "/jurusan/tjkt.png",
+      logo: "/assets/jurusan/tjkt.png",
       desc: "Fokus pada perancangan jaringan, administrasi server Linux & Windows, keamanan cyber, infrastruktur cloud, dan sertifikasi CISCO.",
       color: "#0ea5e9",
       careers: "Network Engineer, Cloud Administrator, Cybersecurity Analyst, System Administrator",
@@ -229,7 +235,7 @@ export default function Home() {
       code: "DKV",
       title: "Desain Komunikasi Visual",
       icon: BookOpen,
-      logo: "/jurusan/dkv.png",
+      logo: "/assets/jurusan/dkv.png",
       desc: "Ekspresikan kreativitas lewat UI/UX design, desain grafis, ilustrasi digital, videografi, fotografi komersil, serta branding korporat.",
       color: "#6366f1",
       careers: "UI/UX Designer, Graphic Designer, Illustrator, Creative Director, Brand Specialist",
@@ -239,7 +245,7 @@ export default function Home() {
       code: "BC",
       title: "Broadcasting & Perfilman",
       icon: Video,
-      logo: "/jurusan/bc.png",
+      logo: "/assets/jurusan/bc.png",
       desc: "Pelajari dunia penyiaran televisi, podcasting, penulisan naskah, penyutradaraan film, tata kamera, serta editing video profesional.",
       color: "#f59e0b",
       careers: "Video Editor, Cameraman, Director, Scriptwriter, Podcast Producer, Content Creator",
@@ -249,7 +255,7 @@ export default function Home() {
       code: "ANM",
       title: "Animasi",
       icon: Palette,
-      logo: "/jurusan/animasi.png",
+      logo: "/assets/jurusan/animasi.png",
       desc: "Kuasai seni pemodelan 2D/3D, karakter rigging, rendering, digital sculpting, storyboard, serta visual effects (VFX) standar industri perfilman.",
       color: "#ec4899",
       careers: "3D Animator, 2D Animator, 3D Modeler, Storyboard Artist, VFX Compositor, Character Designer",
@@ -259,7 +265,7 @@ export default function Home() {
       code: "TE",
       title: "Teknik Elektronika",
       icon: Cpu,
-      logo: "/jurusan/te.png",
+      logo: "/assets/jurusan/te.png",
       desc: "Pelajari teknologi mikroprosesor, Internet of Things (IoT), robotika cerdas, automasi industri, dan smart home system.",
       color: "#10b981",
       careers: "IoT Engineer, Robotics Technician, Automation Programmer, Hardware Specialist",
@@ -281,7 +287,7 @@ export default function Home() {
 
   const [loadVideo, setLoadVideo] = useState(false);
   const [currentVideo, setCurrentVideo] = useState(0);
-  const videos = ["/videos/vid1.webm", "/videos/vid2.webm"];
+  const videos = ["/assets/videos/vid1.webm", "/assets/videos/vid2.webm"];
   const videoRef = useRef<HTMLVideoElement>(null);
 
   const handleVideoEnded = () => {
@@ -478,8 +484,8 @@ export default function Home() {
         <nav className={`navbar ${isNavbarScrolled ? "scrolled" : ""}`}>
           <div className="nav-left">
             <Link href="/" className="logo-container">
-              <SafeImage src="/logo_smktb.png" alt="Logo SMK TB" width={36} height={36} className="w-9 h-9 object-contain" />
-              <span className="logo-text font-extrabold">PPDB <span>SMK TB</span></span>
+              <SafeImage src={ppdbLogo} alt="Logo Sekolah" width={36} height={36} className="w-9 h-9 object-contain" />
+              <span className="logo-text font-extrabold">{ppdbTitle}</span>
             </Link>
           </div>
 
@@ -532,8 +538,8 @@ export default function Home() {
 
           <div className="flex flex-col items-center gap-6 text-center p-6 w-full max-w-sm relative z-10">
             <Link href="/" onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-2 mb-6">
-              <SafeImage src="/logo_smktb.png" alt="Logo SMK TB" width={48} height={48} className="w-12 h-12 object-contain" />
-              <span className="text-2xl font-black text-slate-800 dark:text-white">PPDB <span className="text-blue-600 dark:text-blue-400">SMK TB</span></span>
+              <SafeImage src={ppdbLogo} alt="Logo Sekolah" width={48} height={48} className="w-12 h-12 object-contain" />
+              <span className="text-2xl font-black text-slate-800 dark:text-white">{ppdbTitle}</span>
             </Link>
 
             <a
@@ -1053,7 +1059,7 @@ export default function Home() {
                       return (
                         <a
                           key={partner.id || idx}
-                          href={partner.url}
+                          href={sanitizeUrl(partner.url) || "#"}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="group inline-flex items-center justify-center p-2 transition-transform duration-300 hover:scale-110 hover:-translate-y-1"
@@ -1224,9 +1230,9 @@ export default function Home() {
             {/* Col 1 */}
             <div className="space-y-4">
               <div className="flex items-center gap-3">
-                <SafeImage src="/logo_smktb.png" alt="Logo SMK TB" width={48} height={48} className="w-12 h-12 object-contain shrink-0" />
+                <SafeImage src={ppdbLogo} alt="Logo Sekolah" width={48} height={48} className="w-12 h-12 object-contain shrink-0" />
                 <div>
-                  <span className="logo-text font-black text-slate-800 dark:text-white text-lg">PPDB <span className="text-blue-600 dark:text-sky-400">SMK TB</span></span>
+                  <span className="logo-text font-black text-slate-800 dark:text-white text-lg">{ppdbTitle}</span>
                   <span className="block text-[10px] font-bold tracking-widest text-slate-400 dark:text-slate-500 uppercase mt-0.5">SMK Taruna Bhakti</span>
                 </div>
               </div>

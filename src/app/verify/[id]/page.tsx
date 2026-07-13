@@ -23,22 +23,22 @@ const getMajorLogoUrl = (jurusan: string | null | undefined): string => {
   if (!jurusan) return "/logo_smktb.png";
   const upper = jurusan.toUpperCase().trim();
   if (upper.includes("RPL") || upper.includes("REKAYASA PERANGKAT LUNAK") || upper.includes("PPLG") || upper.includes("PENGEMBANGAN PERANGKAT LUNAK")) {
-    return "/jurusan/pplg.png";
+    return "/assets/jurusan/pplg.png";
   }
   if (upper.includes("TJKT") || upper.includes("TEKNIK JARINGAN KOMPUTER") || upper.includes("TKJ")) {
-    return "/jurusan/tjkt.png";
+    return "/assets/jurusan/tjkt.png";
   }
   if (upper.includes("DKV") || upper.includes("DESAIN KOMUNIKASI VISUAL")) {
-    return "/jurusan/dkv.png";
+    return "/assets/jurusan/dkv.png";
   }
   if (upper.includes("BC") || upper.includes("BROADCASTING") || upper.includes("PRODUKSI FILM")) {
-    return "/jurusan/bc.png";
+    return "/assets/jurusan/bc.png";
   }
   if (upper.includes("ANM") || upper.includes("ANIMASI")) {
-    return "/jurusan/animasi.png";
+    return "/assets/jurusan/animasi.png";
   }
   if (upper.includes("TE") || upper.includes("TEKNIK ELEKTRONIKA") || upper.includes("TEI")) {
-    return "/jurusan/te.png";
+    return "/assets/jurusan/te.png";
   }
   return "/logo_smktb.png";
 };

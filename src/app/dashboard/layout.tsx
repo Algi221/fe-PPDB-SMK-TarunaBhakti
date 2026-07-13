@@ -4,36 +4,42 @@ import React, { useEffect, useState, Suspense } from "react";
 import { usePPDB } from "@/context/PPDBContext";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { Sun, Moon, LogOut, LayoutDashboard, Users, Settings, Globe, Megaphone, GraduationCap, ChevronLeft, ChevronRight, Palette, Layers, Shield, Menu } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import {
+  Sun, Moon, LogOut, LayoutDashboard, Users, Settings,
+  Globe, Megaphone, GraduationCap, ChevronLeft, ChevronRight,
+  Palette, Layers, Shield, Menu, ChevronDown, UserCircle
+} from "lucide-react";
 
+// ─── Breadcrumbs ──────────────────────────────────────────────────────────────
 function Breadcrumbs({ pathname }: { pathname: string }) {
   const searchParams = useSearchParams();
   const activeTab = searchParams.get("tab");
 
-  const paths = pathname.split('/').filter(p => p);
+  const paths = pathname.split("/").filter((p) => p);
   const labelMap: Record<string, string> = {
     dashboard: "Dashboard",
-    admin: "users",
-    pendaftar: "pendaftar",
-    "siswa-aktif": "siswa-aktif",
-    informasi: "informasi",
-    "kelola-ui": "kelola-ui",
-    "pembagian-kelas": "pembagian-kelas",
-    settings: "settings"
+    admin: "Manajemen Admin",
+    pendaftar: "Data Calon Siswa",
+    "siswa-aktif": "Siswa Aktif",
+    informasi: "Kelola Informasi",
+    "kelola-ui": "Kelola UI/Data",
+    "pembagian-kelas": "Pembagian Kelas",
+    settings: "Pengaturan",
+    profile: "Profil Saya",
   };
 
   const breadcrumbs: { label: string; href: string }[] = [];
   paths.forEach((path, idx) => {
     const label = labelMap[path] || path;
-    const href = '/' + paths.slice(0, idx + 1).join('/');
+    const href = "/" + paths.slice(0, idx + 1).join("/");
     breadcrumbs.push({ label, href });
   });
 
-  if (pathname === "/dashboard/admin" && activeTab === "trash") {
-    breadcrumbs.push({ label: "trashed", href: "/dashboard/admin?tab=trash" });
-  } else if (pathname === "/dashboard/pendaftar" && activeTab === "trash") {
-    breadcrumbs.push({ label: "trashed", href: "/dashboard/pendaftar?tab=trash" });
-  }
+  if (pathname === "/dashboard/admin" && activeTab === "trash")
+    breadcrumbs.push({ label: "Sampah", href: "/dashboard/admin?tab=trash" });
+  else if (pathname === "/dashboard/pendaftar" && activeTab === "trash")
+    breadcrumbs.push({ label: "Sampah", href: "/dashboard/pendaftar?tab=trash" });
 
   return (
     <div className="flex items-center gap-1.5 text-xs text-slate-400 dark:text-slate-500 font-medium tracking-wide select-none">
@@ -41,7 +47,7 @@ function Breadcrumbs({ pathname }: { pathname: string }) {
         const isLast = idx === breadcrumbs.length - 1;
         return (
           <React.Fragment key={idx}>
-            {idx > 0 && <span className="text-slate-300 dark:text-slate-700">&gt;</span>}
+            {idx > 0 && <span className="text-slate-300 dark:text-slate-700">›</span>}
             {isLast ? (
               <span className="text-slate-650 dark:text-slate-300 font-semibold">{bc.label}</span>
             ) : (
@@ -56,22 +62,47 @@ function Breadcrumbs({ pathname }: { pathname: string }) {
   );
 }
 
+// ─── Main Layout ──────────────────────────────────────────────────────────────
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
-  const { adminToken, adminUser, logoutAdmin, wsStatus } = usePPDB();
+  const { adminToken, adminUser, logoutAdmin, wsStatus, ppdbLogo, ppdbTitle } = usePPDB();
   const router = useRouter();
   const pathname = usePathname();
+  const searchParams = useSearchParams();
+
   const [mounted, setMounted] = useState(false);
   const [isDark, setIsDark] = useState(false);
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
+  const [showUserDropdown, setShowUserDropdown] = useState(false);
+  const userDropdownRef = React.useRef<HTMLDivElement>(null);
 
+  // ── Close user dropdown on outside click ─────────────────────────────────
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (userDropdownRef.current && !userDropdownRef.current.contains(e.target as Node)) {
+        setShowUserDropdown(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  const [openDropdowns, setOpenDropdowns] = useState<Record<string, boolean>>({});
+
+  // ── Auto-open dropdown for current active sections ─────────────────────────
+  useEffect(() => {
+    if (pathname) {
+      if (pathname.startsWith("/dashboard/pendaftar")) {
+        setOpenDropdowns((prev) => ({ ...prev, "/dashboard/pendaftar": true }));
+      } else if (pathname.startsWith("/dashboard/kelola-ui")) {
+        setOpenDropdowns((prev) => ({ ...prev, "/dashboard/kelola-ui": true }));
+      }
+    }
+  }, [pathname]);
 
   useEffect(() => {
     setIsMobileMenuOpen(false);
-    if (pathname === "/dashboard/login") {
-      setShowLogoutConfirm(false);
-    }
   }, [pathname]);
 
   useEffect(() => {
@@ -84,7 +115,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       document.documentElement.classList.remove("dark");
       setIsDark(false);
     }
-
     const savedCollapse = localStorage.getItem("ppdb-sidebar-collapsed");
     if (savedCollapse === "true") {
       setIsCollapsed(true);
@@ -97,63 +127,60 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     localStorage.setItem("ppdb-sidebar-collapsed", String(nextVal));
   };
 
+  const getTimeoutDuration = () => {
+    if (typeof window === "undefined") return 60 * 60 * 1000;
+    const saved = localStorage.getItem("ppdb_session_timeout");
+    if (!saved) return 60 * 60 * 1000;
+    const minutes = parseInt(saved, 10);
+    return isNaN(minutes) ? 60 * 60 * 1000 : minutes * 60 * 1000;
+  };
+
   useEffect(() => {
     if (mounted) {
       const token = localStorage.getItem("ppdb_admin_token");
       const lastActive = localStorage.getItem("ppdb_admin_last_active");
       if (token && lastActive) {
         const elapsed = Date.now() - parseInt(lastActive, 10);
-        if (elapsed > 60 * 60 * 1000) { // 1 hour
+        const limit = getTimeoutDuration();
+        if (elapsed > limit) {
           logoutAdmin();
-          router.push("/dashboard/login?expired=true");
+          router.push("/auth/login?expired=true");
           return;
         }
       }
       if (!adminToken) {
-        router.push("/dashboard/login");
+        router.push("/auth/login");
       }
     }
-  }, [adminToken, mounted, router, logoutAdmin]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [adminToken, mounted]);
 
-  // Inactivity timeout of 1 hour (60 minutes)
   useEffect(() => {
-    if (!adminToken || pathname === "/dashboard/login") return;
-
+    if (!adminToken) return;
     let timeoutId: NodeJS.Timeout;
     let lastStorageUpdate = Date.now();
-
     const resetTimer = () => {
       clearTimeout(timeoutId);
+      const limit = getTimeoutDuration();
       timeoutId = setTimeout(() => {
         logoutAdmin();
-        router.push("/dashboard/login?expired=true");
-      }, 60 * 60 * 1000); // 1 hour (60 minutes)
-
+        router.push("/auth/login?expired=true");
+      }, limit);
       const now = Date.now();
-      if (now - lastStorageUpdate > 10000) { // Update localStorage at most once every 10 seconds
+      if (now - lastStorageUpdate > 10000) {
         localStorage.setItem("ppdb_admin_last_active", now.toString());
         lastStorageUpdate = now;
       }
     };
-
     const events = ["mousedown", "mousemove", "keypress", "scroll", "touchstart"];
-    
-    // Set initial timer
     resetTimer();
-
-    // Add event listeners
-    events.forEach((event) => {
-      window.addEventListener(event, resetTimer);
-    });
-
-    // Cleanup on unmount
+    events.forEach((ev) => window.addEventListener(ev, resetTimer));
     return () => {
       clearTimeout(timeoutId);
-      events.forEach((event) => {
-        window.removeEventListener(event, resetTimer);
-      });
+      events.forEach((ev) => window.removeEventListener(ev, resetTimer));
     };
-  }, [adminToken, pathname, router, logoutAdmin]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [adminToken, pathname]);
 
   const toggleTheme = () => {
     setIsDark(!isDark);
@@ -166,12 +193,18 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     }
   };
 
+  const handleLogout = () => {
+    setShowUserDropdown(false);
+    setShowLogoutConfirm(true);
+  };
+
+  const confirmLogout = () => {
+    logoutAdmin();
+    setShowLogoutConfirm(false);
+    router.push("/auth/login");
+  };
+
   if (!mounted) return null;
-
-  if (pathname === "/dashboard/login") {
-    return <>{children}</>;
-  }
-
   if (!adminToken) {
     return (
       <div className="min-h-screen bg-[#f7f7f7] dark:bg-slate-950 flex items-center justify-center text-slate-800 dark:text-white transition-colors duration-300">
@@ -186,33 +219,209 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     );
   }
 
+  const userInitial = adminUser?.nama ? adminUser.nama.charAt(0).toUpperCase() : "A";
 
-  const handleLogout = () => {
-    setShowLogoutConfirm(true);
+
+  // ── Menu Configuration with Submenus ───────────────────────────────────────
+  const menuStructure = [
+    {
+      category: "Manajemen Siswa",
+      items: [
+        { href: "/dashboard", icon: <LayoutDashboard size={18} />, label: "Ringkasan", exact: true },
+        {
+          href: "/dashboard/pendaftar",
+          icon: <Users size={18} />,
+          label: "Data Calon Siswa",
+          subItems: [
+            { label: "Pendaftar Reguler", href: "/dashboard/pendaftar?tab=active" },
+            { label: "Pendaftar Pindahan", href: "/dashboard/pendaftar?tab=transfer" },
+            { label: "Kuota & Target", href: "/dashboard/pendaftar?tab=kuota" },
+            { label: "Tempat Sampah", href: "/dashboard/pendaftar?tab=trash" }
+          ]
+        },
+        { href: "/dashboard/pembagian-kelas", icon: <Layers size={18} />, label: "Pembagian Kelas" },
+        { href: "/dashboard/siswa-aktif", icon: <GraduationCap size={18} />, label: "Siswa Aktif" }
+      ]
+    },
+    {
+      category: "Konten Portal",
+      items: [
+        { href: "/dashboard/informasi", icon: <Megaphone size={18} />, label: "Kelola Informasi" },
+        {
+          href: "/dashboard/kelola-ui",
+          icon: <Palette size={18} />,
+          label: "Kelola UI/Data",
+          subItems: [
+            { label: "Hero & Kontak", href: "/dashboard/kelola-ui?tab=hero" },
+            { label: "Program Keahlian", href: "/dashboard/kelola-ui?tab=majors" },
+            { label: "Alur Pendaftaran", href: "/dashboard/kelola-ui?tab=alur" },
+            { label: "Form & Panduan", href: "/dashboard/kelola-ui?tab=form" },
+            { label: "Bank Sekolah", href: "/dashboard/kelola-ui?tab=bank" },
+            { label: "Mitra Industri", href: "/dashboard/kelola-ui?tab=partners" },
+            { label: "FAQ", href: "/dashboard/kelola-ui?tab=faq" },
+            { label: "Riwayat Perubahan", href: "/dashboard/kelola-ui?tab=revisions" }
+          ]
+        }
+      ]
+    },
+    {
+      category: "Pengaturan Sistem",
+      items: [
+        { href: "/dashboard/admin", icon: <Shield size={18} />, label: "Manajemen Admin", superAdminOnly: true },
+        { href: "/dashboard/settings", icon: <Settings size={18} />, label: "Pengaturan" }
+      ]
+    }
+  ];
+
+  // ── Nav link helper with Submenu support ───────────────────────────────────
+  const renderMenuItem = (item: any, delayIndex: number) => {
+    const hasSub = !!item.subItems;
+    const isOpen = !!openDropdowns[item.href];
+    const isActive = item.exact
+      ? pathname === item.href
+      : pathname === item.href || pathname.startsWith(item.href + "/");
+
+    const currentTab = searchParams ? searchParams.get("tab") : null;
+
+    const handleItemClick = (e: React.MouseEvent) => {
+      if (hasSub) {
+        e.preventDefault();
+        if (isCollapsed) {
+          setIsCollapsed(false);
+          localStorage.setItem("ppdb-sidebar-collapsed", "false");
+          setOpenDropdowns((prev) => ({ ...prev, [item.href]: true }));
+        } else {
+          setOpenDropdowns((prev) => ({ ...prev, [item.href]: !prev[item.href] }));
+        }
+      }
+    };
+
+    return (
+      <motion.div
+        key={item.href}
+        initial={{ opacity: 0, x: -12 }}
+        animate={{ opacity: 1, x: 0 }}
+        transition={{ delay: delayIndex * 0.05 + 0.1, duration: 0.35 }}
+        className="w-full flex flex-col"
+      >
+        <Link
+          href={item.href}
+          onClick={handleItemClick}
+          className={`flex items-center justify-between rounded-2xl text-xs font-bold uppercase tracking-wider transition-all duration-200 border ${
+            isCollapsed ? "justify-center p-3" : "px-4 py-3"
+          } ${
+            isActive && (!hasSub || isCollapsed)
+              ? "bg-blue-50/70 dark:bg-blue-950/40 border-blue-100/80 dark:border-blue-900/40 text-blue-600 dark:text-blue-400 font-extrabold"
+              : "border-transparent text-slate-500 dark:text-slate-400 hover:text-blue-500 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-slate-800/60"
+          }`}
+          title={isCollapsed ? item.label : undefined}
+        >
+          <div className="flex items-center min-w-0">
+            <span className="shrink-0">{item.icon}</span>
+            <span
+              className={`transition-all duration-300 ease-in-out overflow-hidden whitespace-nowrap ${
+                isCollapsed ? "max-w-0 opacity-0 ml-0" : "max-w-[200px] opacity-100 ml-3"
+              }`}
+            >
+              {item.label}
+            </span>
+          </div>
+          {hasSub && !isCollapsed && (
+            <ChevronDown
+              size={14}
+              className={`text-slate-400 dark:text-slate-500 transition-transform duration-300 shrink-0 ml-2 ${
+                isOpen ? "rotate-180 text-blue-500" : ""
+              }`}
+            />
+          )}
+        </Link>
+
+        {/* Render submenu items */}
+        {hasSub && (
+          <div className="overflow-hidden">
+            <AnimatePresence initial={false}>
+              {isOpen && !isCollapsed && (
+                <motion.div
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={{ height: "auto", opacity: 1 }}
+                  exit={{ height: 0, opacity: 0 }}
+                  transition={{ duration: 0.25, ease: "easeInOut" }}
+                  className="pl-8 pr-2 py-1.5 space-y-1"
+                >
+                  {item.subItems.map((sub: any) => {
+                    const defaultTab = sub.href.includes("pendaftar") ? "active" : "hero";
+                    const urlParams = new URLSearchParams(sub.href.split("?")[1] || "");
+                    const tabVal = urlParams.get("tab");
+                    const isSubActive =
+                      pathname === sub.href.split("?")[0] &&
+                      tabVal === (currentTab || defaultTab);
+
+                    return (
+                      <Link
+                        key={sub.href}
+                        href={sub.href}
+                        className={`flex items-center gap-2.5 py-2 px-3.5 rounded-xl text-[10px] font-bold tracking-wide uppercase transition-all duration-200 border ${
+                          isSubActive
+                            ? "bg-slate-100 dark:bg-slate-800 text-blue-600 dark:text-blue-400 border-slate-200/50 dark:border-slate-700/50 font-black"
+                            : "border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-slate-800/40"
+                        }`}
+                      >
+                        <span
+                          className={`w-1.5 h-1.5 rounded-full shrink-0 ${
+                            isSubActive ? "bg-blue-500" : "bg-slate-350 dark:bg-slate-650"
+                          }`}
+                        />
+                        <span className="truncate">{sub.label}</span>
+                      </Link>
+                    );
+                  })}
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+        )}
+      </motion.div>
+    );
   };
 
-  const confirmLogout = () => {
-    logoutAdmin();
-    setShowLogoutConfirm(false);
-    router.push("/dashboard/login");
-  };
+  // ── Section header helper ─────────────────────────────────────────────────
+  const sectionHeader = (label: string) => (
+    <div className="flex items-center py-2 overflow-hidden min-h-[32px]">
+      <div className={`flex items-center w-full transition-all duration-300 ${isCollapsed ? "justify-center px-0" : "px-4 gap-2"}`}>
+        <span className={`text-[10px] font-black text-slate-400 dark:text-slate-555 uppercase tracking-widest select-none transition-all duration-300 ease-in-out overflow-hidden whitespace-nowrap ${
+          isCollapsed ? "max-w-0 opacity-0" : "max-w-[150px] opacity-100"
+        }`}>
+          {label}
+        </span>
+        <div className={`h-px bg-slate-300 dark:bg-slate-700 transition-all duration-300 ${isCollapsed ? "w-8" : "flex-1"}`} />
+      </div>
+    </div>
+  );
 
   return (
     <div className="h-screen bg-[#f7f7f7] dark:bg-[#0b0f19] text-slate-800 dark:text-slate-100 flex font-sans overflow-hidden transition-colors duration-300">
-      {/* Sidebar Navigation */}
+
       {/* Mobile Overlay */}
       {isMobileMenuOpen && (
-        <div 
+        <div
           className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-40 md:hidden"
           onClick={() => setIsMobileMenuOpen(false)}
         />
       )}
-      <aside className={`fixed inset-y-0 left-0 z-50 md:sticky md:top-0 h-screen bg-white dark:bg-slate-900 border-r border-slate-300 dark:border-slate-700 flex flex-col shrink-0 transition-all duration-300 ease-in-out ${
-        isCollapsed ? "w-20" : "w-64"
+
+
+      {/* ── SIDEBAR ─────────────────────────────────────────────────────────── */}
+      <motion.aside
+        initial={{ x: -80, opacity: 0 }}
+        animate={{ x: 0, opacity: 1 }}
+        transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
+        className={`fixed inset-y-0 left-0 z-50 md:sticky md:top-0 h-screen bg-white dark:bg-slate-900 border-r border-slate-300 dark:border-slate-700 flex flex-col shrink-0 transition-all duration-300 ease-in-out ${
+        isCollapsed ? "w-20" : "w-72"
       } ${
         isMobileMenuOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"
       }`}>
-        {/* Toggle Collapse Button (Desktop Only) */}
+
+        {/* Toggle Collapse Button */}
         <button
           onClick={handleToggleCollapse}
           className="hidden md:flex absolute top-[24px] -right-4 w-8 h-8 rounded-full border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-500 hover:text-blue-500 dark:text-slate-400 dark:hover:text-blue-400 items-center justify-center transition-all duration-300 shadow-sm z-50 hover:scale-110 cursor-pointer"
@@ -223,251 +432,64 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
         {/* Brand Header */}
         <div className={`py-4 flex items-center border-b border-slate-300 dark:border-slate-700 min-h-[73px] transition-all duration-300 ${
-          isCollapsed ? "px-[22px]" : "px-4"
+          isCollapsed ? "justify-center px-0" : "px-5"
         }`}>
           <Link href="/dashboard" className="flex items-center group">
             <img
-              src="/logo_smktb.png"
-              alt="Logo SMK Taruna Bhakti"
+              src={ppdbLogo || "/logo_smktb.png"}
+              alt="Logo Sekolah"
               className="w-9 h-9 object-contain shrink-0 transition-transform duration-300 group-hover:scale-105"
             />
             <div className={`transition-all duration-300 ease-in-out overflow-hidden flex flex-col min-w-0 ${
               isCollapsed ? "max-w-0 opacity-0 ml-0" : "max-w-[150px] opacity-100 ml-3"
             }`}>
-              <h2 className="text-sm font-black tracking-wider leading-none text-slate-800 dark:text-white uppercase whitespace-nowrap">SMK TB</h2>
+              <h2 className="text-sm font-black tracking-wider leading-none text-slate-800 dark:text-white uppercase whitespace-nowrap">
+                {ppdbTitle ? ppdbTitle.replace(/^(ppdb\s+)/i, '') : "SMK TB"}
+              </h2>
               <span className="text-[10px] text-blue-600 dark:text-blue-400 font-bold uppercase tracking-widest mt-1 block whitespace-nowrap">PPDB Admin Portal</span>
             </div>
           </Link>
         </div>
 
-        {/* Navigation Links */}
+        {/* Navigation */}
         <nav className={`flex-1 py-6 space-y-1.5 overflow-y-auto transition-all duration-300 ${
           isCollapsed ? "px-2" : "px-4"
         }`}>
-          {/* KATEGORI 1: MANAJEMEN SISWA */}
-          <div className="flex items-center py-2 overflow-hidden min-h-[32px]">
-            <div className={`flex items-center w-full transition-all duration-300 ${isCollapsed ? "justify-center px-0" : "px-4 gap-2"}`}>
-              <span className={`text-[10px] font-black text-slate-400 dark:text-slate-555 uppercase tracking-widest select-none transition-all duration-300 ease-in-out overflow-hidden whitespace-nowrap ${
-                isCollapsed ? "max-w-0 opacity-0" : "max-w-[150px] opacity-100"
-              }`}>
-                Manajemen Siswa
-              </span>
-              <div className={`h-px bg-slate-300 dark:bg-slate-700 transition-all duration-300 ${isCollapsed ? "w-8" : "flex-1"}`} />
-            </div>
-          </div>
-          
-          <Link
-            href="/dashboard"
-            className={`flex items-center rounded-2xl text-xs font-bold uppercase tracking-wider transition-all duration-300 border ${
-              isCollapsed ? "px-[31px] py-3" : "px-4 py-3"
-            } ${pathname === "/dashboard"
-                ? "bg-blue-50/70 dark:bg-blue-950/40 border-blue-100/80 dark:border-blue-900/40 text-blue-600 dark:text-blue-400 font-extrabold"
-                : "border-transparent text-slate-500 dark:text-slate-400 hover:text-blue-500 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-slate-800/60"
-              }`}
-            title={isCollapsed ? "Ringkasan" : undefined}
-          >
-            <LayoutDashboard size={18} className="shrink-0" />
-            <span className={`transition-all duration-300 ease-in-out overflow-hidden whitespace-nowrap ${
-              isCollapsed ? "max-w-0 opacity-0 ml-0" : "max-w-[200px] opacity-100 ml-3"
-            }`}>
-              Ringkasan
-            </span>
-          </Link>
- 
-          <Link
-            href="/dashboard/pendaftar"
-            className={`flex items-center rounded-2xl text-xs font-bold uppercase tracking-wider transition-all duration-300 border ${
-              isCollapsed ? "px-[31px] py-3" : "px-4 py-3"
-            } ${pathname === "/dashboard/pendaftar"
-                ? "bg-blue-50/70 dark:bg-blue-950/40 border-blue-100/80 dark:border-blue-900/40 text-blue-600 dark:text-blue-400 font-extrabold"
-                : "border-transparent text-slate-500 dark:text-slate-400 hover:text-blue-500 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-slate-800/60"
-              }`}
-            title={isCollapsed ? "Data Calon Siswa" : undefined}
-          >
-            <Users size={18} className="shrink-0" />
-            <span className={`transition-all duration-300 ease-in-out overflow-hidden whitespace-nowrap ${
-              isCollapsed ? "max-w-0 opacity-0 ml-0" : "max-w-[200px] opacity-100 ml-3"
-            }`}>
-              Data Calon Siswa
-            </span>
-          </Link>
-
-          <Link
-            href="/dashboard/pembagian-kelas"
-            className={`flex items-center rounded-2xl text-xs font-bold uppercase tracking-wider transition-all duration-300 border ${
-              isCollapsed ? "px-[31px] py-3" : "px-4 py-3"
-            } ${pathname === "/dashboard/pembagian-kelas"
-                ? "bg-blue-50/70 dark:bg-blue-950/40 border-blue-100/80 dark:border-blue-900/40 text-blue-600 dark:text-blue-400 font-extrabold"
-                : "border-transparent text-slate-500 dark:text-slate-400 hover:text-blue-500 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-slate-800/60"
-              }`}
-            title={isCollapsed ? "Pembagian Kelas" : undefined}
-          >
-            <Layers size={18} className="shrink-0" />
-            <span className={`transition-all duration-300 ease-in-out overflow-hidden whitespace-nowrap ${
-              isCollapsed ? "max-w-0 opacity-0 ml-0" : "max-w-[200px] opacity-100 ml-3"
-            }`}>
-              Pembagian Kelas
-            </span>
-          </Link>
- 
-          <Link
-            href="/dashboard/siswa-aktif"
-            className={`flex items-center rounded-2xl text-xs font-bold uppercase tracking-wider transition-all duration-300 border ${
-              isCollapsed ? "px-[31px] py-3" : "px-4 py-3"
-            } ${pathname === "/dashboard/siswa-aktif"
-                ? "bg-blue-50/70 dark:bg-blue-950/40 border-blue-100/80 dark:border-blue-900/40 text-blue-600 dark:text-blue-400 font-extrabold"
-                : "border-transparent text-slate-500 dark:text-slate-400 hover:text-blue-500 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-slate-800/60"
-              }`}
-            title={isCollapsed ? "Siswa Aktif" : undefined}
-          >
-            <GraduationCap size={18} className="shrink-0" />
-            <span className={`transition-all duration-300 ease-in-out overflow-hidden whitespace-nowrap ${
-              isCollapsed ? "max-w-0 opacity-0 ml-0" : "max-w-[200px] opacity-100 ml-3"
-            }`}>
-              Siswa Aktif
-            </span>
-          </Link>
-
-          {/* KATEGORI 2: KONTEN PORTAL */}
-          <div className="flex items-center py-2 overflow-hidden min-h-[32px]">
-            <div className={`flex items-center w-full transition-all duration-300 ${isCollapsed ? "justify-center px-0" : "px-4 gap-2"}`}>
-              <span className={`text-[10px] font-black text-slate-400 dark:text-slate-550 uppercase tracking-widest select-none transition-all duration-300 ease-in-out overflow-hidden whitespace-nowrap ${
-                isCollapsed ? "max-w-0 opacity-0" : "max-w-[150px] opacity-100"
-              }`}>
-                Konten Portal
-              </span>
-              <div className={`h-px bg-slate-300 dark:bg-slate-700 transition-all duration-300 ${isCollapsed ? "w-8" : "flex-1"}`} />
-            </div>
-          </div>
- 
-          <Link
-            href="/dashboard/informasi"
-            className={`flex items-center rounded-2xl text-xs font-bold uppercase tracking-wider transition-all duration-300 border ${
-              isCollapsed ? "px-[31px] py-3" : "px-4 py-3"
-            } ${pathname === "/dashboard/informasi"
-                ? "bg-blue-50/70 dark:bg-blue-950/40 border-blue-100/80 dark:border-blue-900/40 text-blue-600 dark:text-blue-400 font-extrabold"
-                : "border-transparent text-slate-500 dark:text-slate-400 hover:text-blue-500 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-slate-800/60"
-              }`}
-            title={isCollapsed ? "Kelola Informasi" : undefined}
-          >
-            <Megaphone size={18} className="shrink-0" />
-            <span className={`transition-all duration-300 ease-in-out overflow-hidden whitespace-nowrap ${
-              isCollapsed ? "max-w-0 opacity-0 ml-0" : "max-w-[200px] opacity-100 ml-3"
-            }`}>
-              Kelola Informasi
-            </span>
-          </Link>
- 
-          <Link
-            href="/dashboard/kelola-ui"
-            className={`flex items-center rounded-2xl text-xs font-bold uppercase tracking-wider transition-all duration-300 border ${
-              isCollapsed ? "px-[31px] py-3" : "px-4 py-3"
-            } ${pathname === "/dashboard/kelola-ui"
-                ? "bg-blue-50/70 dark:bg-blue-950/40 border-blue-100/80 dark:border-blue-900/40 text-blue-600 dark:text-blue-400 font-extrabold"
-                : "border-transparent text-slate-500 dark:text-slate-400 hover:text-blue-500 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-slate-800/60"
-              }`}
-            title={isCollapsed ? "Kelola User Interface" : undefined}
-          >
-            <Palette size={18} className="shrink-0" />
-            <span className={`transition-all duration-300 ease-in-out overflow-hidden whitespace-nowrap ${
-              isCollapsed ? "max-w-0 opacity-0 ml-0" : "max-w-[200px] opacity-100 ml-3"
-            }`}>
-              Kelola UI
-            </span>
-          </Link>
-
-          {/* KATEGORI 3: SISTEM & PENGATURAN */}
-          <div className="flex items-center py-2 overflow-hidden min-h-[32px]">
-            <div className={`flex items-center w-full transition-all duration-300 ${isCollapsed ? "justify-center px-0" : "px-4 gap-2"}`}>
-              <span className={`text-[10px] font-black text-slate-400 dark:text-slate-555 uppercase tracking-widest select-none transition-all duration-300 ease-in-out overflow-hidden whitespace-nowrap ${
-                isCollapsed ? "max-w-0 opacity-0" : "max-w-[150px] opacity-100"
-              }`}>
-                Pengaturan Sistem
-              </span>
-              <div className={`h-px bg-slate-300 dark:bg-slate-700 transition-all duration-300 ${isCollapsed ? "w-8" : "flex-1"}`} />
-            </div>
-          </div>
- 
-          {adminUser?.role === 'superadmin' && (
-            <Link
-              href="/dashboard/admin"
-              className={`flex items-center rounded-2xl text-xs font-bold uppercase tracking-wider transition-all duration-300 border ${
-                isCollapsed ? "px-[31px] py-3" : "px-4 py-3"
-              } ${pathname === "/dashboard/admin"
-                  ? "bg-blue-50/70 dark:bg-blue-950/40 border-blue-100/80 dark:border-blue-900/40 text-blue-600 dark:text-blue-400 font-extrabold"
-                  : "border-transparent text-slate-500 dark:text-slate-400 hover:text-blue-500 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-slate-800/60"
-                }`}
-              title={isCollapsed ? "Manajemen Admin" : undefined}
-            >
-              <Shield size={18} className="shrink-0" />
-              <span className={`transition-all duration-300 ease-in-out overflow-hidden whitespace-nowrap ${
-                isCollapsed ? "max-w-0 opacity-0 ml-0" : "max-w-[200px] opacity-100 ml-3"
-              }`}>
-                Manajemen Admin
-              </span>
-            </Link>
-          )}
- 
-          <Link
-            href="/dashboard/settings"
-            className={`flex items-center rounded-2xl text-xs font-bold uppercase tracking-wider transition-all duration-300 border ${
-              isCollapsed ? "px-[31px] py-3" : "px-4 py-3"
-            } ${pathname === "/dashboard/settings"
-                ? "bg-blue-50/70 dark:bg-blue-950/40 border-blue-100/80 dark:border-blue-900/40 text-blue-600 dark:text-blue-400 font-extrabold"
-                : "border-transparent text-slate-500 dark:text-slate-400 hover:text-blue-500 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-slate-800/60"
-              }`}
-            title={isCollapsed ? "Pengaturan" : undefined}
-          >
-            <Settings size={18} className="shrink-0" />
-            <span className={`transition-all duration-300 ease-in-out overflow-hidden whitespace-nowrap ${
-              isCollapsed ? "max-w-0 opacity-0 ml-0" : "max-w-[200px] opacity-100 ml-3"
-            }`}>
-              Pengaturan
-            </span>
-          </Link>
+          {(() => {
+            let delayIndex = 0;
+            return menuStructure.map((section) => (
+              <React.Fragment key={section.category}>
+                {sectionHeader(section.category)}
+                {section.items.map((item) => {
+                  if (item.superAdminOnly && adminUser?.role !== "superadmin") return null;
+                  delayIndex++;
+                  return renderMenuItem(item, delayIndex);
+                })}
+              </React.Fragment>
+            ));
+          })()}
         </nav>
 
-        {/* Sidebar Footer (Admin Profile) */}
-        <div className={`py-4 border-t border-slate-300 dark:border-slate-700 bg-[#f7f7f7]/40 dark:bg-slate-950/20 flex flex-col gap-3 transition-all duration-300 ${
-          isCollapsed ? "px-[20px] items-center" : "px-4 items-stretch"
-        }`}>
-          <div className="flex items-center transition-all duration-300 w-full">
-            <div
-              className="w-10 h-10 rounded-2xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 flex items-center justify-center font-black text-slate-750 dark:text-slate-200 shrink-0 shadow-sm"
-              title={adminUser?.nama || "Admin TB"}
-            >
-              {adminUser?.nama ? adminUser.nama.charAt(0).toUpperCase() : "A"}
-            </div>
-            <div className={`transition-all duration-300 ease-in-out overflow-hidden flex flex-col min-w-0 ${
-              isCollapsed ? "max-w-0 opacity-0 ml-0" : "max-w-[150px] opacity-100 ml-3"
-            }`}>
-              <h4 className="text-xs font-bold text-slate-800 dark:text-white truncate leading-snug whitespace-nowrap">{adminUser?.nama || "Admin TB"}</h4>
-              <span className="text-[10px] text-slate-400 dark:text-slate-550 font-bold truncate leading-none uppercase tracking-wider block mt-0.5 whitespace-nowrap">@{adminUser?.username || "admin_tb"}</span>
-            </div>
-          </div>
-          <button
-            onClick={handleLogout}
-            className={`py-2.5 bg-slate-50 hover:bg-rose-500/10 hover:text-rose-600 dark:bg-white/5 dark:hover:bg-rose-500/10 dark:hover:text-rose-300 text-slate-500 dark:text-slate-400 rounded-xl text-xs font-bold transition-all duration-300 flex items-center justify-center border border-slate-200/60 dark:border-white/5 hover:border-rose-500/20 ${
-              isCollapsed ? "w-10 h-10 px-0" : "w-full px-3"
-            }`}
-            title={isCollapsed ? "Keluar Sesi" : undefined}
-          >
-            <LogOut size={14} className="shrink-0" />
-            <span className={`transition-all duration-300 ease-in-out overflow-hidden whitespace-nowrap ${
-              isCollapsed ? "max-w-0 opacity-0 ml-0" : "max-w-[150px] opacity-100 ml-2"
-            }`}>
-              Keluar Sesi
-            </span>
-          </button>
-        </div>
-      </aside>
+        {/* Sidebar Footer - Empty as requested */}
+      </motion.aside>
 
-      {/* Main Panel Area */}
-      <div className="flex-1 flex flex-col min-w-0 relative overflow-hidden">
-        {/* Top Header Panel */}
-        <header className="h-16 border-b border-slate-200/80 dark:border-slate-800/60 bg-white/70 dark:bg-slate-900/60 backdrop-blur-xl flex items-center justify-between px-4 md:px-8 shrink-0 z-40 sticky top-0 transition-colors duration-300">
+      {/* ── MAIN PANEL ──────────────────────────────────────────────────────── */}
+      <motion.div
+        className="flex-1 flex flex-col min-w-0 relative overflow-hidden"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.4, delay: 0.2 }}
+      >
+
+        {/* Top Header */}
+        <motion.header
+          className="h-16 border-b border-slate-200/80 dark:border-slate-800/60 bg-white/70 dark:bg-slate-900/60 backdrop-blur-xl flex items-center justify-between px-4 md:px-8 shrink-0 z-40 sticky top-0 transition-colors duration-300"
+          initial={{ y: -64, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ duration: 0.42, ease: [0.22, 1, 0.36, 1], delay: 0.05 }}
+        >
           <div className="flex items-center gap-3">
-            <button 
+            <button
               className="md:hidden p-1.5 -ml-1 text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors"
               onClick={() => setIsMobileMenuOpen(true)}
             >
@@ -480,8 +502,13 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             </div>
           </div>
 
-          <div className="flex items-center gap-3">
-            {/* WebSocket Status Indicator */}
+          <motion.div 
+            className="flex items-center gap-2"
+            initial={{ y: -30, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1], delay: 0.2 }}
+          >
+            {/* WS Status */}
             <div className="relative flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-100 dark:bg-slate-950/40 border border-slate-200/50 dark:border-white/5 text-xs font-bold transition-colors duration-300">
               <span className={`w-2 h-2 rounded-full ${wsStatus === "CONNECTED" ? "bg-emerald-500 animate-ping" : wsStatus === "CONNECTING" ? "bg-amber-500 animate-pulse" : "bg-rose-500"}`} />
               <span className={`w-2 h-2 rounded-full absolute ${wsStatus === "CONNECTED" ? "bg-emerald-500" : wsStatus === "CONNECTING" ? "bg-amber-500" : "bg-rose-500"}`} />
@@ -490,7 +517,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               </span>
             </div>
 
-            {/* Dark Mode Toggle Switch */}
+            {/* Theme toggle */}
             <button
               onClick={toggleTheme}
               className="w-9 h-9 rounded-full bg-white dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700/60 flex items-center justify-center text-slate-500 dark:text-slate-400 hover:text-blue-500 dark:hover:text-blue-400 hover:bg-slate-50 dark:hover:bg-slate-800/80 transition-all shadow-sm hover:shadow"
@@ -498,41 +525,125 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             >
               {isDark ? <Sun size={16} /> : <Moon size={16} />}
             </button>
-            <div className="h-6 w-px bg-slate-200/80 dark:bg-slate-800/60 mx-1"></div>
-            <Link
-              href="/"
-              target="_blank"
-              className="px-3.5 py-2 bg-gradient-to-tr from-blue-600 to-indigo-500 hover:from-blue-500 hover:to-indigo-400 text-white rounded-xl text-xs font-bold shadow shadow-blue-500/20 hover:shadow-blue-500/40 transition-all flex items-center gap-2 tracking-wide uppercase"
-            >
-              <Globe size={14} />
-              <span>Lihat Web</span>
-            </Link>
-          </div>
-        </header>
+
+
+
+            {/* ── User Avatar Dropdown ──────────────────────────────────── */}
+            <div className="relative" ref={userDropdownRef}>
+              <button
+                onClick={() => setShowUserDropdown((v) => !v)}
+                className="flex items-center gap-2 px-2 py-1.5 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 transition-all"
+              >
+                <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center font-black text-white text-sm shadow-sm overflow-hidden shrink-0">
+                  {adminUser?.foto_profil ? (
+                    <img src={adminUser.foto_profil} alt="Profil" className="w-full h-full object-cover" />
+                  ) : (
+                    userInitial
+                  )}
+                </div>
+                <span className="hidden md:block text-xs font-bold text-slate-700 dark:text-slate-300 whitespace-nowrap">
+                  {adminUser?.nama?.split(" ")[0] || "Admin"}
+                </span>
+                <ChevronDown
+                  size={13}
+                  className={`hidden md:block text-slate-400 transition-transform duration-200 ${showUserDropdown ? "rotate-180" : ""}`}
+                />
+              </button>
+
+              {/* Dropdown */}
+              {showUserDropdown && (
+                <div className="absolute right-0 top-[calc(100%+8px)] w-56 bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-700/60 rounded-2xl shadow-xl shadow-slate-200/60 dark:shadow-slate-900/60 z-50 overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+                  {/* User info */}
+                  <div className="px-4 py-3 border-b border-slate-100 dark:border-slate-800">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center font-black text-white text-base shadow-sm shrink-0 overflow-hidden">
+                        {adminUser?.foto_profil ? (
+                          <img src={adminUser.foto_profil} alt="Profil" className="w-full h-full object-cover" />
+                        ) : (
+                          userInitial
+                        )}
+                      </div>
+                      <div className="min-w-0">
+                        <p className="text-sm font-bold text-slate-800 dark:text-white truncate">{adminUser?.nama || "Admin TB"}</p>
+                        <p className="text-[10px] text-slate-400 dark:text-slate-550 font-medium truncate">@{adminUser?.username || "admin"}</p>
+                        <span className={`inline-block mt-0.5 px-1.5 py-0.5 rounded text-[8px] font-black uppercase tracking-wider ${adminUser?.role === "superadmin" ? "bg-purple-100 dark:bg-purple-950/50 text-purple-600 dark:text-purple-400" : "bg-blue-100 dark:bg-blue-950/50 text-blue-600 dark:text-blue-400"}`}>
+                          {adminUser?.role || "admin"}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Menu items */}
+                  <div className="py-1">
+                    <Link
+                      href="/dashboard/profile"
+                      onClick={() => setShowUserDropdown(false)}
+                      className="flex items-center gap-3 px-4 py-2.5 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-white/5 hover:text-slate-800 dark:hover:text-white transition-colors"
+                    >
+                      <UserCircle size={15} className="text-slate-400 shrink-0" />
+                      <span className="text-xs font-semibold">Profil Saya</span>
+                    </Link>
+                    <Link
+                      href="/dashboard/settings"
+                      onClick={() => setShowUserDropdown(false)}
+                      className="flex items-center gap-3 px-4 py-2.5 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-white/5 hover:text-slate-800 dark:hover:text-white transition-colors"
+                    >
+                      <Settings size={15} className="text-slate-400 shrink-0" />
+                      <span className="text-xs font-semibold">Pengaturan</span>
+                    </Link>
+                    <Link
+                      href="/"
+                      target="_blank"
+                      onClick={() => setShowUserDropdown(false)}
+                      className="flex items-center gap-3 px-4 py-2.5 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-white/5 hover:text-slate-800 dark:hover:text-white transition-colors"
+                    >
+                      <Globe size={15} className="text-slate-400 shrink-0" />
+                      <span className="text-xs font-semibold">Lihat Website</span>
+                    </Link>
+                  </div>
+
+                  {/* Sign out */}
+                  <div className="border-t border-slate-100 dark:border-slate-800 py-1">
+                    <button
+                      onClick={handleLogout}
+                      className="flex items-center gap-3 w-full px-4 py-2.5 text-left text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/30 transition-colors"
+                    >
+                      <LogOut size={15} className="shrink-0" />
+                      <span className="text-xs font-bold">Keluar Sesi</span>
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          </motion.div>
+        </motion.header>
 
         {/* Content Area */}
         <main className="flex-1 overflow-y-auto p-4 md:p-8 bg-transparent scroll-smooth">
-          <div className="mx-auto max-w-[1600px] animate-in slide-in-from-bottom-4 duration-500 fade-in">
+          <motion.div
+            className="mx-auto max-w-[1600px]"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.25, ease: [0.22, 1, 0.36, 1] }}
+          >
             {children}
-          </div>
+          </motion.div>
         </main>
-      </div>
+      </motion.div>
 
-      {/* Logout Confirmation Modal */}
+      {/* ── Logout Confirmation Modal ──────────────────────────────────────── */}
       {showLogoutConfirm && (
         <div className="fixed inset-0 z-[100] bg-black/60 backdrop-blur-md flex items-center justify-center animate-in fade-in duration-300">
           <div className="bg-white/80 dark:bg-slate-900/80 border border-slate-200 dark:border-white/10 rounded-3xl p-8 shadow-2xl flex flex-col items-center gap-6 text-center max-w-sm w-full mx-4 backdrop-blur-xl animate-in zoom-in-95 duration-200">
             <div className="w-16 h-16 bg-rose-50 dark:bg-rose-950/40 rounded-full flex items-center justify-center text-rose-550 dark:text-rose-500 border border-rose-100 dark:border-rose-900/40 shadow-inner">
               <LogOut size={28} className="animate-pulse" />
             </div>
-            
             <div className="space-y-2">
               <h3 className="text-base font-black text-slate-800 dark:text-white uppercase tracking-wider">Konfirmasi Keluar</h3>
               <p className="text-xs text-slate-500 dark:text-slate-400 font-medium leading-relaxed">
                 Apakah Anda yakin ingin keluar dari sesi admin portal PPDB? Anda perlu memasukkan kredensial lagi untuk masuk.
               </p>
             </div>
-            
             <div className="flex w-full gap-3">
               <button
                 type="button"
@@ -552,9 +663,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           </div>
         </div>
       )}
-
-
-
     </div>
   );
 }

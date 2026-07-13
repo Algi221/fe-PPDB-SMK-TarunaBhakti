@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import { useSearchParams } from "next/navigation";
 import { usePPDB } from "@/context/PPDBContext";
 import { 
   Palette, 
@@ -25,7 +26,8 @@ import {
   Briefcase,
   ArrowLeft,
   Calendar,
-  Database
+  Database,
+  Building
 } from "lucide-react";
 import DateRangeCalendar from "@/components/DateRangeCalendar";
 import { sanitizeSrc } from "@/utils/security";
@@ -190,7 +192,7 @@ const DEFAULT_MAJORS: MajorItem[] = [
       "AWS Cloud Academy Learning Station",
       "Google Developer Partner Studio Lab"
     ],
-    logo: "/jurusan/pplg.png",
+    logo: "/assets/jurusan/pplg.png",
     banner: "https://images.unsplash.com/photo-1555066931-4365d14bab8c?q=80&w=1200&auto=format&fit=crop",
     video: "",
     gallery: [
@@ -218,7 +220,7 @@ const DEFAULT_MAJORS: MajorItem[] = [
       "FTTH & Fiber Optic Splicing Lab",
       "Virtualization & Private Cloud Server Sandbox"
     ],
-    logo: "/jurusan/tjkt.png",
+    logo: "/assets/jurusan/tjkt.png",
     banner: "https://images.unsplash.com/photo-1544197150-b99a580bb7a8?q=80&w=1200&auto=format&fit=crop",
     video: "",
     gallery: [
@@ -246,7 +248,7 @@ const DEFAULT_MAJORS: MajorItem[] = [
       "Adobe Certified Professional Lab",
       "Large-Format Digital Printing Center"
     ],
-    logo: "/jurusan/dkv.png",
+    logo: "/assets/jurusan/dkv.png",
     banner: "https://images.unsplash.com/photo-1561070791-26c113006238?q=80&w=1200&auto=format&fit=crop",
     video: "",
     gallery: [
@@ -274,7 +276,7 @@ const DEFAULT_MAJORS: MajorItem[] = [
       "Soundproof Podcasting & Sound Design Studio",
       "High-End Camera Equipment Gear Room"
     ],
-    logo: "/jurusan/bc.png",
+    logo: "/assets/jurusan/bc.png",
     banner: "https://images.unsplash.com/photo-1536440136628-849c177e76a1?q=80&w=1200&auto=format&fit=crop",
     video: "",
     gallery: [
@@ -302,7 +304,7 @@ const DEFAULT_MAJORS: MajorItem[] = [
       "Professional Sound Dubbing & Sound FX Studio",
       "VFX Processing & Rendering Farm Node Cluster"
     ],
-    logo: "/jurusan/animasi.png",
+    logo: "/assets/jurusan/animasi.png",
     banner: "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=1200&auto=format&fit=crop",
     video: "",
     gallery: [
@@ -330,7 +332,7 @@ const DEFAULT_MAJORS: MajorItem[] = [
       "Precision Soldering & Osciloscope Lab Station",
       "Microcontroller sandbox environment"
     ],
-    logo: "/jurusan/te.png",
+    logo: "/assets/jurusan/te.png",
     banner: "https://images.unsplash.com/photo-1517055726410-dcbbb989d595?q=80&w=1200&auto=format&fit=crop",
     video: "",
     gallery: [
@@ -343,9 +345,72 @@ const DEFAULT_MAJORS: MajorItem[] = [
 ];
 
 export default function KelolaUserInterface() {
-  const { adminToken } = usePPDB();
+  const { adminToken, fetchConfigs } = usePPDB();
   const [mounted, setMounted] = useState(false);
   const [activeTab, setActiveTab] = useState<"hero" | "majors" | "alur" | "form" | "faq" | "revisions" | "bank" | "partners">("hero");
+  const searchParams = useSearchParams();
+
+  useEffect(() => {
+    const tab = searchParams.get("tab");
+    if (tab && ["hero", "majors", "alur", "form", "faq", "revisions", "bank", "partners"].includes(tab)) {
+      setActiveTab(tab as any);
+    }
+  }, [searchParams]);
+
+  // ── Form Fields Config (Task 3) ───────────────────────────────────────────
+  const DEFAULT_FIELDS_CONFIG_UI: Record<string, { label: string; required: boolean; active: boolean }> = {
+    nama: { label: "Nama Lengkap", required: true, active: true },
+    nisn: { label: "NISN", required: true, active: true },
+    nik: { label: "NIK", required: true, active: true },
+    tempatLahir: { label: "Tempat Lahir", required: true, active: true },
+    tglLahir: { label: "Tanggal Lahir", required: true, active: true },
+    jenisKelamin: { label: "Jenis Kelamin", required: true, active: true },
+    agama: { label: "Agama", required: true, active: true },
+    alamat: { label: "Alamat Lengkap", required: true, active: true },
+    whatsapp: { label: "Nomor WhatsApp", required: true, active: true },
+    email: { label: "Alamat Email", required: false, active: true },
+    tinggalDengan: { label: "Tinggal Dengan", required: true, active: true },
+    transportasi: { label: "Transportasi", required: true, active: true },
+    tinggiBadan: { label: "Tinggi Badan (cm)", required: true, active: true },
+    beratBadan: { label: "Berat Badan (kg)", required: true, active: true },
+    golonganDarah: { label: "Golongan Darah", required: true, active: true },
+    penyakitDiderita: { label: "Penyakit Diderita", required: false, active: true },
+    kebutuhanKhusus: { label: "Berkebutuhan Khusus", required: false, active: true },
+    jenisPrestasi: { label: "Jenis Prestasi", required: false, active: true },
+    tingkatPrestasi: { label: "Tingkat Prestasi", required: false, active: true },
+    uraianPrestasi: { label: "Uraian Prestasi", required: false, active: true },
+    tahunPrestasi: { label: "Tahun Prestasi", required: false, active: true },
+    penyelenggara: { label: "Penyelenggara Prestasi", required: false, active: true },
+    jenisBeasiswa: { label: "Jenis Beasiswa", required: false, active: true },
+    uraianBeasiswa: { label: "Uraian Beasiswa", required: false, active: true },
+    sekolahAsal: { label: "Sekolah Asal (SMP/MTs)", required: true, active: true },
+    tglLulus: { label: "Tanggal Lulus SMP", required: true, active: true },
+    noIjazah: { label: "No. Seri Ijazah", required: false, active: true },
+    noSKHUN: { label: "No. Seri SKHUN", required: false, active: true },
+    noPesertaUN: { label: "No. Peserta UN", required: false, active: true },
+    jurusan1: { label: "Program Keahlian (Jurusan)", required: true, active: true },
+    alasanMemilih: { label: "Alasan Memilih Jurusan", required: false, active: true },
+    namaAyah: { label: "Nama Ayah", required: true, active: true },
+    pendidikanAyah: { label: "Pendidikan Ayah", required: true, active: true },
+    pekerjaanAyah: { label: "Pekerjaan Ayah", required: true, active: true },
+    penghasilanAyah: { label: "Penghasilan Ayah", required: true, active: true },
+    namaIbu: { label: "Nama Ibu", required: true, active: true },
+    pendidikanIbu: { label: "Pendidikan Ibu", required: true, active: true },
+    pekerjaanIbu: { label: "Pekerjaan Ibu", required: true, active: true },
+    penghasilanIbu: { label: "Penghasilan Ibu", required: true, active: true },
+    namaWali: { label: "Nama Wali", required: false, active: true },
+    teleponOrtu: { label: "Telepon Orang Tua", required: true, active: true },
+    nilaiUSTeori: { label: "Nilai US Teori", required: false, active: true },
+    nilaiUSPraktik: { label: "Nilai US Praktik", required: false, active: true },
+    nilaiMuatanLokal: { label: "Nilai Muatan Lokal", required: false, active: true },
+    citaCita: { label: "Cita-cita", required: false, active: true },
+    hobi: { label: "Hobi", required: false, active: true },
+    pelajaranDisenangi: { label: "Pelajaran Disenangi", required: false, active: true },
+    kesulitanBelajar: { label: "Kesulitan Belajar", required: false, active: true },
+    punyaKPS: { label: "Status KPS", required: false, active: true },
+    punyaKIP: { label: "Status KIP", required: false, active: true },
+  };
+  const [fieldsConfigUI, setFieldsConfigUI] = useState<Record<string, { label: string; required: boolean; active: boolean }>>(DEFAULT_FIELDS_CONFIG_UI);
 
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -365,6 +430,8 @@ export default function KelolaUserInterface() {
   const [waAdmin, setWaAdmin] = useState("6281292244456");
   const [formGuideline, setFormGuideline] = useState("Silakan isi formulir pendaftaran calon siswa dengan lengkap dan benar. Berkas persyaratan wajib diunggah dalam format gambar (PNG/JPG) maksimal 2MB.");
   const [formFee, setFormFee] = useState("250000");
+  const [schoolLogo, setSchoolLogo] = useState("/logo_smktb.png");
+  const [schoolTitle, setSchoolTitle] = useState("PPDB SMK TB");
 
   const [gelombangConfig, setGelombangConfig] = useState({
     gelombang1: { start: "2026-06-03", end: "2026-07-24" },
@@ -446,6 +513,8 @@ export default function KelolaUserInterface() {
       ppdb_majors_config: majorsList,
       ppdb_faq_config: faqList,
       ppdb_partners_config: partnersList,
+      ppdb_logo_url: schoolLogo,
+      ppdb_title: schoolTitle,
     };
 
     localStorage.setItem("ppdb_ui_editor_draft", JSON.stringify(draft));
@@ -505,6 +574,8 @@ export default function KelolaUserInterface() {
       if (activeConfig.ppdb_wa_admin) setWaAdmin(formatPhoneNumber(activeConfig.ppdb_wa_admin));
       if (activeConfig.ppdb_form_guideline) setFormGuideline(activeConfig.ppdb_form_guideline);
       if (activeConfig.ppdb_form_fee) setFormFee(activeConfig.ppdb_form_fee);
+      if (activeConfig.ppdb_logo_url) setSchoolLogo(activeConfig.ppdb_logo_url);
+      if (activeConfig.ppdb_title) setSchoolTitle(activeConfig.ppdb_title);
       
       if (activeConfig.ppdb_alur_config && Array.isArray(activeConfig.ppdb_alur_config)) {
         setAlurList(activeConfig.ppdb_alur_config);
@@ -557,6 +628,9 @@ export default function KelolaUserInterface() {
         } else if (bankData && typeof bankData === "object") {
           setBankConfigList([bankData]);
         }
+      }
+      if (activeConfig.ppdb_fields_config && typeof activeConfig.ppdb_fields_config === "object") {
+        setFieldsConfigUI(prev => ({ ...prev, ...activeConfig.ppdb_fields_config }));
       }
 
       if (draft) {
@@ -639,6 +713,26 @@ export default function KelolaUserInterface() {
         });
         showToastMsg(`Berkas ${type.toUpperCase()} berhasil dimuat. Klik Simpan Detail di bawah untuk menerapkan.`);
       }
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleSchoolLogoChange = (file: File) => {
+    const fileExt = file.name.split('.').pop()?.toLowerCase() || '';
+    const allowedImgExts = ['jpg', 'jpeg', 'png', 'webp', 'svg', 'gif'];
+    if (!file.type.startsWith("image/") && !allowedImgExts.includes(fileExt)) {
+      showToastMsg("Hanya file gambar (JPG/PNG/WEBP) yang diperbolehkan.", "error");
+      return;
+    }
+    if (file.size > 2 * 1024 * 1024) {
+      showToastMsg("Ukuran file gambar maksimal adalah 2MB.", "error");
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const base64 = event.target?.result as string;
+      setSchoolLogo(base64);
+      showToastMsg("Logo sekolah berhasil dimuat. Klik Simpan Perubahan di pojok kanan atas.");
     };
     reader.readAsDataURL(file);
   };
@@ -729,7 +823,10 @@ export default function KelolaUserInterface() {
         ppdb_faq_config: faqList,
         ppdb_gelombang_config: gelombangConfig,
         ppdb_bank_config: bankConfigList,
-        ppdb_partners_config: partnersList
+        ppdb_partners_config: partnersList,
+        ppdb_logo_url: schoolLogo,
+        ppdb_title: schoolTitle,
+        ppdb_fields_config: fieldsConfigUI
       };
 
       const token = adminToken || localStorage.getItem("ppdb_admin_token");
@@ -750,6 +847,7 @@ export default function KelolaUserInterface() {
         showToastMsg("Semua perubahan UI berhasil disimpan dan tercatat.");
         setChangeDescription("");
         localStorage.removeItem("ppdb_ui_editor_draft");
+        fetchConfigs().catch(console.error);
         
         try {
           localStorage.setItem("ppdb_majors_config", JSON.stringify(finalMajors));
@@ -955,6 +1053,67 @@ export default function KelolaUserInterface() {
             {activeTab === "hero" && (
               <div className="space-y-6">
                 <div className="border-b border-slate-100 dark:border-white/5 pb-4 mb-4">
+                  <h3 className="text-sm font-black uppercase text-slate-850 dark:text-white tracking-wider flex items-center gap-2">
+                    <Building size={16} className="text-blue-500" />
+                    <span>Logo &amp; Nama Instansi (Header Website)</span>
+                  </h3>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-center bg-slate-50 dark:bg-slate-950/40 p-6 rounded-3xl border border-slate-200/60 dark:border-white/5">
+                  {/* Logo Drag & Drop */}
+                  <div className="md:col-span-1 flex flex-col items-center gap-2">
+                    <label className="text-[9px] uppercase font-bold text-slate-450 tracking-wider">Logo Instansi (Header)</label>
+                    <div
+                      className={`w-24 h-24 border-2 border-dashed rounded-3xl flex flex-col items-center justify-center p-2 relative overflow-hidden transition-all duration-300 ${
+                        dragActiveStates["school_logo"]
+                          ? "border-blue-500 bg-blue-500/5"
+                          : "border-slate-200 dark:border-white/10 hover:border-slate-350 dark:hover:border-white/20 bg-white dark:bg-slate-900"
+                      }`}
+                      onDragEnter={(e) => handleDragState(e, "school_logo", true)}
+                      onDragOver={(e) => handleDragState(e, "school_logo", true)}
+                      onDragLeave={(e) => handleDragState(e, "school_logo", false)}
+                      onDrop={(e) => {
+                        handleDragState(e, "school_logo", false);
+                        const file = e.dataTransfer.files?.[0];
+                        if (file) handleSchoolLogoChange(file);
+                      }}
+                    >
+                      {schoolLogo ? (
+                        <img src={schoolLogo} alt="Logo Sekolah" className="w-full h-full object-contain rounded-2xl" />
+                      ) : (
+                        <div className="text-center text-slate-400">
+                          <Upload size={20} className="mx-auto mb-1 text-slate-300" />
+                          <span className="text-[9px] font-bold">Upload Logo</span>
+                        </div>
+                      )}
+                      <input
+                        type="file"
+                        accept="image/*"
+                        className="absolute inset-0 opacity-0 cursor-pointer"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (file) handleSchoolLogoChange(file);
+                        }}
+                      />
+                    </div>
+                  </div>
+
+                  {/* Nama Sekolah / Title */}
+                  <div className="md:col-span-2 space-y-4 text-left">
+                    <div className="space-y-2">
+                      <label className="text-[9px] uppercase font-bold text-slate-450 tracking-wider">Nama Instansi / Singkatan (Header)</label>
+                      <input
+                        type="text"
+                        value={schoolTitle}
+                        onChange={(e) => setSchoolTitle(e.target.value)}
+                        placeholder="Contoh: PPDB SMK TB"
+                        className="w-full px-4 py-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/5 rounded-2xl text-slate-800 dark:text-white font-semibold text-xs focus:outline-none focus:border-blue-500"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <div className="border-b border-slate-100 dark:border-white/5 pb-4 mt-8 mb-4">
                   <h3 className="text-sm font-black uppercase text-slate-850 dark:text-white tracking-wider flex items-center gap-2">
                     <FileText size={16} className="text-blue-500" />
                     <span>Hero Section &amp; Header Utama</span>
@@ -1828,6 +1987,79 @@ export default function KelolaUserInterface() {
                       placeholder="Tuliskan catatan panduan yang akan tampil diatas form pengisian wizard..."
                       className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-white/5 rounded-2xl text-slate-800 dark:text-white font-semibold text-xs focus:outline-none focus:border-blue-500 resize-y"
                     />
+                  </div>
+                </div>
+
+                {/* ── Konfigurasi Field Form Pendaftaran */}
+                <div className="border-t border-slate-100 dark:border-white/5 pt-6">
+                  <div className="flex items-center justify-between mb-4">
+                    <div>
+                      <h4 className="text-xs font-black uppercase text-slate-800 dark:text-white tracking-wider flex items-center gap-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4 text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" /></svg>
+                        Konfigurasi Field Form Pendaftaran
+                      </h4>
+                      <p className="text-[9px] text-slate-400 font-bold uppercase tracking-wider mt-0.5">Atur field mana yang aktif dan apakah wajib diisi atau opsional</p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setFieldsConfigUI(DEFAULT_FIELDS_CONFIG_UI)}
+                      className="px-3 py-1.5 text-[9px] font-black uppercase tracking-wider border border-slate-200 dark:border-white/5 rounded-xl text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-900 transition-all"
+                    >
+                      Reset Default
+                    </button>
+                  </div>
+
+                  <div className="overflow-x-auto rounded-2xl border border-slate-200/60 dark:border-white/5">
+                    <table className="w-full text-left text-xs">
+                      <thead>
+                        <tr className="bg-slate-50 dark:bg-slate-950/60 border-b border-slate-200 dark:border-white/5">
+                          <th className="px-4 py-3 font-black uppercase tracking-wider text-[9px] text-slate-500 dark:text-slate-400">Field / Kolom</th>
+                          <th className="px-4 py-3 font-black uppercase tracking-wider text-[9px] text-slate-500 dark:text-slate-400 text-center">Aktif</th>
+                          <th className="px-4 py-3 font-black uppercase tracking-wider text-[9px] text-slate-500 dark:text-slate-400 text-center">Wajib Diisi</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-slate-100 dark:divide-white/5">
+                        {Object.entries(fieldsConfigUI).map(([key, cfg]) => (
+                          <tr key={key} className="hover:bg-slate-50/60 dark:hover:bg-white/3 transition-colors">
+                            <td className="px-4 py-2.5">
+                              <div>
+                                <span className="font-bold text-slate-800 dark:text-white text-xs">{cfg.label}</span>
+                                <span className="ml-2 text-[9px] text-slate-400 font-mono bg-slate-100 dark:bg-slate-900 px-1.5 py-0.5 rounded">{key}</span>
+                              </div>
+                            </td>
+                            <td className="px-4 py-2.5 text-center">
+                              <button
+                                type="button"
+                                onClick={() => setFieldsConfigUI(prev => ({ ...prev, [key]: { ...prev[key], active: !prev[key].active } }))}
+                                className={`w-9 h-5 rounded-full relative transition-colors duration-200 ${
+                                  cfg.active ? 'bg-blue-500' : 'bg-slate-200 dark:bg-slate-700'
+                                }`}
+                                title={cfg.active ? 'Nonaktifkan field' : 'Aktifkan field'}
+                              >
+                                <span className={`absolute top-0.5 w-4 h-4 rounded-full bg-white shadow transition-all duration-200 ${
+                                  cfg.active ? 'left-[18px]' : 'left-0.5'
+                                }`} />
+                              </button>
+                            </td>
+                            <td className="px-4 py-2.5 text-center">
+                              <button
+                                type="button"
+                                disabled={!cfg.active}
+                                onClick={() => setFieldsConfigUI(prev => ({ ...prev, [key]: { ...prev[key], required: !prev[key].required } }))}
+                                className={`w-9 h-5 rounded-full relative transition-colors duration-200 disabled:opacity-40 disabled:cursor-not-allowed ${
+                                  cfg.required && cfg.active ? 'bg-emerald-500' : 'bg-slate-200 dark:bg-slate-700'
+                                }`}
+                                title={cfg.required ? 'Jadikan opsional' : 'Jadikan wajib'}
+                              >
+                                <span className={`absolute top-0.5 w-4 h-4 rounded-full bg-white shadow transition-all duration-200 ${
+                                  cfg.required && cfg.active ? 'left-[18px]' : 'left-0.5'
+                                }`} />
+                              </button>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
                   </div>
                 </div>
               </div>
