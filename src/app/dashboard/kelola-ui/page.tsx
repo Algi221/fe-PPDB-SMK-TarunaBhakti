@@ -428,6 +428,8 @@ export default function KelolaUserInterface() {
   const [phone, setPhone] = useState("(021) 8740756");
   const [email, setEmail] = useState("info@smktarunabhakti.sch.id");
   const [address, setAddress] = useState("Jl. Pekapuran Kel. Curug Kec. Cimanggis, Depok, Jawa Barat 16453");
+  const [mapTitle, setMapTitle] = useState("Kunjungi Kampus SMK Taruna Bhakti");
+  const [mapUrl, setMapUrl] = useState("https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3965.055845577626!2d106.867407!3d-6.3844792!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2e69ebaff005f277%3A0x9fcd41028665eea8!2sSMK%20Taruna%20Bhakti%20Depok!5e0!3m2!1sen!2sid!4v1683883446098!5m2!1sen!2sid");
   const [schoolPeriod, setSchoolPeriod] = useState("2026-2027");
   const [waGroupUrl, setWaGroupUrl] = useState("https://chat.whatsapp.com/HJXHYajEOhl5RM6iN2SJOS");
   const [waAdmin, setWaAdmin] = useState("6281292244456");
@@ -507,6 +509,8 @@ export default function KelolaUserInterface() {
       ppdb_phone: phone,
       ppdb_email: email,
       ppdb_address: address,
+      ppdb_map_title: mapTitle,
+      ppdb_map_url: mapUrl,
       ppdb_school_period: schoolPeriod,
       ppdb_wa_group_url: waGroupUrl,
       ppdb_wa_admin: waAdmin,
@@ -574,6 +578,8 @@ export default function KelolaUserInterface() {
       if (activeConfig.ppdb_phone) setPhone(formatPhoneNumber(activeConfig.ppdb_phone));
       if (activeConfig.ppdb_email) setEmail(activeConfig.ppdb_email);
       if (activeConfig.ppdb_address) setAddress(activeConfig.ppdb_address);
+        if (activeConfig.ppdb_map_title) setMapTitle(activeConfig.ppdb_map_title);
+        if (activeConfig.ppdb_map_url) setMapUrl(activeConfig.ppdb_map_url);
       if (activeConfig.ppdb_school_period) setSchoolPeriod(activeConfig.ppdb_school_period);
         if (activeConfig.ppdb_faq_title) setFaqTitle(activeConfig.ppdb_faq_title);
         if (activeConfig.ppdb_faq_subtitle) setFaqSubtitle(activeConfig.ppdb_faq_subtitle);
@@ -820,6 +826,8 @@ export default function KelolaUserInterface() {
         ppdb_phone: phone,
         ppdb_email: email,
         ppdb_address: address,
+      ppdb_map_title: mapTitle,
+      ppdb_map_url: mapUrl,
         ppdb_school_period: schoolPeriod,
         ppdb_wa_group_url: waGroupUrl,
         ppdb_wa_admin: waAdmin,
@@ -865,6 +873,8 @@ export default function KelolaUserInterface() {
           localStorage.setItem("ppdb_partners_config", JSON.stringify(partnersList));
           localStorage.setItem("ppdb_reg_cost", formFee);
           localStorage.setItem("ppdb_school_period", schoolPeriod);
+            localStorage.setItem("ppdb_map_title", mapTitle);
+            localStorage.setItem("ppdb_map_url", mapUrl);
           localStorage.setItem("ppdb_wa_group_url", waGroupUrl);
           localStorage.setItem("ppdb_wa_admin", waAdmin);
           localStorage.setItem("ppdb_bank_config", JSON.stringify(bankConfigList));
