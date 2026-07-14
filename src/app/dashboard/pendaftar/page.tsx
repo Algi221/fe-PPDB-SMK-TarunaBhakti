@@ -21,6 +21,7 @@ import ExcelJS from 'exceljs';
 import { saveAs } from 'file-saver';
 import { Check, X, Eye, FileText, Download, Upload, Filter, Search, TableProperties, FileSpreadsheet, Trash2, Layers, Pencil, PieChart, CloudLightning } from "lucide-react";
 import KuotaTab from "@/components/KuotaTab";
+import Swal from 'sweetalert2';
 import {
   Info,
   Calendar,
@@ -291,7 +292,15 @@ function ApplicantsDirectoryContent() {
   };
 
   const handlePermanentDeleteApplicant = async (id: number) => {
-    if (!confirm("Apakah Anda yakin ingin menghapus data calon siswa ini secara PERMANEN? Tindakan ini tidak dapat dibatalkan!")) return;
+    const result = await Swal.fire({
+      title: 'Konfirmasi',
+      text: "Apakah Anda yakin ingin menghapus data calon siswa ini secara PERMANEN? Tindakan ini tidak dapat dibatalkan!",
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: 'Ya',
+      cancelButtonText: 'Batal'
+    });
+    if (!result.isConfirmed) return;
     try {
       setTrashLoading(true);
       setTrashError("");
@@ -881,8 +890,16 @@ function ApplicantsDirectoryContent() {
                         )}
 
                         <button
-                          onClick={() => {
-                            if (confirm("Apakah Anda yakin ingin menghapus data pendaftar ini secara permanen?")) {
+                          onClick={async () => {
+                            const result = await Swal.fire({
+                              title: 'Konfirmasi',
+                              text: "Apakah Anda yakin ingin menghapus data pendaftar ini secara permanen?",
+                              icon: 'warning',
+                              showCancelButton: true,
+                              confirmButtonText: 'Ya',
+                              cancelButtonText: 'Batal'
+                            });
+                            if (result.isConfirmed) {
                               deleteApplicant(a.id);
                             }
                           }}
@@ -1646,7 +1663,15 @@ function ApplicantsDirectoryContent() {
                         {selectedApplicant.payment_status !== "Paid" && (
                           <button
                             onClick={async () => {
-                              if (confirm("Apakah Anda yakin ingin memverifikasi bukti pembayaran ini dan menandai Lunas?")) {
+                              const result = await Swal.fire({
+                                title: 'Konfirmasi',
+                                text: "Apakah Anda yakin ingin memverifikasi bukti pembayaran ini dan menandai Lunas?",
+                                icon: 'warning',
+                                showCancelButton: true,
+                                confirmButtonText: 'Ya',
+                                cancelButtonText: 'Batal'
+                              });
+                              if (result.isConfirmed) {
                                 const res = await updateApplicant(selectedApplicant.id, { payment_status: "Paid" });
                                 if (res?.success) {
                                   setSelectedApplicant(prev => prev ? { ...prev, payment_status: "Paid" } : null);

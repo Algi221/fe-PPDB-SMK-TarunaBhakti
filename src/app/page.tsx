@@ -668,8 +668,12 @@ export default function Home() {
           })}
 
           {/* Hero Copy */}
-          <div className="badge-wrapper relative z-10">
+          <div className="badge-wrapper relative z-10 flex flex-col items-center gap-3">
             <span className="badge-pill">SMK TARUNA BHAKTI DEPOK</span>
+            <div className="flex items-center gap-2 text-[11px] md:text-xs font-semibold text-slate-700 dark:text-slate-200 bg-white/60 dark:bg-slate-800/60 px-4 py-2 rounded-full backdrop-blur-md border border-slate-200/50 dark:border-slate-700/50 shadow-sm animate-[fadeIn_0.8s_ease-out_0.2s_both]">
+               <MapPin size={14} className="text-blue-600 dark:text-blue-400" />
+               <span className="max-w-[280px] md:max-w-none truncate md:whitespace-normal">{address}</span>
+            </div>
           </div>
 
           <h1 className="hero-title relative z-10">

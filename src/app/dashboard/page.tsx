@@ -535,7 +535,7 @@ export default function DashboardOverview() {
           <div className="flex items-center justify-between mb-4">
             <div>
               <h3 className="text-xs font-black text-slate-800 dark:text-white tracking-wider uppercase">Pendaftar Terbaru</h3>
-              <p className="text-[10px] text-slate-400 dark:text-slate-500 font-semibold mt-0.5">5 calon siswa yang baru mendaftar</p>
+              <p className="text-[10px] text-slate-400 dark:text-slate-500 font-semibold mt-0.5">7 calon siswa yang baru mendaftar</p>
             </div>
             <Link href="/dashboard/pendaftar" className="flex items-center gap-1 text-[10px] font-bold text-blue-500 hover:text-blue-600 dark:text-blue-400 transition-colors uppercase tracking-wider">
               Lihat Semua <ArrowRight size={12} />
@@ -552,7 +552,7 @@ export default function DashboardOverview() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-50 dark:divide-white/5">
-                {applicants.slice(0, 5).map((a: any, idx: number) => (
+                {applicants.slice(0, 7).map((a: any, idx: number) => (
                   <motion.tr
                     key={a.id || idx}
                     initial={{ opacity: 0, x: -10 }}

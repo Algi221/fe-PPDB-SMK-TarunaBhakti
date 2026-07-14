@@ -5,6 +5,8 @@ import Link from "next/link";
 import { ArrowRight, Check, Upload, ArrowLeft, Home, Monitor, Code, Palette, Film, Cpu, Sun, Moon, CreditCard, ShieldCheck, Sparkles, X, FileText, AlertCircle, Phone, Copy, ChevronRight, Building, CheckCircle2, DollarSign, Printer, User, Users, Pencil, School, HelpCircle, Clock } from "lucide-react";
 import { usePPDB } from "@/context/PPDBContext";
 import dompurify from "dompurify";
+import Swal from 'sweetalert2';
+
 
 const sanitizeUrl = (url: string | undefined | null): string => {
   if (!url) return "";
@@ -1121,8 +1123,16 @@ export default function DaftarPage() {
             </Link>
             <button
               type="button"
-              onClick={() => {
-                if (window.confirm("Apakah Anda ingin mendaftarkan calon siswa baru lainnya?")) {
+              onClick={async () => {
+                const result = await Swal.fire({
+                  title: 'Konfirmasi',
+                  text: "Apakah Anda ingin mendaftarkan calon siswa baru lainnya?",
+                  icon: 'warning',
+                  showCancelButton: true,
+                  confirmButtonText: 'Ya',
+                  cancelButtonText: 'Batal'
+                });
+                if (result.isConfirmed) {
                   localStorage.removeItem('ppdb_registration_success');
                   setIsSuccess(false);
                   setSuccessData(null);
@@ -1340,8 +1350,16 @@ export default function DaftarPage() {
 
               <button
                 type="button"
-                onClick={() => {
-                  if (window.confirm("Apakah Anda ingin mendaftarkan calon siswa baru lainnya?")) {
+                onClick={async () => {
+                  const result = await Swal.fire({
+                    title: 'Konfirmasi',
+                    text: "Apakah Anda ingin mendaftarkan calon siswa baru lainnya?",
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonText: 'Ya',
+                    cancelButtonText: 'Batal'
+                  });
+                  if (result.isConfirmed) {
                     localStorage.removeItem('ppdb_registration_success');
                     setIsSuccess(false);
                     setSuccessData(null);

@@ -5,6 +5,7 @@ import { usePPDB } from "@/context/PPDBContext";
 import ExcelJS from 'exceljs';
 import { saveAs } from 'file-saver';
 import { generateNipdMap } from "@/utils/nipd";
+import Swal from 'sweetalert2';
 import { 
   Users, 
   Layers, 
@@ -610,14 +611,22 @@ export default function ClassDivisionManagement() {
     showToast(`Kelas ${cleanName} berhasil dibuat!`);
   };
 
-  const handleDeleteClass = (id: string, name: string) => {
+  const handleDeleteClass = async (id: string, name: string) => {
     const count = classEnrollments[name]?.total || 0;
     if (count > 0) {
       showToast(`Gagal menghapus: Masih ada ${count} siswa terdaftar di dalam kelas ${name}.`, "error");
       return;
     }
 
-    if (confirm(`Apakah Anda yakin ingin menghapus kelas ${name}?`)) {
+    const result = await Swal.fire({
+      title: 'Konfirmasi',
+      text: `Apakah Anda yakin ingin menghapus kelas ${name}?`,
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: 'Ya',
+      cancelButtonText: 'Batal'
+    });
+    if (result.isConfirmed) {
       const updated = classes.filter(c => c.id !== id);
       saveClassesToStorage(updated);
       showToast(`Kelas ${name} berhasil dihapus.`);
@@ -625,7 +634,15 @@ export default function ClassDivisionManagement() {
   };
 
   const handleRemoveStudentFromClassDetail = async (studentId: number, studentNama: string) => {
-    if (confirm(`Keluarkan ${studentNama} dari kelas ${selectedClassDetail?.name}?`)) {
+    const result = await Swal.fire({
+      title: 'Konfirmasi',
+      text: `Keluarkan ${studentNama} dari kelas ${selectedClassDetail?.name}?`,
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: 'Ya',
+      cancelButtonText: 'Batal'
+    });
+    if (result.isConfirmed) {
       const result = await updateActiveStudent(studentId, {
         diterima_kelas: null,
         diterima_tanggal: null

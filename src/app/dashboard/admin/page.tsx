@@ -5,6 +5,8 @@ import { usePPDB } from "@/context/PPDBContext";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Shield, Plus, Trash2, Edit3, User, KeyRound, Eye, EyeOff, Save, X, RotateCcw } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import Swal from 'sweetalert2';
+
 
 function AdminManagementPageContent() {
   const { adminUser, adminToken } = usePPDB();
@@ -255,7 +257,15 @@ function AdminManagementPageContent() {
   };
 
   const handleDeleteAdmin = async (id: number) => {
-    if (!confirm("Apakah Anda yakin ingin menghapus admin ini secara permanen?")) return;
+    const result = await Swal.fire({
+      title: 'Konfirmasi',
+      text: "Apakah Anda yakin ingin menghapus admin ini secara permanen?",
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: 'Ya',
+      cancelButtonText: 'Batal'
+    });
+    if (!result.isConfirmed) return;
     if (!adminToken) return;
     try {
       setLoading(true);
@@ -332,7 +342,15 @@ function AdminManagementPageContent() {
   };
 
   const handlePermanentDeleteAdmin = async (id: number) => {
-    if (!confirm("Apakah Anda yakin ingin menghapus admin ini secara PERMANEN? Tindakan ini tidak dapat dibatalkan!")) return;
+    const result = await Swal.fire({
+      title: 'Konfirmasi',
+      text: "Apakah Anda yakin ingin menghapus admin ini secara PERMANEN? Tindakan ini tidak dapat dibatalkan!",
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: 'Ya',
+      cancelButtonText: 'Batal'
+    });
+    if (!result.isConfirmed) return;
     if (!adminToken) return;
     try {
       setTrashLoading(true);

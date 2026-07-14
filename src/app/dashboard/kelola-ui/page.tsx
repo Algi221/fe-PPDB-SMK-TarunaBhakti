@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { useSearchParams } from "next/navigation";
+import { useSearchParams, useRouter } from "next/navigation";
 import { usePPDB } from "@/context/PPDBContext";
 import { 
   Palette, 
@@ -32,6 +32,8 @@ import {
 import DateRangeCalendar from "@/components/DateRangeCalendar";
 import { sanitizeSrc } from "@/utils/security";
 import DOMPurify from "dompurify";
+import Swal from 'sweetalert2';
+
 
 interface AlurItem {
   id: number;
@@ -349,6 +351,7 @@ export default function KelolaUserInterface() {
   const [mounted, setMounted] = useState(false);
   const [activeTab, setActiveTab] = useState<"hero" | "majors" | "alur" | "form" | "faq" | "revisions" | "bank" | "partners">("hero");
   const searchParams = useSearchParams();
+  const router = useRouter();
 
   useEffect(() => {
     const tab = searchParams.get("tab");
@@ -981,8 +984,16 @@ export default function KelolaUserInterface() {
         <div className="flex gap-2.5">
           {mounted && typeof window !== "undefined" && localStorage.getItem("ppdb_ui_editor_draft") && (
             <button
-              onClick={() => {
-                if (window.confirm("Apakah Anda yakin ingin membatalkan semua draf perubahan yang belum disimpan dan memuat ulang data asli dari server?")) {
+              onClick={async () => {
+                const result = await Swal.fire({
+                  title: 'Konfirmasi',
+                  text: "Apakah Anda yakin ingin membatalkan semua draf perubahan yang belum disimpan dan memuat ulang data asli dari server?",
+                  icon: 'warning',
+                  showCancelButton: true,
+                  confirmButtonText: 'Ya',
+                  cancelButtonText: 'Batal'
+                });
+                if (result.isConfirmed) {
                   localStorage.removeItem("ppdb_ui_editor_draft");
                   fetchCurrentConfig();
                 }
@@ -1021,7 +1032,10 @@ export default function KelolaUserInterface() {
             <button
               key={tab.id}
               disabled={editingMajor !== null && tab.id !== "majors"}
-              onClick={() => setActiveTab(tab.id as any)}
+              onClick={() => {
+                setActiveTab(tab.id as any);
+                router.push(`?tab=${tab.id}`);
+              }}
               className={`flex items-center gap-2 px-4 py-2.5 text-xs font-bold uppercase tracking-wider transition-all duration-300 border border-transparent ${
                 editingMajor !== null && tab.id !== "majors" ? "opacity-30 cursor-not-allowed" : "cursor-pointer"
               } ${
@@ -1079,7 +1093,7 @@ export default function KelolaUserInterface() {
                       }}
                     >
                       {schoolLogo ? (
-                        <img src={schoolLogo} alt="Logo Sekolah" className="w-full h-full object-contain rounded-2xl" />
+                        <img src={DOMPurify.sanitize(schoolLogo)} alt="Logo Sekolah" className="w-full h-full object-contain rounded-2xl" />
                       ) : (
                         <div className="text-center text-slate-400">
                           <Upload size={20} className="mx-auto mb-1 text-slate-300" />
@@ -1336,10 +1350,18 @@ export default function KelolaUserInterface() {
                             {/* Delete Button Overlay */}
                             <button
                               type="button"
-                              onClick={(e) => {
+                              onClick={async (e) => {
                                 e.preventDefault();
                                 e.stopPropagation();
-                                if (confirm(`Apakah Anda yakin ingin menghapus jurusan ${major.title} (${major.code}) secara lokal? Klik "Simpan Perubahan" di atas untuk menyimpan secara permanen.`)) {
+                                const result = await Swal.fire({
+                                  title: 'Konfirmasi',
+                                  text: `Apakah Anda yakin ingin menghapus jurusan ${major.title} (${major.code}) secara lokal? Klik "Simpan Perubahan" di atas untuk menyimpan secara permanen.`,
+                                  icon: 'warning',
+                                  showCancelButton: true,
+                                  confirmButtonText: 'Ya',
+                                  cancelButtonText: 'Batal'
+                                });
+                                if (result.isConfirmed) {
                                   setMajorsList(prev => prev.filter(m => m.code !== major.code));
                                   showToastMsg(`Jurusan ${major.code} dihapus secara lokal. Silakan klik "Simpan Perubahan" di pojok kanan atas untuk menerapkannya secara permanen.`, "info");
                                 }

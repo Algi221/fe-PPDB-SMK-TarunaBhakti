@@ -51,6 +51,8 @@ import {
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense } from "react";
 import KuotaTab from "@/components/KuotaTab";
+import Swal from 'sweetalert2';
+
 
 export const formatNoPendaftaran = (periode: string | null | undefined, id: number) => {
   try {
@@ -783,9 +785,17 @@ function ActiveStudentsDirectoryContent() {
                     {customPeriods.includes(period) && students.length === 0 && (
                       <button
                         type="button"
-                        onClick={(e) => {
+                        onClick={async (e) => {
                           e.stopPropagation();
-                          if (confirm(`Hapus periode angkatan "${period}"? Tindakan ini tidak dapat dibatalkan.`)) {
+                          const result = await Swal.fire({
+                            title: 'Konfirmasi',
+                            text: `Hapus periode angkatan "${period}"? Tindakan ini tidak dapat dibatalkan.`,
+                            icon: 'warning',
+                            showCancelButton: true,
+                            confirmButtonText: 'Ya',
+                            cancelButtonText: 'Batal'
+                          });
+                          if (result.isConfirmed) {
                             const updated = customPeriods.filter(p => p !== period);
                             setCustomPeriods(updated);
                             if (typeof window !== 'undefined') {
