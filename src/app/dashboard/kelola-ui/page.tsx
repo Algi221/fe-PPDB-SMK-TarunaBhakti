@@ -459,6 +459,8 @@ export default function KelolaUserInterface() {
   const [majorsList, setMajorsList] = useState<MajorItem[]>(DEFAULT_MAJORS);
   const [partnersList, setPartnersList] = useState<PartnerItem[]>(DEFAULT_PARTNERS);
   const [revisions, setRevisions] = useState<RevisionLog[]>([]);
+  const [faqTitle, setFaqTitle] = useState("Pertanyaan yang Sering Diajukan");
+  const [faqSubtitle, setFaqSubtitle] = useState("Temukan jawaban cepat untuk kendala dan pertanyaan umum seputar proses penerimaan siswa baru SMK Taruna Bhakti.");
   const [faqList, setFaqList] = useState<FaqItem[]>([]);
 
   const [editingMajor, setEditingMajor] = useState<MajorItem | null>(null);
@@ -573,6 +575,8 @@ export default function KelolaUserInterface() {
       if (activeConfig.ppdb_email) setEmail(activeConfig.ppdb_email);
       if (activeConfig.ppdb_address) setAddress(activeConfig.ppdb_address);
       if (activeConfig.ppdb_school_period) setSchoolPeriod(activeConfig.ppdb_school_period);
+        if (activeConfig.ppdb_faq_title) setFaqTitle(activeConfig.ppdb_faq_title);
+        if (activeConfig.ppdb_faq_subtitle) setFaqSubtitle(activeConfig.ppdb_faq_subtitle);
       if (activeConfig.ppdb_wa_group_url) setWaGroupUrl(activeConfig.ppdb_wa_group_url);
       if (activeConfig.ppdb_wa_admin) setWaAdmin(formatPhoneNumber(activeConfig.ppdb_wa_admin));
       if (activeConfig.ppdb_form_guideline) setFormGuideline(activeConfig.ppdb_form_guideline);
@@ -856,6 +860,8 @@ export default function KelolaUserInterface() {
           localStorage.setItem("ppdb_majors_config", JSON.stringify(finalMajors));
           localStorage.setItem("ppdb_alur_config", JSON.stringify(alurList));
           localStorage.setItem("ppdb_faq_config", JSON.stringify(faqList));
+            localStorage.setItem("ppdb_faq_title", faqTitle);
+            localStorage.setItem("ppdb_faq_subtitle", faqSubtitle);
           localStorage.setItem("ppdb_partners_config", JSON.stringify(partnersList));
           localStorage.setItem("ppdb_reg_cost", formFee);
           localStorage.setItem("ppdb_school_period", schoolPeriod);

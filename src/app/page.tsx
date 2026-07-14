@@ -171,6 +171,8 @@ export default function Home() {
   const [waAdmin, setWaAdmin] = useState("6281292244456");
   const [activeFaq, setActiveFaq] = useState<number | null>(null);
   const [faqList, setFaqList] = useState<FaqItem[]>(DEFAULT_FAQ);
+  const [faqTitle, setFaqTitle] = useState("Pertanyaan yang Sering Diajukan");
+  const [faqSubtitle, setFaqSubtitle] = useState("Temukan jawaban cepat untuk kendala dan pertanyaan umum seputar proses penerimaan siswa baru SMK Taruna Bhakti.");
 
   const toggleFaq = (idx: number) => {
     setActiveFaq(activeFaq === idx ? null : idx);
@@ -372,6 +374,8 @@ export default function Home() {
           if (config.ppdb_wa_admin) setWaAdmin(config.ppdb_wa_admin);
           if (config.ppdb_alur_config) setAlurList(config.ppdb_alur_config);
           if (config.ppdb_faq_config) setFaqList(config.ppdb_faq_config);
+          if (config.ppdb_faq_title) setFaqTitle(config.ppdb_faq_title);
+          if (config.ppdb_faq_subtitle) setFaqSubtitle(config.ppdb_faq_subtitle);
           if (config.ppdb_gelombang_config) setGelombangConfig(config.ppdb_gelombang_config);
           if (config.ppdb_partners_config && Array.isArray(config.ppdb_partners_config)) {
             setPartnersList(config.ppdb_partners_config);
@@ -622,7 +626,7 @@ export default function Home() {
             const sideIndex = Math.floor(index / 2);
             // Balance left & right positions flanking the screen
             const topPos = isEven ? (130 + sideIndex * 120) : (130 + sideIndex * 160);
-            const horizPos = isEven ? (6 + (sideIndex % 3) * 2) : (6 + (sideIndex % 3) * 4);
+            const horizPos = isEven ? (5 + (sideIndex % 3) * 3) : (2 + (sideIndex % 3) * 2);
             const animName = `float${(index % 4) + 1}`;
             const animDuration = `${6 + (index % 3) * 1.5}s`;
             const animDelay = `-${(index % 5) * 1}s`;
@@ -824,7 +828,7 @@ export default function Home() {
               Proses Mudah &amp; Transparan · TP. {schoolPeriod}
             </ScrollFloat>
             <ScrollFloat
-              containerClassName="text-3xl md:text-5xl font-black text-slate-800 dark:text-white mt-4 mb-4 drop-shadow-sm"
+              containerClassName="text-3xl md:text-5xl font-black text-slate-800 dark:text-white mt-4 mb-4 drop-shadow-sm pb-2"
               animationDuration={1}
               ease='back.inOut(2)'
               scrollStart='top 90%'
@@ -1128,8 +1132,8 @@ export default function Home() {
             scrollEnd='bottom bottom-=40%'
             stagger={0.03}
           >
-            Pertanyaan yang Sering Diajukan
-          </ScrollFloat>
+            {faqTitle}
+            </ScrollFloat>
             <ScrollFloat
               containerClassName="text-slate-500 dark:text-slate-400 max-w-xl mx-auto text-sm md:text-base leading-relaxed font-medium"
               animationDuration={1}
@@ -1139,8 +1143,8 @@ export default function Home() {
               stagger={0.01}
               textMode={false}
             >
-              Temukan jawaban cepat untuk kendala dan pertanyaan umum seputar proses penerimaan siswa baru SMK Taruna Bhakti.
-            </ScrollFloat>
+              {faqSubtitle}
+              </ScrollFloat>
           </div>
 
           <div className="space-y-6 w-full">
@@ -1202,6 +1206,24 @@ export default function Home() {
               <span>Konsultasi Lewat WA Admin</span>
             </a>
           </div>
+        </div>
+      </section>
+      {/* MAP SECTION */}
+      <section className="w-full bg-slate-100 dark:bg-slate-900/50 py-12 relative z-10">
+        <div className="max-w-6xl mx-auto px-6 mb-8 text-center">
+          <h2 className="text-3xl md:text-4xl font-black text-slate-800 dark:text-white">Lokasi Kami</h2>
+          <p className="text-slate-500 dark:text-slate-400 mt-2 text-sm md:text-base max-w-xl mx-auto leading-relaxed">Kunjungi kampus SMK Taruna Bhakti untuk informasi lebih lanjut mengenai pendaftaran dan fasilitas sekolah kami.</p>
+        </div>
+        <div className="w-full h-[450px] md:h-[500px]">
+          <iframe 
+            src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3965.055845577626!2d106.867407!3d-6.3844792!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2e69ebaff005f277%3A0x9fcd41028665eea8!2sSMK%20Taruna%20Bhakti%20Depok!5e0!3m2!1sen!2sid!4v1683883446098!5m2!1sen!2sid" 
+            width="100%" 
+            height="100%" 
+            style={{ border: 0 }} 
+            allowFullScreen={true} 
+            loading="lazy" 
+            referrerPolicy="no-referrer-when-downgrade"
+          ></iframe>
         </div>
       </section>
       </main>
