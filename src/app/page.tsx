@@ -1188,28 +1188,7 @@ export default function Home() {
             })}
           </div>
 
-          <div className="mt-12 bg-blue-50/50 dark:bg-blue-950/20 border border-blue-150/40 dark:border-blue-900 rounded-[2.5rem] p-8 text-center relative overflow-hidden">
-            <div className="absolute right-4 top-4 opacity-5 dark:opacity-10 pointer-events-none">
-              <HelpCircle size={96} className="text-blue-600 animate-pulse" />
-            </div>
-            
-            <h3 className="text-lg font-black text-slate-800 dark:text-white mb-2">Masih Mengalami Kendala atau Pertanyaan Lain?</h3>
-            <p className="text-xs md:text-sm text-slate-500 dark:text-slate-400 mb-6 max-w-lg mx-auto leading-relaxed">
-              Tim panitia PPDB SMK Taruna Bhakti siap membantu Anda secara langsung. Klik tombol di bawah untuk konsultasi via WhatsApp.
-            </p>
-            
-            <a 
-              href={sanitizeUrl(`https://wa.me/${waAdmin.replace(/[^0-9]/g, '')}?text=${encodeURIComponent(
-                "Halo Admin PPDB SMK Taruna Bhakti, saya calon pendaftar PPDB TP 2026/2027. Saya ingin berkonsultasi mengenai proses pendaftaran karena mengalami kendala teknis."
-              )}`)}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 bg-gradient-to-r from-emerald-600 to-green-500 hover:from-emerald-700 hover:to-green-600 text-white font-extrabold text-xs uppercase tracking-wider py-3.5 px-8 rounded-full shadow-lg shadow-emerald-500/20 transition-all duration-300 transform hover:scale-[1.02] active:scale-[0.98]"
-            >
-              <Phone size={14} />
-              <span>Konsultasi Lewat WA Admin</span>
-            </a>
-          </div>
+          
         </div>
       </section>
       {/* MAP SECTION */}
@@ -1250,88 +1229,39 @@ export default function Home() {
               </ScrollFloat>
             </div>
 
-            <div className="bg-white dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800/80 rounded-[2.5rem] overflow-hidden shadow-2xl shadow-slate-200/40 dark:shadow-none p-4 md:p-6 transition-all duration-300">
-              <div className="flex flex-col lg:flex-row gap-6">
-                
-                {/* Contact Info Panel */}
-                <div className="w-full lg:w-1/3 flex flex-col justify-center space-y-8 p-6 md:p-8 bg-slate-50 dark:bg-slate-950 rounded-3xl border border-slate-100 dark:border-slate-800 relative overflow-hidden">
-                  <div className="absolute -right-10 -top-10 opacity-5 dark:opacity-10 pointer-events-none">
-                    <MapPin size={200} className="text-emerald-500" />
-                  </div>
-                  
-                  <div className="relative z-10 space-y-8">
-                    <div>
-                      <h3 className="text-base font-black text-slate-800 dark:text-white mb-3 flex items-center gap-2">
-                        <MapPin size={18} className="text-emerald-500" /> Alamat Lengkap
-                      </h3>
-                      <p className="text-sm font-semibold text-slate-500 dark:text-slate-400 leading-relaxed bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-sm">
-                        {address}
-                      </p>
-                    </div>
+            <div className="relative w-full h-[500px] rounded-[2.5rem] overflow-hidden shadow-2xl shadow-slate-200/50 dark:shadow-none border border-slate-200/60 dark:border-slate-800/80 group">
+              <div className="absolute inset-0 bg-blue-500/5 mix-blend-overlay pointer-events-none group-hover:bg-transparent transition-colors duration-500 z-10"></div>
+              
+              <iframe 
+                src={mapUrl} 
+                width="100%" 
+                height="100%" 
+                style={{ border: 0 }} 
+                allowFullScreen={true} 
+                loading="lazy" 
+                referrerPolicy="no-referrer-when-downgrade"
+                className="absolute inset-0 w-full h-full grayscale-[15%] group-hover:grayscale-0 transition-all duration-700"
+              ></iframe>
 
-                    <div>
-                      <h3 className="text-base font-black text-slate-800 dark:text-white mb-3 flex items-center gap-2">
-                        <Phone size={18} className="text-blue-500" /> Hubungi Kami
-                      </h3>
-                      <div className="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-sm space-y-3">
-                        <div className="flex items-center justify-between">
-                          <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Telp</span>
-                          <span className="text-sm font-bold text-slate-700 dark:text-slate-300">{phone}</span>
-                        </div>
-                        <div className="w-full h-px bg-slate-100 dark:bg-slate-800"></div>
-                        <div className="flex flex-col gap-1">
-                          <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Email</span>
-                          <span className="text-sm font-bold text-slate-700 dark:text-slate-300 break-all">{email}</span>
-                        </div>
-                      </div>
-                    </div>
+              {/* Floating Address Card */}
+              <div className="absolute bottom-6 left-6 right-6 md:left-1/2 md:right-auto md:-translate-x-1/2 md:w-[450px] bg-white/95 dark:bg-slate-900/95 backdrop-blur-md p-6 rounded-3xl border border-white/20 dark:border-slate-800/50 shadow-2xl z-20 transition-transform duration-300 hover:-translate-y-2">
+                <div className="flex items-start gap-4">
+                  <div className="w-12 h-12 rounded-2xl bg-emerald-50 dark:bg-emerald-500/10 flex items-center justify-center shrink-0 border border-emerald-100 dark:border-emerald-500/20">
+                    <MapPin size={24} className="text-emerald-500" />
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-black text-slate-800 dark:text-white uppercase tracking-widest mb-1.5">Alamat Kami</h3>
+                    <p className="text-sm font-medium text-slate-600 dark:text-slate-400 leading-relaxed">
+                      {address}
+                    </p>
                   </div>
                 </div>
-
-                {/* Map Iframe */}
-                <div className="w-full lg:w-2/3 h-[350px] lg:h-auto min-h-[350px] rounded-3xl overflow-hidden shadow-inner border border-slate-200/50 dark:border-slate-800/50 relative group">
-                  <div className="absolute inset-0 bg-blue-500/5 mix-blend-overlay pointer-events-none group-hover:bg-transparent transition-colors duration-500"></div>
-                  <iframe 
-                    src={mapUrl} 
-                    width="100%" 
-                    height="100%" 
-                    style={{ border: 0 }} 
-                    allowFullScreen={true} 
-                    loading="lazy" 
-                    referrerPolicy="no-referrer-when-downgrade"
-                    className="w-full h-full grayscale-[15%] group-hover:grayscale-0 transition-all duration-700"
-                  ></iframe>
-                </div>
-
               </div>
             </div>
           </div>
         </section>
 
-        <section className="w-full max-w-6xl mx-auto px-6 pb-24 relative z-10">
-            <div className="mt-12 bg-blue-50/50 dark:bg-blue-950/20 border border-blue-150/40 dark:border-blue-900 rounded-[2.5rem] p-8 text-center relative overflow-hidden">
-              <div className="absolute right-4 top-4 opacity-5 dark:opacity-10 pointer-events-none">
-                <HelpCircle size={96} className="text-blue-600 animate-pulse" />
-              </div>
-              
-              <h3 className="text-lg font-black text-slate-800 dark:text-white mb-2">Masih Mengalami Kendala atau Pertanyaan Lain?</h3>
-              <p className="text-xs md:text-sm text-slate-500 dark:text-slate-400 mb-6 max-w-lg mx-auto leading-relaxed">
-                Tim panitia PPDB SMK Taruna Bhakti siap membantu Anda secara langsung. Klik tombol di bawah untuk konsultasi via WhatsApp.
-              </p>
-              
-              <a 
-                href={sanitizeUrl(`https://wa.me/${waAdmin.replace(/[^0-9]/g, '')}?text=${encodeURIComponent(
-                  "Halo Admin PPDB SMK Taruna Bhakti, saya calon pendaftar PPDB TP 2026/2027. Saya ingin berkonsultasi mengenai proses pendaftaran karena mengalami kendala teknis."
-                )}`)}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 bg-gradient-to-r from-emerald-600 to-green-500 hover:from-emerald-700 hover:to-green-600 text-white font-extrabold text-xs uppercase tracking-wider py-3.5 px-8 rounded-full shadow-lg shadow-emerald-500/20 transition-all duration-300 transform hover:scale-[1.02] active:scale-[0.98]"
-              >
-                <Phone size={14} />
-                <span>Konsultasi Lewat WA Admin</span>
-              </a>
-            </div>
-        </section>
+        
         </main>
 
       {/* FOOTER */}
