@@ -10,6 +10,9 @@ import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import KuotaTab from "@/components/KuotaTab";
 
+import dynamic from "next/dynamic";
+const ReactApexChart = dynamic(() => import("react-apexcharts"), { ssr: false });
+
 interface MajorItem {
   name: string;
   dbName: string;
@@ -77,7 +80,7 @@ function StatCard({
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Area Chart with draw-in animation
+// Area Chart using ApexCharts (Tailadmin style)
 // ─────────────────────────────────────────────────────────────────────────────
 function AreaChart({
   data,
@@ -88,185 +91,88 @@ function AreaChart({
   labels: string[];
   color?: string;
 }) {
-  const svgRef = useRef<SVGSVGElement>(null);
-  const lineRef = useRef<SVGPathElement>(null);
-  const [hovered, setHovered] = useState<{ idx: number; x: number; y: number } | null>(null);
-  const [lineLength, setLineLength] = useState(0);
-  const [animated, setAnimated] = useState(false);
+  const [isDark, setIsDark] = useState(false);
 
-  const W = 1000;
-  const H = 320;
-  const PAD_L = 50;
-  const PAD_R = 20;
-  const PAD_T = 20;
-  const PAD_B = 36;
-
-  const maxVal = Math.max(...data, 1);
-  const minVal = Math.min(...data, 0);
-  const range = maxVal - minVal || 1;
-
-  const pts = data.map((v, i) => ({
-    x: PAD_L + (i * (W - PAD_L - PAD_R)) / (data.length - 1 || 1),
-    y: PAD_T + ((maxVal - v) / range) * (H - PAD_T - PAD_B),
-    v,
-  }));
-
-  const linePath = pts
-    .map((p, i) => {
-      if (i === 0) return `M ${p.x} ${p.y}`;
-      const prev = pts[i - 1];
-      const cpx = (prev.x + p.x) / 2;
-      return `C ${cpx} ${prev.y}, ${cpx} ${p.y}, ${p.x} ${p.y}`;
-    })
-    .join(" ");
-
-  const areaPath = `${linePath} L ${pts[pts.length - 1]?.x ?? 0} ${H - PAD_B} L ${pts[0]?.x ?? 0} ${H - PAD_B} Z`;
-
-  const yTicks = Array.from({ length: 5 }, (_, i) => {
-    const val = Math.round(minVal + (range / 4) * (4 - i));
-    const y = PAD_T + (i / 4) * (H - PAD_T - PAD_B);
-    return { val, y };
-  });
-
-  // Measure line length for stroke animation
   useEffect(() => {
-    if (lineRef.current) {
-      try { setLineLength(lineRef.current.getTotalLength()); } catch {}
-    }
-  }, [data]);
-
-  // Animate line draw-in
-  useEffect(() => {
-    const timer = setTimeout(() => setAnimated(true), 300);
-    return () => clearTimeout(timer);
-  }, [data]);
-
-  const handleMouseMove = useCallback(
-    (e: React.MouseEvent<SVGSVGElement>) => {
-      const rect = svgRef.current?.getBoundingClientRect();
-      if (!rect) return;
-      const rawX = ((e.clientX - rect.left) / rect.width) * W;
-      let nearest = 0;
-      let minDist = Infinity;
-      pts.forEach((p, i) => {
-        const d = Math.abs(p.x - rawX);
-        if (d < minDist) { minDist = d; nearest = i; }
-      });
-      setHovered({ idx: nearest, x: pts[nearest].x, y: pts[nearest].y });
+    setIsDark(document.documentElement.classList.contains("dark"));
+    const observer = new MutationObserver(() => {
+      setIsDark(document.documentElement.classList.contains("dark"));
+    });
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ["class"] });
+    return () => observer.disconnect();
+  }, []);
+  
+  const series = [
+    {
+      name: "Pendaftar",
+      data: data,
     },
-    [pts]
-  );
+  ];
 
-  const gradId = `ag-${color.replace("#", "")}`;
-  const hovPt = hovered ? pts[hovered.idx] : null;
+  const options: any = {
+    legend: { show: false, position: "top", horizontalAlign: "left" },
+    colors: [color],
+    chart: {
+      fontFamily: "inherit",
+      height: 335,
+      type: "area",
+      toolbar: {
+        show: true,
+      },
+    },
+    fill: {
+      type: "gradient",
+      gradient: {
+        shadeIntensity: 1,
+        opacityFrom: 0.55,
+        opacityTo: 0.15,
+        stops: [0, 90, 100]
+      },
+    },
+    stroke: {
+      curve: "smooth",
+      width: 2,
+    },
+    xaxis: {
+      categories: labels,
+      axisBorder: { show: false },
+      axisTicks: { show: false },
+      labels: {
+        style: {
+          colors: "#64748b",
+        },
+      },
+    },
+    yaxis: {
+      labels: {
+        style: {
+          colors: "#64748b",
+        },
+      },
+    },
+    grid: {
+      strokeDashArray: 5,
+      xaxis: { lines: { show: false } },
+      yaxis: { lines: { show: true } },
+      borderColor: isDark ? "#334155" : "#e2e8f0",
+    },
+    dataLabels: { enabled: false },
+    tooltip: {
+      theme: isDark ? "dark" : "light",
+    },
+  };
 
   return (
-    <div className="relative w-full" style={{ height: 240 }}>
-      <svg
-        ref={svgRef}
-        viewBox={`0 0 ${W} ${H}`}
-        className="w-full h-full overflow-visible cursor-crosshair"
-        onMouseMove={handleMouseMove}
-        onMouseLeave={() => setHovered(null)}
-      >
-        <defs>
-          <linearGradient id={gradId} x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor={color} stopOpacity="0.22" />
-            <stop offset="100%" stopColor={color} stopOpacity="0.01" />
-          </linearGradient>
-          <filter id="dot-glow">
-            <feGaussianBlur stdDeviation="3" result="blur" />
-            <feComposite in="SourceGraphic" in2="blur" operator="over" />
-          </filter>
-        </defs>
-
-        {/* Grid lines */}
-        {yTicks.map((t, i) => (
-          <g key={i}>
-            <line x1={PAD_L} y1={t.y} x2={W - PAD_R} y2={t.y}
-              stroke="currentColor" strokeOpacity="0.06" strokeWidth="1"
-              className="text-slate-900 dark:text-white" />
-            <text x={PAD_L - 8} y={t.y + 4} textAnchor="end" fill="currentColor"
-              fontSize="11" className="text-slate-400 fill-slate-400 dark:fill-slate-600" opacity="0.7">
-              {t.val}
-            </text>
-          </g>
-        ))}
-
-        {/* Area fill – fades in */}
-        <path
-          d={areaPath}
-          fill={`url(#${gradId})`}
-          className={`transition-opacity duration-700 ${animated ? "opacity-100" : "opacity-0"}`}
+    <div className="w-full h-[300px]">
+      <div className="-ml-3">
+        <ReactApexChart
+          options={options}
+          series={series}
+          type="area"
+          height={320}
+          width={"100%"}
         />
-
-        {/* Line – draw-in via stroke-dashoffset */}
-        <path
-          ref={lineRef}
-          d={linePath}
-          fill="none"
-          stroke={color}
-          strokeWidth="2.5"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          strokeDasharray={lineLength || undefined}
-          strokeDashoffset={animated ? 0 : (lineLength || 999)}
-          style={{ transition: animated ? "stroke-dashoffset 1.2s cubic-bezier(0.22,1,0.36,1)" : "none" }}
-        />
-
-        {/* X-axis labels */}
-        {pts.map((p, i) => (
-          <text key={i} x={p.x} y={H - 6} textAnchor="middle"
-            fontSize="11" className="fill-slate-400 dark:fill-slate-600"
-            opacity={labels[i] ? 1 : 0}>
-            {labels[i]}
-          </text>
-        ))}
-
-        {/* Crosshair */}
-        {hovPt && (
-          <>
-            <line x1={hovPt.x} y1={PAD_T} x2={hovPt.x} y2={H - PAD_B}
-              stroke={color} strokeWidth="1.5" strokeDasharray="4 3" strokeOpacity="0.5" />
-            <circle cx={hovPt.x} cy={hovPt.y} r="5" fill={color} filter="url(#dot-glow)" />
-            <circle cx={hovPt.x} cy={hovPt.y} r="9" fill="transparent" stroke={color} strokeWidth="1.5" strokeOpacity="0.35" />
-          </>
-        )}
-      </svg>
-
-      {/* Floating Tooltip */}
-      <AnimatePresence>
-        {hovered && hovPt && (
-          <motion.div
-            key={hovered.idx}
-            initial={{ opacity: 0, y: 6, scale: 0.95 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 6, scale: 0.95 }}
-            transition={{ duration: 0.12 }}
-            className="absolute pointer-events-none bg-slate-900/95 dark:bg-slate-950 border border-slate-700/50 backdrop-blur-sm rounded-xl px-3.5 py-2.5 shadow-xl z-20 flex flex-col gap-0.5"
-            style={{
-              left: `${(hovPt.x / W) * 100}%`,
-              top: `${(hovPt.y / H) * 100}%`,
-              transform: "translate(-50%, calc(-100% - 12px))",
-            }}
-          >
-            <span className="text-[9px] font-black uppercase tracking-widest text-slate-400">
-              {labels[hovered.idx]}
-            </span>
-            <span className="text-sm font-black text-white leading-none">
-              {pts[hovered.idx].v} <span className="text-[10px] text-slate-400 font-bold">pendaftar</span>
-            </span>
-            {hovered.idx > 0 && (
-              <span className={`text-[10px] font-bold flex items-center gap-1 mt-0.5 ${pts[hovered.idx].v >= pts[hovered.idx - 1].v ? "text-emerald-400" : "text-rose-400"}`}>
-                {pts[hovered.idx].v >= pts[hovered.idx - 1].v
-                  ? <TrendingUp size={10} />
-                  : <TrendingDown size={10} />}
-                {Math.abs(pts[hovered.idx].v - pts[hovered.idx - 1].v)} dari sebelumnya
-              </span>
-            )}
-          </motion.div>
-        )}
-      </AnimatePresence>
+      </div>
     </div>
   );
 }

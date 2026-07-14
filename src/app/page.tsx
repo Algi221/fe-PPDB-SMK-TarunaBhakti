@@ -208,7 +208,7 @@ export default function Home() {
   };
 
   const [partnersList, setPartnersList] = useState<any[]>([]);
-  const [partnersPage, setPartnersPage] = useState(1);
+  const [showAllPartners, setShowAllPartners] = useState(false);
 
   const [majors, setMajors] = useState([
     {
@@ -1033,11 +1033,7 @@ export default function Home() {
             Partner Industri Utama &amp; Sertifikasi Internasional &middot;
           </p>
             {(() => {
-              const maxPartnersList = partnersList.slice(0, 25);
-              const partnersPerPage = 20;
-              const totalPages = Math.ceil(maxPartnersList.length / partnersPerPage);
-              const validPartnersPage = Math.min(partnersPage, Math.max(1, totalPages));
-              const displayedPartners = maxPartnersList.slice((validPartnersPage - 1) * partnersPerPage, validPartnersPage * partnersPerPage);
+              const displayedPartners = showAllPartners ? partnersList : partnersList.slice(0, 10);
 
               const getPartnerDimensions = (hClass: string) => {
                 switch (hClass) {
@@ -1053,7 +1049,7 @@ export default function Home() {
 
               return (
                 <div className="w-full">
-                  <div key={validPartnersPage} className="flex flex-wrap justify-center items-center gap-x-8 gap-y-10 max-w-5xl mx-auto animate-in fade-in zoom-in-95 duration-500">
+                  <div key={showAllPartners ? 'all' : 'some'} className="flex flex-wrap justify-center items-center gap-x-8 gap-y-10 max-w-5xl mx-auto animate-in fade-in zoom-in-95 duration-500">
                     {displayedPartners.map((partner, idx) => {
                       const { width, height } = getPartnerDimensions(partner.h);
                       return (
@@ -1078,41 +1074,24 @@ export default function Home() {
                     })}
                   </div>
                   
-                  {/* Pagination Controls */}
-                  {totalPages > 1 && (
-                    <div className="flex justify-center items-center gap-2 mt-12">
+                  {/* Show All Controls */}
+                  {partnersList.length > 10 && (
+                    <div className="flex justify-center items-center mt-12">
                       <button 
-                        onClick={() => setPartnersPage(p => Math.max(1, p - 1))}
-                        disabled={validPartnersPage === 1}
-                        className="px-4 py-2 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 font-bold text-xs hover:bg-slate-50 dark:hover:bg-slate-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5 shadow-sm"
+                        onClick={() => setShowAllPartners(!showAllPartners)}
+                        className="px-6 py-2.5 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 font-bold text-sm hover:bg-slate-50 dark:hover:bg-slate-700 transition-all flex items-center gap-2 shadow-sm"
                       >
-                        <ChevronLeft size={14} />
-                        Sebelumnya
-                      </button>
-
-                      <div className="flex items-center gap-1.5 px-2">
-                        {Array.from({ length: totalPages }).map((_, i) => (
-                          <button
-                            key={i}
-                            onClick={() => setPartnersPage(i + 1)}
-                            className={`w-8 h-8 rounded-lg flex items-center justify-center font-bold text-xs transition-all duration-300 ${
-                              validPartnersPage === i + 1 
-                                ? "bg-blue-600 text-white shadow-md shadow-blue-500/20" 
-                                : "text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800"
-                            }`}
-                          >
-                            {i + 1}
-                          </button>
-                        ))}
-                      </div>
-
-                      <button 
-                        onClick={() => setPartnersPage(p => Math.min(totalPages, p + 1))}
-                        disabled={validPartnersPage === totalPages}
-                        className="px-4 py-2 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 font-bold text-xs hover:bg-slate-50 dark:hover:bg-slate-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5 shadow-sm"
-                      >
-                        Selanjutnya
-                        <ChevronRight size={14} />
+                        {showAllPartners ? (
+                          <>
+                            Sembunyikan
+                            <ChevronLeft size={16} className="rotate-90" />
+                          </>
+                        ) : (
+                          <>
+                            Lihat Selengkapnya
+                            <ChevronRight size={16} className="rotate-90" />
+                          </>
+                        )}
                       </button>
                     </div>
                   )}
