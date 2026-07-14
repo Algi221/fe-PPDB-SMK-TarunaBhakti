@@ -190,6 +190,7 @@ export default function ForumPage() {
             <Link href="/#alur" className="btn-nav-link">Alur Pendaftaran</Link>
             <Link href="/#majors" className="btn-nav-link">Jurusan</Link>
             <Link href="/#kemitraan" className="btn-nav-link">Mitra Industri</Link>
+            <Link href="/#faq" className="btn-nav-link">FAQ</Link>
             <Link href="/forum" className="btn-nav-link" style={{color: 'var(--color-blue-600, #2563eb)', fontWeight: 700}}>Forum Informasi</Link>
           </div>
 
@@ -249,6 +250,13 @@ export default function ForumPage() {
               className="text-lg font-extrabold text-slate-800 dark:text-white hover:text-blue-600 dark:hover:text-blue-400 transition-colors py-3 border-b border-slate-100 dark:border-slate-800/60 w-full"
             >
               Mitra Industri
+            </Link>
+            <Link
+              href="/#faq"
+              onClick={() => setMobileMenuOpen(false)}
+              className="text-lg font-extrabold text-slate-800 dark:text-white hover:text-blue-600 dark:hover:text-blue-400 transition-colors py-3 border-b border-slate-100 dark:border-slate-800/60 w-full"
+            >
+              FAQ
             </Link>
             <Link
               href="/forum"

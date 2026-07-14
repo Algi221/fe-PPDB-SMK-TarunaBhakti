@@ -572,6 +572,13 @@ export default function Home() {
             >
               Mitra Industri
             </a>
+            <a
+              href="#faq"
+              onClick={() => setMobileMenuOpen(false)}
+              className="text-lg font-extrabold text-slate-800 dark:text-white hover:text-blue-600 dark:hover:text-blue-400 transition-colors py-3 border-b border-slate-100 dark:border-slate-800/60 w-full"
+            >
+              FAQ
+            </a>
             <Link
               href="/forum"
               onClick={() => setMobileMenuOpen(false)}
