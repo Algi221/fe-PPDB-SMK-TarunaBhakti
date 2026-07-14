@@ -178,13 +178,13 @@ export default function Home() {
     setActiveFaq(activeFaq === idx ? null : idx);
   };
 
-  const [heroTitle, setHeroTitle] = useState("Penerimaan Siswa Baru");
-  const [heroTitleSub, setHeroTitleSub] = useState("Portal PPDB SMK Taruna Bhakti");
+  const [heroTitle, setHeroTitle] = useState("Penerimaan Peserta Didik Baru");
+  const [heroTitleSub, setHeroTitleSub] = useState("SPMB SMK Taruna Bhakti");
   const [heroSubtitle, setHeroSubtitle] = useState("Mulai langkah awal wujudkan masa depan cemerlang di bidang teknologi informasi. Proses pendaftaran online yang mudah, transparan, dan terintegrasi penuh.");
   const [phone, setPhone] = useState("(021) 8740756");
   const [email, setEmail] = useState("info@smktarunabhakti.sch.id");
   const [address, setAddress] = useState("Jl. Pekapuran Kel. Curug Kec. Cimanggis, Depok, Jawa Barat 16453");
-  const [mapTitle, setMapTitle] = useState("Kunjungi Kampus SMK Taruna Bhakti");
+  const [mapTitle, setMapTitle] = useState("Kunjungi SMK Taruna Bhakti");
   const [mapUrl, setMapUrl] = useState("https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3965.055845577626!2d106.867407!3d-6.3844792!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2e69ebaff005f277%3A0x9fcd41028665eea8!2sSMK%20Taruna%20Bhakti%20Depok!5e0!3m2!1sen!2sid!4v1683883446098!5m2!1sen!2sid");
   const [schoolPeriod, setSchoolPeriod] = useState("2026-2027");
   const [gelombangConfig, setGelombangConfig] = useState({
@@ -501,6 +501,7 @@ export default function Home() {
             <a href="#alur" className="btn-nav-link">Alur Pendaftaran</a>
             <a href="#majors" className="btn-nav-link">Jurusan</a>
             <a href="#kemitraan" className="btn-nav-link">Mitra Industri</a>
+              <a href="#faq" className="btn-nav-link">FAQ</a>
             <Link href="/forum" className="btn-nav-link">Forum Informasi</Link>
           </div>
 
@@ -1261,7 +1262,30 @@ export default function Home() {
           </div>
         </section>
 
-        
+        <section className="w-full max-w-6xl mx-auto px-6 pb-24 relative z-10">
+          <div className="bg-blue-50/50 dark:bg-blue-950/20 border border-blue-150/40 dark:border-blue-900 rounded-[2.5rem] p-8 text-center relative overflow-hidden">
+            <div className="absolute right-4 top-4 opacity-5 dark:opacity-10 pointer-events-none">
+              <HelpCircle size={96} className="text-blue-600 animate-pulse" />
+            </div>
+            
+            <h3 className="text-lg font-black text-slate-800 dark:text-white mb-2">Masih Mengalami Kendala atau Pertanyaan Lain?</h3>
+            <p className="text-xs md:text-sm text-slate-500 dark:text-slate-400 mb-6 max-w-lg mx-auto leading-relaxed">
+              Tim panitia PPDB SMK Taruna Bhakti siap membantu Anda secara langsung. Klik tombol di bawah untuk konsultasi via WhatsApp.
+            </p>
+            
+            <a 
+              href={sanitizeUrl(`https://wa.me/${waAdmin.replace(/[^0-9]/g, '')}?text=${encodeURIComponent(
+                "Halo Admin PPDB SMK Taruna Bhakti, saya calon pendaftar PPDB TP 2026/2027. Saya ingin berkonsultasi mengenai proses pendaftaran karena mengalami kendala teknis."
+              )}`)}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 bg-gradient-to-r from-emerald-600 to-green-500 hover:from-emerald-700 hover:to-green-600 text-white font-extrabold text-xs uppercase tracking-wider py-3.5 px-8 rounded-full shadow-lg shadow-emerald-500/20 transition-all duration-300 transform hover:scale-[1.02] active:scale-[0.98]"
+            >
+              <Phone size={14} />
+              <span>Konsultasi Lewat WA Admin</span>
+            </a>
+          </div>
+        </section>
         </main>
 
       {/* FOOTER */}
