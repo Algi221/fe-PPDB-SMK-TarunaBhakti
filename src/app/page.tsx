@@ -1240,8 +1240,8 @@ export default function Home() {
             <div className="relative w-full h-[500px] rounded-[2.5rem] overflow-hidden shadow-2xl shadow-slate-200/50 dark:shadow-none border border-slate-200/60 dark:border-slate-800/80 group">
               <div className="absolute inset-0 bg-blue-500/5 mix-blend-overlay pointer-events-none group-hover:bg-transparent transition-colors duration-500 z-10"></div>
               
-              <iframe 
-                src={mapUrl} 
+              <iframe
+                src={sanitizeUrl(mapUrl) || ""}
                 width="100%" 
                 height="100%" 
                 style={{ border: 0 }} 
