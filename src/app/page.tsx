@@ -1209,23 +1209,100 @@ export default function Home() {
         </div>
       </section>
       {/* MAP SECTION */}
-      <section className="w-full bg-slate-100 dark:bg-slate-900/50 py-12 relative z-10">
-        <div className="max-w-6xl mx-auto px-6 mb-8 text-center">
-          <h2 className="text-3xl md:text-4xl font-black text-slate-800 dark:text-white">Lokasi Kami</h2>
-          <p className="text-slate-500 dark:text-slate-400 mt-2 text-sm md:text-base max-w-xl mx-auto leading-relaxed">Kunjungi kampus SMK Taruna Bhakti untuk informasi lebih lanjut mengenai pendaftaran dan fasilitas sekolah kami.</p>
-        </div>
-        <div className="w-full h-[450px] md:h-[500px]">
-          <iframe 
-            src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3965.055845577626!2d106.867407!3d-6.3844792!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2e69ebaff005f277%3A0x9fcd41028665eea8!2sSMK%20Taruna%20Bhakti%20Depok!5e0!3m2!1sen!2sid!4v1683883446098!5m2!1sen!2sid" 
-            width="100%" 
-            height="100%" 
-            style={{ border: 0 }} 
-            allowFullScreen={true} 
-            loading="lazy" 
-            referrerPolicy="no-referrer-when-downgrade"
-          ></iframe>
-        </div>
-      </section>
+        <section className="w-full bg-slate-50/50 dark:bg-slate-950/50 py-24 relative z-10 transition-colors duration-300">
+          <div className="max-w-6xl mx-auto px-6">
+            <div className="text-center mb-16">
+              <ScrollFloat
+                containerClassName="inline-block mb-2"
+                textClassName="text-emerald-600 dark:text-emerald-400 font-bold text-xs uppercase tracking-wider bg-emerald-50 dark:bg-emerald-950/50 border border-emerald-100/50 dark:border-emerald-900/30 px-3.5 py-1.5 rounded-full"
+                animationDuration={1}
+                ease='back.inOut(2)'
+                scrollStart='top 90%'
+                scrollEnd='bottom bottom-=40%'
+                stagger={0.02}
+              >
+                Lokasi Kami
+              </ScrollFloat>
+              <ScrollFloat
+                containerClassName="text-3xl md:text-5xl font-black text-slate-800 dark:text-white mt-4 mb-4 drop-shadow-sm pb-2"
+                animationDuration={1}
+                ease='back.inOut(2)'
+                scrollStart='center bottom+=50%'
+                scrollEnd='bottom bottom-=40%'
+                stagger={0.03}
+              >
+                Kunjungi Kampus SMK Taruna Bhakti
+              </ScrollFloat>
+              <ScrollFloat
+                containerClassName="text-slate-500 dark:text-slate-400 max-w-xl mx-auto text-sm md:text-base leading-relaxed font-medium"
+                animationDuration={1}
+                ease='back.inOut(2)'
+                scrollStart='top 90%'
+                scrollEnd='bottom bottom-=40%'
+                stagger={0.01}
+                textMode={false}
+              >
+                Pusat informasi dan pendaftaran offline tersedia di gedung utama kami.
+              </ScrollFloat>
+            </div>
+
+            <div className="bg-white dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800/80 rounded-[2.5rem] overflow-hidden shadow-2xl shadow-slate-200/40 dark:shadow-none p-4 md:p-6 transition-all duration-300">
+              <div className="flex flex-col lg:flex-row gap-6">
+                
+                {/* Contact Info Panel */}
+                <div className="w-full lg:w-1/3 flex flex-col justify-center space-y-8 p-6 md:p-8 bg-slate-50 dark:bg-slate-950 rounded-3xl border border-slate-100 dark:border-slate-800 relative overflow-hidden">
+                  <div className="absolute -right-10 -top-10 opacity-5 dark:opacity-10 pointer-events-none">
+                    <MapPin size={200} className="text-emerald-500" />
+                  </div>
+                  
+                  <div className="relative z-10 space-y-8">
+                    <div>
+                      <h3 className="text-base font-black text-slate-800 dark:text-white mb-3 flex items-center gap-2">
+                        <MapPin size={18} className="text-emerald-500" /> Alamat Lengkap
+                      </h3>
+                      <p className="text-sm font-semibold text-slate-500 dark:text-slate-400 leading-relaxed bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-sm">
+                        {address}
+                      </p>
+                    </div>
+
+                    <div>
+                      <h3 className="text-base font-black text-slate-800 dark:text-white mb-3 flex items-center gap-2">
+                        <Phone size={18} className="text-blue-500" /> Hubungi Kami
+                      </h3>
+                      <div className="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-sm space-y-3">
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Telp</span>
+                          <span className="text-sm font-bold text-slate-700 dark:text-slate-300">{phone}</span>
+                        </div>
+                        <div className="w-full h-px bg-slate-100 dark:bg-slate-800"></div>
+                        <div className="flex flex-col gap-1">
+                          <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Email</span>
+                          <span className="text-sm font-bold text-slate-700 dark:text-slate-300 break-all">{email}</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Map Iframe */}
+                <div className="w-full lg:w-2/3 h-[350px] lg:h-auto min-h-[350px] rounded-3xl overflow-hidden shadow-inner border border-slate-200/50 dark:border-slate-800/50 relative group">
+                  <div className="absolute inset-0 bg-blue-500/5 mix-blend-overlay pointer-events-none group-hover:bg-transparent transition-colors duration-500"></div>
+                  <iframe 
+                    src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3965.055845577626!2d106.867407!3d-6.3844792!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2e69ebaff005f277%3A0x9fcd41028665eea8!2sSMK%20Taruna%20Bhakti%20Depok!5e0!3m2!1sen!2sid!4v1683883446098!5m2!1sen!2sid" 
+                    width="100%" 
+                    height="100%" 
+                    style={{ border: 0 }} 
+                    allowFullScreen={true} 
+                    loading="lazy" 
+                    referrerPolicy="no-referrer-when-downgrade"
+                    className="w-full h-full grayscale-[15%] group-hover:grayscale-0 transition-all duration-700"
+                  ></iframe>
+                </div>
+
+              </div>
+            </div>
+          </div>
+        </section>
       </main>
 
       {/* FOOTER */}

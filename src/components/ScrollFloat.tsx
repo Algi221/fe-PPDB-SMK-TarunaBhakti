@@ -115,7 +115,7 @@ const ScrollFloat = ({
   return (
     <div 
       ref={containerRef as any} 
-      className={`scroll-float ${textMode ? 'overflow-hidden' : ''} ${containerClassName}`}
+      className={`scroll-float ${textMode ? 'overflow-hidden pb-2 -mb-2' : ''} ${containerClassName}`}
     >
       <div className={`scroll-float-text ${textClassName}`} style={{ display: 'inline-block', width: '100%' }}>
         {splitText}
