@@ -819,11 +819,31 @@ export default function DaftarPage() {
           }
           setShowPaymentGate(true);
         } else {
-          alert(res?.message || "Gagal mengirimkan formulir pendaftaran. Silakan coba lagi.");
+          Swal.fire({
+            icon: 'error',
+            title: 'Pendaftaran Gagal',
+            text: res?.message || "Gagal mengirimkan formulir pendaftaran. Silakan coba lagi.",
+            confirmButtonColor: '#3b82f6',
+            customClass: {
+              popup: 'rounded-3xl border border-slate-200 dark:border-slate-800 dark:bg-slate-900',
+              confirmButton: 'rounded-2xl px-6 py-2.5 text-xs uppercase font-extrabold tracking-wider',
+              title: 'text-base font-extrabold text-slate-850 dark:text-white'
+            }
+          });
         }
       } catch (err) {
         console.error("Submit error:", err);
-        alert("Terjadi kesalahan koneksi. Silakan coba lagi.");
+        Swal.fire({
+          icon: 'error',
+          title: 'Kesalahan Koneksi',
+          text: "Terjadi kesalahan koneksi. Silakan coba lagi.",
+          confirmButtonColor: '#3b82f6',
+          customClass: {
+            popup: 'rounded-3xl border border-slate-200 dark:border-slate-800 dark:bg-slate-900',
+            confirmButton: 'rounded-2xl px-6 py-2.5 text-xs uppercase font-extrabold tracking-wider',
+            title: 'text-base font-extrabold text-slate-850 dark:text-white'
+          }
+        });
       } finally {
         setIsSubmitting(false);
       }
@@ -1662,13 +1682,33 @@ export default function DaftarPage() {
       if (!file) return;
       
       if (file.size > 3 * 1024 * 1024) {
-        alert("Ukuran bukti pembayaran maksimal adalah 3MB!");
+        Swal.fire({
+          icon: 'warning',
+          title: 'Ukuran File Terlalu Besar',
+          text: "Ukuran bukti pembayaran maksimal adalah 3MB!",
+          confirmButtonColor: '#3b82f6',
+          customClass: {
+            popup: 'rounded-3xl border border-slate-200 dark:border-slate-800 dark:bg-slate-900',
+            confirmButton: 'rounded-2xl px-6 py-2.5 text-xs uppercase font-extrabold tracking-wider',
+            title: 'text-base font-extrabold text-slate-850 dark:text-white'
+          }
+        });
         return;
       }
       
       const allowed = ["image/jpeg", "image/png", "image/jpg", "application/pdf"];
       if (!allowed.includes(file.type)) {
-        alert("Format file harus JPG, PNG, atau PDF!");
+        Swal.fire({
+          icon: 'warning',
+          title: 'Format File Tidak Sesuai',
+          text: "Format file harus JPG, PNG, atau PDF!",
+          confirmButtonColor: '#3b82f6',
+          customClass: {
+            popup: 'rounded-3xl border border-slate-200 dark:border-slate-800 dark:bg-slate-900',
+            confirmButton: 'rounded-2xl px-6 py-2.5 text-xs uppercase font-extrabold tracking-wider',
+            title: 'text-base font-extrabold text-slate-850 dark:text-white'
+          }
+        });
         return;
       }
       
@@ -1709,10 +1749,30 @@ export default function DaftarPage() {
           setIsSuccess(true);
           fetchPublicApplicants?.();
         } else {
-          alert("Gagal mengonfirmasi pembayaran: " + data.message);
+          Swal.fire({
+            icon: 'error',
+            title: 'Konfirmasi Gagal',
+            text: "Gagal mengonfirmasi pembayaran: " + data.message,
+            confirmButtonColor: '#3b82f6',
+            customClass: {
+              popup: 'rounded-3xl border border-slate-200 dark:border-slate-800 dark:bg-slate-900',
+              confirmButton: 'rounded-2xl px-6 py-2.5 text-xs uppercase font-extrabold tracking-wider',
+              title: 'text-base font-extrabold text-slate-850 dark:text-white'
+            }
+          });
         }
       } catch (err: any) {
-        alert("Error: " + err.message);
+        Swal.fire({
+          icon: 'error',
+          title: 'Terjadi Kesalahan',
+          text: err.message,
+          confirmButtonColor: '#3b82f6',
+          customClass: {
+            popup: 'rounded-3xl border border-slate-200 dark:border-slate-800 dark:bg-slate-900',
+            confirmButton: 'rounded-2xl px-6 py-2.5 text-xs uppercase font-extrabold tracking-wider',
+            title: 'text-base font-extrabold text-slate-850 dark:text-white'
+          }
+        });
       } finally {
         setIsSubmittingReceipt(false);
       }
