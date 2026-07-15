@@ -158,12 +158,16 @@ export default function ProfilePage() {
         setProfileMsg({ type: "success", text: "Profil berhasil diperbarui!" });
         // Update context
         if (setAdminUser && data.admin) {
-          setAdminUser({
+          const updated = {
             ...adminUser,
             nama: data.admin.nama,
             username: data.admin.username,
             foto_profil: data.admin.foto_profil,
-          });
+          };
+          setAdminUser(updated);
+          if (typeof window !== "undefined") {
+            localStorage.setItem("ppdb_admin_user", JSON.stringify(updated));
+          }
         }
       } else {
         setProfileMsg({ type: "error", text: data.message || "Gagal memperbarui profil." });
