@@ -2391,13 +2391,17 @@ export default function DaftarPage() {
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
               <div className="form-group">
-                <label className="block text-xs font-bold text-slate-600 mb-1.5">Nomor Telepon / Handphone (HP)</label>
+                <label className="block text-xs font-bold text-slate-600 mb-1.5">Nomor Telepon / HP Siswa</label>
                 <input type="text" inputMode="tel" name="whatsapp" className="w-full bg-white border border-slate-300 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all" placeholder="Contoh: 081234567890" value={formData.whatsapp} onChange={handleInputChange} />
               </div>
               <div className="form-group">
-                <label className="block text-xs font-bold text-slate-600 mb-1.5">Electronic Mail (E-mail) Pribadi</label>
+                <label className="block text-xs font-bold text-slate-600 mb-1.5">Nomor Telepon Orang Tua (Ayah/Ibu/Wali)</label>
+                <input type="text" inputMode="tel" name="teleponOrtu" className="w-full bg-white border border-slate-300 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all" placeholder="Nomor yang mudah dihubungi" value={formData.teleponOrtu} onChange={handleInputChange} />
+              </div>
+              <div className="form-group">
+                <label className="block text-xs font-bold text-slate-600 mb-1.5">E-mail Pribadi Siswa</label>
                 <input type="email" name="email" className="w-full bg-white border border-slate-300 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all" placeholder="nama@email.com" value={formData.email} onChange={handleInputChange} />
               </div>
             </div>
@@ -3074,15 +3078,9 @@ export default function DaftarPage() {
                 Data Wali Peserta Didik
               </h4>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                <div className="form-group">
-                  <label className="block text-xs font-bold text-slate-600 mb-1.5">1. Nama Lengkap</label>
-                  <input type="text" name="namaWali" className="w-full bg-white border border-slate-300 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all" placeholder="Kosongkan jika tidak ada wali" value={formData.namaWali} onChange={handleInputChange} />
-                </div>
-                <div className="form-group">
-                  <label className="block text-xs font-bold text-slate-600 mb-1.5">Nomor Telepon (Ayah/Ibu/Wali)</label>
-                  <input type="text" inputMode="tel" name="teleponOrtu" className="w-full bg-white border border-slate-300 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all" placeholder="Nomor yang mudah dihubungi" value={formData.teleponOrtu} onChange={handleInputChange} />
-                </div>
+              <div className="form-group mb-4">
+                <label className="block text-xs font-bold text-slate-600 mb-1.5">1. Nama Lengkap</label>
+                <input type="text" name="namaWali" className="w-full bg-white border border-slate-300 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all" placeholder="Kosongkan jika tidak ada wali" value={formData.namaWali} onChange={handleInputChange} />
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
