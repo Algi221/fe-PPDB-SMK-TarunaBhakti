@@ -1,11 +1,48 @@
 "use client";
 
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useCallback } from "react";
 import { usePPDB } from "@/context/PPDBContext";
+import Cropper from "react-easy-crop";
+import type { Area } from "react-easy-crop";
 import {
-  Camera, User, Lock, Save, Eye, EyeOff, CheckCircle2,
-  AlertCircle, Shield, Calendar, Trash2
+  Camera, User, Save, CheckCircle2,
+  AlertCircle, Shield, Calendar, Trash2, ZoomIn, ZoomOut, RotateCw, Crop
 } from "lucide-react";
+
+// ── Crop helper ──────────────────────────────────────────────────────────────
+function createImage(url: string): Promise<HTMLImageElement> {
+  return new Promise((resolve, reject) => {
+    const image = new Image();
+    image.addEventListener("load", () => resolve(image));
+    image.addEventListener("error", (error) => reject(error));
+    image.setAttribute("crossOrigin", "anonymous");
+    image.src = url;
+  });
+}
+
+async function getCroppedImg(imageSrc: string, pixelCrop: Area): Promise<string> {
+  const image = await createImage(imageSrc);
+  const canvas = document.createElement("canvas");
+  const ctx = canvas.getContext("2d");
+  if (!ctx) throw new Error("No 2d context");
+
+  canvas.width = pixelCrop.width;
+  canvas.height = pixelCrop.height;
+
+  ctx.drawImage(
+    image,
+    pixelCrop.x,
+    pixelCrop.y,
+    pixelCrop.width,
+    pixelCrop.height,
+    0,
+    0,
+    pixelCrop.width,
+    pixelCrop.height
+  );
+
+  return canvas.toDataURL("image/jpeg", 0.9);
+}
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 
@@ -18,19 +55,17 @@ export default function ProfilePage() {
   const [fotoProfil, setFotoProfil] = useState<string | null>(null);
   const [previewPhoto, setPreviewPhoto] = useState<string | null>(null);
 
-  // ── Password form state ──────────────────────────────────────────────────
-  const [currentPassword, setCurrentPassword] = useState("");
-  const [newPassword, setNewPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
-  const [showCurrentPwd, setShowCurrentPwd] = useState(false);
-  const [showNewPwd, setShowNewPwd] = useState(false);
-  const [showConfirmPwd, setShowConfirmPwd] = useState(false);
+  // ── Crop modal state ──────────────────────────────────────────────────────
+  const [cropModalOpen, setCropModalOpen] = useState(false);
+  const [cropImageSrc, setCropImageSrc] = useState<string | null>(null);
+  const [crop, setCrop] = useState({ x: 0, y: 0 });
+  const [zoom, setZoom] = useState(1);
+  const [rotation, setRotation] = useState(0);
+  const [croppedAreaPixels, setCroppedAreaPixels] = useState<Area | null>(null);
 
   // ── Status ───────────────────────────────────────────────────────────────
   const [profileSaving, setProfileSaving] = useState(false);
-  const [passwordSaving, setPasswordSaving] = useState(false);
   const [profileMsg, setProfileMsg] = useState<{ type: "success" | "error"; text: string } | null>(null);
-  const [passwordMsg, setPasswordMsg] = useState<{ type: "success" | "error"; text: string } | null>(null);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -44,23 +79,43 @@ export default function ProfilePage() {
     }
   }, [adminUser]);
 
-  // ── Photo upload ─────────────────────────────────────────────────────────
+  // ── Photo upload → open crop modal ────────────────────────────────────────
   const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    if (file.size > 2 * 1024 * 1024) {
-      setProfileMsg({ type: "error", text: "Ukuran foto maksimal 2MB." });
+    if (file.size > 5 * 1024 * 1024) {
+      setProfileMsg({ type: "error", text: "Ukuran foto maksimal 5MB." });
       return;
     }
 
     const reader = new FileReader();
     reader.onloadend = () => {
-      const base64 = reader.result as string;
-      setPreviewPhoto(base64);
-      setFotoProfil(base64);
+      setCropImageSrc(reader.result as string);
+      setCrop({ x: 0, y: 0 });
+      setZoom(1);
+      setRotation(0);
+      setCropModalOpen(true);
     };
     reader.readAsDataURL(file);
+  };
+
+  const onCropComplete = useCallback((_: Area, croppedPixels: Area) => {
+    setCroppedAreaPixels(croppedPixels);
+  }, []);
+
+  const handleCropSave = async () => {
+    if (!cropImageSrc || !croppedAreaPixels) return;
+    try {
+      const croppedBase64 = await getCroppedImg(cropImageSrc, croppedAreaPixels);
+      setPreviewPhoto(croppedBase64);
+      setFotoProfil(croppedBase64);
+      setCropModalOpen(false);
+      setCropImageSrc(null);
+    } catch (err) {
+      console.error("Crop failed", err);
+      setProfileMsg({ type: "error", text: "Gagal memotong foto." });
+    }
   };
 
   const handleRemovePhoto = () => {
@@ -120,53 +175,7 @@ export default function ProfilePage() {
     }
   };
 
-  // ── Change password ───────────────────────────────────────────────────────
-  const handleChangePassword = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!currentPassword || !newPassword || !confirmPassword) {
-      setPasswordMsg({ type: "error", text: "Semua kolom password harus diisi." });
-      return;
-    }
-    if (newPassword.length < 6) {
-      setPasswordMsg({ type: "error", text: "Password baru minimal 6 karakter." });
-      return;
-    }
-    if (newPassword !== confirmPassword) {
-      setPasswordMsg({ type: "error", text: "Konfirmasi password tidak cocok." });
-      return;
-    }
 
-    setPasswordSaving(true);
-    setPasswordMsg(null);
-
-    try {
-      const res = await fetch(`${API_URL}/api/auth/change-password`, {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${adminToken}`,
-        },
-        body: JSON.stringify({
-          currentPassword,
-          newPassword,
-        }),
-      });
-
-      const data = await res.json();
-      if (data.success) {
-        setPasswordMsg({ type: "success", text: "Password berhasil diubah!" });
-        setCurrentPassword("");
-        setNewPassword("");
-        setConfirmPassword("");
-      } else {
-        setPasswordMsg({ type: "error", text: data.message || "Gagal mengubah password." });
-      }
-    } catch {
-      setPasswordMsg({ type: "error", text: "Gagal terhubung ke server." });
-    } finally {
-      setPasswordSaving(false);
-    }
-  };
 
   const userInitial = adminUser?.nama ? adminUser.nama.charAt(0).toUpperCase() : "A";
 
@@ -362,170 +371,103 @@ export default function ProfilePage() {
             </form>
           </div>
 
-          {/* Change Password Form */}
-          <div className="bg-white dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800/40 rounded-3xl p-6 shadow-sm">
-            <div className="flex items-center gap-3 mb-5">
-              <div className="w-9 h-9 rounded-2xl bg-amber-50 dark:bg-amber-950/40 flex items-center justify-center">
-                <Lock size={16} className="text-amber-500" />
-              </div>
-              <div>
-                <h2 className="text-xs font-black text-slate-800 dark:text-white uppercase tracking-wider">Ubah Password</h2>
-                <p className="text-[10px] text-slate-400 font-semibold">Pastikan akun Anda menggunakan password yang kuat</p>
-              </div>
-            </div>
 
-            <form onSubmit={handleChangePassword} className="space-y-4">
-              {/* Current Password */}
-              <div>
-                <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5">
-                  Password Saat Ini
-                </label>
-                <div className="relative">
-                  <input
-                    type={showCurrentPwd ? "text" : "password"}
-                    value={currentPassword}
-                    onChange={(e) => setCurrentPassword(e.target.value)}
-                    placeholder="••••••••"
-                    className="w-full px-4 py-3 pr-12 bg-slate-50 dark:bg-slate-950/40 border border-slate-200/80 dark:border-slate-700/60 rounded-2xl text-sm font-semibold text-slate-800 dark:text-white placeholder-slate-300 dark:placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-amber-500/30 focus:border-amber-500/60 transition-all"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowCurrentPwd((v) => !v)}
-                    className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors"
-                  >
-                    {showCurrentPwd ? <EyeOff size={15} /> : <Eye size={15} />}
-                  </button>
-                </div>
-              </div>
-
-              {/* New Password */}
-              <div>
-                <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5">
-                  Password Baru
-                </label>
-                <div className="relative">
-                  <input
-                    type={showNewPwd ? "text" : "password"}
-                    value={newPassword}
-                    onChange={(e) => setNewPassword(e.target.value)}
-                    placeholder="Minimal 6 karakter"
-                    className="w-full px-4 py-3 pr-12 bg-slate-50 dark:bg-slate-950/40 border border-slate-200/80 dark:border-slate-700/60 rounded-2xl text-sm font-semibold text-slate-800 dark:text-white placeholder-slate-300 dark:placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-amber-500/30 focus:border-amber-500/60 transition-all"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowNewPwd((v) => !v)}
-                    className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors"
-                  >
-                    {showNewPwd ? <EyeOff size={15} /> : <Eye size={15} />}
-                  </button>
-                </div>
-                {/* Password strength bar */}
-                {newPassword && (
-                  <div className="mt-2 space-y-1">
-                    <div className="flex gap-1">
-                      {[...Array(4)].map((_, i) => {
-                        const strength = Math.min(
-                          Math.floor(newPassword.length / 3) +
-                          (newPassword.length >= 8 ? 1 : 0) +
-                          (/[A-Z]/.test(newPassword) ? 0.5 : 0) +
-                          (/[0-9]/.test(newPassword) ? 0.5 : 0) +
-                          (/[^a-zA-Z0-9]/.test(newPassword) ? 1 : 0),
-                          4
-                        );
-                        return (
-                          <div
-                            key={i}
-                            className={`h-1 flex-1 rounded-full transition-all duration-300 ${
-                              i < strength
-                                ? strength <= 1 ? "bg-rose-400" : strength <= 2 ? "bg-amber-400" : strength <= 3 ? "bg-blue-400" : "bg-emerald-400"
-                                : "bg-slate-200 dark:bg-slate-700"
-                            }`}
-                          />
-                        );
-                      })}
-                    </div>
-                    <p className={`text-[9px] font-bold ${
-                      newPassword.length < 6 ? "text-rose-400" : newPassword.length < 10 ? "text-amber-400" : "text-emerald-400"
-                    }`}>
-                      {newPassword.length < 6 ? "Terlalu pendek" : newPassword.length < 10 ? "Password cukup" : "Password kuat"}
-                    </p>
-                  </div>
-                )}
-              </div>
-
-              {/* Confirm Password */}
-              <div>
-                <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5">
-                  Konfirmasi Password Baru
-                </label>
-                <div className="relative">
-                  <input
-                    type={showConfirmPwd ? "text" : "password"}
-                    value={confirmPassword}
-                    onChange={(e) => setConfirmPassword(e.target.value)}
-                    placeholder="Ulangi password baru"
-                    className={`w-full px-4 py-3 pr-12 bg-slate-50 dark:bg-slate-950/40 border rounded-2xl text-sm font-semibold text-slate-800 dark:text-white placeholder-slate-300 dark:placeholder-slate-600 focus:outline-none focus:ring-2 transition-all ${
-                      confirmPassword && newPassword !== confirmPassword
-                        ? "border-rose-400 focus:ring-rose-500/30 focus:border-rose-500"
-                        : confirmPassword && newPassword === confirmPassword
-                        ? "border-emerald-400 focus:ring-emerald-500/30 focus:border-emerald-500"
-                        : "border-slate-200/80 dark:border-slate-700/60 focus:ring-amber-500/30 focus:border-amber-500/60"
-                    }`}
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowConfirmPwd((v) => !v)}
-                    className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors"
-                  >
-                    {showConfirmPwd ? <EyeOff size={15} /> : <Eye size={15} />}
-                  </button>
-                  {confirmPassword && newPassword === confirmPassword && (
-                    <CheckCircle2 size={14} className="absolute right-10 top-1/2 -translate-y-1/2 text-emerald-500" />
-                  )}
-                </div>
-              </div>
-
-              {/* Status Message */}
-              {passwordMsg && (
-                <div className={`flex items-center gap-2 px-4 py-3 rounded-2xl text-xs font-bold ${
-                  passwordMsg.type === "success"
-                    ? "bg-emerald-50 dark:bg-emerald-950/30 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-900/40"
-                    : "bg-rose-50 dark:bg-rose-950/30 text-rose-600 dark:text-rose-400 border border-rose-200 dark:border-rose-900/40"
-                }`}>
-                  {passwordMsg.type === "success"
-                    ? <CheckCircle2 size={14} className="shrink-0" />
-                    : <AlertCircle size={14} className="shrink-0" />}
-                  {passwordMsg.text}
-                </div>
-              )}
-
-              <div className="flex justify-end">
-                <button
-                  type="submit"
-                  disabled={passwordSaving}
-                  className="flex items-center gap-2 px-6 py-3 bg-gradient-to-tr from-amber-500 to-orange-400 hover:from-amber-400 hover:to-orange-300 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-2xl text-xs font-black uppercase tracking-wider shadow shadow-amber-500/20 hover:shadow-amber-500/40 transition-all"
-                >
-                  {passwordSaving ? (
-                    <>
-                      <svg className="animate-spin w-3.5 h-3.5" fill="none" viewBox="0 0 24 24">
-                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-                      </svg>
-                      Menyimpan...
-                    </>
-                  ) : (
-                    <>
-                      <Lock size={14} />
-                      Ubah Password
-                    </>
-                  )}
-                </button>
-              </div>
-            </form>
-          </div>
 
         </div>
       </div>
+
+      {/* ── Crop Modal ─────────────────────────────────────────────────────── */}
+      {cropModalOpen && cropImageSrc && (
+        <div className="fixed inset-0 z-[70] flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="bg-white dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800/40 rounded-3xl w-full max-w-lg flex flex-col shadow-2xl overflow-hidden animate-in zoom-in-95">
+            {/* Header */}
+            <div className="px-6 py-4 border-b border-slate-100 dark:border-white/5 flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 rounded-2xl bg-blue-50 dark:bg-blue-950/40 flex items-center justify-center">
+                  <Crop size={16} className="text-blue-500" />
+                </div>
+                <div>
+                  <h2 className="text-xs font-black text-slate-800 dark:text-white uppercase tracking-wider">Sesuaikan Foto</h2>
+                  <p className="text-[10px] text-slate-400 font-semibold">Geser dan zoom untuk menyesuaikan</p>
+                </div>
+              </div>
+              <button
+                onClick={() => { setCropModalOpen(false); setCropImageSrc(null); if (fileInputRef.current) fileInputRef.current.value = ""; }}
+                className="w-8 h-8 rounded-xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-500 hover:text-slate-700 dark:hover:text-white transition-colors"
+              >
+                ✕
+              </button>
+            </div>
+
+            {/* Crop Area */}
+            <div className="relative w-full h-80 bg-slate-950">
+              <Cropper
+                image={cropImageSrc}
+                crop={crop}
+                zoom={zoom}
+                rotation={rotation}
+                aspect={1}
+                cropShape="round"
+                showGrid={false}
+                onCropChange={setCrop}
+                onZoomChange={setZoom}
+                onRotationChange={setRotation}
+                onCropComplete={onCropComplete}
+              />
+            </div>
+
+            {/* Controls */}
+            <div className="px-6 py-4 space-y-3 border-t border-slate-100 dark:border-white/5">
+              {/* Zoom slider */}
+              <div className="flex items-center gap-3">
+                <ZoomOut size={14} className="text-slate-400 shrink-0" />
+                <input
+                  type="range"
+                  min={1}
+                  max={3}
+                  step={0.1}
+                  value={zoom}
+                  onChange={(e) => setZoom(Number(e.target.value))}
+                  className="flex-1 h-1.5 bg-slate-200 dark:bg-slate-700 rounded-full appearance-none cursor-pointer accent-blue-500"
+                />
+                <ZoomIn size={14} className="text-slate-400 shrink-0" />
+              </div>
+
+              {/* Rotation */}
+              <div className="flex items-center gap-3">
+                <RotateCw size={14} className="text-slate-400 shrink-0" />
+                <input
+                  type="range"
+                  min={0}
+                  max={360}
+                  step={1}
+                  value={rotation}
+                  onChange={(e) => setRotation(Number(e.target.value))}
+                  className="flex-1 h-1.5 bg-slate-200 dark:bg-slate-700 rounded-full appearance-none cursor-pointer accent-blue-500"
+                />
+                <span className="text-[10px] font-bold text-slate-400 w-10 text-right">{rotation}°</span>
+              </div>
+            </div>
+
+            {/* Actions */}
+            <div className="px-6 py-4 border-t border-slate-100 dark:border-white/5 flex items-center justify-end gap-3">
+              <button
+                onClick={() => { setCropModalOpen(false); setCropImageSrc(null); if (fileInputRef.current) fileInputRef.current.value = ""; }}
+                className="px-5 py-2.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 rounded-xl text-xs font-black uppercase tracking-wider transition-all"
+              >
+                Batal
+              </button>
+              <button
+                onClick={handleCropSave}
+                className="px-5 py-2.5 bg-gradient-to-tr from-blue-600 to-indigo-500 hover:from-blue-500 hover:to-indigo-400 text-white rounded-xl text-xs font-black uppercase tracking-wider shadow shadow-blue-500/20 transition-all flex items-center gap-2"
+              >
+                <Crop size={14} />
+                Terapkan
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

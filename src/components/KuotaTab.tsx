@@ -257,7 +257,7 @@ export default function KuotaTab({ type = "pendaftar", variant = "default" }: Ku
     }
 
     return (
-      <div className={variant === "minimal" ? "w-full" : "bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 rounded-2xl overflow-hidden shadow-sm mb-8 w-full max-w-4xl"}>
+      <div className={variant === "minimal" ? "w-full" : "bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 rounded-2xl overflow-hidden shadow-sm mb-8 w-full"}>
         <div className={`text-center ${variant === "minimal" ? "pb-4" : "p-6 border-b border-slate-200 dark:border-white/10"}`}>
           <h3 className="text-sm font-black text-slate-800 dark:text-white uppercase tracking-wider">{title}</h3>
           <p className="text-xs font-bold text-slate-500 dark:text-slate-400 mt-1">SMK TARUNA BHAKTI DEPOK</p>
