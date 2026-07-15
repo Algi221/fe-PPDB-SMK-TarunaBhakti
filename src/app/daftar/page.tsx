@@ -185,6 +185,7 @@ const DEFAULT_FIELDS_CONFIG: Record<string, { label: string; required: boolean; 
 export default function DaftarPage() {
   const { registerApplicant, checkPaymentStatus, fetchPublicApplicants, addToast, ppdbLogo, ppdbTitle } = usePPDB();
   const [wizardStep, setWizardStep] = useState(1);
+  const [furthestStep, setFurthestStep] = useState(1);
   const [isSuccess, setIsSuccess] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [kuotaData, setKuotaData] = useState<any[] | null>(null);
