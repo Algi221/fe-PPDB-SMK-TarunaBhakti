@@ -617,17 +617,6 @@ function ApplicantsDirectoryContent() {
           Calon Siswa Pindahan (Kelas XI & XII)
         </button>
         <button
-          onClick={() => handleTabChange("trash")}
-          className={`pb-3 text-sm font-bold border-b-2 transition-all flex items-center gap-1.5 ${
-            activePageTab === "trash"
-              ? "border-blue-500 text-blue-600 dark:text-blue-400"
-              : "border-transparent text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200"
-          }`}
-        >
-          <Trash2 size={15} />
-          Sampah / Calon Siswa Dihapus
-        </button>
-        <button
           onClick={() => handleTabChange("kuota")}
           className={`pb-3 text-sm font-bold border-b-2 transition-all flex items-center gap-1.5 ${
             activePageTab === "kuota"
@@ -637,6 +626,18 @@ function ApplicantsDirectoryContent() {
         >
           <PieChart size={15} />
           Data Kuota
+        </button>
+
+        <button
+          onClick={() => handleTabChange("trash")}
+          className={`pb-3 text-sm font-bold border-b-2 transition-all flex items-center gap-1.5 ${
+            activePageTab === "trash"
+              ? "border-blue-500 text-blue-600 dark:text-blue-400"
+              : "border-transparent text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200"
+          }`}
+        >
+          <Trash2 size={15} />
+          Sampah / Calon Siswa Dihapus
         </button>
       </div>
 

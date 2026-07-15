@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import ExcelJS from 'exceljs';
 import { saveAs } from 'file-saver';
-import { Download, RefreshCw, AlertCircle, Pencil, Save, X } from 'lucide-react';
+import { Download, RefreshCw, AlertCircle, Pencil, Save, X, Calendar } from 'lucide-react';
 
 interface KuotaItem {
   no: number;
@@ -20,6 +20,8 @@ interface KuotaData {
   totalPendaftar: number;
   totalSiswaAktif: number;
   totalTarget: number;
+  availablePeriodes?: string[];
+  selectedPeriode?: string;
 }
 
 interface KuotaTabProps {
@@ -37,14 +39,23 @@ export default function KuotaTab({ type = "pendaftar", variant = "default" }: Ku
   const [editingTargets, setEditingTargets] = useState<Record<string, number>>({});
   const [isSavingTargets, setIsSavingTargets] = useState(false);
 
-  const fetchKuota = async () => {
+  const [selectedPeriode, setSelectedPeriode] = useState<string>("");
+  const [availablePeriodes, setAvailablePeriodes] = useState<string[]>([]);
+
+  const fetchKuota = async (periode?: string) => {
     try {
       setLoading(true);
       setError(null);
-      const res = await fetch('http://localhost:5000/api/kuota');
+      const url = periode
+        ? `http://localhost:5000/api/kuota?periode=${encodeURIComponent(periode)}`
+        : 'http://localhost:5000/api/kuota';
+      const res = await fetch(url);
       const json = await res.json();
       if (json.success) {
         setData(json.data);
+        if (json.data.availablePeriodes && availablePeriodes.length === 0) {
+          setAvailablePeriodes(json.data.availablePeriodes);
+        }
       } else {
         throw new Error(json.error || 'Gagal memuat data kuota');
       }
@@ -59,10 +70,26 @@ export default function KuotaTab({ type = "pendaftar", variant = "default" }: Ku
     fetchKuota();
   }, []);
 
+  const handlePeriodeChange = (newPeriode: string) => {
+    setSelectedPeriode(newPeriode);
+    setEditMode(false);
+    if (newPeriode === "") {
+      fetchKuota();
+    } else {
+      fetchKuota(newPeriode);
+    }
+  };
+
+  const getPeriodeDisplay = () => {
+    if (!selectedPeriode) return "Semua Periode";
+    const parts = selectedPeriode.split("-");
+    return `${parts[0]}/${parts[1]}`;
+  };
+
   const handleEditClick = () => {
     if (!data) return;
     const targets: Record<string, number> = {};
-    const sourceData = type === "pendaftar" ? data.pendaftar : data.siswaAktif;
+    const sourceData = data.pendaftar;
     sourceData.forEach(item => {
       if (item.key !== "Belum Memilih") {
         targets[item.key] = item.target;
@@ -91,7 +118,7 @@ export default function KuotaTab({ type = "pendaftar", variant = "default" }: Ku
       const json = await res.json();
       if (json.success) {
         setEditMode(false);
-        fetchKuota();
+        fetchKuota(selectedPeriode || undefined);
       } else {
         alert(json.error || 'Gagal menyimpan target kuota');
       }
@@ -110,7 +137,6 @@ export default function KuotaTab({ type = "pendaftar", variant = "default" }: Ku
       const workbook = new ExcelJS.Workbook();
       const sheet = workbook.addWorksheet('Data Kuota');
 
-      // Styles
       const titleFont = { name: 'Arial', size: 12, bold: true };
       const headerFont = { name: 'Arial', size: 10, bold: true, color: { argb: 'FFFFFFFF' } };
       const bodyFont = { name: 'Arial', size: 10 };
@@ -122,8 +148,11 @@ export default function KuotaTab({ type = "pendaftar", variant = "default" }: Ku
       };
       const alignCenter = { vertical: 'middle' as any, horizontal: 'center' as any };
 
+      const tahunAjaran = selectedPeriode 
+        ? `TAHUN AJARAN ${selectedPeriode.replace("-", "/")}`
+        : "TAHUN AJARAN 2026/2027";
+
       const createTable = (startRow: number, title: string, items: KuotaItem[], totalJumlah: number) => {
-        // Titles
         sheet.mergeCells(`A${startRow}:E${startRow}`);
         const title1 = sheet.getCell(`A${startRow}`);
         title1.value = title;
@@ -138,28 +167,22 @@ export default function KuotaTab({ type = "pendaftar", variant = "default" }: Ku
 
         sheet.mergeCells(`A${startRow + 2}:E${startRow + 2}`);
         const title3 = sheet.getCell(`A${startRow + 2}`);
-        title3.value = "TAHUN AJARAN 2026/2027";
+        title3.value = tahunAjaran;
         title3.font = titleFont;
         title3.alignment = alignCenter;
 
-        // Headers
         const headerRowIndex = startRow + 3;
         const headers = ["NO", "KONSENTRASI KEAHLIAN", "JUMLAH", "TARGET", "PRESENTASE"];
         headers.forEach((header, index) => {
           const colLetter = String.fromCharCode(65 + index);
           const cell = sheet.getCell(`${colLetter}${headerRowIndex}`);
           cell.value = header;
-          cell.font = { ...headerFont, color: { argb: 'FF000000' } }; // Black font in image
-          cell.fill = {
-            type: 'pattern',
-            pattern: 'solid',
-            fgColor: { argb: 'FF6B9EE0' } // Blue header background
-          };
+          cell.font = { ...headerFont, color: { argb: 'FF000000' } };
+          cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF6B9EE0' } };
           cell.border = borderStyle;
           cell.alignment = alignCenter;
         });
 
-        // Data Rows
         let currentRow = headerRowIndex + 1;
         items.forEach((item) => {
           const rowData = [item.no, item.konsentrasi_keahlian, item.jumlah, item.target, item.presentase];
@@ -174,12 +197,11 @@ export default function KuotaTab({ type = "pendaftar", variant = "default" }: Ku
           currentRow++;
         });
 
-        // Total Row
         sheet.mergeCells(`A${currentRow}:B${currentRow}`);
         const totalLabel = sheet.getCell(`A${currentRow}`);
         totalLabel.value = "TOTAL KESELURUHAN";
         totalLabel.font = { name: 'Arial', size: 10, bold: true };
-        totalLabel.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFDBB11' } }; // Yellow/Orange
+        totalLabel.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFDBB11' } };
         totalLabel.border = borderStyle;
         totalLabel.alignment = alignCenter;
 
@@ -201,20 +223,17 @@ export default function KuotaTab({ type = "pendaftar", variant = "default" }: Ku
         totalTargetCell.alignment = alignCenter;
 
         const totalPersentaseCell = sheet.getCell(`E${currentRow}`);
-        totalPersentaseCell.value = ""; // Empty in image for total percentage usually
+        totalPersentaseCell.value = "";
         totalPersentaseCell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFDBB11' } };
         totalPersentaseCell.border = borderStyle;
 
-        return currentRow + 3; // return next starting row
+        return currentRow + 3;
       };
 
-      if (type === "pendaftar") {
-        createTable(1, "PRESENTASE PEMBELIAN FORMULIR CALON PESERTA DIDIK", data.pendaftar, data.totalPendaftar);
-      } else {
-        createTable(1, "PRESENTASE FIX MASUK PESERTA DIDIK", data.siswaAktif, data.totalSiswaAktif);
-      }
+      // Always export both tables
+      const nextRow = createTable(1, "PRESENTASE PEMBELIAN FORMULIR CALON PESERTA DIDIK", data.pendaftar, data.totalPendaftar);
+      createTable(nextRow, "PRESENTASE FIX MASUK PESERTA DIDIK", data.siswaAktif, data.totalSiswaAktif);
 
-      // Set Column Widths
       sheet.getColumn('A').width = 5;
       sheet.getColumn('B').width = 30;
       sheet.getColumn('C').width = 15;
@@ -223,7 +242,8 @@ export default function KuotaTab({ type = "pendaftar", variant = "default" }: Ku
 
       const buffer = await workbook.xlsx.writeBuffer();
       const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
-      saveAs(blob, 'Data_Kuota_SMKTB.xlsx');
+      const periodeStr = selectedPeriode ? `_${selectedPeriode}` : "";
+      saveAs(blob, `Data_Kuota_SMKTB${periodeStr}.xlsx`);
     } catch (err) {
       console.error('Error exporting excel', err);
       alert('Gagal mengexport file Excel');
@@ -245,10 +265,14 @@ export default function KuotaTab({ type = "pendaftar", variant = "default" }: Ku
       <div className="w-full p-6 bg-red-50 text-red-600 rounded-2xl flex items-center gap-3">
         <AlertCircle className="w-6 h-6" />
         <span className="font-semibold text-sm">{error}</span>
-        <button onClick={fetchKuota} className="ml-auto px-4 py-2 bg-red-100 hover:bg-red-200 rounded-lg text-xs font-bold transition">Coba Lagi</button>
+        <button onClick={() => fetchKuota()} className="ml-auto px-4 py-2 bg-red-100 hover:bg-red-200 rounded-lg text-xs font-bold transition">Coba Lagi</button>
       </div>
     );
   }
+
+  const tahunAjaranDisplay = selectedPeriode 
+    ? `TAHUN AJARAN ${selectedPeriode.replace("-", "/")}`
+    : "TAHUN AJARAN 2026/2027";
 
   const renderTable = (title: string, items: KuotaItem[], totalJumlah: number) => {
     let totalTargetEditing = 0;
@@ -257,11 +281,11 @@ export default function KuotaTab({ type = "pendaftar", variant = "default" }: Ku
     }
 
     return (
-      <div className={variant === "minimal" ? "w-full" : "bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 rounded-2xl overflow-hidden shadow-sm mb-8 w-full"}>
+      <div className={variant === "minimal" ? "w-full" : "bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 rounded-2xl overflow-hidden shadow-sm w-full"}>
         <div className={`text-center ${variant === "minimal" ? "pb-4" : "p-6 border-b border-slate-200 dark:border-white/10"}`}>
           <h3 className="text-sm font-black text-slate-800 dark:text-white uppercase tracking-wider">{title}</h3>
           <p className="text-xs font-bold text-slate-500 dark:text-slate-400 mt-1">SMK TARUNA BHAKTI DEPOK</p>
-          <p className="text-xs font-semibold text-slate-500 dark:text-slate-400">TAHUN AJARAN 2026/2027</p>
+          <p className="text-xs font-semibold text-slate-500 dark:text-slate-400">{tahunAjaranDisplay}</p>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs font-semibold">
@@ -315,8 +339,6 @@ export default function KuotaTab({ type = "pendaftar", variant = "default" }: Ku
 
   const renderDonut = (title: string, items: KuotaItem[], totalJumlah: number) => {
     const colors = ["#ec4899", "#3b82f6", "#0ea5e9", "#8b5cf6", "#f59e0b", "#10b981", "#ef4444", "#14b8a6"];
-    
-    // Filter out "Belum Memilih" or 0 count
     const validItems = items.filter(i => i.jumlah > 0 && i.key !== "Belum Memilih");
     const totalValid = validItems.reduce((acc, curr) => acc + curr.jumlah, 0) || 1;
 
@@ -325,12 +347,7 @@ export default function KuotaTab({ type = "pendaftar", variant = "default" }: Ku
       const percent = Math.round((item.jumlah / totalValid) * 100);
       const startPercent = accumulatedPercent;
       accumulatedPercent += percent;
-      return {
-        ...item,
-        percent,
-        startPercent,
-        color: colors[idx % colors.length]
-      };
+      return { ...item, percent, startPercent, color: colors[idx % colors.length] };
     });
 
     return (
@@ -340,19 +357,10 @@ export default function KuotaTab({ type = "pendaftar", variant = "default" }: Ku
             <circle cx="21" cy="21" r="15.915" fill="transparent" stroke="currentColor" className="text-slate-100 dark:text-slate-800/40" strokeWidth="6" />
             {donutData.map((d, idx) => {
               if (d.percent === 0) return null;
-              const strokeDashValue = `${d.percent} ${100 - d.percent}`;
-              const strokeDashOffset = 100 - d.startPercent;
               return (
-                <circle
-                  key={idx}
-                  cx="21"
-                  cy="21"
-                  r="15.915"
-                  fill="transparent"
-                  stroke={d.color}
-                  strokeWidth="6"
-                  strokeDasharray={strokeDashValue}
-                  strokeDashoffset={strokeDashOffset}
+                <circle key={idx} cx="21" cy="21" r="15.915" fill="transparent" stroke={d.color} strokeWidth="6"
+                  strokeDasharray={`${d.percent} ${100 - d.percent}`}
+                  strokeDashoffset={100 - d.startPercent}
                   className="transition-all duration-700 ease-in-out cursor-pointer hover:stroke-[8px]"
                 />
               );
@@ -363,7 +371,6 @@ export default function KuotaTab({ type = "pendaftar", variant = "default" }: Ku
             <span className="text-3xl font-black text-slate-800 dark:text-white leading-none tracking-tighter">{totalJumlah}</span>
           </div>
         </div>
-
         <div className="mt-8 grid grid-cols-2 gap-x-6 gap-y-3 w-full max-w-sm px-4">
           {donutData.map((d, idx) => (
             <div key={idx} className="flex items-center gap-3 p-2 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors cursor-default">
@@ -396,10 +403,9 @@ export default function KuotaTab({ type = "pendaftar", variant = "default" }: Ku
       { key: "Sisa Kuota", jumlah: sisa, color: "#cbd5e1" }
     ];
 
-    const totalValid = target;
     let accumulatedPercent = 0;
     const donutData = overallData.map((item) => {
-      const percent = Math.round((item.jumlah / totalValid) * 100);
+      const percent = Math.round((item.jumlah / target) * 100);
       const startPercent = accumulatedPercent;
       accumulatedPercent += percent;
       return { ...item, percent, startPercent };
@@ -412,19 +418,10 @@ export default function KuotaTab({ type = "pendaftar", variant = "default" }: Ku
             <circle cx="21" cy="21" r="15.915" fill="transparent" stroke="currentColor" className="text-slate-100 dark:text-slate-800/40" strokeWidth="6" />
             {donutData.map((d, idx) => {
               if (d.percent === 0) return null;
-              const strokeDashValue = `${d.percent} ${100 - d.percent}`;
-              const strokeDashOffset = 100 - d.startPercent;
               return (
-                <circle
-                  key={idx}
-                  cx="21"
-                  cy="21"
-                  r="15.915"
-                  fill="transparent"
-                  stroke={d.color}
-                  strokeWidth="6"
-                  strokeDasharray={strokeDashValue}
-                  strokeDashoffset={strokeDashOffset}
+                <circle key={idx} cx="21" cy="21" r="15.915" fill="transparent" stroke={d.color} strokeWidth="6"
+                  strokeDasharray={`${d.percent} ${100 - d.percent}`}
+                  strokeDashoffset={100 - d.startPercent}
                   className="transition-all duration-700 ease-in-out cursor-pointer hover:stroke-[8px]"
                 />
               );
@@ -435,7 +432,6 @@ export default function KuotaTab({ type = "pendaftar", variant = "default" }: Ku
             <span className="text-3xl font-black text-slate-800 dark:text-white leading-none tracking-tighter">{target}</span>
           </div>
         </div>
-
         <div className="mt-8 flex flex-col gap-3 w-full max-w-xs px-4 mx-auto">
           {donutData.map((d, idx) => (
             <div key={idx} className="flex flex-row justify-between items-center p-2 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors cursor-default">
@@ -457,12 +453,28 @@ export default function KuotaTab({ type = "pendaftar", variant = "default" }: Ku
   return (
     <div className={`w-full space-y-6 ${variant === "minimal" ? "" : "animate-in fade-in zoom-in-95 duration-300"}`}>
       {variant !== "minimal" && (
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-white/10 shadow-sm w-full max-w-4xl">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-white/10 shadow-sm w-full">
         <div>
           <h2 className="text-lg font-black text-slate-800 dark:text-white uppercase tracking-tight">Data Kuota & Presentase</h2>
           <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 mt-1">Rekapitulasi target dan pencapaian pendaftar</p>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-3">
+          {/* Periode Selector */}
+          <div className="relative">
+            <Calendar size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+            <select
+              value={selectedPeriode}
+              onChange={(e) => handlePeriodeChange(e.target.value)}
+              disabled={editMode}
+              className="pl-9 pr-4 py-2.5 bg-slate-50 dark:bg-slate-950/40 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-bold text-slate-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/30 transition-all appearance-none cursor-pointer disabled:opacity-50"
+            >
+              <option value="">Semua Periode</option>
+              {availablePeriodes.map(p => (
+                <option key={p} value={p}>TA {p.replace("-", "/")}</option>
+              ))}
+            </select>
+          </div>
+
           {editMode ? (
             <>
               <button
@@ -510,10 +522,19 @@ export default function KuotaTab({ type = "pendaftar", variant = "default" }: Ku
               {type === "siswa-aktif" && renderDonut("PRESENTASE FIX MASUK PESERTA DIDIK", data.siswaAktif, data.totalSiswaAktif)}
             </>
           ) : (
-            <>
-              {type === "pendaftar" && renderTable("PRESENTASE PEMBELIAN FORMULIR CALON PESERTA DIDIK", data.pendaftar, data.totalPendaftar)}
+            <div className="w-full">
+              {type === "pendaftar" && (
+                <div className="flex flex-col xl:flex-row gap-6 w-full">
+                  <div className="flex-1 min-w-0">
+                    {renderTable("PRESENTASE PEMBELIAN FORMULIR CALON PESERTA DIDIK", data.pendaftar, data.totalPendaftar)}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    {renderTable("PRESENTASE FIX MASUK PESERTA DIDIK", data.siswaAktif, data.totalSiswaAktif)}
+                  </div>
+                </div>
+              )}
               {type === "siswa-aktif" && renderTable("PRESENTASE FIX MASUK PESERTA DIDIK", data.siswaAktif, data.totalSiswaAktif)}
-            </>
+            </div>
           )}
         </div>
       )}
