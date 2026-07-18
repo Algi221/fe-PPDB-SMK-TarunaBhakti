@@ -550,6 +550,7 @@ export default function DaftarPage() {
           const parsed = parseInt(savedStep);
           if (!isNaN(parsed) && parsed >= 1 && parsed <= 14) {
             setWizardStep(parsed);
+            setFurthestStep(parsed);
           }
         }
       }
@@ -730,10 +731,103 @@ export default function DaftarPage() {
     });
   };
 
+  const getStepLabel = (step: number): string => {
+    switch (step) {
+      case 1: return "Data Pribadi Siswa";
+      case 2: return "Data Tempat Tinggal";
+      case 3: return "Data Rincian (Data Periodik)";
+      case 4: return "Data Kesehatan & Berkebutuhan Khusus";
+      case 5: return "Data Prestasi (Opsional)";
+      case 6: return "Data Beasiswa (Opsional)";
+      case 7: return "Data Rincian (Data Pendidikan)";
+      case 8: return "Data Ayah Kandung";
+      case 9: return "Data Ibu Kandung";
+      case 10: return "Data Wali (Opsional)";
+      case 11: return "Data Kegemaran & Minat";
+      case 12: return "Data Budi Pekerti & Ekonomi";
+      case 13: return "Tinjau & Verifikasi Data Anda";
+      case 14: return "Berkas & Konfirmasi Pendaftaran";
+      default: return "";
+    }
+  };
+
+  const getStepFields = (step: number): string[] => {
+    switch (step) {
+      case 1: return ['nama', 'jenisKelamin', 'nisn', 'nik', 'tempatLahir', 'tglLahir', 'agama', 'kewarganegaraan'];
+      case 2: return ['alamat', 'rtRw', 'kelurahan', 'kecamatan', 'kodePos'];
+      case 3: return ['tinggalDengan', 'transportasi', 'tinggiBadan', 'beratBadan', 'jarakSekolah', 'jarakKm', 'waktuJam', 'waktuMenit', 'jumlahSaudara', 'golonganDarah'];
+      case 4: return ['penyakitDiderita', 'kebutuhanKhusus'];
+      case 5: return ['jenisPrestasi', 'tingkatPrestasi', 'uraianPrestasi', 'tahunPrestasi', 'penyelenggara'];
+      case 6: return ['jenisBeasiswa', 'uraianBeasiswa', 'tahunMulaiBeasiswa', 'tahunSelesaiBeasiswa'];
+      case 7: return ['sekolahAsal', 'tglLulus', 'noIjazah', 'noSKHUN', 'noPesertaUN', 'lamaBelajar', 'pindahanDari', 'alasanPindah', 'diterimaKelas', 'diterimaTanggal'];
+      case 8: return ['namaAyah', 'tempatLahirAyah', 'tglLahirAyah', 'agamaAyah', 'kewarganegaraanAyah', 'pendidikanAyah', 'pekerjaanAyah', 'penghasilanAyah', 'alamatAyah', 'rtrwAyah', 'kelurahanAyah', 'kecamatanAyah', 'kodePosAyah', 'statusAyah'];
+      case 9: return ['namaIbu', 'tempatLahirIbu', 'tglLahirIbu', 'agamaIbu', 'kewarganegaraanIbu', 'pendidikanIbu', 'pekerjaanIbu', 'penghasilanIbu', 'alamatIbu', 'rtrwIbu', 'kelurahanIbu', 'kecamatanIbu', 'kodePosIbu', 'statusIbu'];
+      case 10: return ['namaWali', 'tempatLahirWali', 'tglLahirWali', 'agamaWali', 'kewarganegaraanWali', 'pendidikanWali', 'pekerjaanWali', 'penghasilanWali', 'alamatWali', 'rtrwWali', 'kelurahanWali', 'kecamatanWali', 'kodePosWali', 'statusWali'];
+      case 11: return ['hobi', 'citaCita', 'citaCitaSetelahLulus', 'pelajaranDisenangi', 'alasanDisenangi', 'kesulitanBelajar'];
+      case 12: return ['perkelahian', 'narkoba', 'pelanggaranLain', 'janjiTaat', 'janjiSanksi', 'janjiAkrab', 'janjiBelajar', 'janjiNamaBaik'];
+      case 13: return [];
+      case 14: return ['berkasFotoBase64', 'buktiBayar', 'metodePembayaran', 'deklarasi'];
+      default: return [];
+    }
+  };
+
+  const validateStep = (step: number): string[] => {
+    const fields = getStepFields(step);
+    const errors: string[] = [];
+    
+    if (step === 1) {
+      if (!formData.nama || formData.nama.trim() === '') errors.push("Nama Lengkap");
+      if (!formData.nisn || formData.nisn.trim() === '') errors.push("NISN");
+    }
+    if (step === 14) {
+      if (!formData.deklarasi) errors.push("Pernyataan Deklarasi");
+    }
+
+    fields.forEach((key) => {
+      const conf = fieldsConfig[key] || DEFAULT_FIELDS_CONFIG[key];
+      if (conf && conf.active !== false && conf.required === true) {
+        const val = (formData as any)[key];
+        const isEmpty = val === undefined || val === null || 
+                        (typeof val === "string" && val.trim() === "") || 
+                        (Array.isArray(val) && val.length === 0);
+        if (isEmpty) {
+          errors.push(conf.label || key);
+        }
+      }
+    });
+
+    return errors;
+  };
+
   const nextStep = async () => {
+    const stepErrors = validateStep(wizardStep);
+    if (stepErrors.length > 0) {
+      Swal.fire({
+        icon: 'warning',
+        title: 'Data Belum Lengkap',
+        html: `<div class="text-left font-medium text-xs text-slate-600 dark:text-slate-400">Mohon lengkapi data wajib berikut sebelum melanjutkan ke tahap berikutnya:</div>
+               <ul class="text-left list-disc list-inside mt-2 text-xs font-bold text-red-500 space-y-1">
+                 ${stepErrors.map(err => `<li>${err}</li>`).join('')}
+               </ul>`,
+        confirmButtonColor: '#3b82f6',
+        confirmButtonText: 'OKE, SAYA LENGKAPI',
+        customClass: {
+          popup: 'rounded-[2rem] border border-slate-200 dark:border-slate-800 dark:bg-slate-900 p-6',
+          confirmButton: 'rounded-xl px-5 py-2.5 text-xs font-extrabold tracking-wider',
+          title: 'text-base font-black text-slate-850 dark:text-white uppercase'
+        }
+      });
+      return;
+    }
 
     if (wizardStep < 14) {
-      setWizardStep(prev => prev + 1);
+      setWizardStep(prev => {
+        const next = prev + 1;
+        if (next > furthestStep) {
+          setFurthestStep(next);
+        }
+        return next;
+      });
     } else {
       setIsSubmitting(true);
       
@@ -857,8 +951,22 @@ export default function DaftarPage() {
   };
 
   const goToStep = (step) => {
-
-    setWizardStep(step);
+    if (step <= furthestStep) {
+      setWizardStep(step);
+    } else {
+      Swal.fire({
+        icon: 'info',
+        title: 'Tahap Terkunci',
+        text: 'Anda belum bisa langsung melompat ke tahap ini. Silakan isi data di form saat ini dan klik "Selanjutnya" untuk membuka tahap berikutnya.',
+        confirmButtonColor: '#3b82f6',
+        confirmButtonText: 'MENGERTI',
+        customClass: {
+          popup: 'rounded-[2rem] border border-slate-200 dark:border-slate-800 dark:bg-slate-900 p-6',
+          confirmButton: 'rounded-xl px-5 py-2.5 text-xs font-extrabold tracking-wider',
+          title: 'text-base font-black text-slate-850 dark:text-white uppercase'
+        }
+      });
+    }
   };
 
   if (portalStatus === "closed") {
@@ -2262,7 +2370,8 @@ export default function DaftarPage() {
 
       <div className="bg-white dark:bg-slate-900 backdrop-blur-xl border border-slate-200 dark:border-slate-800 shadow-2xl rounded-[2.5rem] p-6 md:p-10 max-w-4xl w-full relative z-10">
 
-        <div className="flex justify-between items-center mb-12 relative px-4">
+        {/* Desktop Stepper (hidden on mobile, shown on desktop) */}
+        <div className="hidden md:flex justify-between items-center mb-12 relative px-4">
           <div className="absolute top-1/2 left-0 w-full h-[3px] bg-slate-100 dark:bg-slate-800/80 -translate-y-1/2 z-0 rounded-full"></div>
           <div
             className="absolute top-1/2 left-0 h-[3px] bg-blue-600 dark:bg-blue-500 -translate-y-1/2 z-0 rounded-full transition-all duration-500"
@@ -2292,6 +2401,24 @@ export default function DaftarPage() {
               </div>
             );
           })}
+        </div>
+
+        {/* Mobile Stepper (only visible on mobile, hidden on desktop) */}
+        <div className="block md:hidden mb-8 bg-slate-50 dark:bg-slate-900/40 p-4 rounded-2xl border border-slate-100 dark:border-slate-800/40">
+          <div className="flex justify-between items-center mb-2.5">
+            <span className="text-xs font-black uppercase text-blue-600 dark:text-blue-500 tracking-wider">
+              Tahap {wizardStep} dari 14
+            </span>
+            <span className="text-xs font-bold text-slate-700 dark:text-slate-300">
+              {getStepLabel(wizardStep)}
+            </span>
+          </div>
+          <div className="w-full h-2.5 bg-slate-200 dark:bg-slate-800 rounded-full overflow-hidden">
+            <div
+              className="h-full bg-blue-600 dark:bg-blue-550 rounded-full transition-all duration-500 ease-out"
+              style={{ width: `${(wizardStep / 14) * 100}%` }}
+            ></div>
+          </div>
         </div>
 
         {/* STEP 1: PERSONAL DETAILS */}
