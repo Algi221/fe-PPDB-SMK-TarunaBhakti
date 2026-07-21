@@ -45,3 +45,5 @@ next-env.d.ts
 /backend/.env
 /backend/dist
 
+# IDE
+.vscode/
