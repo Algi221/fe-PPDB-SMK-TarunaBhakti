@@ -1828,4 +1828,38 @@ html.dark .footer-social-link.tiktok:hover {
   box-shadow: 0 4px 12px rgba(24, 119, 242, 0.35);
 }
 
+/* --- Dark Mode View Transition Animation (Top Right to Bottom Left) --- */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+
+/* Light to Dark (expand dark from top right) */
+.dark::view-transition-old(root) {
+  z-index: 1;
+}
+.dark::view-transition-new(root) {
+  z-index: 2;
+  animation: clipReveal 0.7s cubic-bezier(0.87, 0, 0.13, 1);
+}
+
+/* Dark to Light (expand light from top right) */
+:root:not(.dark)::view-transition-old(root) {
+  z-index: 2;
+  animation: clipReveal 0.7s cubic-bezier(0.87, 0, 0.13, 1) reverse;
+}
+:root:not(.dark)::view-transition-new(root) {
+  z-index: 1;
+}
+
+@keyframes clipReveal {
+  from {
+    clip-path: circle(0% at top right);
+  }
+  to {
+    clip-path: circle(150% at top right);
+  }
+}
+
 

@@ -20,13 +20,22 @@ export function useAdminSession() {
   };
 
   const toggleTheme = () => {
-    setIsDark(!isDark);
-    if (!isDark) {
-      document.documentElement.classList.add("dark");
-      localStorage.setItem("ppdb-theme", "dark");
+    const doToggle = () => {
+      setIsDark(!isDark);
+      if (!isDark) {
+        document.documentElement.classList.add("dark");
+        localStorage.setItem("ppdb-theme", "dark");
+      } else {
+        document.documentElement.classList.remove("dark");
+        localStorage.setItem("ppdb-theme", "light");
+      }
+    };
+
+    // Use View Transitions API if supported (modern browsers)
+    if (!document.startViewTransition) {
+      doToggle();
     } else {
-      document.documentElement.classList.remove("dark");
-      localStorage.setItem("ppdb-theme", "light");
+      document.startViewTransition(doToggle);
     }
   };
 
