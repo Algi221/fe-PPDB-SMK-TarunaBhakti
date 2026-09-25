@@ -3,7 +3,7 @@
 import React, { useState, useRef, useEffect, Suspense } from "react";
 import { motion } from "framer-motion";
 import Link from "next/link";
-import { Menu, Sun, Moon, ChevronDown, UserCircle, Settings, Globe, LogOut } from "lucide-react";
+import { Menu, Sun, Moon, ChevronDown, UserCircle, Settings, Globe, LogOut, Search } from "lucide-react";
 import Breadcrumbs from "./Breadcrumbs";
 
 export default function Header({
@@ -39,13 +39,7 @@ export default function Header({
   const userInitial = adminUser?.nama ? adminUser.nama.charAt(0).toUpperCase() : "A";
 
   return (
-    <div className="sticky top-0 px-4 md:px-8 pt-4 pb-2 z-40 bg-transparent shrink-0 w-full flex justify-center">
-      <motion.header
-        className="h-16 w-full max-w-[1200px] border border-slate-200/80 dark:border-slate-700/60 bg-white/70 dark:bg-slate-900/60 backdrop-blur-xl flex items-center justify-between px-4 md:px-6 rounded-full shadow-sm transition-colors duration-300"
-        initial={{ y: -64, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{ duration: 0.42, ease: [0.22, 1, 0.36, 1], delay: 0.05 }}
-      >
+    <header className="h-16 w-full border-b border-slate-200/90 dark:border-slate-800/80 bg-white dark:bg-[#0b1121] flex items-center justify-between px-4 md:px-8 z-40 shrink-0 sticky top-0 transition-colors duration-300">
       <div className="flex items-center gap-3">
         <button
           className="md:hidden p-1.5 -ml-1 text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors"
@@ -60,46 +54,45 @@ export default function Header({
         </div>
       </div>
 
-      <motion.div
-        className="flex items-center gap-2"
-        initial={{ y: -30, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1], delay: 0.2 }}
-      >
-        <div className="relative flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-100 dark:bg-slate-950/40 border border-slate-200/50 dark:border-white/5 text-xs font-bold transition-colors duration-300">
-          <span className={`w-2 h-2 rounded-full ${wsStatus === "CONNECTED" ? "bg-emerald-500 animate-ping" : wsStatus === "CONNECTING" ? "bg-amber-500 animate-pulse" : "bg-rose-500"}`} />
-          <span className={`w-2 h-2 rounded-full absolute ${wsStatus === "CONNECTED" ? "bg-emerald-500" : wsStatus === "CONNECTING" ? "bg-amber-500" : "bg-rose-500"}`} />
-          <span className="text-[10px] text-slate-500 dark:text-slate-400 font-bold uppercase tracking-wider pl-1.5">
-            WS Live: {wsStatus === "CONNECTED" ? "Terkoneksi" : wsStatus === "CONNECTING" ? "Menghubungkan..." : "Terputus"}
-          </span>
+      <div className="flex items-center gap-3">
+        {/* Search menu input (Ctrl+K) */}
+        <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800/70 border border-slate-200/60 dark:border-slate-700/60 text-slate-400 w-44 md:w-56 transition-all focus-within:ring-1 focus-within:ring-blue-500/50">
+          <Search size={14} className="text-slate-400 shrink-0" />
+          <input
+            type="text"
+            placeholder="Cari menu (Ctrl+K)"
+            className="bg-transparent border-none outline-none text-xs text-slate-700 dark:text-slate-200 placeholder-slate-400 w-full"
+          />
         </div>
 
+        {/* Dark Mode Moon Toggle */}
         <button
           onClick={toggleTheme}
-          className="w-9 h-9 rounded-full bg-white dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700/60 flex items-center justify-center text-slate-500 dark:text-slate-400 hover:text-blue-500 dark:hover:text-blue-400 hover:bg-slate-50 dark:hover:bg-slate-800/80 transition-all shadow-sm hover:shadow"
+          className="w-9 h-9 rounded-full bg-white dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700/80 flex items-center justify-center text-slate-500 dark:text-slate-400 hover:text-blue-500 dark:hover:text-blue-400 hover:bg-slate-50 dark:hover:bg-slate-700/60 transition-all shadow-xs"
           title={isDark ? "Beralih ke Terang" : "Beralih ke Gelap"}
         >
-          {isDark ? <Sun size={16} /> : <Moon size={16} />}
+          {isDark ? <Sun size={15} /> : <Moon size={15} />}
         </button>
 
+        {/* User Profile Button */}
         <div className="relative" ref={userDropdownRef}>
           <button
             onClick={() => setShowUserDropdown((v) => !v)}
-            className="flex items-center gap-2 px-2 py-1.5 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 transition-all"
+            className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700/80 hover:bg-slate-50 dark:hover:bg-slate-700/60 text-slate-700 dark:text-slate-200 transition-all text-xs font-semibold shadow-xs"
           >
-            <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center font-black text-white text-sm shadow-sm overflow-hidden shrink-0">
-              {adminUser?.foto_profil ? (
-                <img src={adminUser.foto_profil} alt="Profil" className="w-full h-full object-cover" />
-              ) : (
-                userInitial
-              )}
-            </div>
-            <span className="hidden md:block text-xs font-bold text-slate-700 dark:text-slate-300 whitespace-nowrap">
+            {adminUser?.foto_profil ? (
+              <img src={adminUser.foto_profil} alt="Profil" className="w-7 h-7 rounded-full object-cover shrink-0" />
+            ) : (
+              <span className="w-7 h-7 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white text-[11px] font-black shrink-0">
+                {userInitial}
+              </span>
+            )}
+            <span className="hidden md:block whitespace-nowrap">
               {adminUser?.nama?.split(" ")[0] || "Admin"}
             </span>
             <ChevronDown
               size={13}
-              className={`hidden md:block text-slate-400 transition-transform duration-200 ${showUserDropdown ? "rotate-180" : ""}`}
+              className={`text-slate-400 transition-transform duration-200 ${showUserDropdown ? "rotate-180" : ""}`}
             />
           </button>
 
@@ -167,8 +160,7 @@ export default function Header({
             </div>
           )}
         </div>
-      </motion.div>
-    </motion.header>
-    </div>
+      </div>
+    </header>
   );
 }

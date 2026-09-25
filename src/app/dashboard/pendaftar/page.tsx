@@ -19,7 +19,7 @@ const sanitizeUrl = (url: string | undefined | null): string => {
 const sanitizeSrc = (src: string | undefined | null): string => sanitizeUrl(src);
 import ExcelJS from 'exceljs';
 import { saveAs } from 'file-saver';
-import { Check, X, Eye, FileText, Download, Upload, Filter, Search, TableProperties, FileSpreadsheet, Trash2, Layers, Pencil, PieChart, CloudLightning } from "lucide-react";
+import { Check, X, Eye, FileText, Download, Upload, Filter, Search, TableProperties, FileSpreadsheet, Trash2, Layers, Pencil, PieChart, CloudLightning, ChevronDown } from "lucide-react";
 import KuotaTab from "@/components/KuotaTab";
 import Swal from 'sweetalert2';
 import {
@@ -504,7 +504,7 @@ function ApplicantsDirectoryContent() {
   const exportToExcel = async () => {
     if (filteredApplicants.length === 0) return;
 
-    const workbook = new ExcelJS.Workbook();
+    const workbook: ExcelJS.Workbook = new ExcelJS.Workbook();
     const worksheet = workbook.addWorksheet("Data Pendaftar");
 
     worksheet.columns = [
@@ -523,21 +523,21 @@ function ApplicantsDirectoryContent() {
     ];
 
     const headerRow = worksheet.getRow(1);
-    headerRow.height = 35;
+    headerRow.height = 32;
     
     headerRow.eachCell((cell) => {
-      cell.font = { bold: true, color: { argb: 'FF000000' } };
+      cell.font = { bold: true, color: { argb: 'FFFFFFFF' } };
       cell.fill = {
         type: 'pattern',
         pattern: 'solid',
-        fgColor: { argb: 'FF9BC2E6' }
+        fgColor: { argb: 'FF2F5597' }
       };
       cell.alignment = { vertical: 'middle', horizontal: 'center' };
       cell.border = {
-        top: { style: 'thin' },
-        left: { style: 'thin' },
-        bottom: { style: 'thin' },
-        right: { style: 'thin' }
+        top: { style: 'thin', color: { argb: 'FFFFFFFF' } },
+        left: { style: 'thin', color: { argb: 'FFFFFFFF' } },
+        bottom: { style: 'thin', color: { argb: 'FFFFFFFF' } },
+        right: { style: 'thin', color: { argb: 'FFFFFFFF' } }
       };
     });
 
@@ -560,22 +560,21 @@ function ApplicantsDirectoryContent() {
 
     worksheet.eachRow((row, rowNumber) => {
       if (rowNumber > 1) {
-        row.height = 25;
+        row.height = 22;
       }
       
       row.eachCell((cell, colNumber) => {
         if (rowNumber > 1) {
-          cell.fill = {
-            type: 'pattern',
-            pattern: 'solid',
-            fgColor: { argb: 'FFFFFFFF' }
-          };
+          // Zebra striping: even data rows get light blue
+          if (rowNumber % 2 === 0) {
+            cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFD6E4F0' } };
+          }
           
           cell.border = {
-            top: { style: 'thin' },
-            left: { style: 'thin' },
-            bottom: { style: 'thin' },
-            right: { style: 'thin' }
+            top: { style: 'thin', color: { argb: 'FFD9D9D9' } },
+            left: { style: 'thin', color: { argb: 'FFD9D9D9' } },
+            bottom: { style: 'thin', color: { argb: 'FFD9D9D9' } },
+            right: { style: 'thin', color: { argb: 'FFD9D9D9' } }
           };
 
           if ([1, 3, 4, 6, 9, 11, 12].includes(colNumber)) {
@@ -657,47 +656,45 @@ function ApplicantsDirectoryContent() {
         <KuotaTab type="pendaftar" />
       ) : activePageTab === "active" || activePageTab === "transfer" ? (
         <>
-          {/* Search, Filter & Spreadsheet Toggle Toolbar */}
-      <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800/60 rounded-3xl p-6 shadow-[0_2px_12px_rgba(0,0,0,0.02)] flex flex-col xl:flex-row gap-4 items-center justify-between transition-colors duration-300">
-
+      {/* Search, Filter & Spreadsheet Toggle Toolbar - Wrapped in container */}
+      <div className="bg-white dark:bg-[#0b1121] border border-slate-200/80 dark:border-slate-800/60 rounded-[28px] p-2.5 shadow-sm flex flex-col xl:flex-row gap-2.5 items-center justify-between transition-colors duration-300 mt-2">
         {/* Search Field */}
         <div className="relative w-full xl:max-w-md">
-          <span className="absolute inset-y-0 left-0 pl-4 flex items-center text-slate-400 dark:text-slate-550">
-            <Search size={16} />
-          </span>
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500" size={14} />
           <input
             type="text"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             placeholder="Cari: nama, jurusan, sekolah, gelombang..."
-            className="w-full pl-11 pr-4 py-3 bg-slate-50 dark:bg-slate-950/40 border border-slate-200 dark:border-white/5 rounded-2xl text-slate-850 dark:text-white placeholder-slate-400 dark:placeholder-slate-655 text-sm focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 dark:focus:ring-blue-500/15 transition-all font-semibold"
+            className="w-full pl-10 pr-4 py-2.5 bg-white dark:bg-[#0b1121] border border-slate-200 dark:border-slate-800/80 rounded-xl text-[11px] font-bold text-slate-800 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all truncate shadow-sm"
           />
         </div>
 
         {/* Toolbar Action Buttons */}
         <div className="flex flex-wrap items-center gap-3 w-full xl:w-auto">
           {/* Status Filter */}
-          <div className="flex items-center gap-2 bg-slate-50 dark:bg-slate-950/40 border border-slate-200 dark:border-white/5 rounded-2xl px-3 py-1.5 shrink-0">
-            <Filter size={13} className="text-slate-400" />
+          <div className="relative min-w-[140px]">
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
-              className="bg-transparent text-slate-600 dark:text-slate-350 text-xs focus:outline-none transition-all font-extrabold uppercase tracking-wide cursor-pointer"
+              className="w-full px-4 py-2.5 bg-white dark:bg-[#0b1121] border border-slate-200 dark:border-slate-800/80 rounded-xl text-[11px] font-bold text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all appearance-none cursor-pointer tracking-wider truncate shadow-sm"
             >
               <option value="ALL">Semua Status</option>
               <option value="Pending">Menunggu Verifikasi</option>
               <option value="Approved">Terverifikasi</option>
               <option value="Rejected">Ditolak / Gugur</option>
             </select>
+            <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
+              <ChevronDown size={14} />
+            </div>
           </div>
 
           {/* Major Filter */}
-          <div className="flex items-center gap-2 bg-slate-50 dark:bg-slate-950/40 border border-slate-200 dark:border-white/5 rounded-2xl px-3 py-1.5 shrink-0">
-            <Layers size={13} className="text-slate-400" />
+          <div className="relative min-w-[140px]">
             <select
               value={majorFilter}
               onChange={(e) => setMajorFilter(e.target.value)}
-              className="bg-transparent text-slate-600 dark:text-slate-350 text-xs focus:outline-none transition-all font-extrabold uppercase tracking-wide cursor-pointer max-w-[160px]"
+              className="w-full px-4 py-2.5 bg-white dark:bg-[#0b1121] border border-slate-200 dark:border-slate-800/80 rounded-xl text-[11px] font-bold text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all appearance-none cursor-pointer tracking-wider truncate shadow-sm"
             >
               <option value="ALL">Semua Jurusan</option>
               {majorsList.map((m, idx) => (
@@ -706,10 +703,29 @@ function ApplicantsDirectoryContent() {
                 </option>
               ))}
             </select>
+            <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
+              <ChevronDown size={14} />
+            </div>
+          </div>
+
+          {/* Gender Filter */}
+          <div className="relative min-w-[120px]">
+            <select
+              value={genderFilter}
+              onChange={(e) => setGenderFilter(e.target.value)}
+              className="w-full px-4 py-2.5 bg-white dark:bg-[#0b1121] border border-slate-200 dark:border-slate-800/80 rounded-xl text-[11px] font-bold text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all appearance-none cursor-pointer tracking-wider truncate shadow-sm"
+            >
+              <option value="ALL">Semua Gender</option>
+              <option value="L">Laki-Laki</option>
+              <option value="P">Perempuan</option>
+            </select>
+            <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
+              <ChevronDown size={14} />
+            </div>
           </div>
 
           {/* Gelombang Filter Buttons */}
-          <div className="flex bg-slate-100 dark:bg-slate-955 p-1 rounded-2xl border border-slate-200/50 dark:border-white/5 shrink-0 shadow-inner">
+          <div className="flex items-center gap-1">
             {[
               { id: "ALL", label: "Semua Gelombang" },
               { id: "Gelombang 1", label: "Gelombang 1" },
@@ -719,10 +735,10 @@ function ApplicantsDirectoryContent() {
                 key={g.id}
                 type="button"
                 onClick={() => setGelombangFilter(g.id)}
-                className={`px-3 py-1.5 rounded-xl text-xs font-black uppercase tracking-wider transition-all ${
+                className={`px-4 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all border ${
                   gelombangFilter === g.id
-                    ? "bg-white dark:bg-slate-900 text-blue-600 dark:text-white shadow-sm border border-slate-200/40 dark:border-white/5"
-                    : "text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white"
+                    ? "bg-blue-50 dark:bg-blue-900/30 border-blue-200 dark:border-blue-800/50 text-blue-600 dark:text-blue-400 shadow-sm"
+                    : "bg-white dark:bg-[#0b1121] border-slate-200 dark:border-slate-800/80 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50 shadow-sm"
                 }`}
               >
                 {g.label}
@@ -730,27 +746,13 @@ function ApplicantsDirectoryContent() {
             ))}
           </div>
 
-          {/* Gender Filter */}
-          <div className="flex items-center gap-2 bg-slate-50 dark:bg-slate-950/40 border border-slate-200 dark:border-white/5 rounded-2xl px-3 py-1.5 shrink-0">
-            <User size={13} className="text-slate-400" />
-            <select
-              value={genderFilter}
-              onChange={(e) => setGenderFilter(e.target.value)}
-              className="bg-transparent text-slate-600 dark:text-slate-350 text-xs focus:outline-none transition-all font-extrabold uppercase tracking-wide cursor-pointer max-w-[140px]"
-            >
-              <option value="ALL">Semua Gender</option>
-              <option value="L">Laki-Laki</option>
-              <option value="P">Perempuan</option>
-            </select>
-          </div>
-
           {/* Toggle View: Standard Table vs Excel Spreadsheet Grid */}
-          <div className="flex items-center bg-slate-100 dark:bg-slate-950 p-1.5 rounded-2xl border border-slate-200/50 dark:border-white/5 shrink-0 shadow-inner">
+          <div className="flex items-center gap-1">
             <button
               onClick={() => setIsSpreadsheetMode(false)}
-              className={`flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-black uppercase tracking-wider transition-all ${!isSpreadsheetMode
-                  ? "bg-white dark:bg-slate-900 text-blue-600 dark:text-white shadow-sm border border-slate-200/40 dark:border-white/5"
-                  : "text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white"
+              className={`flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all border ${!isSpreadsheetMode
+                  ? "bg-slate-100 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-blue-600 dark:text-white shadow-sm"
+                  : "bg-white dark:bg-[#0b1121] border-slate-200 dark:border-slate-800/80 text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50 shadow-sm"
                 }`}
               title="Tampilan Tabel Standard"
             >
@@ -759,14 +761,14 @@ function ApplicantsDirectoryContent() {
             </button>
             <button
               onClick={() => setIsSpreadsheetMode(true)}
-              className={`flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-black uppercase tracking-wider transition-all ${isSpreadsheetMode
-                  ? "bg-white dark:bg-slate-900 text-blue-600 dark:text-white shadow-sm border border-slate-200/40 dark:border-white/5"
-                  : "text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white"
+              className={`flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all border ${isSpreadsheetMode
+                  ? "bg-emerald-50 dark:bg-emerald-900/20 border-emerald-200 dark:border-emerald-800/40 text-emerald-600 dark:text-emerald-400 shadow-sm"
+                  : "bg-white dark:bg-[#0b1121] border-slate-200 dark:border-slate-800/80 text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50 shadow-sm"
                 }`}
               title="Tampilan Excel Sheet Mode"
             >
-              <FileSpreadsheet size={14} className="text-emerald-500" />
-              <span className="hidden sm:inline text-emerald-500">Excel Mode</span>
+              <FileSpreadsheet size={14} />
+              <span className="hidden sm:inline">Excel Mode</span>
             </button>
           </div>
 
@@ -774,16 +776,16 @@ function ApplicantsDirectoryContent() {
           <button
             onClick={exportToExcel}
             disabled={filteredApplicants.length === 0}
-            className="px-4 py-3 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-250 dark:border-emerald-900/50 hover:bg-emerald-600/10 text-emerald-650 dark:text-emerald-400 disabled:opacity-40 disabled:pointer-events-none rounded-2xl text-xs font-black uppercase tracking-wider transition-all flex items-center gap-1.5 shrink-0"
+            className="px-4 py-2.5 bg-blue-600 hover:bg-blue-500 text-white disabled:opacity-40 disabled:pointer-events-none rounded-xl text-[10px] font-black uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 shrink-0 shadow-sm"
           >
-            <Download size={14} />
-            <span>Export XLS</span>
+            <Download size={13} />
+            <span>Ekspor XLS</span>
           </button>
         </div>
       </div>
 
       {/* Primary Data Grid (Standard vs Spreadsheet Mode views) */}
-      <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800/60 rounded-3xl backdrop-blur-md overflow-hidden shadow-[0_2px_12px_rgba(0,0,0,0.02)] transition-colors duration-300">
+      <div className="bg-white dark:bg-[#0b1121] border border-slate-200/80 dark:border-slate-800/60 rounded-3xl backdrop-blur-md overflow-hidden shadow-[0_2px_12px_rgba(0,0,0,0.02)] transition-colors duration-300">
 
         {!isSpreadsheetMode ? (
           
@@ -1092,7 +1094,7 @@ function ApplicantsDirectoryContent() {
         </>
       ) : (
         /* Trash Table View */
-        <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800/60 rounded-3xl backdrop-blur-md overflow-hidden shadow-[0_2px_12px_rgba(0,0,0,0.02)] transition-colors duration-300">
+        <div className="bg-white dark:bg-[#0b1121] border border-slate-200/80 dark:border-slate-800/60 rounded-3xl backdrop-blur-md overflow-hidden shadow-[0_2px_12px_rgba(0,0,0,0.02)] transition-colors duration-300">
           {trashLoading ? (
             <div className="p-8 text-center text-slate-500 dark:text-slate-400 font-medium animate-pulse">Memuat data sampah...</div>
           ) : (
@@ -1202,10 +1204,10 @@ function ApplicantsDirectoryContent() {
       {/* Beautiful Rich Detail Modal (13 Wizard Steps tabs overlay) */}
       {selectedApplicant && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md overflow-hidden animate-in fade-in duration-300">
-          <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-white/10 rounded-3xl w-full max-w-4xl max-h-[85vh] flex flex-col shadow-[0_30px_70px_rgba(0,0,0,0.1)] dark:shadow-[0_30px_70px_rgba(0,0,0,0.5)] overflow-hidden animate-in zoom-in-95 transition-colors duration-300">
+          <div className="bg-white dark:bg-[#0b1121] border border-slate-200/80 dark:border-white/10 rounded-3xl w-full max-w-4xl max-h-[85vh] flex flex-col shadow-[0_30px_70px_rgba(0,0,0,0.1)] dark:shadow-[0_30px_70px_rgba(0,0,0,0.5)] overflow-hidden animate-in zoom-in-95 transition-colors duration-300">
 
             {/* Modal Header */}
-            <div className="p-6 md:p-8 border-b border-slate-100 dark:border-white/5 flex items-start justify-between shrink-0 bg-white dark:bg-slate-900 relative">
+            <div className="p-6 md:p-8 border-b border-slate-100 dark:border-white/5 flex items-start justify-between shrink-0 bg-white dark:bg-[#0b1121] relative">
               <div className="absolute inset-0 bg-gradient-to-r from-blue-50/50 to-transparent dark:from-blue-900/10 dark:to-transparent pointer-events-none"></div>
                            <div className="flex items-center gap-5 relative z-10">
                 <div className="w-14 h-14 rounded-2xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 flex items-center justify-center text-slate-700 dark:text-slate-200 text-2xl font-black shrink-0">
@@ -1268,7 +1270,7 @@ function ApplicantsDirectoryContent() {
 
             {/* Modal Tabs Navigation */}
             <div className="px-6 py-4 bg-slate-50/80 dark:bg-slate-950/40 border-b border-slate-100 dark:border-white/5 shrink-0">
-              <div className="flex flex-wrap bg-slate-200/50 dark:bg-slate-900/50 p-1.5 rounded-2xl gap-1 w-full border border-slate-200/50 dark:border-white/5">
+              <div className="flex flex-wrap bg-slate-200/50 dark:bg-[#0b1121]/50 p-1.5 rounded-2xl gap-1 w-full border border-slate-200/50 dark:border-white/5">
                 {[
                   { id: "biodata", label: "Biodata" },
                   { id: "periodik", label: "Periodik" },
@@ -1637,7 +1639,7 @@ function ApplicantsDirectoryContent() {
                     {selectedApplicant.bukti_bayar ? (
                       <div className="flex flex-col items-center gap-4">
                         {selectedApplicant.bukti_bayar.startsWith("data:application/pdf") ? (
-                          <div className="w-full py-10 bg-slate-100 dark:bg-slate-900 rounded-xl flex flex-col items-center justify-center border dark:border-white/5">
+                          <div className="w-full py-10 bg-slate-100 dark:bg-[#0b1121] rounded-xl flex flex-col items-center justify-center border dark:border-white/5">
                             <FileText size={48} className="text-blue-500 mb-2" />
                             <p className="text-xs font-bold text-slate-700 dark:text-slate-350">Dokumen PDF Bukti Transfer</p>
                             <a
@@ -1774,9 +1776,9 @@ function ApplicantsDirectoryContent() {
       {/* ===== EDIT MODAL ===== */}
       {editApplicant && (
         <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 lg:p-8 bg-black/70 backdrop-blur-sm animate-in fade-in duration-200">
-          <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-white/10 rounded-3xl w-full max-w-4xl max-h-[90vh] flex flex-col shadow-2xl overflow-hidden animate-in zoom-in-95 transition-all">
+          <div className="bg-white dark:bg-[#0b1121] border border-slate-200/80 dark:border-white/10 rounded-3xl w-full max-w-4xl max-h-[90vh] flex flex-col shadow-2xl overflow-hidden animate-in zoom-in-95 transition-all">
             {/* Header */}
-            <div className="p-6 md:p-8 border-b border-slate-100 dark:border-white/5 flex items-start justify-between bg-white dark:bg-slate-900 shrink-0 relative">
+            <div className="p-6 md:p-8 border-b border-slate-100 dark:border-white/5 flex items-start justify-between bg-white dark:bg-[#0b1121] shrink-0 relative">
               <div className="absolute inset-0 bg-gradient-to-r from-blue-50/50 to-transparent dark:from-blue-900/10 dark:to-transparent pointer-events-none"></div>
               
               <div className="flex items-center gap-5 relative z-10">
@@ -1860,7 +1862,7 @@ function ApplicantsDirectoryContent() {
                   ]
                 }
               ].map((section) => (
-                <div key={section.section} className="bg-white dark:bg-slate-900 border border-slate-200/60 dark:border-white/5 rounded-3xl p-6 md:p-8 shadow-sm">
+                <div key={section.section} className="bg-white dark:bg-[#0b1121] border border-slate-200/60 dark:border-white/5 rounded-3xl p-6 md:p-8 shadow-sm">
                   <h4 className="text-xs font-black uppercase tracking-widest text-slate-800 dark:text-white mb-6 flex items-center gap-3 border-b border-slate-100 dark:border-white/5 pb-4">
                     <div className="w-8 h-8 rounded-xl bg-blue-50 dark:bg-blue-500/10 flex items-center justify-center text-blue-500">
                       {section.icon}
@@ -1938,7 +1940,7 @@ function ApplicantsDirectoryContent() {
       {/* Custom Rejection Reason Modal */}
       {rejectingApplicantId !== null && (
         <div className="fixed inset-0 z-[120] bg-black/60 backdrop-blur-md flex items-center justify-center p-4 animate-in fade-in duration-300">
-          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 rounded-[32px] p-8 shadow-2xl flex flex-col gap-6 text-left max-w-md w-full backdrop-blur-xl animate-in zoom-in-95 duration-200">
+          <div className="bg-white dark:bg-[#0b1121] border border-slate-200 dark:border-white/10 rounded-[32px] p-8 shadow-2xl flex flex-col gap-6 text-left max-w-md w-full backdrop-blur-xl animate-in zoom-in-95 duration-200">
             <div className="w-14 h-14 bg-rose-50 dark:bg-rose-950/40 rounded-2xl flex items-center justify-center text-rose-600 dark:text-rose-500 border border-rose-100 dark:border-rose-900/40 shadow-inner">
               <svg className="w-7 h-7 animate-pulse" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo, useRef } from "react";
 import { usePPDB } from "@/context/PPDBContext";
 import dompurify from "dompurify";
 
@@ -45,7 +45,10 @@ import {
   Sparkles,
   Trash2,
   Pencil,
-  PieChart
+  PieChart,
+  Upload,
+  FileSpreadsheet,
+  Check
 } from "lucide-react";
 
 import { useRouter, useSearchParams } from "next/navigation";
@@ -196,6 +199,10 @@ function ActiveStudentsDirectoryContent() {
   });
   const [isAddPeriodModalOpen, setIsAddPeriodModalOpen] = useState(false);
   const [newPeriodValue, setNewPeriodValue] = useState("");
+  const [isImportModalOpen, setIsImportModalOpen] = useState(false);
+  const [importFile, setImportFile] = useState<File | null>(null);
+  const [isDragging, setIsDragging] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const getNextPeriod = () => {
     const allPeriods = [
@@ -476,78 +483,157 @@ function ActiveStudentsDirectoryContent() {
       groups[period].push(a);
     });
 
-    // Sort periods descending to have the latest period first
     const periods = Object.keys(groups).sort((a, b) => b.localeCompare(a));
 
+    const exportHeaders = [
+      'No.',
+      'No. Pendaftaran',
+      'Nama Lengkap',
+      'NISN',
+      'NIK',
+      'NIPD',
+      'Jurusan',
+      'Kelas',
+      'Tahun Ajaran / Periode',
+      'Jenis Kelamin (L/P)',
+      'Tempat Lahir',
+      'Tanggal Lahir (YYYY-MM-DD)',
+      'Agama',
+      'Alamat Lengkap',
+      'No WhatsApp / HP',
+      'Email',
+      'Asal Sekolah',
+      'Nama Ayah',
+      'Nama Ibu',
+      'Telpon Orang Tua'
+    ];
+
+    const columnWidths = [
+      8, 18, 28, 18, 20, 18, 32, 15, 25, 22, 18, 26, 15, 35, 20, 26, 28, 22, 22, 22
+    ];
+
     periods.forEach((period) => {
-      // Sheet name must not exceed 31 characters and cannot contain special characters like : \ / ? * [ ]
       const sheetName = `Periode ${period.replace(/[:\\/?*\[\]]/g, '')}`.substring(0, 31);
       const worksheet = workbook.addWorksheet(sheetName);
 
-      worksheet.columns = [
-        { header: 'No.', key: 'no', width: 10 },
-        { header: 'NIPD', key: 'nipd', width: 20 },
-        { header: 'No. Pendaftaran', key: 'no_pendaftaran', width: 20 },
-        { header: 'Periode Angkatan', key: 'periode', width: 20 },
-        { header: 'Nama Lengkap', key: 'nama', width: 35 },
-        { header: 'Jenis Kelamin', key: 'jk', width: 15 },
-        { header: 'NISN', key: 'nisn', width: 25 },
-        { header: 'NIK', key: 'nik', width: 25 },
-        { header: 'Asal Sekolah', key: 'sekolah', width: 35 },
-        { header: 'Jurusan', key: 'jurusan', width: 35 },
-        { header: 'Kelas', key: 'kelas', width: 20 },
-        { header: 'No. WhatsApp', key: 'whatsapp', width: 25 },
-        { header: 'Email', key: 'email', width: 35 },
-      ];
+      // Title row (Row 1)
+      worksheet.mergeCells('A1:T1');
+      const titleCell = worksheet.getCell('A1');
+      titleCell.value = `DATA SISWA AKTIF - PERIODE ${period}`;
+      titleCell.font = { name: 'Segoe UI', size: 11, bold: true, color: { argb: 'FF000000' } };
+      titleCell.alignment = { vertical: 'middle', horizontal: 'center' };
+      worksheet.getRow(1).height = 32;
 
-      const headerRow = worksheet.getRow(1);
-      headerRow.height = 35;
-      headerRow.eachCell((cell) => {
-        cell.font = { bold: true, color: { argb: 'FF000000' } };
+      // Green border box around Title (Row 1)
+      ['A1','B1','C1','D1','E1','F1','G1','H1','I1','J1','K1','L1','M1','N1','O1','P1','Q1','R1','S1','T1'].forEach((pos) => {
+        const c = worksheet.getCell(pos);
+        c.border = {
+          top: { style: 'medium', color: { argb: 'FF107C41' } },
+          bottom: { style: 'medium', color: { argb: 'FF107C41' } },
+          left: pos === 'A1' ? { style: 'medium', color: { argb: 'FF107C41' } } : undefined,
+          right: pos === 'T1' ? { style: 'medium', color: { argb: 'FF107C41' } } : undefined
+        };
+      });
+
+      // Spacing Row (Row 2)
+      worksheet.getRow(2).height = 15;
+
+      // Header row (Row 3)
+      const headerRow = worksheet.getRow(3);
+      headerRow.height = 30;
+      exportHeaders.forEach((h, idx) => {
+        const cell = headerRow.getCell(idx + 1);
+        cell.value = h;
+        cell.font = { name: 'Segoe UI', size: 10, bold: true, color: { argb: 'FFFFFFFF' } };
         cell.fill = {
           type: 'pattern',
           pattern: 'solid',
-          fgColor: { argb: 'FF9BC2E6' }
+          fgColor: { argb: 'FF2F5597' }
         };
         cell.alignment = { vertical: 'middle', horizontal: 'center' };
-        cell.border = { top: { style: 'thin' }, left: { style: 'thin' }, bottom: { style: 'thin' }, right: { style: 'thin' } };
+        cell.border = {
+          top: { style: 'thin', color: { argb: 'FFFFFFFF' } },
+          bottom: { style: 'thin', color: { argb: 'FFFFFFFF' } },
+          left: { style: 'thin', color: { argb: 'FFFFFFFF' } },
+          right: { style: 'thin', color: { argb: 'FFFFFFFF' } }
+        };
+        worksheet.getColumn(idx + 1).width = columnWidths[idx];
       });
 
+      // AutoFilter on Row 3
+      worksheet.autoFilter = 'A3:T3';
+
       const periodStudents = groups[period];
-      // Sort periodStudents alphabetically by name
       periodStudents.sort((a, b) => (a.nama || "").localeCompare(b.nama || ""));
 
       periodStudents.forEach((a: Applicant, idx: number) => {
-        worksheet.addRow({
-          no: idx + 1,
-          nipd: nipdMap.get(a.id) || "-",
-          no_pendaftaran: formatNoPendaftaran(a.periode, a.id),
-          periode: a.periode || '2026-2027',
-          nama: a.nama || "",
-          jk: (a.jenis_kelamin || a.jenisKelamin || "").toLowerCase().startsWith("l") ? "Laki-laki" : (a.jenis_kelamin || a.jenisKelamin || "").toLowerCase().startsWith("p") ? "Perempuan" : "-",
-          nisn: a.nisn || "",
-          nik: a.nik || "",
-          sekolah: a.sekolah_asal || a.sekolahAsal || "",
-          jurusan: a.jurusan || a.jurusan_1 || a.jurusan1 || "",
-          kelas: a.diterima_kelas || a.diterimaKelas || "-",
-          whatsapp: a.whatsapp || "",
-          email: a.email || "",
-        });
-      });
+        const rowNum = idx + 4;
+        const row = worksheet.getRow(rowNum);
+        row.height = 22;
 
-      worksheet.eachRow((row, rowNumber) => {
-        if (rowNumber > 1) {
-          row.height = 25;
+        const jkVal = (a.jenis_kelamin || a.jenisKelamin || "").toLowerCase().startsWith("l") 
+          ? "L" 
+          : (a.jenis_kelamin || a.jenisKelamin || "").toLowerCase().startsWith("p") 
+            ? "P" 
+            : "-";
+
+        let birthDateStr = "-";
+        if (a.tgl_lahir || a.tglLahir) {
+          try {
+            birthDateStr = new Date(a.tgl_lahir || a.tglLahir!).toISOString().split('T')[0];
+          } catch {
+            birthDateStr = String(a.tgl_lahir || a.tglLahir);
+          }
         }
-        row.eachCell((cell, colNumber) => {
-          if (rowNumber > 1) {
-            cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFFFFF' } };
-            cell.border = { top: { style: 'thin' }, left: { style: 'thin' }, bottom: { style: 'thin' }, right: { style: 'thin' } };
-            if ([1, 3, 4, 7, 8, 9].includes(colNumber)) {
-              cell.alignment = { vertical: 'middle', horizontal: 'center' };
-            } else {
-              cell.alignment = { vertical: 'middle', horizontal: 'left', indent: 1 };
-            }
+
+        const values = [
+          idx + 1,
+          formatNoPendaftaran(a.periode, a.id),
+          a.nama || "-",
+          a.nisn || "-",
+          a.nik || "-",
+          nipdMap.get(a.id) || a.nipd || "-",
+          a.jurusan || a.jurusan_1 || a.jurusan1 || "-",
+          a.diterima_kelas || a.diterimaKelas || "-",
+          a.periode || period,
+          jkVal,
+          a.tempat_lahir || a.tempatLahir || "-",
+          birthDateStr,
+          a.agama || "-",
+          a.alamat || "-",
+          a.whatsapp || "-",
+          a.email || "-",
+          a.sekolah_asal || a.sekolahAsal || "-",
+          a.nama_ayah || a.namaAyah || "-",
+          a.nama_ibu || a.namaIbu || "-",
+          a.telepon_ortu || a.teleponOrtu || "-"
+        ];
+
+        values.forEach((v, colIdx) => {
+          const cell = row.getCell(colIdx + 1);
+          cell.value = v;
+          cell.font = { name: 'Segoe UI', size: 10, color: { argb: 'FF000000' } };
+          // Zebra striping: even rows get light blue
+          if (idx % 2 === 1) {
+            cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFD6E4F0' } };
+          }
+          cell.border = {
+            top: { style: 'thin', color: { argb: 'FFD9D9D9' } },
+            bottom: { style: 'thin', color: { argb: 'FFD9D9D9' } },
+            left: { style: 'thin', color: { argb: 'FFD9D9D9' } },
+            right: { style: 'thin', color: { argb: 'FFD9D9D9' } }
+          };
+
+          // Numbers/IDs as text format to show leading zeros
+          if ([2, 4, 5, 6, 15, 20].includes(colIdx + 1)) {
+            cell.numFmt = '@';
+          }
+
+          // Alignment
+          if ([1, 2, 4, 5, 6, 8, 9, 10, 11, 12, 13, 15, 20].includes(colIdx + 1)) {
+            cell.alignment = { vertical: 'middle', horizontal: 'center' };
+          } else {
+            cell.alignment = { vertical: 'middle', horizontal: 'left' };
           }
         });
       });
@@ -558,67 +644,432 @@ function ActiveStudentsDirectoryContent() {
     saveAs(blob, `Data_Siswa_Aktif_${fileNameSuffix}_${Date.now()}.xlsx`);
   };
 
+  const handleDownloadTemplate = async () => {
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet('Template_Import_Siswa');
+
+    // Title Row (Row 1)
+    worksheet.mergeCells('A1:T1');
+    const titleCell = worksheet.getCell('A1');
+    titleCell.value = 'DATA SISWA AKTIF - TEMPLATE IMPORT';
+    titleCell.font = { name: 'Segoe UI', size: 11, bold: true, color: { argb: 'FF000000' } };
+    titleCell.alignment = { vertical: 'middle', horizontal: 'center' };
+    worksheet.getRow(1).height = 32;
+
+    // Green border box around Title (Row 1)
+    ['A1','B1','C1','D1','E1','F1','G1','H1','I1','J1','K1','L1','M1','N1','O1','P1','Q1','R1','S1','T1'].forEach((pos) => {
+      const c = worksheet.getCell(pos);
+      c.border = {
+        top: { style: 'medium', color: { argb: 'FF107C41' } },
+        bottom: { style: 'medium', color: { argb: 'FF107C41' } },
+        left: pos === 'A1' ? { style: 'medium', color: { argb: 'FF107C41' } } : undefined,
+        right: pos === 'T1' ? { style: 'medium', color: { argb: 'FF107C41' } } : undefined
+      };
+    });
+
+    // Spacing Row (Row 2)
+    worksheet.getRow(2).height = 15;
+
+    // Header Row (Row 3) - 20 Columns
+    const templateHeaders = [
+      'NO.',
+      'No. Pendaftaran',
+      'Nama Lengkap *',
+      'NISN *',
+      'NIK',
+      'NIPD',
+      'Jurusan *',
+      'Kelas *',
+      'Tahun Ajaran / Periode *',
+      'Jenis Kelamin (L/P) *',
+      'Tempat Lahir',
+      'Tanggal Lahir (YYYY-MM-DD)',
+      'Agama',
+      'Alamat Lengkap',
+      'No WhatsApp / HP',
+      'Email',
+      'Asal Sekolah',
+      'Nama Ayah',
+      'Nama Ibu',
+      'Telpon Orang Tua'
+    ];
+
+    const columnWidths = [
+      8, 18, 28, 18, 20, 18, 32, 15, 25, 22, 18, 26, 15, 35, 20, 26, 28, 22, 22, 22
+    ];
+
+    const headerRow = worksheet.getRow(3);
+    headerRow.height = 30;
+    templateHeaders.forEach((h, idx) => {
+      const cell = headerRow.getCell(idx + 1);
+      cell.value = h;
+      cell.font = { name: 'Segoe UI', size: 10, bold: true, color: { argb: 'FFFFFFFF' } };
+      cell.fill = {
+        type: 'pattern',
+        pattern: 'solid',
+        fgColor: { argb: 'FF2F5597' }
+      };
+      cell.alignment = { vertical: 'middle', horizontal: 'center' };
+      cell.border = {
+        top: { style: 'thin', color: { argb: 'FFFFFFFF' } },
+        bottom: { style: 'thin', color: { argb: 'FFFFFFFF' } },
+        left: { style: 'thin', color: { argb: 'FFFFFFFF' } },
+        right: { style: 'thin', color: { argb: 'FFFFFFFF' } }
+      };
+      worksheet.getColumn(idx + 1).width = columnWidths[idx];
+    });
+
+    // AutoFilter on Row 3
+    worksheet.autoFilter = 'A3:T3';
+
+    // Sample Rows with 20 columns matching user screenshot
+    const sampleRows = [
+      [
+        1,
+        '262710070',
+        'Aditya Subagyo',
+        '0075041975',
+        '3276012502070001',
+        '2627100008',
+        'Rekayasa Perangkat Lunak',
+        'X RPL 1',
+        '2026-2027',
+        'P',
+        'Bogor',
+        '2008-05-14',
+        'Islam',
+        'Jl. Raya Parung No. 12',
+        '081234567890',
+        'aditya.subagyo@gmail.com',
+        'SMPN 1 Bogor',
+        'Subagyo',
+        'Sri Lestari',
+        '081298765432'
+      ],
+      [
+        2,
+        '262710075',
+        'Aditya Syahputra',
+        '0075007407',
+        '3276012502070002',
+        '2627100001',
+        'Teknik Komputer dan Jaringan',
+        'X TKT 2',
+        '2026-2027',
+        'L',
+        'Depok',
+        '2008-08-20',
+        'Islam',
+        'Jl. Margonda Raya No. 45',
+        '081398765432',
+        'aditya.syah@gmail.com',
+        'SMP Al-Azhar 9',
+        'Syahputra',
+        'Ratna Sari',
+        '081387654321'
+      ],
+      [
+        3,
+        '262710057',
+        'Ahmad Wahyudi',
+        '0075096297',
+        '3276016108070003',
+        '2627100004',
+        'Teknik Komputer dan Jaringan',
+        'X TKT 2',
+        '2026-2027',
+        'L',
+        'Jakarta',
+        '2008-01-15',
+        'Islam',
+        'Jl. Dago Asri No. 10',
+        '085712345678',
+        'ahmad.wahyudi@gmail.com',
+        'SMPN 1 Bojong',
+        'Wahyudi',
+        'Aminah',
+        '085798765432'
+      ]
+    ];
+
+    sampleRows.forEach((rowValues, rIdx) => {
+      const rowNum = rIdx + 4;
+      const row = worksheet.getRow(rowNum);
+      row.height = 22;
+
+      rowValues.forEach((val, colIdx) => {
+        const cell = row.getCell(colIdx + 1);
+        cell.value = val;
+        cell.font = { name: 'Segoe UI', size: 10, color: { argb: 'FF000000' } };
+        // Zebra striping: even rows get light blue
+        if (rIdx % 2 === 1) {
+          cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFD6E4F0' } };
+        }
+        cell.border = {
+          top: { style: 'thin', color: { argb: 'FFD9D9D9' } },
+          bottom: { style: 'thin', color: { argb: 'FFD9D9D9' } },
+          left: { style: 'thin', color: { argb: 'FFD9D9D9' } },
+          right: { style: 'thin', color: { argb: 'FFD9D9D9' } }
+        };
+
+        // Numbers/IDs as text format to show leading zeros and green corner triangle
+        if ([2, 4, 5, 6, 15, 20].includes(colIdx + 1)) {
+          cell.numFmt = '@';
+        }
+
+        // Center alignments
+        if ([1, 2, 4, 5, 6, 8, 9, 10, 11, 12, 13, 15, 20].includes(colIdx + 1)) {
+          cell.alignment = { vertical: 'middle', horizontal: 'center' };
+        } else {
+          cell.alignment = { vertical: 'middle', horizontal: 'left' };
+        }
+      });
+    });
+
+    const buffer = await workbook.xlsx.writeBuffer();
+    const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+    saveAs(blob, `Template_Import_Siswa_Aktif.xlsx`);
+  };
+
+  const handleImportExcel = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    try {
+      addToast("Membaca dan memproses file Excel...", "info");
+      
+      const buffer = await file.arrayBuffer();
+      const wb = new ExcelJS.Workbook();
+      await wb.xlsx.load(buffer);
+
+      const worksheet = wb.worksheets[0];
+      if (!worksheet) {
+        throw new Error("File Excel tidak memiliki lembar kerja (worksheet).");
+      }
+
+      // Helper to extract text safely from cell value (string, object, richText, number)
+      const extractCellText = (cell: ExcelJS.Cell): string => {
+        if (!cell || cell.value === null || cell.value === undefined) return '';
+        if (typeof cell.value === 'object') {
+          if ('richText' in cell.value && Array.isArray((cell.value as any).richText)) {
+            return (cell.value as any).richText.map((rt: any) => rt.text || '').join('');
+          }
+          if ('text' in cell.value) return String((cell.value as any).text || '');
+          if ('result' in cell.value) return String((cell.value as any).result || '');
+        }
+        return String(cell.value);
+      };
+
+      // Find header row (scan rows 1 to 5)
+      let headerRowNumber = 3;
+      let colMap: Record<string, number> = {};
+
+      for (let r = 1; r <= 5; r++) {
+        const row = worksheet.getRow(r);
+        const currentMap: Record<string, number> = {};
+
+        row.eachCell((cell, colNumber) => {
+          const val = extractCellText(cell).toLowerCase().trim();
+          if (!val) return;
+
+          if (val.includes('ayah')) currentMap['nama_ayah'] = colNumber;
+          else if (val.includes('ibu')) currentMap['nama_ibu'] = colNumber;
+          else if (val.includes('nisn') || val.includes('nis')) currentMap['nisn'] = colNumber;
+          else if (val.includes('nik')) currentMap['nik'] = colNumber;
+          else if (val.includes('nipd')) currentMap['nipd'] = colNumber;
+          else if (val.includes('jurusan')) currentMap['jurusan'] = colNumber;
+          else if (val.includes('kelas')) currentMap['kelas'] = colNumber;
+          else if (val.includes('tahun') || val.includes('periode')) currentMap['periode'] = colNumber;
+          else if (val.includes('kelamin') || val.includes('l/p') || val === 'jk') currentMap['jenis_kelamin'] = colNumber;
+          else if (val.includes('tempat')) currentMap['tempat_lahir'] = colNumber;
+          else if (val.includes('tanggal') || val.includes('tgl')) currentMap['tgl_lahir'] = colNumber;
+          else if (val.includes('agama')) currentMap['agama'] = colNumber;
+          else if (val.includes('alamat')) currentMap['alamat'] = colNumber;
+          else if (val.includes('whatsapp') || val.includes('hp') || val.includes('wa')) currentMap['whatsapp'] = colNumber;
+          else if (val.includes('email')) currentMap['email'] = colNumber;
+          else if (val.includes('sekolah') || val.includes('asal')) currentMap['sekolah_asal'] = colNumber;
+          else if (val.includes('telepon') || val.includes('telpon') || val.includes('ortu')) currentMap['telepon_ortu'] = colNumber;
+          else if (val.includes('nama')) currentMap['nama'] = colNumber;
+        });
+
+        // If this row contains at least 'nama' or 'nisn' or 2+ valid mapped headers, it's the header row
+        if ((currentMap['nama'] && currentMap['nisn']) || Object.keys(currentMap).length >= 2) {
+          headerRowNumber = r;
+          colMap = currentMap;
+          break;
+        }
+      }
+
+      // Fallback: Default to standard 20-column positions if header matching didn't catch specific columns
+      if (!colMap['nama']) colMap['nama'] = 3;
+      if (!colMap['nisn']) colMap['nisn'] = 4;
+      if (!colMap['nik']) colMap['nik'] = 5;
+      if (!colMap['nipd']) colMap['nipd'] = 6;
+      if (!colMap['jurusan']) colMap['jurusan'] = 7;
+      if (!colMap['kelas']) colMap['kelas'] = 8;
+      if (!colMap['periode']) colMap['periode'] = 9;
+      if (!colMap['jenis_kelamin']) colMap['jenis_kelamin'] = 10;
+      if (!colMap['tempat_lahir']) colMap['tempat_lahir'] = 11;
+      if (!colMap['tgl_lahir']) colMap['tgl_lahir'] = 12;
+      if (!colMap['agama']) colMap['agama'] = 13;
+      if (!colMap['alamat']) colMap['alamat'] = 14;
+      if (!colMap['whatsapp']) colMap['whatsapp'] = 15;
+      if (!colMap['email']) colMap['email'] = 16;
+      if (!colMap['sekolah_asal']) colMap['sekolah_asal'] = 17;
+      if (!colMap['nama_ayah']) colMap['nama_ayah'] = 18;
+      if (!colMap['nama_ibu']) colMap['nama_ibu'] = 19;
+      if (!colMap['telepon_ortu']) colMap['telepon_ortu'] = 20;
+
+      const studentsToImport: any[] = [];
+      const totalRows = worksheet.rowCount;
+
+      for (let r = headerRowNumber + 1; r <= totalRows; r++) {
+        const row = worksheet.getRow(r);
+        const getCellVal = (key: string) => {
+          const colIdx = colMap[key];
+          if (!colIdx) return '';
+          const cell = row.getCell(colIdx);
+          return extractCellText(cell).trim();
+        };
+
+        const nama = getCellVal('nama');
+        const nisn = getCellVal('nisn');
+
+        if (!nama || !nisn || nama === '-' || nisn === '-') continue;
+
+        studentsToImport.push({
+          nama,
+          nisn,
+          nik: getCellVal('nik'),
+          nipd: getCellVal('nipd'),
+          jurusan: getCellVal('jurusan'),
+          kelas: getCellVal('kelas'),
+          periode: getCellVal('periode') || '2026-2027',
+          jenis_kelamin: getCellVal('jenis_kelamin') || 'L',
+          tempat_lahir: getCellVal('tempat_lahir'),
+          tgl_lahir: getCellVal('tgl_lahir'),
+          agama: getCellVal('agama'),
+          alamat: getCellVal('alamat'),
+          whatsapp: getCellVal('whatsapp'),
+          email: getCellVal('email'),
+          sekolah_asal: getCellVal('sekolah_asal'),
+          nama_ayah: getCellVal('nama_ayah'),
+          nama_ibu: getCellVal('nama_ibu'),
+          telepon_ortu: getCellVal('telepon_ortu')
+        });
+      }
+
+      if (studentsToImport.length === 0) {
+        throw new Error("Tidak ada data siswa yang valid untuk diimpor.");
+      }
+
+      const token = typeof window !== 'undefined' ? localStorage.getItem("ppdb_admin_token") : null;
+      const res = await fetch("http://localhost:5000/api/siswa-aktif/import-bulk", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
+        },
+        body: JSON.stringify({ students: studentsToImport })
+      });
+
+      const resData = await res.json();
+      if (!res.ok || !resData.success) {
+        throw new Error(resData.message || "Gagal mengimpor ke server.");
+      }
+
+      if (typeof fetchActiveStudents === "function") {
+        fetchActiveStudents();
+      }
+
+      await Swal.fire({
+        icon: 'success',
+        title: 'Impor Berhasil!',
+        text: `Berhasil mengimpor ${resData.importedCount || studentsToImport.length} data siswa aktif ke sistem.`,
+        confirmButtonColor: '#2563eb'
+      });
+
+    } catch (error: any) {
+      console.error("Import error:", error);
+      Swal.fire({
+        icon: 'error',
+        title: 'Gagal Impor Excel',
+        text: error.message || 'Terjadi kesalahan saat memproses file Excel.',
+        confirmButtonColor: '#ef4444'
+      });
+    } finally {
+      e.target.value = '';
+    }
+  };
+
   return (
     <div className="space-y-6 animate-in fade-in duration-500 text-left">
       
       {/* Executive Statistics Grid */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-        <div className="bg-gradient-to-br from-indigo-500 to-indigo-600 dark:from-indigo-950/60 dark:to-indigo-900/40 border border-indigo-400/20 dark:border-indigo-850/40 rounded-3xl p-6 shadow-sm text-white flex items-center justify-between transition-all duration-300 hover:shadow-md">
-          <div className="space-y-2">
-            <span className="text-[10px] uppercase font-black tracking-widest text-indigo-200">Total Siswa Aktif</span>
-            <h3 className="text-3xl font-black leading-none">{stats.total} <span className="text-xs font-bold text-indigo-200">Siswa</span></h3>
-            <p className="text-[10px] text-indigo-150 font-bold mt-1">Gabungan seluruh angkatan terverifikasi</p>
+        <div className="bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800/80 ring-1 ring-slate-900/5 dark:ring-white/5 border-t-[3px] border-t-blue-600 dark:border-t-blue-500 rounded-2xl p-5 md:p-6 shadow-sm flex items-center justify-between transition-all duration-300">
+          <div className="space-y-1.5">
+            <span className="text-[11px] text-slate-500 dark:text-slate-400 uppercase font-semibold tracking-wider">Total Siswa Aktif</span>
+            <div className="flex items-baseline gap-1.5">
+              <h3 className="text-3xl font-extrabold leading-none text-slate-800 dark:text-white">{stats.total}</h3>
+              <span className="text-xs font-normal text-slate-500 dark:text-slate-400">Siswa</span>
+            </div>
+            <p className="text-[11px] text-slate-500 dark:text-slate-400 font-normal mt-1 flex items-center gap-1.5"><span className="w-1.5 h-1.5 rounded-full bg-blue-500 shrink-0" /> Gabungan seluruh angkatan terverifikasi</p>
           </div>
-          <div className="w-12 h-12 bg-white/10 rounded-2xl flex items-center justify-center border border-white/10 shrink-0">
-            <GraduationCap size={24} className="text-indigo-100" />
-          </div>
-        </div>
-
-        <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800/60 rounded-3xl p-6 shadow-[0_2px_12px_rgba(0,0,0,0.02)] flex items-center justify-between transition-colors duration-300">
-          <div className="space-y-2">
-            <span className="text-[10px] text-slate-400 dark:text-slate-550 uppercase font-black tracking-widest">Periode Terkini (2026-2027)</span>
-            <h3 className="text-3xl font-black leading-none text-slate-800 dark:text-white">{stats.currentBatch} <span className="text-xs font-bold text-slate-400">Siswa</span></h3>
-            <p className="text-[10px] text-slate-400 font-bold mt-1">Calon angkatan tahun ini</p>
-          </div>
-          <div className="w-12 h-12 bg-emerald-50 dark:bg-emerald-950/20 rounded-2xl flex items-center justify-center border border-emerald-100/50 dark:border-emerald-900/30 shrink-0">
-            <Calendar size={24} className="text-emerald-600 dark:text-emerald-450" />
+          <div className="w-10 h-10 bg-blue-50 dark:bg-blue-500/10 rounded-xl flex items-center justify-center border border-blue-100 dark:border-blue-500/20 text-blue-600 dark:text-blue-400 shrink-0">
+            <GraduationCap size={18} />
           </div>
         </div>
 
-        <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800/60 rounded-3xl p-6 shadow-[0_2px_12px_rgba(0,0,0,0.02)] flex items-center justify-between transition-colors duration-300">
-          <div className="space-y-2">
-            <span className="text-[10px] text-slate-400 dark:text-slate-550 uppercase font-black tracking-widest">Konsentrasi Populer</span>
-            <h3 className="text-base font-black truncate max-w-[200px] leading-tight text-slate-800 dark:text-white uppercase tracking-wider">{stats.popular}</h3>
-            <p className="text-[10px] text-slate-400 font-bold mt-1">Kompetensi keahlian pendaftar terbanyak</p>
+        <div className="bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800/80 ring-1 ring-slate-900/5 dark:ring-white/5 border-t-[3px] border-t-emerald-500 dark:border-t-emerald-500 rounded-2xl p-5 md:p-6 shadow-sm flex items-center justify-between transition-all duration-300">
+          <div className="space-y-1.5">
+            <span className="text-[11px] text-slate-500 dark:text-slate-400 uppercase font-semibold tracking-wider">Periode Terkini (2026-2027)</span>
+            <div className="flex items-baseline gap-1.5">
+              <h3 className="text-3xl font-extrabold leading-none text-slate-800 dark:text-white">{stats.currentBatch}</h3>
+              <span className="text-xs font-normal text-slate-500 dark:text-slate-400">Siswa</span>
+            </div>
+            <p className="text-[11px] text-slate-500 dark:text-slate-400 font-normal mt-1 flex items-center gap-1.5"><span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0" /> Calon angkatan tahun ini</p>
           </div>
-          <div className="w-12 h-12 bg-blue-50 dark:bg-blue-950/20 rounded-2xl flex items-center justify-center border border-blue-100/50 dark:border-blue-900/30 shrink-0">
-            <BookOpen size={24} className="text-blue-600 dark:text-blue-450" />
+          <div className="w-10 h-10 bg-emerald-50 dark:bg-emerald-500/10 rounded-xl flex items-center justify-center border border-emerald-100 dark:border-emerald-500/20 text-emerald-600 dark:text-emerald-400 shrink-0">
+            <Calendar size={18} />
+          </div>
+        </div>
+
+        <div className="bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800/80 ring-1 ring-slate-900/5 dark:ring-white/5 border-t-[3px] border-t-amber-500 dark:border-t-amber-500 rounded-2xl p-5 md:p-6 shadow-sm flex items-center justify-between transition-all duration-300">
+          <div className="space-y-1.5 max-w-[calc(100%-48px)]">
+            <span className="text-[11px] text-slate-500 dark:text-slate-400 uppercase font-semibold tracking-wider">Konsentrasi Populer</span>
+            <h3 className="text-base lg:text-lg font-bold leading-tight text-slate-800 dark:text-white uppercase tracking-tight line-clamp-2">{stats.popular}</h3>
+            <p className="text-[11px] text-slate-500 dark:text-slate-400 font-normal mt-1 flex items-center gap-1.5 truncate"><span className="w-1.5 h-1.5 rounded-full bg-amber-500 shrink-0" /> Kompetensi keahlian pendaftar terbanyak</p>
+          </div>
+          <div className="w-10 h-10 bg-amber-50 dark:bg-amber-500/10 rounded-xl flex items-center justify-center border border-amber-100 dark:border-amber-500/20 text-amber-600 dark:text-amber-400 shrink-0">
+            <BookOpen size={18} />
           </div>
         </div>
       </div>
 
       {/* Control Filter Bar */}
-      <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800/60 rounded-3xl p-6 shadow-[0_2px_12px_rgba(0,0,0,0.02)] flex flex-col xl:flex-row gap-4 items-center justify-between transition-colors duration-300">
-        <div className="w-full xl:w-auto flex flex-col md:flex-row items-center gap-3 flex-1">
+      <div className="bg-white dark:bg-[#0b1121] border border-slate-200/90 dark:border-slate-800/80 ring-1 ring-slate-900/5 dark:ring-white/5 rounded-2xl p-2.5 shadow-sm flex items-center justify-between gap-3 w-full mt-4 transition-colors duration-300 overflow-x-auto whitespace-nowrap hide-scrollbar">
+        
+        {/* Left Group: Search & Filters */}
+        <div className="flex items-center gap-2.5 shrink-0">
           {/* Universal Search Input */}
-          <div className="relative w-full md:max-w-md">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-550" size={16} />
+          <div className="relative w-[260px] lg:w-[300px] shrink-0">
+            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500" size={14} />
             <input
               type="text"
-              placeholder="Cari nama siswa, NISN, atau asal sekolah..."
+              placeholder="Cari siswa, NISN, asal sekolah..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-11 pr-4 py-3 bg-slate-50 dark:bg-slate-950/50 border border-slate-200 dark:border-white/5 rounded-2xl text-xs font-bold text-slate-800 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:focus:ring-blue-500/30 transition-all"
+              className="w-full pl-9 pr-3 py-2 bg-white dark:bg-[#0b1121] border border-slate-200 dark:border-slate-800 rounded-xl text-xs font-normal text-slate-700 dark:text-slate-200 placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-blue-500 transition-all"
             />
           </div>
 
           {/* Major/Prodi selection dropdown */}
-          <div className="relative w-full md:w-80">
-            <Filter className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-550 animate-pulse" size={14} />
+          <div className="relative min-w-[135px] shrink-0">
             <select
               value={majorFilter}
               onChange={(e) => setMajorFilter(e.target.value)}
-              className="w-full pl-11 pr-4 py-3 bg-slate-50 dark:bg-slate-950/50 border border-slate-200 dark:border-white/5 rounded-2xl text-xs font-bold text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:focus:ring-blue-500/30 transition-all appearance-none cursor-pointer uppercase tracking-wider"
+              className="w-full pl-3 pr-7 py-2 bg-white dark:bg-[#0b1121] border border-slate-200 dark:border-slate-800 rounded-xl text-xs font-normal text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-blue-500 transition-all appearance-none cursor-pointer truncate"
             >
               <option value="ALL">Semua Jurusan</option>
               <option value="Rekayasa Perangkat Lunak">RPL / PPLG</option>
@@ -628,62 +1079,88 @@ function ActiveStudentsDirectoryContent() {
               <option value="Broadcasting & Perfilman">Broadcasting / BCF</option>
               <option value="Teknik Elektronika">Teknik Elektronika / TE</option>
             </select>
+            <div className="absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
+              <ChevronDown size={13} />
+            </div>
           </div>
 
           {/* Class selection dropdown */}
-          <div className="relative w-full md:w-64">
-            <Filter className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-550 animate-pulse" size={14} />
+          <div className="relative min-w-[125px] shrink-0">
             <select
               value={classFilter}
               onChange={(e) => setClassFilter(e.target.value)}
-              className="w-full pl-11 pr-4 py-3 bg-slate-50 dark:bg-slate-950/50 border border-slate-200 dark:border-white/5 rounded-2xl text-xs font-bold text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:focus:ring-blue-500/30 transition-all appearance-none cursor-pointer tracking-wider"
+              className="w-full pl-3 pr-7 py-2 bg-white dark:bg-[#0b1121] border border-slate-200 dark:border-slate-800 rounded-xl text-xs font-normal text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-blue-500 transition-all appearance-none cursor-pointer truncate"
             >
               <option value="ALL">Semua Kelas</option>
               {uniqueClasses.map((kls) => (
                 <option key={kls} value={kls}>{kls} (L: {classStats[kls].L}, P: {classStats[kls].P})</option>
               ))}
             </select>
+            <div className="absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
+              <ChevronDown size={13} />
+            </div>
           </div>
 
           {/* Gender selection dropdown */}
-          <div className="relative w-full md:w-48">
-            <Filter className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-550 animate-pulse" size={14} />
+          <div className="relative min-w-[125px] shrink-0">
             <select
               value={genderFilter}
               onChange={(e) => setGenderFilter(e.target.value)}
-              className="w-full pl-11 pr-4 py-3 bg-slate-50 dark:bg-slate-950/50 border border-slate-200 dark:border-white/5 rounded-2xl text-xs font-bold text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:focus:ring-blue-500/30 transition-all appearance-none cursor-pointer tracking-wider"
+              className="w-full pl-3 pr-7 py-2 bg-white dark:bg-[#0b1121] border border-slate-200 dark:border-slate-800 rounded-xl text-xs font-normal text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-blue-500 transition-all appearance-none cursor-pointer truncate"
             >
               <option value="ALL">Semua Gender</option>
               <option value="L">Laki-Laki</option>
               <option value="P">Perempuan</option>
             </select>
+            <div className="absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
+              <ChevronDown size={13} />
+            </div>
           </div>
         </div>
 
-        <div className="flex flex-col xl:flex-row gap-3 w-full xl:w-auto">
+        {/* Right Group: Action Buttons */}
+        <div className="flex items-center gap-2 shrink-0">
           {/* Add Period Button */}
           <button
             onClick={() => {
               setNewPeriodValue(getNextPeriod());
               setIsAddPeriodModalOpen(true);
             }}
-            className="w-full xl:w-auto px-5 py-3 rounded-2xl text-xs font-black uppercase tracking-wider transition-all flex items-center justify-center gap-2 border border-slate-200 dark:border-white/10 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 shadow-sm hover:bg-slate-50 dark:hover:bg-slate-800"
+            className="px-3.5 py-2 rounded-xl text-xs font-medium border border-slate-200 dark:border-slate-700/80 bg-white dark:bg-[#0b1121] text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800/60 cursor-pointer flex items-center justify-center gap-1.5 transition-all"
           >
-            + Tambah Periode
+            <span className="text-sm font-bold">+</span> Tambah Periode
           </button>
 
           {/* Global Export active students */}
           <button
             onClick={() => handleExportExcel(filteredApplicants, "semua_periode")}
             disabled={filteredApplicants.length === 0}
-            className={`w-full xl:w-auto px-5 py-3 rounded-2xl text-xs font-black uppercase tracking-wider transition-all flex items-center justify-center gap-2 border shadow-sm ${
+            className={`px-4 py-2 rounded-xl text-xs font-medium transition-all flex items-center justify-center gap-1.5 whitespace-nowrap ${
               filteredApplicants.length === 0
-                ? "bg-slate-100 text-slate-400 dark:bg-slate-800 dark:text-slate-600 border-transparent cursor-not-allowed"
-                : "bg-blue-600 hover:bg-blue-500 text-white border-blue-500 hover:border-blue-400 shadow-[0_4px_12px_rgba(59,130,246,0.15)] cursor-pointer"
+                ? "bg-slate-100 text-slate-400 dark:bg-slate-800 dark:text-slate-600 cursor-not-allowed"
+                : "bg-blue-600 hover:bg-blue-700 text-white cursor-pointer"
             }`}
           >
-            <Download size={14} />
-            Ekspor Semua Siswa
+            <Download size={13} />
+            Ekspor Semua
+          </button>
+          
+          {/* Import Excel */}
+          <button 
+            onClick={() => setIsImportModalOpen(true)}
+            className="px-4 py-2 rounded-xl text-xs font-medium transition-all flex items-center justify-center gap-1.5 bg-[#10b981] hover:bg-[#059669] text-white cursor-pointer whitespace-nowrap"
+          >
+            <Upload size={13} />
+            Impor Excel
+          </button>
+
+          {/* Template */}
+          <button
+            onClick={handleDownloadTemplate}
+            className="px-3.5 py-2 rounded-xl text-xs font-medium border border-slate-200 dark:border-slate-700/80 bg-white dark:bg-[#0b1121] text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800/60 cursor-pointer flex items-center justify-center gap-1.5 transition-all"
+          >
+            <FileText size={13} />
+            Template
           </button>
         </div>
       </div>
@@ -691,7 +1168,7 @@ function ActiveStudentsDirectoryContent() {
       {/* Accordion List (Grouped by Period) */}
       <div className="space-y-4">
         {sortedPeriods.length === 0 ? (
-          <div className="bg-white dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800/40 rounded-3xl p-16 text-center shadow-sm">
+          <div className="bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800/80 ring-1 ring-slate-900/5 dark:ring-white/5 rounded-3xl p-16 text-center shadow-sm">
             <div className="w-16 h-16 bg-slate-50 dark:bg-slate-950 border border-slate-100 dark:border-white/5 rounded-2xl flex items-center justify-center mx-auto mb-4 text-slate-400 dark:text-slate-600">
               <Users size={28} />
             </div>
@@ -707,38 +1184,55 @@ function ActiveStudentsDirectoryContent() {
             const students = groupedByPeriod[period];
             const isExpanded = expandedPeriods[period] ?? false;
 
+            const rombelCounts: Record<string, number> = {};
+            students.forEach((s) => {
+              const k = s.diterima_kelas || s.diterimaKelas;
+              if (k && k !== "-" && k !== "BELUM ADA") {
+                rombelCounts[k] = (rombelCounts[k] || 0) + 1;
+              }
+            });
+
             return (
               <div 
                 key={period} 
-                className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800/60 rounded-3xl overflow-hidden shadow-[0_2px_10px_rgba(0,0,0,0.01)] transition-colors duration-300"
+                className="bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800/80 ring-1 ring-slate-900/5 dark:ring-white/5 rounded-2xl md:rounded-3xl overflow-hidden shadow-[0_2px_10px_-3px_rgba(0,0,0,0.06),0_1px_3px_rgba(0,0,0,0.04)] transition-colors duration-300"
               >
                 {/* Accordion Trigger Header */}
                 <div 
                   onClick={() => togglePeriod(period)}
-                  className="px-6 py-5 flex items-center justify-between cursor-pointer select-none bg-slate-50/40 dark:bg-slate-950/15 border-b border-slate-100 dark:border-white/5 transition-colors hover:bg-slate-50/80 dark:hover:bg-slate-950/25"
+                  className="px-6 py-4 md:py-5 flex items-center justify-between cursor-pointer select-none bg-slate-50/50 dark:bg-slate-950/20 border-b border-slate-200/80 dark:border-white/5 transition-colors hover:bg-slate-50/90 dark:hover:bg-slate-950/30"
                 >
                   <div className="flex items-center gap-3.5">
-                    <div className="w-10 h-10 rounded-xl bg-blue-50 dark:bg-blue-950/30 border border-blue-100/50 dark:border-blue-900/30 flex items-center justify-center text-blue-600 dark:text-blue-400 shrink-0">
+                    <div className="w-10 h-10 rounded-xl bg-blue-50 dark:bg-blue-950/40 border border-blue-200/80 dark:border-blue-900/40 flex items-center justify-center text-blue-600 dark:text-blue-400 shrink-0 shadow-xs">
                       <Calendar size={18} />
                     </div>
                     <div>
-                      <h4 className="text-sm font-extrabold text-slate-800 dark:text-white uppercase tracking-wider flex items-center gap-2 leading-none">
-                        Angkatan Periode {period}
-                        {period === "2026-2027" && (
-                          <span className="bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-250 dark:border-emerald-900 text-emerald-600 dark:text-emerald-450 px-2 py-0.5 rounded-md text-[8px] font-black uppercase tracking-widest">
-                            Terbaru
-                          </span>
+                      <div className="flex items-center gap-2">
+                        <h4 className="text-sm font-bold text-slate-800 dark:text-white uppercase tracking-wide leading-none">
+                          Angkatan / Periode {period}
+                        </h4>
+                        <span className="bg-blue-50 dark:bg-blue-950/60 border border-blue-200 dark:border-blue-800/60 text-blue-600 dark:text-blue-400 px-2 py-0.5 rounded-full text-[10px] font-semibold uppercase tracking-wider">
+                          {students.length} Siswa
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-1.5 mt-1.5 flex-wrap">
+                        <span className="text-[10px] text-slate-400 dark:text-slate-500 font-normal flex items-center gap-1">
+                          <Layers size={11} className="text-slate-400" /> Rombel Terisi:
+                        </span>
+                        {Object.entries(rombelCounts).length > 0 ? (
+                          Object.entries(rombelCounts).map(([cls, count]) => (
+                            <span key={cls} className="bg-slate-100 dark:bg-slate-800/80 text-slate-600 dark:text-slate-300 font-mono text-[9px] font-normal px-1.5 py-0.5 rounded border border-slate-200/60 dark:border-slate-700/50">
+                              {cls}({count})
+                            </span>
+                          ))
+                        ) : (
+                          <span className="text-[9px] text-slate-400 italic">Belum ada rombel terisi</span>
                         )}
-                      </h4>
-                      <p className="text-[10px] text-slate-400 font-bold mt-1">Kelompok siswa aktif periode pendidikan {period}</p>
+                      </div>
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-3">
-                    <span className="bg-blue-100/80 dark:bg-blue-950 border border-blue-200 dark:border-blue-900 text-blue-600 dark:text-blue-400 px-3 py-1 rounded-xl text-[10px] font-black tracking-wider uppercase">
-                      {students.length} Siswa
-                    </span>
-                    
+                  <div className="flex items-center gap-2.5">
                     {/* Separate Export Button for this specific Period */}
                     <button
                       type="button"
@@ -746,10 +1240,11 @@ function ActiveStudentsDirectoryContent() {
                         e.stopPropagation();
                         handleExportExcel(students, `angkatan_${period.replace("-", "_")}`);
                       }}
-                      className="p-2 bg-slate-100 hover:bg-blue-50 hover:text-blue-600 dark:bg-white/5 dark:hover:bg-blue-950/40 border border-slate-200/50 dark:border-white/5 text-slate-500 dark:text-slate-400 rounded-xl transition-all shadow-sm"
+                      className="px-3.5 py-1.5 bg-white hover:bg-slate-50 dark:bg-[#0b1121] dark:hover:bg-slate-800/80 border border-slate-200 dark:border-slate-700/80 text-slate-700 dark:text-slate-200 rounded-xl text-xs font-medium transition-all shadow-xs flex items-center gap-1.5"
                       title={`Ekspor Daftar Siswa Excel Periode ${period}`}
                     >
-                      <Download size={14} />
+                      <Download size={13} />
+                      <span className="hidden sm:inline">Ekspor Periode Ini</span>
                     </button>
 
                     {/* Delete button - only for custom-added periods */}
@@ -775,7 +1270,7 @@ function ActiveStudentsDirectoryContent() {
                             addToast("Periode Dihapus", `Angkatan ${period} telah dihapus.`, "warning");
                           }
                         }}
-                        className="p-2 bg-rose-50 hover:bg-rose-100 dark:bg-rose-950/30 dark:hover:bg-rose-950/50 border border-rose-200/50 dark:border-rose-900/30 text-rose-500 dark:text-rose-400 rounded-xl transition-all shadow-sm"
+                        className="p-1.5 bg-rose-50 hover:bg-rose-100 dark:bg-rose-950/30 dark:hover:bg-rose-950/50 border border-rose-200/50 dark:border-rose-900/30 text-rose-500 dark:text-rose-400 rounded-xl transition-all shadow-xs"
                         title={`Hapus Periode ${period}`}
                       >
                         <Trash2 size={14} />
@@ -790,14 +1285,14 @@ function ActiveStudentsDirectoryContent() {
                           e.stopPropagation();
                           addToast("Tidak Bisa Dihapus", `Periode ${period} masih memiliki ${students.length} siswa aktif.`, "warning");
                         }}
-                        className="p-2 bg-slate-100 dark:bg-white/5 border border-slate-200/50 dark:border-white/5 text-slate-400 dark:text-slate-600 rounded-xl transition-all shadow-sm cursor-not-allowed"
+                        className="p-1.5 bg-slate-100 dark:bg-white/5 border border-slate-200/50 dark:border-white/5 text-slate-400 dark:text-slate-600 rounded-xl transition-all shadow-xs cursor-not-allowed"
                         title="Tidak bisa hapus periode yang masih ada siswanya"
                       >
                         <Trash2 size={14} />
                       </button>
                     )}
                     
-                    <div className="p-1 rounded-lg text-slate-400 dark:text-slate-600">
+                    <div className="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 dark:text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800/60 transition-colors">
                       {isExpanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
                     </div>
                   </div>
@@ -814,42 +1309,42 @@ function ActiveStudentsDirectoryContent() {
                       className="overflow-hidden"
                     >
                       <div className="p-6 overflow-x-auto">
-                        <table className="w-full text-xs font-bold text-slate-655 dark:text-slate-400 border-collapse">
+                        <table className="w-full text-xs text-slate-600 dark:text-slate-400 border-collapse">
                           <thead>
-                            <tr className="border-b border-slate-100 dark:border-white/5 text-slate-400 dark:text-slate-550 uppercase tracking-widest text-[9px]">
-                              <th className="py-3 px-3 text-left w-12">No</th>
-                              <th className="py-3 px-4 text-left">NIPD</th>
-                              <th className="py-3 px-4 text-left">Kelas</th>
-                              <th className="py-3 px-4 text-left">Nama Siswa</th>
-                              <th className="py-3 px-4 text-center w-20">L/P</th>
-                              <th className="py-3 px-4 text-left">NISN</th>
-                              <th className="py-3 px-4 text-left">Asal Sekolah</th>
-                              <th className="py-3 px-4 text-left">Jurusan</th>
-                              <th className="py-3 px-3 text-center w-32">Aksi</th>
+                            <tr className="border-b border-slate-200/80 dark:border-white/5 text-slate-400 dark:text-slate-500 uppercase tracking-wider text-[10px] bg-slate-50/50 dark:bg-slate-950/20">
+                              <th className="py-2.5 px-3 text-center w-12 font-semibold">NO</th>
+                              <th className="py-2.5 px-4 text-left font-semibold">NIPD</th>
+                              <th className="py-2.5 px-4 text-left font-semibold">KELAS</th>
+                              <th className="py-2.5 px-4 text-left font-semibold">NAMA SISWA</th>
+                              <th className="py-2.5 px-4 text-center w-14 font-semibold">L/P</th>
+                              <th className="py-2.5 px-4 text-left font-semibold">NISN</th>
+                              <th className="py-2.5 px-4 text-left font-semibold">ASAL SEKOLAH</th>
+                              <th className="py-2.5 px-4 text-left font-semibold">JURUSAN</th>
+                              <th className="py-2.5 px-3 text-center w-24 font-semibold">AKSI</th>
                             </tr>
                           </thead>
-                          <tbody>
+                          <tbody className="divide-y divide-slate-100 dark:divide-white/5">
                             {students.map((student, idx) => (
                               <tr 
                                 key={student.id}
-                                className="border-b border-slate-100/50 dark:border-white/5 hover:bg-slate-50/30 dark:hover:bg-slate-950/10 transition-colors"
+                                className="hover:bg-slate-50/60 dark:hover:bg-slate-950/20 transition-colors"
                               >
-                                <td className="py-3.5 px-3 text-slate-400 dark:text-slate-600 font-mono">{idx + 1}</td>
-                                <td className="py-3.5 px-4 font-mono text-[11px] text-blue-600 dark:text-blue-400 font-bold">{nipdMap.get(student.id) || "-"}</td>
-                                <td className="py-3.5 px-4 font-black text-emerald-600 dark:text-emerald-400 uppercase tracking-wider text-xs">
+                                <td className="py-3 px-3 text-slate-400 dark:text-slate-500 font-mono text-center text-xs font-normal">{idx + 1}</td>
+                                <td className="py-3 px-4 font-mono text-xs text-blue-600 dark:text-blue-400 font-semibold">{nipdMap.get(student.id) || "-"}</td>
+                                <td className="py-3 px-4 font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-tight text-xs">
                                   {student.diterima_kelas || student.diterimaKelas ? student.diterima_kelas || student.diterimaKelas : (
-                                    <span className="text-[9px] px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500">BELUM ADA</span>
+                                    <span className="text-[9px] px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500 font-normal">BELUM ADA</span>
                                   )}
                                 </td>
-                                <td className="py-3.5 px-4">
-                                  <div className="font-black text-slate-800 dark:text-white uppercase tracking-wider">{student.nama}</div>
-                                  <span className="text-[9px] text-slate-400 dark:text-slate-550 font-bold uppercase tracking-wider block mt-0.5">
+                                <td className="py-3 px-4">
+                                  <div className="font-bold text-slate-800 dark:text-white uppercase tracking-tight text-xs">{student.nama}</div>
+                                  <span className="text-[10px] text-slate-400 dark:text-slate-500 font-normal uppercase tracking-wider block mt-0.5">
                                     Lahir: {student.tempat_lahir || student.tempatLahir || "-"}, {student.tgl_lahir || student.tglLahir || "-"}
                                   </span>
                                 </td>
-                                <td className="py-3.5 px-4 text-center">
+                                <td className="py-3 px-4 text-center">
                                   {(student.jenis_kelamin || student.jenisKelamin) ? (
-                                    <span className={`inline-flex items-center justify-center px-1.5 py-0.5 rounded text-[9px] font-extrabold uppercase border shadow-sm ${
+                                    <span className={`inline-flex items-center justify-center w-5 h-5 rounded text-[10px] font-bold uppercase border shadow-xs ${
                                       (student.jenis_kelamin || student.jenisKelamin || "").toLowerCase().startsWith("l")
                                         ? "bg-blue-50 text-blue-600 border-blue-200 dark:bg-blue-900/20 dark:border-blue-800/50 dark:text-blue-400"
                                         : "bg-pink-50 text-pink-600 border-pink-200 dark:bg-pink-900/20 dark:border-pink-800/50 dark:text-pink-400"
@@ -860,28 +1355,28 @@ function ActiveStudentsDirectoryContent() {
                                     <span className="text-slate-400">-</span>
                                   )}
                                 </td>
-                                <td className="py-3.5 px-4 font-mono">{student.nisn}</td>
-                                <td className="py-3.5 px-4 uppercase">{student.sekolah_asal || student.sekolahAsal || "-"}</td>
-                                <td className="py-3.5 px-4">
+                                <td className="py-3 px-4 font-mono font-normal text-slate-600 dark:text-slate-300 text-xs">{student.nisn || "-"}</td>
+                                <td className="py-3 px-4 uppercase font-normal text-slate-600 dark:text-slate-300 text-xs">{student.sekolah_asal || student.sekolahAsal || "-"}</td>
+                                <td className="py-3 px-4">
                                   <div className="flex flex-col gap-0.5 text-left">
-                                    <span className="text-blue-600 dark:text-blue-400 font-extrabold uppercase">{student.jurusan || student.jurusan_1 || student.jurusan1}</span>
+                                    <span className="text-blue-600 dark:text-blue-400 font-bold uppercase text-xs tracking-tight">{student.jurusan || student.jurusan_1 || student.jurusan1}</span>
                                   </div>
                                 </td>
-                                <td className="py-3.5 px-3">
+                                <td className="py-3 px-3">
                                   <div className="flex items-center justify-center gap-1.5" onClick={(e) => e.stopPropagation()}>
                                     <button
                                       onClick={() => {
                                         handleViewDetail(student);
                                         setActiveTab("biodata");
                                       }}
-                                      className="p-2 bg-slate-100 hover:bg-slate-200 dark:bg-white/5 dark:hover:bg-white/10 text-slate-600 dark:text-slate-355 hover:text-slate-850 dark:hover:text-white rounded-xl transition-all border border-slate-200/50 dark:border-white/5"
+                                      className="w-7 h-7 flex items-center justify-center bg-white hover:bg-slate-50 dark:bg-slate-800/80 dark:hover:bg-slate-700/80 text-slate-400 hover:text-slate-600 dark:text-slate-400 dark:hover:text-slate-200 rounded-lg transition-all border border-slate-200 dark:border-slate-700/80 shadow-xs"
                                       title="Detail Siswa"
                                     >
                                       <Eye size={13} />
                                     </button>
                                     <button
                                       onClick={() => handleBatalVerifikasi(student.id, student.nama)}
-                                      className="p-2 bg-rose-50 hover:bg-rose-100 dark:bg-rose-500/10 dark:hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 rounded-xl transition-all border border-rose-200/50 dark:border-rose-500/20"
+                                      className="w-7 h-7 flex items-center justify-center bg-rose-50/60 hover:bg-rose-100/80 dark:bg-rose-500/10 dark:hover:bg-rose-500/20 text-rose-500 dark:text-rose-400 rounded-lg transition-all border border-rose-200/60 dark:border-rose-500/20 shadow-xs"
                                       title="Batal Verifikasi (Kembalikan ke Pendaftar)"
                                     >
                                       <Trash2 size={13} />
@@ -1427,6 +1922,135 @@ function ActiveStudentsDirectoryContent() {
                 className="px-8 py-3 bg-blue-600 hover:bg-blue-500 disabled:opacity-60 text-white rounded-xl text-xs font-black uppercase tracking-wider transition-all shadow-[0_8px_20px_rgba(37,99,235,0.25)] flex items-center gap-2"
               >
                 {isSaving ? "Menyimpan..." : "Simpan Perubahan"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Import Modal */}
+      {isImportModalOpen && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" onClick={() => setIsImportModalOpen(false)}></div>
+          <div className="bg-white dark:bg-[#0b1121] rounded-3xl w-full max-w-3xl flex flex-col relative z-10 shadow-2xl animate-in zoom-in-95 duration-200 border border-slate-200 dark:border-slate-800">
+            {/* Header */}
+            <div className="px-8 py-6 flex items-start justify-between border-b border-slate-100 dark:border-slate-800/80">
+              <div className="flex gap-4">
+                <div className="w-12 h-12 rounded-2xl bg-emerald-50 dark:bg-emerald-900/30 flex items-center justify-center border border-emerald-100 dark:border-emerald-800/50 shrink-0">
+                  <FileSpreadsheet className="text-emerald-500" size={24} />
+                </div>
+                <div>
+                  <h3 className="text-xl font-black text-slate-800 dark:text-white uppercase tracking-tight">IMPOR DATA SISWA AKTIF (BULK MIGRASI)</h3>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 font-medium mt-1">Masukkan ratusan atau ribuan data siswa dari Dapodik / Excel sekaligus tanpa input manual.</p>
+                </div>
+              </div>
+              <button 
+                onClick={() => setIsImportModalOpen(false)}
+                className="w-8 h-8 flex items-center justify-center rounded-full bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-500 transition-colors"
+              >
+                <X size={16} />
+              </button>
+            </div>
+
+            {/* Content */}
+            <div className="p-8 space-y-6">
+              
+              {/* Template Section */}
+              <div className="bg-[#f8faff] dark:bg-blue-950/20 border border-blue-100 dark:border-blue-900/40 rounded-2xl p-6 flex flex-col sm:flex-row items-center justify-between gap-6">
+                <div>
+                  <h4 className="text-blue-700 dark:text-blue-400 font-black text-sm uppercase tracking-wide">1. BELUM MEMILIKI FORMAT FILE?</h4>
+                  <p className="text-xs text-slate-600 dark:text-slate-400 mt-2 font-medium leading-relaxed">
+                    Unduh template resmi CationGate yang sudah disesuaikan dengan 18 kolom lengkap (Nama Lengkap, NISN, NIK, NIPD, Jurusan, Kelas, Periode, L/P, dll).
+                  </p>
+                </div>
+                <button 
+                  onClick={handleDownloadTemplate}
+                  className="px-6 py-3 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-xs font-black uppercase tracking-wider whitespace-nowrap shadow-sm shadow-blue-500/20 flex items-center gap-2 shrink-0 transition-colors"
+                >
+                  <Download size={14} />
+                  UNDUH TEMPLATE (.XLSX)
+                </button>
+              </div>
+
+              {/* Drag and Drop Upload */}
+              <div 
+                className={`border-2 border-dashed rounded-3xl p-10 flex flex-col items-center justify-center text-center transition-all cursor-pointer relative overflow-hidden ${
+                  isDragging 
+                    ? "border-blue-500 bg-blue-50/50 dark:bg-blue-900/10" 
+                    : "border-slate-200 dark:border-slate-700/80 hover:border-blue-400 dark:hover:border-blue-500 hover:bg-slate-50 dark:hover:bg-slate-800/30"
+                }`}
+                onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
+                onDragLeave={() => setIsDragging(false)}
+                onDrop={(e) => {
+                  e.preventDefault();
+                  setIsDragging(false);
+                  if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+                    setImportFile(e.dataTransfer.files[0]);
+                  }
+                }}
+                onClick={() => fileInputRef.current?.click()}
+              >
+                <input 
+                  type="file" 
+                  ref={fileInputRef} 
+                  className="hidden" 
+                  accept=".xlsx, .xls"
+                  onChange={(e) => {
+                    if (e.target.files && e.target.files[0]) {
+                      setImportFile(e.target.files[0]);
+                    }
+                  }}
+                />
+                
+                <div className="w-14 h-14 rounded-2xl bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 flex items-center justify-center mb-4">
+                  <Upload size={24} />
+                </div>
+                
+                {importFile ? (
+                  <>
+                    <h4 className="text-base font-black text-slate-800 dark:text-white uppercase mb-1">{importFile.name}</h4>
+                    <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">
+                      Siap untuk diimpor ({(importFile.size / 1024).toFixed(1)} KB)
+                    </p>
+                  </>
+                ) : (
+                  <>
+                    <h4 className="text-sm font-black text-slate-800 dark:text-white uppercase tracking-wide mb-2">
+                      TARIK & LEPAS FILE EXCEL DISINI, ATAU <span className="text-blue-600 dark:text-blue-400">PILIH FILE</span>
+                    </h4>
+                    <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">
+                      Mendukung format Microsoft Excel (.xlsx, .xls).
+                    </p>
+                  </>
+                )}
+              </div>
+            </div>
+
+            {/* Footer */}
+            <div className="px-8 py-5 border-t border-slate-100 dark:border-slate-800/80 bg-slate-50/50 dark:bg-[#080d1a] rounded-b-3xl flex justify-end gap-3">
+              <button 
+                onClick={() => {
+                  setIsImportModalOpen(false);
+                  setImportFile(null);
+                }}
+                className="px-6 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-black text-xs uppercase tracking-wider hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors shadow-sm"
+              >
+                BATAL
+              </button>
+              <button 
+                onClick={() => {
+                  if (importFile) {
+                    const mockEvent = { target: { files: [importFile] } } as unknown as React.ChangeEvent<HTMLInputElement>;
+                    handleImportExcel(mockEvent);
+                    setIsImportModalOpen(false);
+                    setImportFile(null);
+                  }
+                }}
+                disabled={!importFile}
+                className="px-6 py-2.5 rounded-xl bg-[#61d0a5] hover:bg-[#52ba92] disabled:opacity-50 disabled:cursor-not-allowed text-white font-black text-xs uppercase tracking-wider shadow-[0_4px_12px_rgba(16,185,129,0.3)] transition-all flex items-center gap-2"
+              >
+                <Check size={14} />
+                MULAI IMPOR
               </button>
             </div>
           </div>

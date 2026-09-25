@@ -177,14 +177,14 @@ export default function KuotaTab({ type = "pendaftar", variant = "default" }: Ku
           const colLetter = String.fromCharCode(65 + index);
           const cell = sheet.getCell(`${colLetter}${headerRowIndex}`);
           cell.value = header;
-          cell.font = { ...headerFont, color: { argb: 'FF000000' } };
-          cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF6B9EE0' } };
+          cell.font = { ...headerFont };
+          cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF2F5597' } };
           cell.border = borderStyle;
           cell.alignment = alignCenter;
         });
 
         let currentRow = headerRowIndex + 1;
-        items.forEach((item) => {
+        items.forEach((item, itemIdx) => {
           const rowData = [item.no, item.konsentrasi_keahlian, item.jumlah, item.target, item.presentase];
           rowData.forEach((val, index) => {
             const colLetter = String.fromCharCode(65 + index);
@@ -193,6 +193,9 @@ export default function KuotaTab({ type = "pendaftar", variant = "default" }: Ku
             cell.font = bodyFont;
             cell.border = borderStyle;
             cell.alignment = alignCenter;
+            if (itemIdx % 2 === 1) {
+              cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFD6E4F0' } };
+            }
           });
           currentRow++;
         });

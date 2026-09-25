@@ -200,7 +200,7 @@ export default function SimulationSettings() {
         <div className="lg:col-span-2 space-y-6">
           
           {/* Keamanan & Ganti Password Admin Card */}
-          <div className="bg-white dark:bg-slate-900 border border-slate-200/85 dark:border-slate-800/60 rounded-3xl p-6 md:p-8 shadow-[0_4px_20px_rgba(0,0,0,0.02)] transition-colors duration-300 relative overflow-hidden">
+          <div className="bg-white dark:bg-[#0b1121] border border-slate-200/85 dark:border-slate-800/60 rounded-3xl p-6 md:p-8 shadow-[0_4px_20px_rgba(0,0,0,0.02)] transition-colors duration-300 relative overflow-hidden">
             <div className="absolute top-[-10%] right-[-10%] w-[250px] h-[250px] rounded-full bg-blue-500/5 blur-[80px] pointer-events-none"></div>
 
             <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800/60 pb-5 mb-6">
@@ -317,7 +317,7 @@ export default function SimulationSettings() {
           </div>
 
           {/* ── Student Seeder / Test Data Generator ──────────────────────── */}
-          <div className="bg-white dark:bg-slate-900 border border-slate-200/85 dark:border-slate-800/60 rounded-3xl p-6 md:p-8 shadow-[0_4px_20px_rgba(0,0,0,0.02)] transition-colors duration-300 relative overflow-hidden">
+          <div className="bg-white dark:bg-[#0b1121] border border-slate-200/85 dark:border-slate-800/60 rounded-3xl p-6 md:p-8 shadow-[0_4px_20px_rgba(0,0,0,0.02)] transition-colors duration-300 relative overflow-hidden">
             <div className="absolute top-[-10%] left-[-10%] w-[250px] h-[250px] rounded-full bg-emerald-500/5 blur-[80px] pointer-events-none"></div>
 
             <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800/60 pb-5 mb-6">
@@ -395,7 +395,7 @@ export default function SimulationSettings() {
                       value={seederInterval}
                       onChange={(e) => setSeederInterval(Math.max(1, Math.min(120, parseInt(e.target.value) || 1)))}
                       disabled={seederRunning}
-                      className="w-16 text-center bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl py-1.5 text-xs font-black text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/30 disabled:opacity-50 transition-all"
+                      className="w-16 text-center bg-white dark:bg-[#0b1121] border border-slate-200 dark:border-slate-700 rounded-xl py-1.5 text-xs font-black text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/30 disabled:opacity-50 transition-all"
                     />
                     <span className="text-xs font-bold text-slate-500 dark:text-slate-400">detik</span>
                   </div>
@@ -443,7 +443,7 @@ export default function SimulationSettings() {
         <div className="space-y-6">
           
           {/* Kartu tips keamanan */}
-          <div className="bg-white dark:bg-slate-900 border border-slate-200/85 dark:border-slate-800/60 rounded-3xl p-6 shadow-[0_4px_20px_rgba(0,0,0,0.02)] transition-colors duration-300 relative overflow-hidden">
+          <div className="bg-white dark:bg-[#0b1121] border border-slate-200/85 dark:border-slate-800/60 rounded-3xl p-6 shadow-[0_4px_20px_rgba(0,0,0,0.02)] transition-colors duration-300 relative overflow-hidden">
             <div className="absolute top-[-10%] right-[-10%] w-[150px] h-[150px] rounded-full bg-blue-500/5 blur-[50px] pointer-events-none"></div>
 
             <h4 className="text-xs font-black uppercase tracking-wider text-slate-450 border-b border-slate-100 dark:border-slate-800/60 pb-3 mb-4 flex items-center gap-1.5">

@@ -253,7 +253,7 @@ export default function Sidebar({
             <h2 className="text-sm font-black tracking-wider leading-none text-slate-800 dark:text-white uppercase whitespace-nowrap">
               {ppdbTitle ? ppdbTitle.replace(/^(ppdb\s+)/i, "") : "SMK TB"}
             </h2>
-            <span className="text-[10px] text-blue-600 dark:text-blue-400 font-bold uppercase tracking-widest mt-1 block whitespace-nowrap">
+            <span className="text-[10px] text-blue-600 dark:text-amber-400 font-bold uppercase tracking-widest mt-1 block whitespace-nowrap">
               PPDB Admin Portal
             </span>
           </div>

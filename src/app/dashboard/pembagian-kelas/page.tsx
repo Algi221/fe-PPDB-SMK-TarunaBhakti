@@ -100,8 +100,8 @@ export default function ClassDivisionManagement() {
     }
   };
 
-  const getMajorLogo = (code: string, size = "w-5 h-5") => {
-    const url = getMajorLogoUrl(code);
+  const getMajorLogo = (code: string, size = "w-5 h-5", customLogoUrl?: string) => {
+    const url = customLogoUrl || getMajorLogoUrl(code);
     return (
       <img
         src={url}
@@ -121,13 +121,55 @@ export default function ClassDivisionManagement() {
   const [selectedStudentIds, setSelectedStudentIds] = useState<number[]>([]);
   const [targetClass, setTargetClass] = useState<string>("");
 
+  const majors = [
+    { code: "RPL", name: "Rekayasa Perangkat Lunak" },
+    { code: "TJKT", name: "Teknik Jaringan Komputer & Telekomunikasi" },
+    { code: "DKV", name: "Desain Komunikasi Visual" },
+    { code: "BC", name: "Broadcasting & Perfilman" },
+    { code: "ANM", name: "Animasi" },
+    { code: "TE", name: "Teknik Elektronika" }
+  ];
+
+  const [configuredMajors, setConfiguredMajors] = useState<{ code: string; name: string; logo?: string }[] | null>(null);
+
   useEffect(() => {
     const fetchConfig = async () => {
       try {
         const res = await fetch("http://localhost:5000/api/config");
         const json = await res.json();
-        if (json.success && json.data && json.data.ppdb_school_period) {
-          setSchoolPeriod(json.data.ppdb_school_period);
+        if (json.success && json.data) {
+          if (json.data.ppdb_school_period) {
+            setSchoolPeriod(json.data.ppdb_school_period);
+          }
+          if (Array.isArray(json.data.ppdb_majors_config) && json.data.ppdb_majors_config.length > 0) {
+            const list = json.data.ppdb_majors_config.map((m: any) => ({
+              code: m.code,
+              name: m.title || m.name,
+              logo: m.logo
+            }));
+            setConfiguredMajors(list);
+            localStorage.setItem("ppdb_majors_config", JSON.stringify(json.data.ppdb_majors_config));
+          } else {
+            // Clean up invalid/junk test entries from localStorage
+            const saved = localStorage.getItem("ppdb_majors_config");
+            if (saved) {
+              try {
+                const parsed = JSON.parse(saved);
+                const isJunk = parsed.some((p: any) => 
+                  ["APA", "DSADAS", "DSADASDAS", "APAKEK", "DSADSA", "DSADSADASDAD"].includes((p.code || "").toUpperCase())
+                );
+                if (isJunk) {
+                  localStorage.removeItem("ppdb_majors_config");
+                  setConfiguredMajors(majors);
+                } else if (Array.isArray(parsed) && parsed.length > 0) {
+                  setConfiguredMajors(parsed.map((m: any) => ({ code: m.code, name: m.title || m.name, logo: m.logo })));
+                }
+              } catch {
+                localStorage.removeItem("ppdb_majors_config");
+                setConfiguredMajors(majors);
+              }
+            }
+          }
         }
       } catch (e) {
         console.error("Gagal mengambil periode akademik:", e);
@@ -149,30 +191,31 @@ export default function ClassDivisionManagement() {
   const [classSearchTerm, setClassSearchTerm] = useState("");
   const [activeDropClass, setActiveDropClass] = useState<string | null>(null);
 
-  const majors = [
-    { code: "RPL", name: "Rekayasa Perangkat Lunak" },
-    { code: "TJKT", name: "Teknik Jaringan Komputer & Telekomunikasi" },
-    { code: "DKV", name: "Desain Komunikasi Visual" },
-    { code: "BC", name: "Broadcasting & Perfilman" },
-    { code: "ANM", name: "Animasi" },
-    { code: "TE", name: "Teknik Elektronika" }
-  ];
-
   const activeMajors = useMemo(() => {
+    if (configuredMajors && configuredMajors.length > 0) {
+      return configuredMajors;
+    }
     if (!mounted) return majors;
     const saved = localStorage.getItem("ppdb_majors_config");
     if (saved) {
       try {
         const parsed = JSON.parse(saved);
+        const isJunk = parsed.some((p: any) => 
+          ["APA", "DSADAS", "DSADASDAS", "APAKEK", "DSADSA", "DSADSADASDAD"].includes((p.code || "").toUpperCase())
+        );
+        if (isJunk) {
+          localStorage.removeItem("ppdb_majors_config");
+          return majors;
+        }
         if (Array.isArray(parsed) && parsed.length > 0) {
-          return parsed.map((m: any) => ({ code: m.code, name: m.title }));
+          return parsed.map((m: any) => ({ code: m.code, name: m.title || m.name, logo: m.logo }));
         }
       } catch (e) {
         return majors;
       }
     }
     return majors;
-  }, [mounted]);
+  }, [mounted, configuredMajors]);
 
   useEffect(() => {
     if (activeMajors.length > 0) {
@@ -685,20 +728,20 @@ export default function ClassDivisionManagement() {
     ];
 
     const headerRow = worksheet.getRow(1);
-    headerRow.height = 35;
+    headerRow.height = 32;
     headerRow.eachCell((cell) => {
-      cell.font = { bold: true, color: { argb: 'FF000000' } };
+      cell.font = { bold: true, color: { argb: 'FFFFFFFF' } };
       cell.fill = {
         type: 'pattern',
         pattern: 'solid',
-        fgColor: { argb: 'FF9BC2E6' } 
+        fgColor: { argb: 'FF2F5597' } 
       };
       cell.alignment = { vertical: 'middle', horizontal: 'center' };
       cell.border = {
-        top: { style: 'thin' },
-        left: { style: 'thin' },
-        bottom: { style: 'thin' },
-        right: { style: 'thin' }
+        top: { style: 'thin', color: { argb: 'FFFFFFFF' } },
+        left: { style: 'thin', color: { argb: 'FFFFFFFF' } },
+        bottom: { style: 'thin', color: { argb: 'FFFFFFFF' } },
+        right: { style: 'thin', color: { argb: 'FFFFFFFF' } }
       };
     });
 
@@ -719,20 +762,19 @@ export default function ClassDivisionManagement() {
 
     worksheet.eachRow((row, rowNumber) => {
       if (rowNumber > 1) {
-        row.height = 25;
+        row.height = 22;
       }
       row.eachCell((cell, colNumber) => {
         if (rowNumber > 1) {
-          cell.fill = {
-            type: 'pattern',
-            pattern: 'solid',
-            fgColor: { argb: 'FFFFFFFF' }
-          };
+          // Zebra striping: even rows get light blue
+          if (rowNumber % 2 === 0) {
+            cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFD6E4F0' } };
+          }
           cell.border = {
-            top: { style: 'thin' },
-            left: { style: 'thin' },
-            bottom: { style: 'thin' },
-            right: { style: 'thin' }
+            top: { style: 'thin', color: { argb: 'FFD9D9D9' } },
+            left: { style: 'thin', color: { argb: 'FFD9D9D9' } },
+            bottom: { style: 'thin', color: { argb: 'FFD9D9D9' } },
+            right: { style: 'thin', color: { argb: 'FFD9D9D9' } }
           };
 
           if ([1, 3, 5, 7].includes(colNumber)) {
@@ -821,14 +863,14 @@ export default function ClassDivisionManagement() {
         cell.fill = {
           type: 'pattern',
           pattern: 'solid',
-          fgColor: { argb: 'FF366092' } 
+          fgColor: { argb: 'FF2F5597' } 
         };
         cell.alignment = { vertical: 'middle', horizontal: 'center' };
         cell.border = {
-          top: { style: 'medium' },
-          bottom: { style: 'medium' },
-          left: { style: 'thin' },
-          right: { style: 'thin' }
+          top: { style: 'thin', color: { argb: 'FFFFFFFF' } },
+          bottom: { style: 'thin', color: { argb: 'FFFFFFFF' } },
+          left: { style: 'thin', color: { argb: 'FFFFFFFF' } },
+          right: { style: 'thin', color: { argb: 'FFFFFFFF' } }
         };
       });
 
@@ -865,7 +907,7 @@ export default function ClassDivisionManagement() {
             cell.fill = {
               type: 'pattern',
               pattern: 'solid',
-              fgColor: { argb: 'FFF2F5F9' } 
+              fgColor: { argb: 'FFD6E4F0' } 
             };
           }
 
@@ -941,14 +983,14 @@ export default function ClassDivisionManagement() {
           cell.fill = {
             type: 'pattern',
             pattern: 'solid',
-            fgColor: { argb: 'FF4F81BD' }
+            fgColor: { argb: 'FF2F5597' }
           };
           cell.alignment = { vertical: 'middle', horizontal: 'center' };
           cell.border = {
-            top: { style: 'thin' },
-            bottom: { style: 'thin' },
-            left: { style: 'thin' },
-            right: { style: 'thin' }
+            top: { style: 'thin', color: { argb: 'FFFFFFFF' } },
+            bottom: { style: 'thin', color: { argb: 'FFFFFFFF' } },
+            left: { style: 'thin', color: { argb: 'FFFFFFFF' } },
+            right: { style: 'thin', color: { argb: 'FFFFFFFF' } }
           };
         });
         worksheet.getRow(currentRowIndex).height = 22;
@@ -987,7 +1029,7 @@ export default function ClassDivisionManagement() {
                 cell.fill = {
                   type: 'pattern',
                   pattern: 'solid',
-                  fgColor: { argb: 'FFF2F5F9' }
+                  fgColor: { argb: 'FFD6E4F0' }
                 };
               }
 
@@ -1059,7 +1101,7 @@ export default function ClassDivisionManagement() {
       {/* Loading Overlay */}
       {isLoading && (
         <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center">
-          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 rounded-3xl p-8 shadow-2xl flex flex-col items-center gap-4 text-center max-w-sm w-full mx-4">
+          <div className="bg-white dark:bg-[#0b1121] border border-slate-200 dark:border-white/10 rounded-3xl p-8 shadow-2xl flex flex-col items-center gap-4 text-center max-w-sm w-full mx-4">
             <svg className="animate-spin h-10 w-10 text-indigo-600" fill="none" viewBox="0 0 24 24">
               <circle className="opacity-25" cx={12} cy={12} r={10} stroke="currentColor" strokeWidth={4} />
               <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
@@ -1079,7 +1121,7 @@ export default function ClassDivisionManagement() {
       <div className="grid grid-cols-1 xl:grid-cols-4 gap-4">
         
         {/* Info Box */}
-        <div className="xl:col-span-2 bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800/60 rounded-3xl p-6 shadow-[0_2px_12px_rgba(0,0,0,0.02)] flex items-center gap-4 transition-colors duration-300">
+        <div className="xl:col-span-2 bg-white dark:bg-[#0b1121] border border-slate-200/80 dark:border-slate-800/60 rounded-3xl p-6 shadow-[0_2px_12px_rgba(0,0,0,0.02)] flex items-center gap-4 transition-colors duration-300">
           <div className="w-12 h-12 bg-indigo-50 dark:bg-indigo-950/40 rounded-2xl flex items-center justify-center text-indigo-500 border border-indigo-100 dark:border-indigo-900/40 shrink-0 shadow-sm">
             <GraduationCap size={22} />
           </div>
@@ -1090,13 +1132,13 @@ export default function ClassDivisionManagement() {
         </div>
 
         {/* Metric 1: Total Classes */}
-        <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800/60 rounded-3xl p-6 shadow-[0_2px_12px_rgba(0,0,0,0.02)] flex flex-col justify-center transition-colors duration-300 text-left">
+        <div className="bg-white dark:bg-[#0b1121] border border-slate-200/80 dark:border-slate-800/60 rounded-3xl p-6 shadow-[0_2px_12px_rgba(0,0,0,0.02)] flex flex-col justify-center transition-colors duration-300 text-left">
           <span className="text-[9px] text-slate-400 dark:text-slate-550 font-black uppercase tracking-widest">Kelas Terbentuk (Kelas {selectedGrade} {selectedMajor})</span>
           <span className="text-2xl font-black text-slate-800 dark:text-white mt-1">{classesOfSelectedMajor.length} <span className="text-xs text-slate-455 font-bold">Kelas</span></span>
         </div>
 
         {/* Metric 2: Filled Classes */}
-        <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800/60 rounded-3xl p-6 shadow-[0_2px_12px_rgba(0,0,0,0.02)] flex flex-col justify-center transition-colors duration-300 text-left">
+        <div className="bg-white dark:bg-[#0b1121] border border-slate-200/80 dark:border-slate-800/60 rounded-3xl p-6 shadow-[0_2px_12px_rgba(0,0,0,0.02)] flex flex-col justify-center transition-colors duration-300 text-left">
           <span className="text-[9px] text-slate-400 dark:text-slate-550 font-black uppercase tracking-widest">Jumlah Kelas Terisi Siswa</span>
           <span className="text-2xl font-black text-emerald-600 dark:text-emerald-400 mt-1">{totalClassesFilled} <span className="text-xs text-slate-455 font-bold">Terisi</span></span>
         </div>
@@ -1115,11 +1157,11 @@ export default function ClassDivisionManagement() {
             }}
             className={`flex flex-col items-center justify-center text-center p-6 rounded-3xl transition-all border duration-300 hover:scale-[1.03] group cursor-pointer ${
               selectedMajor === m.code
-                ? "bg-gradient-to-tr from-indigo-600 to-blue-600 border-indigo-600/85 text-white shadow-lg shadow-indigo-500/20 scale-[1.02]"
-                : "bg-white border-slate-200 hover:border-indigo-500/40 hover:bg-slate-50/50 dark:bg-slate-900 dark:border-slate-800 dark:text-slate-450 dark:hover:text-white shadow-sm"
+                ? "bg-blue-600 border-blue-600 text-white shadow-md shadow-blue-500/20 scale-[1.02]"
+                : "bg-white border-slate-200 hover:border-blue-500/40 hover:bg-slate-50/50 dark:bg-[#0b1121] dark:border-slate-800 dark:text-slate-450 dark:hover:text-white shadow-sm"
             }`}
           >
-            {getMajorLogo(m.code, "w-12 h-12 shadow-md")}
+            {getMajorLogo(m.code, "w-12 h-12 shadow-md", m.logo)}
             <span className={`mt-3 text-[9px] font-black uppercase tracking-widest leading-normal ${
               selectedMajor === m.code ? "text-white" : "text-slate-700 dark:text-slate-350"
             }`}>
@@ -1135,7 +1177,7 @@ export default function ClassDivisionManagement() {
       </div>
 
       {/* Pilihan Tingkat Kelas (Grade Tabs) */}
-      <div className="flex bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800/60 p-1.5 rounded-2xl shadow-sm justify-start gap-2 max-w-lg transition-colors duration-300">
+      <div className="flex bg-white dark:bg-[#0b1121] border border-slate-200/80 dark:border-slate-800/60 p-1.5 rounded-2xl shadow-sm justify-start gap-2 max-w-lg transition-colors duration-300">
         {([10, 11, 12] as const).map((g) => (
           <button
             key={g}
@@ -1146,7 +1188,7 @@ export default function ClassDivisionManagement() {
             }}
             className={`flex-1 py-2.5 px-4 rounded-xl text-xs font-black uppercase tracking-wider transition-all duration-300 cursor-pointer ${
               selectedGrade === g
-                ? "bg-gradient-to-r from-indigo-600 to-blue-600 text-white shadow-md shadow-indigo-500/20 scale-[1.02]"
+                ? "bg-blue-600 text-white shadow-sm scale-[1.02]"
                 : "text-slate-500 hover:text-slate-850 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-slate-800/50"
             }`}
           >
@@ -1156,7 +1198,7 @@ export default function ClassDivisionManagement() {
       </div>
 
       {/* Classes capacity indicators and list */}
-      <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800/60 rounded-3xl p-6 shadow-[0_2px_12px_rgba(0,0,0,0.02)] transition-colors duration-300">
+      <div className="bg-white dark:bg-[#0b1121] border border-slate-200/80 dark:border-slate-800/60 rounded-3xl p-6 shadow-[0_2px_12px_rgba(0,0,0,0.02)] transition-colors duration-300">
         <div className="flex items-center justify-between border-b border-slate-100 dark:border-white/5 pb-4 mb-5">
           <div className="flex items-center gap-2">
             <Layers size={14} className="text-slate-400" />
@@ -1198,7 +1240,7 @@ export default function ClassDivisionManagement() {
                 value={newClassName}
                 onChange={(e) => setNewClassName(e.target.value)}
                 placeholder={`Contoh: X ${selectedMajor} 3`}
-                className="w-full px-3 py-2 bg-white dark:bg-slate-900 border border-slate-250 dark:border-white/5 rounded-xl text-slate-850 dark:text-white font-bold text-xs focus:outline-none focus:border-indigo-500 uppercase"
+                className="w-full px-3 py-2 bg-white dark:bg-[#0b1121] border border-slate-250 dark:border-white/5 rounded-xl text-slate-850 dark:text-white font-bold text-xs focus:outline-none focus:border-indigo-500 uppercase"
               />
             </div>
 
@@ -1280,7 +1322,7 @@ export default function ClassDivisionManagement() {
       </div>
 
       {/* Main Student Directory Grid & Checklist Panel */}
-      <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800/60 rounded-3xl p-6 shadow-[0_2px_12px_rgba(0,0,0,0.02)] transition-colors duration-300 space-y-6">
+      <div className="bg-white dark:bg-[#0b1121] border border-slate-200/80 dark:border-slate-800/60 rounded-3xl p-6 shadow-[0_2px_12px_rgba(0,0,0,0.02)] transition-colors duration-300 space-y-6">
         
         {/* Filtering Toolbar */}
         <div className="flex flex-col xl:flex-row gap-4 items-center justify-between border-b border-slate-100 dark:border-white/5 pb-5">
@@ -1470,7 +1512,7 @@ export default function ClassDivisionManagement() {
       {/* Class Detail Modal Overlay */}
       {selectedClassDetail && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md overflow-hidden animate-in fade-in duration-300">
-          <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-white/10 rounded-3xl w-full max-w-3xl max-h-[80vh] flex flex-col shadow-2xl overflow-hidden animate-in zoom-in-95 transition-colors duration-300">
+          <div className="bg-white dark:bg-[#0b1121] border border-slate-200/80 dark:border-white/10 rounded-3xl w-full max-w-3xl max-h-[80vh] flex flex-col shadow-2xl overflow-hidden animate-in zoom-in-95 transition-colors duration-300">
             
             {/* Modal Header */}
             <div className="p-6 border-b border-slate-100 dark:border-white/5 flex items-center justify-between shrink-0 bg-slate-50/50 dark:bg-slate-950/15">
@@ -1502,7 +1544,7 @@ export default function ClassDivisionManagement() {
                   value={classSearchTerm}
                   onChange={(e) => setClassSearchTerm(e.target.value)}
                   placeholder="Cari siswa di kelas..."
-                  className="w-full pl-9 pr-4 py-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/5 rounded-xl text-slate-850 dark:text-white placeholder-slate-400 text-xs focus:outline-none focus:border-blue-500 font-semibold"
+                  className="w-full pl-9 pr-4 py-2 bg-white dark:bg-[#0b1121] border border-slate-200 dark:border-white/5 rounded-xl text-slate-850 dark:text-white placeholder-slate-400 text-xs focus:outline-none focus:border-blue-500 font-semibold"
                 />
               </div>
 

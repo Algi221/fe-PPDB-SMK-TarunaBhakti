@@ -63,7 +63,7 @@ function StatCard({
       initial={{ opacity: 0, y: 28, scale: 0.96 }}
       animate={{ opacity: 1, y: 0, scale: 1 }}
       transition={{ duration: 0.5, delay: delay * 0.1, ease: [0.22, 1, 0.36, 1] }}
-      className={`bg-white dark:bg-[#111827] border border-slate-200/60 dark:border-slate-800/40 rounded-2xl p-5
+      className={`bg-white dark:bg-[#0b1121] border border-slate-200/60 dark:border-slate-800/40 rounded-2xl p-5
         relative overflow-hidden shadow-sm hover:shadow-lg ${c.border} transition-all duration-300 group cursor-default`}
     >
       <div className={`absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 ${c.bg}`} />
@@ -310,6 +310,7 @@ function BarChart({
 export default function DashboardOverview() {
   const { applicants, activeStudents } = usePPDB();
   const [trendView, setTrendView] = useState<"hari" | "minggu" | "bulan" | "periode">("hari");
+  const [kuotaProgressTab, setKuotaProgressTab] = useState<"pendaftar" | "siswa-aktif">("pendaftar");
   const [counterTrigger, setCounterTrigger] = useState(false);
 
   const totalCount = applicants.length;
@@ -449,7 +450,7 @@ export default function DashboardOverview() {
         transition={{ duration: 0.55, delay: 0.45, ease: [0.22, 1, 0.36, 1] }}
       >
         {/* Area Chart */}
-        <div className="lg:col-span-3 bg-white dark:bg-[#111827] border border-slate-200/60 dark:border-slate-800/40 rounded-2xl p-6 shadow-sm flex flex-col gap-4">
+        <div className="lg:col-span-3 bg-white dark:bg-[#0b1121] border border-slate-200/60 dark:border-slate-800/40 rounded-2xl p-6 shadow-sm flex flex-col gap-4">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
             <div>
               <h3 className="text-xs font-black text-slate-800 dark:text-white tracking-wider uppercase">Tren Registrasi</h3>
@@ -475,7 +476,7 @@ export default function DashboardOverview() {
         </div>
 
         {/* Kuota Panel */}
-        <div className="lg:col-span-2 bg-white dark:bg-[#111827] border border-slate-200/60 dark:border-slate-800/40 rounded-2xl p-6 shadow-sm flex flex-col">
+        <div className="lg:col-span-2 bg-white dark:bg-[#0b1121] border border-slate-200/60 dark:border-slate-800/40 rounded-2xl p-6 shadow-sm flex flex-col">
           <div className="flex justify-between items-start mb-4">
             <div>
               <h3 className="text-xs font-black text-slate-800 dark:text-white tracking-wider uppercase">Data Keseluruhan</h3>
@@ -495,111 +496,132 @@ export default function DashboardOverview() {
         </div>
       </motion.div>
 
-      {/* ── Bar Chart – Distribusi Jurusan ──────────────────────────────────── */}
+      {/* ── Row 2: Bar Chart + Kuota Progress ───────────────────────────────── */}
       <motion.div
-        className="bg-white dark:bg-[#111827] border border-slate-200/60 dark:border-slate-800/40 rounded-2xl p-6 shadow-sm"
+        className="grid grid-cols-1 lg:grid-cols-5 gap-4 mt-4"
         initial={{ opacity: 0, y: 24 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.55, delay: 0.6, ease: [0.22, 1, 0.36, 1] }}
       >
-        <div className="flex justify-between items-start mb-5">
-          <div>
-            <h3 className="text-xs font-black text-slate-800 dark:text-white tracking-wider uppercase flex items-center gap-2">
-              <BarChart2 size={14} className="text-indigo-500" />
-              Distribusi Pendaftar per Jurusan
-            </h3>
-            <p className="text-[10px] text-slate-400 dark:text-slate-500 font-semibold mt-0.5">Jumlah calon siswa berdasarkan pilihan jurusan pertama</p>
+        {/* Bar Chart – Distribusi Jurusan */}
+        <div className="lg:col-span-3 bg-white dark:bg-[#111827] border border-slate-200/60 dark:border-slate-800/40 rounded-2xl p-6 shadow-sm">
+          <div className="flex justify-between items-start mb-5">
+            <div>
+              <h3 className="text-xs font-black text-slate-800 dark:text-white tracking-wider uppercase flex items-center gap-2">
+                <BarChart2 size={14} className="text-indigo-500" />
+                Distribusi Pendaftar per Jurusan
+              </h3>
+              <p className="text-[10px] text-slate-400 dark:text-slate-500 font-semibold mt-0.5">Jumlah calon siswa berdasarkan pilihan jurusan pertama</p>
+            </div>
+            {/* Legend */}
+            <div className="hidden sm:flex items-center flex-wrap gap-x-4 gap-y-1">
+              {majorsList.slice(0, 6).map((m) => (
+                <div key={m.name} className="flex items-center gap-1.5">
+                  <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ background: m.color }} />
+                  <span className="text-[9px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">{m.name}</span>
+                </div>
+              ))}
+            </div>
           </div>
-          {/* Legend */}
-          <div className="hidden sm:flex items-center flex-wrap gap-x-4 gap-y-1">
-            {majorsList.slice(0, 6).map((m) => (
-              <div key={m.name} className="flex items-center gap-1.5">
-                <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ background: m.color }} />
-                <span className="text-[9px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">{m.name}</span>
-              </div>
-            ))}
+          <BarChart data={barData} />
+        </div>
+
+        {/* Kuota Progress (Tabbed) */}
+        <div className="lg:col-span-2 bg-white dark:bg-[#111827] border border-slate-200/60 dark:border-slate-800/40 rounded-2xl p-6 shadow-sm flex flex-col">
+          <div className="flex flex-col mb-4">
+            <h3 className="text-xs font-black text-slate-800 dark:text-white tracking-wider uppercase">Progress Kuota</h3>
+            <p className="text-[10px] text-slate-400 dark:text-slate-500 font-semibold mt-0.5">Filter calon siswa atau siswa aktif</p>
+          </div>
+          <div className="flex bg-slate-100/80 dark:bg-slate-900/60 p-1 rounded-xl border border-slate-200/40 dark:border-white/5 shrink-0 w-full mb-6 mt-2">
+            <button
+              onClick={() => setKuotaProgressTab("pendaftar")}
+              className={`flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-[10px] font-black uppercase tracking-wider transition-all ${
+                kuotaProgressTab === "pendaftar"
+                  ? "bg-white dark:bg-slate-800 text-blue-600 dark:text-blue-400 shadow-sm border border-slate-200/30"
+                  : "text-slate-400 hover:text-slate-700 dark:hover:text-white"
+              }`}
+            >
+              <Users size={12} /> Calon Siswa
+            </button>
+            <button
+              onClick={() => setKuotaProgressTab("siswa-aktif")}
+              className={`flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-[10px] font-black uppercase tracking-wider transition-all ${
+                kuotaProgressTab === "siswa-aktif"
+                  ? "bg-white dark:bg-slate-800 text-emerald-600 dark:text-emerald-400 shadow-sm border border-slate-200/30"
+                  : "text-slate-400 hover:text-slate-700 dark:hover:text-white"
+              }`}
+            >
+              <ShieldCheck size={12} /> Siswa Aktif
+            </button>
+          </div>
+          <div className="flex-1 flex flex-col justify-center">
+            {kuotaProgressTab === "pendaftar" ? (
+              <KuotaTab type="pendaftar" variant="minimal" />
+            ) : (
+              <KuotaTab type="siswa-aktif" variant="minimal" />
+            )}
           </div>
         </div>
-        <BarChart data={barData} />
       </motion.div>
 
-      {/* ── Recent Applicants + Kuota Progress ──────────────────────────────── */}
+      {/* ── Row 3: Recent Applicants ────────────────────────────────────────── */}
       <motion.div
-        className="grid grid-cols-1 lg:grid-cols-5 gap-4"
+        className="bg-white dark:bg-[#111827] border border-slate-200/60 dark:border-slate-800/40 rounded-2xl p-6 shadow-sm mt-4"
         initial={{ opacity: 0, y: 24 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.55, delay: 0.75, ease: [0.22, 1, 0.36, 1] }}
       >
-        {/* Recent Table */}
-        <div className="lg:col-span-3 bg-white dark:bg-[#111827] border border-slate-200/60 dark:border-slate-800/40 rounded-2xl p-6 shadow-sm">
-          <div className="flex items-center justify-between mb-4">
-            <div>
-              <h3 className="text-xs font-black text-slate-800 dark:text-white tracking-wider uppercase">Pendaftar Terbaru</h3>
-              <p className="text-[10px] text-slate-400 dark:text-slate-500 font-semibold mt-0.5">7 calon siswa yang baru mendaftar</p>
-            </div>
-            <Link href="/dashboard/pendaftar" className="flex items-center gap-1 text-[10px] font-bold text-blue-500 hover:text-blue-600 dark:text-blue-400 transition-colors uppercase tracking-wider">
-              Lihat Semua <ArrowRight size={12} />
-            </Link>
+        <div className="flex items-center justify-between mb-4">
+          <div>
+            <h3 className="text-xs font-black text-slate-800 dark:text-white tracking-wider uppercase">Pendaftar Terbaru</h3>
+            <p className="text-[10px] text-slate-400 dark:text-slate-500 font-semibold mt-0.5">7 calon siswa yang baru mendaftar</p>
           </div>
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs font-bold">
-              <thead>
-                <tr className="border-b border-slate-100 dark:border-white/5 text-slate-400 dark:text-slate-600 text-[9px] uppercase tracking-widest">
-                  <th className="pb-2 pt-1 pl-2">Nama</th>
-                  <th className="pb-2 pt-1">Asal Sekolah</th>
-                  <th className="pb-2 pt-1">Jurusan</th>
-                  <th className="pb-2 pt-1 text-center">Status</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-50 dark:divide-white/5">
-                {applicants.slice(0, 7).map((a: any, idx: number) => (
-                  <motion.tr
-                    key={a.id || idx}
-                    initial={{ opacity: 0, x: -10 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: 0.8 + idx * 0.06, duration: 0.35 }}
-                    className="hover:bg-slate-50/60 dark:hover:bg-white/3 transition-all"
-                  >
-                    <td className="py-2.5 pl-2 font-bold text-slate-800 dark:text-white max-w-[130px] truncate">{a.nama}</td>
-                    <td className="py-2.5 truncate max-w-[110px] text-slate-500 dark:text-slate-400 font-medium">{a.sekolah_asal || a.sekolahAsal}</td>
-                    <td className="py-2.5">
-                      <span className="px-2 py-0.5 rounded-full bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 border border-blue-100 dark:border-blue-900/40 text-[9px] font-bold uppercase tracking-wide">
-                        {majorsList.find((m) => m.dbName === a.jurusan_1 || m.dbName === a.jurusan1)?.name || a.jurusan_1 || "PPLG"}
-                      </span>
-                    </td>
-                    <td className="py-2.5 text-center">
-                      <span className={`inline-flex px-2 py-0.5 rounded-full text-[9px] font-bold border uppercase tracking-wide ${
-                        a.status === "Approved" ? "bg-emerald-50 dark:bg-emerald-950/50 border-emerald-200 dark:border-emerald-900 text-emerald-600 dark:text-emerald-400"
-                        : a.status === "Rejected" ? "bg-rose-50 dark:bg-rose-950/50 border-rose-200 dark:border-rose-900 text-rose-600 dark:text-rose-400"
-                        : "bg-amber-50 dark:bg-amber-950/50 border-amber-200 dark:border-amber-900 text-amber-600 dark:text-amber-400"
-                      }`}>
-                        {a.status === "Approved" ? "Terverifikasi" : a.status === "Rejected" ? "Ditolak" : "Pending"}
-                      </span>
-                    </td>
-                  </motion.tr>
-                ))}
-                {applicants.length === 0 && (
-                  <tr><td colSpan={4} className="text-center py-8 text-slate-400 font-bold uppercase tracking-wider text-[10px]">Belum ada data pendaftar</td></tr>
-                )}
-              </tbody>
-            </table>
-          </div>
+          <Link href="/dashboard/pendaftar" className="flex items-center gap-1 text-[10px] font-bold text-blue-500 hover:text-blue-600 dark:text-blue-400 transition-colors uppercase tracking-wider">
+            Lihat Semua <ArrowRight size={12} />
+          </Link>
         </div>
-
-        {/* Kuota Progress Charts */}
-        <div className="lg:col-span-2 flex flex-col gap-4">
-          <div className="bg-white dark:bg-[#111827] border border-slate-200/60 dark:border-slate-800/40 rounded-2xl p-5 shadow-sm flex flex-col flex-1">
-            <h3 className="text-[10px] font-black text-slate-800 dark:text-white tracking-wider uppercase mb-3 flex items-center gap-2">
-              <BarChart2 size={12} className="text-blue-500" /> Progress Calon Siswa
-            </h3>
-            <KuotaTab type="pendaftar" variant="minimal" />
-          </div>
-          <div className="bg-white dark:bg-[#111827] border border-slate-200/60 dark:border-slate-800/40 rounded-2xl p-5 shadow-sm flex flex-col flex-1">
-            <h3 className="text-[10px] font-black text-slate-800 dark:text-white tracking-wider uppercase mb-3 flex items-center gap-2">
-              <ShieldCheck size={12} className="text-emerald-500" /> Progress Siswa Aktif
-            </h3>
-            <KuotaTab type="siswa-aktif" variant="minimal" />
-          </div>
+        <div className="overflow-x-auto">
+          <table className="w-full text-left text-xs font-bold">
+            <thead>
+              <tr className="border-b border-slate-100 dark:border-white/5 text-slate-400 dark:text-slate-600 text-[9px] uppercase tracking-widest">
+                <th className="pb-2 pt-1 pl-2">Nama</th>
+                <th className="pb-2 pt-1">Asal Sekolah</th>
+                <th className="pb-2 pt-1">Jurusan</th>
+                <th className="pb-2 pt-1 text-right pr-4">Status</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-50 dark:divide-white/5">
+              {applicants.slice(0, 7).map((a: any, idx: number) => (
+                <motion.tr
+                  key={a.id || idx}
+                  initial={{ opacity: 0, x: -10 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.8 + idx * 0.06, duration: 0.35 }}
+                  className="hover:bg-slate-50/60 dark:hover:bg-white/3 transition-all"
+                >
+                  <td className="py-2.5 pl-2 font-bold text-slate-800 dark:text-white max-w-[200px] truncate">{a.nama}</td>
+                  <td className="py-2.5 truncate max-w-[180px] text-slate-500 dark:text-slate-400 font-medium">{a.sekolah_asal || a.sekolahAsal}</td>
+                  <td className="py-2.5">
+                    <span className="px-2 py-0.5 rounded-full bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 border border-blue-100 dark:border-blue-900/40 text-[9px] font-bold uppercase tracking-wide">
+                      {majorsList.find((m) => m.dbName === a.jurusan_1 || m.dbName === a.jurusan1)?.name || a.jurusan_1 || "PPLG"}
+                    </span>
+                  </td>
+                  <td className="py-2.5 text-right pr-4">
+                    <span className={`inline-flex px-2 py-0.5 rounded-full text-[9px] font-bold border uppercase tracking-wide ${
+                      a.status === "Approved" ? "bg-emerald-50 dark:bg-emerald-950/50 border-emerald-200 dark:border-emerald-900 text-emerald-600 dark:text-emerald-400"
+                      : a.status === "Rejected" ? "bg-rose-50 dark:bg-rose-950/50 border-rose-200 dark:border-rose-900 text-rose-600 dark:text-rose-400"
+                      : "bg-amber-50 dark:bg-amber-950/50 border-amber-200 dark:border-amber-900 text-amber-600 dark:text-amber-400"
+                    }`}>
+                      {a.status === "Approved" ? "Terverifikasi" : a.status === "Rejected" ? "Ditolak" : "Pending"}
+                    </span>
+                  </td>
+                </motion.tr>
+              ))}
+              {applicants.length === 0 && (
+                <tr><td colSpan={4} className="text-center py-8 text-slate-400 font-bold uppercase tracking-wider text-[10px]">Belum ada data pendaftar</td></tr>
+              )}
+            </tbody>
+          </table>
         </div>
       </motion.div>
 

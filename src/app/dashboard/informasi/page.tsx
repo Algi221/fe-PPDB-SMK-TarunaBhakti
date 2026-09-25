@@ -513,7 +513,7 @@ export default function KelolaInformasi() {
         </div>
 
         {/* Informational Metric Display */}
-        <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800/60 rounded-3xl p-8 flex flex-col justify-between shadow-[0_4px_20px_rgba(0,0,0,0.01)] relative overflow-hidden transition-colors duration-300">
+        <div className="bg-white dark:bg-[#0b1121] border border-slate-200/80 dark:border-slate-800/60 rounded-3xl p-8 flex flex-col justify-between shadow-[0_4px_20px_rgba(0,0,0,0.01)] relative overflow-hidden transition-colors duration-300">
           <div className="space-y-4">
             <div className="flex items-center justify-between">
               <span className="text-slate-400 dark:text-slate-550 font-extrabold text-[10px] uppercase tracking-widest block">Ringkasan Publikasi</span>
@@ -543,12 +543,12 @@ export default function KelolaInformasi() {
 
       {/* Main Grid View */}
       {loading ? (
-        <div className="py-24 bg-white dark:bg-slate-900 rounded-3xl border border-slate-200/60 dark:border-slate-800/40 shadow-[0_2px_12px_rgba(0,0,0,0.01)] flex flex-col items-center justify-center gap-4 text-slate-500 transition-colors duration-300">
+        <div className="py-24 bg-white dark:bg-[#0b1121] rounded-3xl border border-slate-200/60 dark:border-slate-800/40 shadow-[0_2px_12px_rgba(0,0,0,0.01)] flex flex-col items-center justify-center gap-4 text-slate-500 transition-colors duration-300">
           <Loader2 size={32} className="animate-spin text-blue-500 dark:text-blue-400" />
           <span className="text-xs font-extrabold uppercase tracking-widest text-slate-400">Sedang memuat data informasi...</span>
         </div>
       ) : informasiList.length === 0 ? (
-        <div className="py-20 bg-white dark:bg-slate-900 rounded-3xl border border-slate-200/80 dark:border-slate-800/60 shadow-[0_2px_12px_rgba(0,0,0,0.01)] flex flex-col items-center justify-center text-center p-8 transition-colors duration-300">
+        <div className="py-20 bg-white dark:bg-[#0b1121] rounded-3xl border border-slate-200/80 dark:border-slate-800/60 shadow-[0_2px_12px_rgba(0,0,0,0.01)] flex flex-col items-center justify-center text-center p-8 transition-colors duration-300">
           <div className="w-16 h-16 rounded-full bg-slate-100 dark:bg-slate-850 flex items-center justify-center text-slate-450 dark:text-slate-500 mb-4 border border-slate-200/60 dark:border-white/5">
             <Megaphone size={24} />
           </div>
@@ -571,7 +571,7 @@ export default function KelolaInformasi() {
             return (
               <div 
                 key={item.id}
-                className={`bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800/60 hover:border-slate-350 dark:hover:border-white/10 rounded-3xl overflow-hidden shadow-[0_2px_10px_rgba(0,0,0,0.01)] dark:shadow-[0_2px_10px_rgba(0,0,0,0.2)] hover:shadow-xl hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between group relative cursor-pointer ${loadingDetailId === item.id ? 'opacity-75 pointer-events-none' : ''}`}
+                className={`bg-white dark:bg-[#0b1121] border border-slate-200/80 dark:border-slate-800/60 hover:border-slate-350 dark:hover:border-white/10 rounded-3xl overflow-hidden shadow-[0_2px_10px_rgba(0,0,0,0.01)] dark:shadow-[0_2px_10px_rgba(0,0,0,0.2)] hover:shadow-xl hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between group relative cursor-pointer ${loadingDetailId === item.id ? 'opacity-75 pointer-events-none' : ''}`}
                 onClick={() => {
                   if (loadingDetailId === null) {
                     handleOpenPreview(item);
@@ -676,7 +676,7 @@ export default function KelolaInformasi() {
       {/* CREATE & EDIT FORM MODAL */}
       {isOpenModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md overflow-y-auto animate-in fade-in duration-300">
-          <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-white/10 rounded-3xl w-full max-w-2xl shadow-[0_30px_70px_rgba(0,0,0,0.15)] dark:shadow-[0_30px_70px_rgba(0,0,0,0.6)] overflow-hidden animate-in zoom-in-95 my-8 transition-colors duration-300">
+          <div className="bg-white dark:bg-[#0b1121] border border-slate-200/80 dark:border-white/10 rounded-3xl w-full max-w-2xl shadow-[0_30px_70px_rgba(0,0,0,0.15)] dark:shadow-[0_30px_70px_rgba(0,0,0,0.6)] overflow-hidden animate-in zoom-in-95 my-8 transition-colors duration-300">
             
             {/* Modal Header */}
             <div className="p-6 border-b border-slate-150 dark:border-white/5 flex items-center justify-between bg-slate-50/50 dark:bg-slate-950/15">
@@ -915,7 +915,7 @@ export default function KelolaInformasi() {
         const media = parseMedia(previewItem.foto_url);
         return (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md overflow-y-auto animate-in fade-in duration-300">
-            <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-white/10 rounded-3xl w-full max-w-3xl shadow-[0_30px_70px_rgba(0,0,0,0.15)] dark:shadow-[0_30px_70px_rgba(0,0,0,0.6)] overflow-hidden animate-in zoom-in-95 my-8 transition-colors duration-300">
+            <div className="bg-white dark:bg-[#0b1121] border border-slate-200/80 dark:border-white/10 rounded-3xl w-full max-w-3xl shadow-[0_30px_70px_rgba(0,0,0,0.15)] dark:shadow-[0_30px_70px_rgba(0,0,0,0.6)] overflow-hidden animate-in zoom-in-95 my-8 transition-colors duration-300">
               
               {/* Poster Header */}
               {media.foto ? (
@@ -1051,7 +1051,7 @@ export default function KelolaInformasi() {
       {/* DELETE CONFIRMATION MODAL */}
       {deleteConfirmId && (
         <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/60 backdrop-blur-md overflow-y-auto animate-in fade-in duration-300">
-          <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-white/10 rounded-3xl w-full max-w-md shadow-[0_30px_70px_rgba(0,0,0,0.15)] dark:shadow-[0_30px_70px_rgba(0,0,0,0.6)] overflow-hidden animate-in zoom-in-95 my-8 transition-colors duration-300 text-center relative p-8">
+          <div className="bg-white dark:bg-[#0b1121] border border-slate-200/80 dark:border-white/10 rounded-3xl w-full max-w-md shadow-[0_30px_70px_rgba(0,0,0,0.15)] dark:shadow-[0_30px_70px_rgba(0,0,0,0.6)] overflow-hidden animate-in zoom-in-95 my-8 transition-colors duration-300 text-center relative p-8">
             <div className="w-20 h-20 rounded-full bg-rose-100 dark:bg-rose-950/50 flex items-center justify-center text-rose-500 dark:text-rose-400 mx-auto mb-6 border border-rose-200 dark:border-rose-900/30">
               <AlertCircle size={36} strokeWidth={1.5} />
             </div>
