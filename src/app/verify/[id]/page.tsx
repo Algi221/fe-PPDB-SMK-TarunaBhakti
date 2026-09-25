@@ -134,7 +134,7 @@ export default function VerificationPage() {
   if (error || !data) {
     return (
       <div className="min-h-screen bg-slate-50 dark:bg-slate-950 flex flex-col items-center justify-center p-6 text-slate-800 dark:text-white transition-colors duration-300">
-        <div className="max-w-md w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 rounded-4xl p-8 shadow-2xl text-center space-y-5">
+        <div className="max-w-md w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 rounded-[32px] p-8 shadow-2xl text-center space-y-5">
           <div className="w-16 h-16 rounded-full bg-rose-50 dark:bg-rose-950/20 flex items-center justify-center text-rose-500 mx-auto border border-rose-100 dark:border-rose-900/30">
             <XCircle size={32} />
           </div>
@@ -165,7 +165,7 @@ export default function VerificationPage() {
       <div className="max-w-xl md:max-w-2xl w-full space-y-6 relative z-10 duration-500">
         
         {/* Premium flex ticket card display (same layout as DataPendaftarTable detail but read-only) */}
-        <div className="w-full bg-linear-to-br from-white via-slate-50/50 to-blue-50/20 dark:from-slate-950 dark:via-slate-900/90 dark:to-indigo-950/30 border border-slate-200 dark:border-blue-500/20 rounded-4xl p-6 shadow-2xl relative overflow-hidden flex flex-col justify-between transition-colors duration-300">
+        <div className="w-full bg-gradient-to-br from-white via-slate-50/50 to-blue-50/20 dark:from-slate-950 dark:via-slate-900/90 dark:to-indigo-950/30 border border-slate-200 dark:border-blue-500/20 rounded-[32px] p-6 shadow-2xl relative overflow-hidden flex flex-col justify-between transition-colors duration-300">
           {/* Perforated Ticket Notches */}
           <div className="hidden md:block absolute -top-3.5 left-[66.67%] -translate-x-1/2 w-7 h-7 rounded-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-900 z-20 transition-colors" />
           <div className="hidden md:block absolute -bottom-3.5 left-[66.67%] -translate-x-1/2 w-7 h-7 rounded-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-900 z-20 transition-colors" />
@@ -208,7 +208,7 @@ export default function VerificationPage() {
                 <span className="text-[10px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-[0.2em]">Calon Peserta Didik Baru</span>
               </div>
               
-              <h2 className="text-3xl md:text-4xl font-black text-slate-850 dark:text-transparent dark:bg-clip-text dark:bg-linear-to-r dark:from-white dark:via-blue-100 dark:to-indigo-200 uppercase tracking-tight leading-tight truncate mb-4">
+              <h2 className="text-3xl md:text-4xl font-black text-slate-850 dark:text-transparent dark:bg-clip-text dark:bg-gradient-to-r dark:from-white dark:via-blue-100 dark:to-indigo-200 uppercase tracking-tight leading-tight truncate mb-4">
                 {data.nama}
               </h2>
               
@@ -228,7 +228,7 @@ export default function VerificationPage() {
 
             {/* Right Side: Major selection */}
             <div className="md:col-span-5 flex flex-col justify-center h-full">
-              <div className="relative w-full h-full min-h-35 bg-linear-to-br from-slate-50 to-blue-50/50 dark:from-slate-900/80 dark:to-indigo-950/40 border border-slate-200/80 dark:border-blue-500/20 rounded-3xl p-6 transition-all flex flex-col items-center justify-center overflow-hidden group hover:border-blue-400/50 dark:hover:border-blue-400/50 hover:shadow-xl hover:shadow-blue-500/10">
+              <div className="relative w-full h-full min-h-[140px] bg-gradient-to-br from-slate-50 to-blue-50/50 dark:from-slate-900/80 dark:to-indigo-950/40 border border-slate-200/80 dark:border-blue-500/20 rounded-[24px] p-6 transition-all flex flex-col items-center justify-center overflow-hidden group hover:border-blue-400/50 dark:hover:border-blue-400/50 hover:shadow-xl hover:shadow-blue-500/10">
                 {/* Decorative background circle */}
                 <div className="absolute -top-8 -right-8 w-32 h-32 bg-blue-500/5 dark:bg-blue-500/10 rounded-full blur-2xl group-hover:bg-blue-500/15 transition-colors duration-500" />
                 <div className="absolute -bottom-8 -left-8 w-32 h-32 bg-indigo-500/5 dark:bg-indigo-500/10 rounded-full blur-2xl group-hover:bg-indigo-500/15 transition-colors duration-500" />

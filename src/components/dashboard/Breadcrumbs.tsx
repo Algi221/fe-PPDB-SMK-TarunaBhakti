@@ -1,12 +1,12 @@
 "use client";
 
 import React from "react";
-import Link from "next/link";
 import { useSearchParams } from "next/navigation";
+import Link from "next/link";
 
 export default function Breadcrumbs({ pathname }: { pathname: string }) {
   const searchParams = useSearchParams();
-  const activeTab = searchParams.get("tab");
+  const activeTab = searchParams ? searchParams.get("tab") : null;
 
   const paths = pathname.split("/").filter((p) => p);
   const labelMap: Record<string, string> = {

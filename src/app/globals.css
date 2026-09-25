@@ -2,7 +2,11 @@
 @custom-variant dark (&:is(.dark *));
 
 @theme {
-  --color-white: #F1F3F5;
+  --font-sans: var(--font-inter), 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+
+body {
+  font-family: var(--font-inter), 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
 }
 
 :root {
@@ -18,7 +22,7 @@
   --glass-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.05);
   --card-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.03), 0 1px 3px 0 rgba(0, 0, 0, 0.01);
   --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  --font-family: var(--font-plus-jakarta), 'Plus Jakarta Sans', sans-serif;
+  --font-family: var(--font-inter), 'Inter', sans-serif;
   
   --input-bg: #f5f7fa;
   --input-border: #e2e8f0;
@@ -96,15 +100,12 @@ html.dark .text-slate-550 {
   color: #cbd5e1 !important;
 }
 
-/* High contrast overrides for light mode slate text */
-:root:not(.dark) .text-slate-400 {
-  color: #475569 !important; /* Darkened to slate-600 */
+@theme {
+  --font-sans: var(--font-inter), 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
 }
-:root:not(.dark) .text-slate-500 {
-  color: #334155 !important; /* Darkened to slate-700 */
-}
-:root:not(.dark) .text-slate-600 {
-  color: #1e293b !important; /* Darkened to slate-800 */
+
+body {
+  font-family: var(--font-inter), 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
 }
 
 html.dark input[type="text"],
@@ -377,6 +378,7 @@ body {
   background: transparent;
   border: none;
   cursor: pointer;
+  white-space: nowrap;
 }
 
 .btn-nav-link:hover {
@@ -460,7 +462,6 @@ body {
 .hero-title span {
   background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
   -webkit-background-clip: text;
-  background-clip: text;
   -webkit-text-fill-color: transparent;
   -webkit-text-stroke: 1.5px transparent; 
   display: inline-block;
@@ -1828,3 +1829,27 @@ html.dark .footer-social-link.tiktok:hover {
   box-shadow: 0 4px 12px rgba(24, 119, 242, 0.35);
 }
 
+/* --- Theme View Transition Animation (Wipe from Top Right) --- */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+
+::view-transition-old(root) {
+  z-index: 1;
+}
+
+::view-transition-new(root) {
+  z-index: 2;
+  animation: expandCircle 1.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes expandCircle {
+  from {
+    clip-path: circle(0% at 100% 0%);
+  }
+  to {
+    clip-path: circle(150% at 100% 0%);
+  }
+}

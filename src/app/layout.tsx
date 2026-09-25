@@ -1,10 +1,10 @@
 import React from "react";
-import { Plus_Jakarta_Sans } from "next/font/google";
+import { Inter } from "next/font/google";
 import "./globals.css";
 import { PPDBProvider } from "@/context/PPDBContext";
 
-const plusJakarta = Plus_Jakarta_Sans({
-  variable: "--font-plus-jakarta",
+const inter = Inter({
+  variable: "--font-inter",
   subsets: ["latin"],
   weight: ["300", "400", "500", "600", "700", "800"],
 });
@@ -22,7 +22,7 @@ export const metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="id" className={`${plusJakarta.variable} h-full antialiased`} data-scroll-behavior="smooth">
+    <html lang="id" className={`${inter.variable} h-full antialiased`} data-scroll-behavior="smooth">
       <body suppressHydrationWarning className="min-h-full flex flex-col bg-slate-50 text-slate-900">
         <PPDBProvider>
           {children}
