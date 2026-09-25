@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useRef, useMemo } from "react";
+import React, { useState, useEffect, useRef, useMemo, useCallback } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import {
@@ -124,6 +124,8 @@ interface AlurItem {
   id: number;
   title: string;
   desc: string;
+  image?: string;
+  color?: string;
 }
 
 interface FaqItem {
@@ -151,13 +153,64 @@ const DEFAULT_FAQ: FaqItem[] = [
 ];
 
 const DEFAULT_ALUR: AlurItem[] = [
-  { id: 1, title: "Pendaftaran Online", desc: "Calon peserta didik mendaftar secara online melalui website smktarunabhakti.net dan mengisi data lengkap." },
-  { id: 2, title: "Pembayaran Formulir", desc: "Melakukan pembayaran administrasi pendaftaran sebesar Rp 250.000 via Transfer Bank." },
-  { id: 3, title: "Verifikasi & Konfirmasi", desc: "Konfirmasi data pendaftaran otomatis via WhatsApp" },
-  { id: 4, title: "Pemberkasan & Seragam", desc: "Datang langsung ke sekolah untuk verifikasi berkas asli fisik dan ukur seragam siswa baru." },
-  { id: 5, title: "Uji Kelayakan (Tes Seleksi)", desc: "Mengikuti serangkaian tes bakat minat, wawancara kepribadian, serta tes kesehatan/fisik dasar calon siswa." },
-  { id: 6, title: "Pengumuman & Kelulusan", desc: "Pengumuman kelulusan resmi dan status penerimaan calon peserta didik baru melalui web smktarunabhakti.net." }
+  { 
+    id: 1, 
+    title: "Pendaftaran Online", 
+    desc: "Calon peserta didik mendaftar secara online melalui website smktarunabhakti.net dan mengisi data lengkap.",
+    image: "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=800&auto=format&fit=crop&q=80",
+    color: "#f97316"
+  },
+  { 
+    id: 2, 
+    title: "Pembayaran Formulir", 
+    desc: "Melakukan pembayaran administrasi pendaftaran sebesar Rp 250.000 via Transfer Bank.",
+    image: "https://images.unsplash.com/photo-1559526324-4b87b5e36e44?w=800&auto=format&fit=crop&q=80",
+    color: "#38bdf8"
+  },
+  { 
+    id: 3, 
+    title: "Verifikasi & Konfirmasi", 
+    desc: "Konfirmasi data pendaftaran otomatis via WhatsApp dan penerimaan bukti pendaftaran akun portal.",
+    image: "https://images.unsplash.com/photo-1577563908411-5077b6dc7624?w=800&auto=format&fit=crop&q=80",
+    color: "#a855f7"
+  },
+  { 
+    id: 4, 
+    title: "Pemberkasan & Seragam", 
+    desc: "Datang langsung ke sekolah untuk verifikasi berkas asli fisik dan ukur seragam siswa baru.",
+    image: "https://images.unsplash.com/photo-1523240795612-9a054b0db644?w=800&auto=format&fit=crop&q=80",
+    color: "#f59e0b"
+  },
+  { 
+    id: 5, 
+    title: "Uji Kelayakan (Tes Seleksi)", 
+    desc: "Mengikuti serangkaian tes bakat minat, wawancara kepribadian, serta tes kesehatan/fisik dasar calon siswa.",
+    image: "https://images.unsplash.com/photo-1434030216411-0b793f4b4173?w=800&auto=format&fit=crop&q=80",
+    color: "#10b981"
+  },
+  { 
+    id: 6, 
+    title: "Pengumuman & Kelulusan", 
+    desc: "Pengumuman kelulusan resmi dan status penerimaan calon peserta didik baru melalui web smktarunabhakti.net.",
+    image: "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=800&auto=format&fit=crop&q=80",
+    color: "#ec4899"
+  }
 ];
+
+function PushPin({ color = "#f97316" }: { color?: string }) {
+  return (
+    <div className="absolute -top-4 left-1/2 -translate-x-1/2 z-30 pointer-events-none drop-shadow-md">
+      <svg width="32" height="38" viewBox="0 0 32 38" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M16 23V35" stroke="#94a3b8" strokeWidth="2.5" strokeLinecap="round" />
+        <ellipse cx="16" cy="24" rx="7" ry="2.5" fill="#000000" fillOpacity="0.2" />
+        <ellipse cx="16" cy="22" rx="7" ry="2.6" fill={color} filter="brightness(0.85)" />
+        <path d="M11 11C11 17 13 20 16 22C19 20 21 17 21 11Z" fill={color} />
+        <circle cx="16" cy="10" r="6.5" fill={color} />
+        <ellipse cx="13.5" cy="8" rx="2.5" ry="1.5" fill="white" fillOpacity="0.75" transform="rotate(-35 13.5 8)" />
+      </svg>
+    </div>
+  );
+}
 
 export default function Home() {
   const { publicApplicants, wsStatus, ppdbLogo, ppdbTitle } = usePPDB();
@@ -274,6 +327,84 @@ export default function Home() {
   ]);
 
   const [alurList, setAlurList] = useState<AlurItem[]>(DEFAULT_ALUR);
+  const [alurPathD, setAlurPathD] = useState<string>("");
+  const alurContainerRef = useRef<HTMLDivElement>(null);
+  const alurCardRefs = useRef<(HTMLDivElement | null)[]>([]);
+
+  const updateAlurPath = useCallback(() => {
+    if (!alurContainerRef.current) return;
+    const container = alurContainerRef.current;
+    const cRect = container.getBoundingClientRect();
+
+    let d = "";
+    for (let i = 0; i < alurList.length - 1; i++) {
+      const el1 = alurCardRefs.current[i];
+      const el2 = alurCardRefs.current[i + 1];
+      if (!el1 || !el2) continue;
+
+      const r1 = el1.getBoundingClientRect();
+      const r2 = el2.getBoundingClientRect();
+
+      if (i % 2 === 0) {
+        // Left Card to Right Card
+        const startX = r1.right - cRect.left;
+        const startY = (r1.top - cRect.top) + Math.min(r1.height * 0.35, 170);
+
+        const endX = r2.left - cRect.left;
+        const endY = (r2.top - cRect.top) + Math.min(r2.height * 0.35, 170);
+
+        const dx = endX - startX;
+        const cp1x = startX + dx * 0.5;
+        const cp1y = startY;
+        const cp2x = startX + dx * 0.5;
+        const cp2y = endY;
+
+        d += `M ${startX} ${startY} C ${cp1x} ${cp1y}, ${cp2x} ${cp2y}, ${endX} ${endY} `;
+      } else {
+        // Right Card to next Left Card below
+        const startX = r1.left - cRect.left;
+        const startY = (r1.top - cRect.top) + Math.min(r1.height * 0.65, 320);
+
+        const endX = r2.right - cRect.left;
+        const endY = (r2.top - cRect.top) + Math.min(r2.height * 0.25, 120);
+
+        const dx = startX - endX;
+        const cp1x = startX - dx * 0.5;
+        const cp1y = startY + 40;
+        const cp2x = endX + dx * 0.5;
+        const cp2y = endY - 40;
+
+        d += `M ${startX} ${startY} C ${cp1x} ${cp1y}, ${cp2x} ${cp2y}, ${endX} ${endY} `;
+      }
+    }
+    setAlurPathD(d);
+  }, [alurList]);
+
+  useEffect(() => {
+    updateAlurPath();
+    const container = alurContainerRef.current;
+    if (!container) return;
+
+    let ro: ResizeObserver | null = null;
+    if (typeof ResizeObserver !== "undefined") {
+      ro = new ResizeObserver(() => {
+        updateAlurPath();
+      });
+      ro.observe(container);
+      alurCardRefs.current.forEach((card) => {
+        if (card) ro?.observe(card);
+      });
+    }
+
+    const timer = setTimeout(updateAlurPath, 300);
+    window.addEventListener("resize", updateAlurPath);
+
+    return () => {
+      clearTimeout(timer);
+      ro?.disconnect();
+      window.removeEventListener("resize", updateAlurPath);
+    };
+  }, [updateAlurPath, alurList]);
 
   const formatDate = (dateString: string | null | undefined) => {
     if (!dateString) return "";
@@ -338,10 +469,20 @@ export default function Home() {
     const loadDynamicConfig = async () => {
       try {
         
+        const applyAlurFallback = (list: any[]): AlurItem[] => {
+          if (!Array.isArray(list)) return DEFAULT_ALUR;
+          const defaultPalette = ["#f97316", "#38bdf8", "#a855f7", "#f59e0b", "#10b981", "#ec4899"];
+          return list.map((item, idx) => ({
+            ...item,
+            image: item.image !== undefined ? item.image : (DEFAULT_ALUR[idx]?.image || ""),
+            color: item.color || DEFAULT_ALUR[idx]?.color || defaultPalette[idx % defaultPalette.length]
+          }));
+        };
+
         const localAlur = localStorage.getItem("ppdb_alur_config");
         if (localAlur) {
           try {
-            setAlurList(JSON.parse(localAlur));
+            setAlurList(applyAlurFallback(JSON.parse(localAlur)));
           } catch (e) {
             console.error("Gagal parse alur dari localStorage", e);
           }
@@ -370,7 +511,7 @@ export default function Home() {
           if (config.ppdb_school_period) setSchoolPeriod(config.ppdb_school_period);
           if (config.ppdb_wa_group_url) setWaGroupUrl(config.ppdb_wa_group_url);
           if (config.ppdb_wa_admin) setWaAdmin(config.ppdb_wa_admin);
-          if (config.ppdb_alur_config) setAlurList(config.ppdb_alur_config);
+          if (config.ppdb_alur_config) setAlurList(applyAlurFallback(config.ppdb_alur_config));
           if (config.ppdb_faq_config) setFaqList(config.ppdb_faq_config);
           if (config.ppdb_gelombang_config) setGelombangConfig(config.ppdb_gelombang_config);
           if (config.ppdb_partners_config && Array.isArray(config.ppdb_partners_config)) {
@@ -401,7 +542,7 @@ export default function Home() {
               { id: 21, name: "SKYNET", logo: "https://www.google.com/s2/favicons?domain=sky.net.id&sz=256", url: "https://sky.net.id/?utm_source=chatgpt.com", h: "h-12" },
               { id: 22, name: "Museum Nasional Indonesia", logo: "https://www.google.com/s2/favicons?domain=museumnasional.or.id&sz=256", url: "https://www.museumnasional.or.id/", h: "h-12" },
               { id: 23, name: "ANIMO", logo: "https://www.google.com/s2/favicons?domain=fiverr.com&sz=256", url: "https://www.fiverr.com/animo_studio?utm_source=chatgpt.com", h: "h-12" },
-              { id: 24, name: "PIONICON", logo: "/partners/pionicon.jpg", url: "https://pionicon.com/", h: "h-12" },
+              { id: 24, name: "PIONICON", logo: "/assets/partners/pionicon.jpg", url: "https://pionicon.com/", h: "h-12" },
               { id: 25, name: "Circle Logo", logo: "https://www.google.com/s2/favicons?domain=seamolec.org&sz=256", url: "https://seamolec.org/", h: "h-12" },
               { id: 26, name: "mvnet", logo: "https://www.google.com/s2/favicons?domain=mvnet.co.id&sz=256", url: "https://mvnet.co.id/", h: "h-12" },
               { id: 27, name: "SADA TECHNOLOGY", logo: "https://www.google.com/s2/favicons?domain=sada.id&sz=256", url: "https://sada.id/", h: "h-12" },
@@ -805,9 +946,9 @@ export default function Home() {
       </section>
 
       {/* ALUR PENDAFTARAN */}
-      <section id="alur" className="py-24 relative z-10 border-b border-slate-200/50 dark:border-slate-800">
-        <div className="max-w-5xl mx-auto px-6">
-          <div className="text-center mb-20">
+      <section id="alur" className="py-32 relative z-10 border-b border-slate-200/50 dark:border-slate-800">
+        <div className="max-w-6xl mx-auto px-8">
+          <div className="text-center mb-24">
             <ScrollFloat
               containerClassName="inline-block mb-2"
               textClassName="text-blue-600 dark:text-blue-400 font-bold text-xs uppercase tracking-wider bg-blue-50 dark:bg-blue-950/50 border border-blue-100/50 dark:border-blue-900/30 px-3.5 py-1.5 rounded-full"
@@ -838,68 +979,97 @@ export default function Home() {
               stagger={0.01}
               textMode={false}
             >
-              Ikuti 6 langkah sederhana berikut untuk menjadi bagian dari SMK Taruna Bhakti Depok.
+              Ikuti {alurList.length} langkah sederhana berikut untuk menjadi bagian dari SMK Taruna Bhakti Depok.
             </ScrollFloat>
           </div>
 
-          <div className="relative">
-            <div className="absolute left-[32px] md:left-1/2 top-0 bottom-0 w-1 bg-gradient-to-b from-blue-500 via-sky-400 to-indigo-500 transform -translate-x-1/2 z-0 rounded-full opacity-70"></div>
-            <div className="absolute left-[32px] md:left-1/2 top-0 bottom-0 w-1 border-l-2 border-dashed border-white/40 dark:border-slate-950/40 transform -translate-x-1/2 z-0"></div>
+          <div ref={alurContainerRef} className="relative">
+            {/* Continuous, Seamless SVG Dashed Line connecting every step without gaps */}
+            {alurPathD && (
+              <svg className="absolute inset-0 w-full h-full pointer-events-none hidden md:block z-0 overflow-visible">
+                <path
+                  d={alurPathD}
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.5"
+                  strokeDasharray="7 7"
+                  strokeLinecap="round"
+                  className="text-slate-300 dark:text-slate-700/80"
+                />
+              </svg>
+            )}
 
-            <div className="space-y-16 relative z-10 w-full">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-y-28 md:gap-y-48 lg:gap-y-56 xl:gap-y-64 gap-x-16 lg:gap-x-28 xl:gap-x-36 relative z-10">
               {alurList.map((item, index) => {
                 const isLeft = index % 2 === 0;
-
-                const styles = [
-                  { color: "blue", bg: "bg-blue-600", text: "text-blue-700 dark:text-blue-300", bgLight: "bg-blue-50 dark:bg-blue-950/60", shadow: "shadow-[0_0_20px_rgba(37,99,235,0.4)]", borderHover: "hover:border-blue-500/20", icon: FileText },
-                  { color: "amber", bg: "bg-amber-500", text: "text-amber-800 dark:text-amber-300", bgLight: "bg-amber-50 dark:bg-amber-950/60", shadow: "shadow-[0_0_20px_rgba(245,158,11,0.4)]", borderHover: "hover:border-amber-500/20", icon: CreditCard },
-                  { color: "teal", bg: "bg-teal-500", text: "text-teal-700 dark:text-teal-300", bgLight: "bg-teal-50 dark:bg-teal-950/60", shadow: "shadow-[0_0_20px_rgba(20,184,166,0.4)]", borderHover: "hover:border-teal-500/20", icon: Phone },
-                  { color: "rose", bg: "bg-rose-500", text: "text-rose-700 dark:text-rose-300", bgLight: "bg-rose-50 dark:bg-rose-950/60", shadow: "shadow-[0_0_20px_rgba(244,63,94,0.4)]", borderHover: "hover:border-rose-500/20", icon: Users },
-                  { color: "indigo", bg: "bg-indigo-600", text: "text-indigo-700 dark:text-indigo-300", bgLight: "bg-indigo-50 dark:bg-indigo-950/60", shadow: "shadow-[0_0_20px_rgba(79,70,229,0.4)]", borderHover: "hover:border-indigo-500/20", icon: Award },
-                  { color: "emerald", bg: "bg-emerald-500", text: "text-emerald-700 dark:text-emerald-300", bgLight: "bg-emerald-50 dark:bg-emerald-950/60", shadow: "shadow-[0_0_20px_rgba(16,185,129,0.4)]", borderHover: "hover:border-emerald-500/20", icon: ShieldCheck },
-                ];
-
-                const stepStyle = styles[index % styles.length];
-                const Icon = stepStyle.icon;
+                const defaultPalette = ["#f97316", "#0284c7", "#9333ea", "#d97706", "#059669", "#e11d48"];
+                const cardColor = item.color || defaultPalette[index % defaultPalette.length];
 
                 return (
-                  <ScrollFloat
+                  <div
                     key={item.id}
-                    containerClassName="w-full"
-                    textClassName="w-full"
-                    textMode={false}
-                    scrollStart="top 85%"
-                    scrollEnd="bottom 60%"
+                    ref={(el) => { alurCardRefs.current[index] = el; }}
+                    className={`relative w-full ${!isLeft ? "md:translate-y-28 lg:translate-y-36 xl:translate-y-44" : ""}`}
                   >
-                    <div className="relative grid grid-cols-1 md:grid-cols-2 md:gap-20 items-center">
-                      {isLeft ? (
-                        <>
-                          <div className="pl-20 md:pl-0 md:pr-12 md:text-right">
-                            <div className={`bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border border-white/60 dark:border-slate-800 p-6 rounded-3xl shadow-xl hover:shadow-2xl ${stepStyle.borderHover} hover:-translate-y-1 transition-all duration-300`}>
-                              <span className={`inline-block px-3 py-1 ${stepStyle.bgLight} ${stepStyle.text} rounded-full text-[10px] font-extrabold uppercase tracking-wider mb-3`}>Tahap 0{item.id}</span>
-                              <h3 className="text-lg font-black text-slate-800 dark:text-white mb-2">{item.title}</h3>
-                              <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed font-medium">{item.desc}</p>
+
+                    <ScrollFloat
+                      containerClassName="w-full"
+                      textClassName="w-full"
+                      textMode={false}
+                      scrollStart="top 85%"
+                      scrollEnd="bottom 60%"
+                    >
+                      <div className={`relative group ${isLeft ? "md:-rotate-[2deg] hover:rotate-0" : "md:rotate-[2deg] hover:rotate-0"} transition-transform duration-300`}>
+
+                        {/* Photo block */}
+                        <div className="relative w-full h-60 sm:h-72 rounded-2xl overflow-hidden bg-slate-100 dark:bg-slate-900 mb-6">
+                          {item.image ? (
+                            <img
+                              src={item.image}
+                              alt={item.title}
+                              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                              onError={(e: any) => { e.currentTarget.style.display = 'none'; }}
+                            />
+                          ) : (
+                            <div
+                              className="w-full h-full flex items-center justify-center"
+                              style={{ backgroundColor: `${cardColor}18` }}
+                            >
+                              <span className="font-black font-mono text-6xl opacity-20" style={{ color: cardColor }}>
+                                {String(index + 1).padStart(2, '0')}
+                              </span>
                             </div>
+                          )}
+                        </div>
+
+                        {/* Open text below — no card, no border */}
+                        <div className="px-1 space-y-2">
+                          <div className="flex items-center gap-2">
+                            <span className="text-2xl font-black font-mono leading-none" style={{ color: cardColor }}>
+                              {String(index + 1).padStart(2, '0')}
+                            </span>
+                            <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400 dark:text-slate-500">
+                              Tahap
+                            </span>
                           </div>
-                          <div className="hidden md:block"></div>
-                        </>
-                      ) : (
-                        <>
-                          <div className="hidden md:block"></div>
-                          <div className="pl-20 md:pl-12 md:text-left">
-                            <div className={`bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border border-white/60 dark:border-slate-800 p-6 rounded-3xl shadow-xl hover:shadow-2xl ${stepStyle.borderHover} hover:-translate-y-1 transition-all duration-300`}>
-                              <span className={`inline-block px-3 py-1 ${stepStyle.bgLight} ${stepStyle.text} rounded-full text-[10px] font-extrabold uppercase tracking-wider mb-3`}>Tahap 0{item.id}</span>
-                              <h3 className="text-lg font-black text-slate-800 dark:text-white mb-2">{item.title}</h3>
-                              <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed font-medium">{item.desc}</p>
-                            </div>
-                          </div>
-                        </>
-                      )}
-                      <div className={`absolute left-0 md:left-1/2 md:-translate-x-1/2 top-1/2 -translate-y-1/2 w-16 h-16 rounded-full ${stepStyle.bg} border-4 border-white dark:border-slate-900 text-white flex items-center justify-center font-black text-lg z-10 ${stepStyle.shadow} transition-all duration-300`}>
-                        <Icon size={22} />
+                          <h3 className="text-lg sm:text-xl font-black text-slate-800 dark:text-white leading-snug">
+                            {item.title}
+                          </h3>
+                          <p className="text-sm text-slate-500 dark:text-slate-400 leading-relaxed">
+                            {item.desc}
+                          </p>
+                        </div>
+
                       </div>
-                    </div>
-                  </ScrollFloat>
+                    </ScrollFloat>
+
+                    {/* Mobile vertical dashed connector between consecutive steps */}
+                    {index < alurList.length - 1 && (
+                      <div className="md:hidden flex justify-center py-8 pointer-events-none">
+                        <div className="w-0.5 h-16 border-l-2 border-dashed border-slate-300 dark:border-slate-700" />
+                      </div>
+                    )}
+                  </div>
                 );
               })}
             </div>

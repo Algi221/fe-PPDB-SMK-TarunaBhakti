@@ -27,7 +27,10 @@ import {
   ArrowLeft,
   Calendar,
   Database,
-  Building
+  Building,
+  LayoutGrid,
+  SlidersHorizontal,
+  ArrowRight
 } from "lucide-react";
 import DateRangeCalendar from "@/components/DateRangeCalendar";
 import { sanitizeSrc } from "@/utils/security";
@@ -37,6 +40,8 @@ interface AlurItem {
   id: number;
   title: string;
   desc: string;
+  image?: string;
+  color?: string;
 }
 
 interface CareerItem {
@@ -106,7 +111,7 @@ const DEFAULT_PARTNERS: PartnerItem[] = [
   { id: 21, name: "SKYNET", logo: "https://www.google.com/s2/favicons?domain=sky.net.id&sz=256", url: "https://sky.net.id/?utm_source=chatgpt.com", h: "h-12" },
   { id: 22, name: "Museum Nasional Indonesia", logo: "https://www.google.com/s2/favicons?domain=museumnasional.or.id&sz=256", url: "https://www.museumnasional.or.id/", h: "h-12" },
   { id: 23, name: "ANIMO", logo: "https://www.google.com/s2/favicons?domain=fiverr.com&sz=256", url: "https://www.fiverr.com/animo_studio?utm_source=chatgpt.com", h: "h-12" },
-  { id: 24, name: "PIONICON", logo: "/partners/pionicon.jpg", url: "https://pionicon.com/", h: "h-12" },
+  { id: 24, name: "PIONICON", logo: "/assets/partners/pionicon.jpg", url: "https://pionicon.com/", h: "h-12" },
   { id: 25, name: "Circle Logo", logo: "https://www.google.com/s2/favicons?domain=seamolec.org&sz=256", url: "https://seamolec.org/", h: "h-12" },
   { id: 26, name: "mvnet", logo: "https://www.google.com/s2/favicons?domain=mvnet.co.id&sz=256", url: "https://mvnet.co.id/", h: "h-12" },
   { id: 27, name: "SADA TECHNOLOGY", logo: "https://www.google.com/s2/favicons?domain=sada.id&sz=256", url: "https://sada.id/", h: "h-12" },
@@ -146,12 +151,48 @@ const formatPhoneNumber = (value: string) => {
 };
 
 const DEFAULT_ALUR: AlurItem[] = [
-  { id: 1, title: "Pendaftaran Online", desc: "Calon peserta didik mendaftar secara online melalui website smktarunabhakti.net dan mengisi data lengkap." },
-  { id: 2, title: "Pembayaran Formulir", desc: "Melakukan pembayaran administrasi pendaftaran sebesar Rp 250.000 via Transfer Bank." },
-  { id: 3, title: "Verifikasi & Konfirmasi", desc: "Konfirmasi data pendaftaran otomatis via WhatsApp" },
-  { id: 4, title: "Pemberkasan & Seragam", desc: "Datang langsung ke sekolah untuk verifikasi berkas asli fisik dan ukur seragam siswa baru." },
-  { id: 5, title: "Uji Kelayakan (Tes Seleksi)", desc: "Mengikuti serangkaian tes bakat minat, wawancara kepribadian, serta tes kesehatan/fisik dasar calon siswa." },
-  { id: 6, title: "Pengumuman & Kelulusan", desc: "Pengumuman kelulusan resmi dan status penerimaan calon peserta didik baru melalui web smktarunabhakti.net." }
+  { 
+    id: 1, 
+    title: "Pendaftaran Online", 
+    desc: "Calon peserta didik mendaftar secara online melalui website smktarunabhakti.net dan mengisi data lengkap.",
+    image: "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=800&auto=format&fit=crop&q=80",
+    color: "#f97316"
+  },
+  { 
+    id: 2, 
+    title: "Pembayaran Formulir", 
+    desc: "Melakukan pembayaran administrasi pendaftaran sebesar Rp 250.000 via Transfer Bank.",
+    image: "https://images.unsplash.com/photo-1559526324-4b87b5e36e44?w=800&auto=format&fit=crop&q=80",
+    color: "#38bdf8"
+  },
+  { 
+    id: 3, 
+    title: "Verifikasi & Konfirmasi", 
+    desc: "Konfirmasi data pendaftaran otomatis via WhatsApp dan penerimaan bukti pendaftaran akun portal.",
+    image: "https://images.unsplash.com/photo-1577563908411-5077b6dc7624?w=800&auto=format&fit=crop&q=80",
+    color: "#a855f7"
+  },
+  { 
+    id: 4, 
+    title: "Pemberkasan & Seragam", 
+    desc: "Datang langsung ke sekolah untuk verifikasi berkas asli fisik dan ukur seragam siswa baru.",
+    image: "https://images.unsplash.com/photo-1523240795612-9a054b0db644?w=800&auto=format&fit=crop&q=80",
+    color: "#f59e0b"
+  },
+  { 
+    id: 5, 
+    title: "Uji Kelayakan (Tes Seleksi)", 
+    desc: "Mengikuti serangkaian tes bakat minat, wawancara kepribadian, serta tes kesehatan/fisik dasar calon siswa.",
+    image: "https://images.unsplash.com/photo-1434030216411-0b793f4b4173?w=800&auto=format&fit=crop&q=80",
+    color: "#10b981"
+  },
+  { 
+    id: 6, 
+    title: "Pengumuman & Kelulusan", 
+    desc: "Pengumuman kelulusan resmi dan status penerimaan calon peserta didik baru melalui web smktarunabhakti.net.",
+    image: "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=800&auto=format&fit=crop&q=80",
+    color: "#ec4899"
+  }
 ];
 
 const DEFAULT_FAQ: FaqItem[] = [
@@ -453,6 +494,9 @@ export default function KelolaUserInterface() {
   ]);
 
   const [alurList, setAlurList] = useState<AlurItem[]>(DEFAULT_ALUR);
+  const [activeAlurId, setActiveAlurId] = useState<number>(1);
+  const [alurViewMode, setAlurViewMode] = useState<"focused" | "overview">("focused");
+  const [alurDragActive, setAlurDragActive] = useState<boolean>(false);
   const [majorsList, setMajorsList] = useState<MajorItem[]>(DEFAULT_MAJORS);
   const [partnersList, setPartnersList] = useState<PartnerItem[]>(DEFAULT_PARTNERS);
   const [revisions, setRevisions] = useState<RevisionLog[]>([]);
@@ -578,7 +622,13 @@ export default function KelolaUserInterface() {
       if (activeConfig.ppdb_title) setSchoolTitle(activeConfig.ppdb_title);
       
       if (activeConfig.ppdb_alur_config && Array.isArray(activeConfig.ppdb_alur_config)) {
-        setAlurList(activeConfig.ppdb_alur_config);
+        const defaultColors = ["#f97316", "#38bdf8", "#a855f7", "#f59e0b", "#10b981", "#ec4899"];
+        const normalized = activeConfig.ppdb_alur_config.map((item: any, idx: number) => ({
+          ...item,
+          image: item.image !== undefined ? item.image : (DEFAULT_ALUR[idx]?.image || ""),
+          color: item.color || DEFAULT_ALUR[idx]?.color || defaultColors[idx % defaultColors.length]
+        }));
+        setAlurList(normalized);
       }
       if (activeConfig.ppdb_faq_config && Array.isArray(activeConfig.ppdb_faq_config)) {
         setFaqList(activeConfig.ppdb_faq_config);
@@ -739,15 +789,52 @@ export default function KelolaUserInterface() {
 
   const handleAddAlur = () => {
     const nextId = alurList.length > 0 ? Math.max(...alurList.map(a => a.id)) + 1 : 1;
-    setAlurList([...alurList, { id: nextId, title: "Langkah Baru", desc: "Deskripsi langkah pendaftaran baru..." }]);
+    const defaultColors = ["#f97316", "#0284c7", "#9333ea", "#d97706", "#059669", "#e11d48", "#0891b2", "#4f46e5"];
+    const pickColor = defaultColors[(alurList.length) % defaultColors.length];
+    const newItem: AlurItem = { 
+      id: nextId, 
+      title: `Tahap ${alurList.length + 1}`, 
+      desc: "Jelaskan instruksi atau prosedur pendaftaran pada tahapan ini...",
+      image: "",
+      color: pickColor
+    };
+    setAlurList([...alurList, newItem]);
+    setActiveAlurId(nextId);
+    showToastMsg(`Langkah ${alurList.length + 1} berhasil ditambahkan.`);
   };
 
-  const handleUpdateAlur = (id: number, key: keyof AlurItem, val: string | number) => {
+  const handleUpdateAlur = (id: number, key: keyof AlurItem, val: any) => {
     setAlurList(alurList.map(a => a.id === id ? { ...a, [key]: val } : a));
   };
 
+  const handleAlurImageUpload = (id: number, file: File) => {
+    const fileExt = file.name.split('.').pop()?.toLowerCase() || '';
+    const allowedImgExts = ['jpg', 'jpeg', 'png', 'webp', 'svg', 'gif'];
+    if (!file.type.startsWith("image/") && !allowedImgExts.includes(fileExt)) {
+      showToastMsg("Hanya file gambar (JPG/PNG/WEBP/SVG) yang diperbolehkan.", "error");
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      showToastMsg("Ukuran file gambar maksimal 5MB.", "error");
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const base64 = event.target?.result as string;
+      handleUpdateAlur(id, "image", base64);
+      showToastMsg("Foto langkah berhasil diperbarui.");
+    };
+    reader.readAsDataURL(file);
+  };
+
   const handleRemoveAlur = (id: number) => {
-    setAlurList(alurList.filter(a => a.id !== id).map((a, i) => ({ ...a, id: i + 1 })));
+    const targetItem = alurList.find(a => a.id === id);
+    const remaining = alurList.filter(a => a.id !== id).map((a, i) => ({ ...a, id: i + 1 }));
+    setAlurList(remaining);
+    if (activeAlurId === id) {
+      setActiveAlurId(remaining[0]?.id || 1);
+    }
+    showToastMsg(`Langkah "${targetItem?.title || id}" berhasil dihapus.`, "info");
   };
 
   const handleMoveAlur = (index: number, direction: "up" | "down") => {
@@ -762,6 +849,7 @@ export default function KelolaUserInterface() {
 
     const reordered = copy.map((item, idx) => ({ ...item, id: idx + 1 }));
     setAlurList(reordered);
+    setActiveAlurId(targetIdx + 1);
   };
 
   const handleAddFaq = () => {
@@ -1861,97 +1949,697 @@ export default function KelolaUserInterface() {
             )}
 
             {/* TAB 3: Alur Pendaftaran */}
-            {activeTab === "alur" && (
-              <div className="space-y-6">
-                <div className="flex items-center justify-between border-b border-slate-100 dark:border-white/5 pb-4 mb-4">
-                  <div>
-                    <h3 className="text-sm font-black uppercase text-slate-850 dark:text-white tracking-wider flex items-center gap-2">
-                      <Settings size={16} className="text-blue-500" />
-                      <span>Tahapan Proses / Alur Pendaftaran Calon Siswa</span>
-                    </h3>
-                    <p className="text-[10px] text-slate-400 font-bold uppercase mt-1">Ubah, urutkan, tambah, atau hapus langkah pendaftaran</p>
+            {activeTab === "alur" && (() => {
+              const alurColorPalette = [
+                { label: "Oranye", value: "#f97316" },
+                { label: "Biru Sky", value: "#0284c7" },
+                { label: "Ungu Royal", value: "#9333ea" },
+                { label: "Kuning Amber", value: "#d97706" },
+                { label: "Hijau Emerald", value: "#059669" },
+                { label: "Merah Rose", value: "#e11d48" },
+                { label: "Cyan", value: "#0891b2" },
+                { label: "Indigo", value: "#4f46e5" }
+              ];
+
+              const sampleAlurImages = [
+                { label: "Siswa Laptop", url: "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=800&auto=format&fit=crop&q=80" },
+                { label: "Gedung Sekolah", url: "https://images.unsplash.com/photo-1580582932707-520aed937b7b?w=800&auto=format&fit=crop&q=80" },
+                { label: "Praktikum Lab", url: "https://images.unsplash.com/photo-1581092918056-0c4c3acd3789?w=800&auto=format&fit=crop&q=80" },
+                { label: "Verifikasi Berkas", url: "https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=800&auto=format&fit=crop&q=80" }
+              ];
+
+              const activeAlur = alurList.find(a => a.id === activeAlurId) || alurList[0] || null;
+              const activeIndex = alurList.findIndex(a => a.id === (activeAlur?.id ?? -1));
+              const activeColor = activeAlur?.color || alurColorPalette[activeIndex >= 0 ? activeIndex % alurColorPalette.length : 0]?.value || "#f97316";
+
+              return (
+                <div className="space-y-4">
+                  {/* Top Header Bar */}
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 dark:border-white/5 pb-3.5">
+                    <div>
+                      <h3 className="text-sm font-black text-slate-850 dark:text-white tracking-wide flex items-center gap-2">
+                        <Settings size={15} className="text-blue-500" />
+                        <span>Alur &amp; Prosedur Pendaftaran Siswa</span>
+                      </h3>
+                      <p className="text-[11px] text-slate-400 font-medium mt-0.5">
+                        Atur urutan, gambar, dan instruksi alur pendaftaran secara mandiri dan dinamis.
+                      </p>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                      {/* View Mode Switcher */}
+                      <div className="flex items-center bg-slate-100 dark:bg-white/5 p-0.5 rounded-lg border border-slate-200 dark:border-white/10 text-[11px] font-bold">
+                        <button
+                          type="button"
+                          onClick={() => setAlurViewMode("focused")}
+                          className={`flex items-center gap-1 px-2.5 py-1 rounded-md transition-all ${
+                            alurViewMode === "focused"
+                              ? "bg-white dark:bg-slate-850 text-blue-600 dark:text-blue-400 shadow-sm"
+                              : "text-slate-500 hover:text-slate-800 dark:hover:text-white"
+                          }`}
+                        >
+                          <SlidersHorizontal size={12} />
+                          <span>Editor Fokus</span>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setAlurViewMode("overview")}
+                          className={`flex items-center gap-1 px-2.5 py-1 rounded-md transition-all ${
+                            alurViewMode === "overview"
+                              ? "bg-white dark:bg-slate-850 text-blue-600 dark:text-blue-400 shadow-sm"
+                              : "text-slate-500 hover:text-slate-800 dark:hover:text-white"
+                          }`}
+                        >
+                          <LayoutGrid size={12} />
+                          <span>Semua Kartu ({alurList.length})</span>
+                        </button>
+                      </div>
+
+                      {/* Add Step Button */}
+                      <button
+                        type="button"
+                        onClick={handleAddAlur}
+                        className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-[11px] font-bold transition-all shadow-sm shrink-0"
+                      >
+                        <Plus size={13} />
+                        <span>Tambah Langkah</span>
+                      </button>
+                    </div>
                   </div>
 
-                  <button
-                    onClick={handleAddAlur}
-                    className="flex items-center gap-1.5 px-4.5 py-2.5 rounded-xl bg-slate-50 hover:bg-slate-100 dark:bg-slate-950 border border-slate-200 dark:border-white/5 text-[10px] uppercase font-bold text-slate-700 dark:text-slate-300 transition-all shadow-sm"
-                  >
-                    <Plus size={14} />
-                    <span>Langkah Baru</span>
-                  </button>
-                </div>
+                  {/* Horizontal Stepper Rail */}
+                  <div className="bg-slate-50/70 dark:bg-slate-900/40 p-1.5 rounded-xl border border-slate-200/70 dark:border-white/5 overflow-x-auto scrollbar-thin">
+                    <div className="flex items-center gap-1.5 min-w-max">
+                      {alurList.map((item, idx) => {
+                        const isCurrent = activeAlur?.id === item.id;
+                        const itemColor = item.color || alurColorPalette[idx % alurColorPalette.length]?.value;
 
-                <div className="space-y-4">
-                  {alurList.map((item, idx) => (
-                    <div 
-                      key={item.id}
-                      className="bg-slate-50 dark:bg-slate-950/40 border border-slate-200/60 dark:border-white/5 rounded-3xl p-5 flex items-start gap-4 transition-all"
-                    >
-                      <div className="w-10 h-10 rounded-full bg-blue-500 text-white font-extrabold flex items-center justify-center text-xs shrink-0 shadow shadow-blue-500/10">
-                        {idx + 1}
-                      </div>
+                        return (
+                          <button
+                            key={item.id}
+                            type="button"
+                            onClick={() => {
+                              setActiveAlurId(item.id);
+                              if (alurViewMode === "overview") setAlurViewMode("focused");
+                            }}
+                            className={`flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-[11px] font-bold transition-all text-left border ${
+                              isCurrent
+                                ? "bg-white dark:bg-slate-800 text-slate-850 dark:text-white border-blue-400/60 dark:border-blue-500/60 shadow-sm ring-1 ring-blue-400/20"
+                                : "bg-white/60 dark:bg-slate-950/40 text-slate-600 dark:text-slate-400 border-transparent hover:bg-white dark:hover:bg-slate-800"
+                            }`}
+                          >
+                            <span
+                              className="w-4 h-4 rounded-full text-white text-[9px] font-black flex items-center justify-center shrink-0"
+                              style={{ backgroundColor: itemColor }}
+                            >
+                              {idx + 1}
+                            </span>
 
-                      <div className="flex-1 grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <div className="space-y-1.5">
-                          <label className="text-[8px] uppercase font-black text-slate-450 tracking-wider">Judul Langkah</label>
-                          <input
-                            type="text"
-                            value={item.title}
-                            onChange={(e) => handleUpdateAlur(item.id, "title", e.target.value)}
-                            className="w-full px-3 py-2 bg-white dark:bg-slate-900 border border-slate-250 dark:border-white/5 rounded-xl text-slate-850 dark:text-white font-bold text-xs focus:outline-none"
-                          />
-                        </div>
+                            <div className="max-w-[110px] truncate">
+                              <span className="block truncate">{item.title || `Tahap ${idx + 1}`}</span>
+                            </div>
 
-                        <div className="space-y-1.5 md:col-span-2">
-                          <label className="text-[8px] uppercase font-black text-slate-450 tracking-wider">Deskripsi Singkat</label>
-                          <input
-                            type="text"
-                            value={item.desc}
-                            onChange={(e) => handleUpdateAlur(item.id, "desc", e.target.value)}
-                            className="w-full px-3 py-2 bg-white dark:bg-slate-900 border border-slate-250 dark:border-white/5 rounded-xl text-slate-850 dark:text-white font-semibold text-xs focus:outline-none"
-                          />
-                        </div>
-                      </div>
+                            {item.image && (
+                              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0" title="Foto terpasang" />
+                            )}
+                          </button>
+                        );
+                      })}
 
-                      {/* Sorting & Control Actions */}
-                      <div className="flex items-center gap-1.5 shrink-0 self-center">
-                        <button
-                          onClick={() => handleMoveAlur(idx, "up")}
-                          disabled={idx === 0}
-                          className={`p-1.5 rounded-lg border border-slate-200 hover:bg-slate-100 dark:border-white/5 dark:hover:bg-slate-900 transition-all ${
-                            idx === 0 ? "opacity-30 cursor-not-allowed" : ""
-                          }`}
-                        >
-                          <ChevronUp size={14} />
-                        </button>
-                        <button
-                          onClick={() => handleMoveAlur(idx, "down")}
-                          disabled={idx === alurList.length - 1}
-                          className={`p-1.5 rounded-lg border border-slate-200 hover:bg-slate-100 dark:border-white/5 dark:hover:bg-slate-900 transition-all ${
-                            idx === alurList.length - 1 ? "opacity-30 cursor-not-allowed" : ""
-                          }`}
-                        >
-                          <ChevronDown size={14} />
-                        </button>
-                        <button
-                          onClick={() => handleRemoveAlur(item.id)}
-                          className="p-1.5 text-rose-500 hover:bg-rose-500/10 rounded-lg transition-all"
-                        >
-                          <Trash2 size={14} />
-                        </button>
-                      </div>
-
+                      <button
+                        type="button"
+                        onClick={handleAddAlur}
+                        className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[11px] font-semibold text-slate-400 hover:text-blue-600 hover:bg-blue-50/50 dark:hover:bg-blue-950/20 transition-all border border-dashed border-slate-300 dark:border-slate-800"
+                      >
+                        <Plus size={12} />
+                        <span>Baru</span>
+                      </button>
                     </div>
-                  ))}
+                  </div>
 
+                  {/* Empty state if no steps */}
                   {alurList.length === 0 && (
-                    <div className="text-center py-10 border-2 border-dashed border-slate-200 dark:border-slate-800 rounded-3xl text-slate-400 font-bold uppercase text-[10px] tracking-wider">
-                      Belum ada alur tahapan. Tambah tahapan baru dengan tombol diatas.
+                    <div className="text-center py-12 border-2 border-dashed border-slate-200 dark:border-slate-800 rounded-2xl space-y-3">
+                      <div className="w-10 h-10 rounded-xl bg-blue-50 dark:bg-blue-950/40 text-blue-500 flex items-center justify-center mx-auto">
+                        <Plus size={20} />
+                      </div>
+                      <div className="space-y-0.5">
+                        <p className="text-xs font-bold text-slate-700 dark:text-slate-200">Belum ada tahapan alur pendaftaran</p>
+                        <p className="text-[11px] text-slate-400">Tambahkan langkah pertama untuk ditampilkan kepada calon pendaftar.</p>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={handleAddAlur}
+                        className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-xl transition-all shadow-sm"
+                      >
+                        Tambah Langkah Pertama
+                      </button>
+                    </div>
+                  )}
+
+                  {/* VIEW MODE 1: FOCUSED STUDIO (Editor + Live Preview) */}
+                  {alurViewMode === "focused" && activeAlur && (
+                    <div className="space-y-4">
+                      {/* Step Header Context & Actions */}
+                      <div className="flex flex-wrap items-center justify-between gap-2.5 p-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/5 rounded-2xl shadow-sm">
+                        <div className="flex items-center gap-2.5">
+                          <span
+                            className="w-7 h-7 rounded-lg text-white font-mono font-black text-xs flex items-center justify-center shadow-sm"
+                            style={{ backgroundColor: activeColor }}
+                          >
+                            {String(activeIndex + 1).padStart(2, "0")}
+                          </span>
+                          <div>
+                            <h4 className="text-xs font-bold text-slate-850 dark:text-white">
+                              Mengedit Tahap {activeIndex + 1} dari {alurList.length}
+                            </h4>
+                            <p className="text-[10px] text-slate-400">ID Langkah: #{activeAlur.id}</p>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center gap-1.5">
+                          {/* Reorder Buttons */}
+                          <div className="flex items-center gap-0.5 bg-slate-100 dark:bg-white/5 p-0.5 rounded-lg border border-slate-200 dark:border-white/10">
+                            <button
+                              type="button"
+                              onClick={() => handleMoveAlur(activeIndex, "up")}
+                              disabled={activeIndex === 0}
+                              title="Geser Urutan ke Kiri / Atas"
+                              className={`p-1 rounded-md text-slate-600 dark:text-slate-300 hover:bg-white dark:hover:bg-slate-800 transition-all ${
+                                activeIndex === 0 ? "opacity-30 cursor-not-allowed" : ""
+                              }`}
+                            >
+                              <ChevronUp size={13} />
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => handleMoveAlur(activeIndex, "down")}
+                              disabled={activeIndex === alurList.length - 1}
+                              title="Geser Urutan ke Kanan / Bawah"
+                              className={`p-1 rounded-md text-slate-600 dark:text-slate-300 hover:bg-white dark:hover:bg-slate-800 transition-all ${
+                                activeIndex === alurList.length - 1 ? "opacity-30 cursor-not-allowed" : ""
+                              }`}
+                            >
+                              <ChevronDown size={13} />
+                            </button>
+                          </div>
+
+                          {/* Quick Step Nav */}
+                          <button
+                            type="button"
+                            onClick={() => {
+                              if (activeIndex > 0) setActiveAlurId(alurList[activeIndex - 1].id);
+                            }}
+                            disabled={activeIndex === 0}
+                            className={`px-2.5 py-1 rounded-lg border border-slate-200 dark:border-white/10 text-[11px] font-semibold transition-all ${
+                              activeIndex === 0
+                                ? "opacity-30 cursor-not-allowed text-slate-400"
+                                : "hover:bg-slate-50 dark:hover:bg-white/5 text-slate-700 dark:text-slate-300"
+                            }`}
+                          >
+                            Sebelumnya
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              if (activeIndex < alurList.length - 1) setActiveAlurId(alurList[activeIndex + 1].id);
+                            }}
+                            disabled={activeIndex === alurList.length - 1}
+                            className={`px-2.5 py-1 rounded-lg border border-slate-200 dark:border-white/10 text-[11px] font-semibold transition-all ${
+                              activeIndex === alurList.length - 1
+                                ? "opacity-30 cursor-not-allowed text-slate-400"
+                                : "hover:bg-slate-50 dark:hover:bg-white/5 text-slate-700 dark:text-slate-300"
+                            }`}
+                          >
+                            Selanjutnya
+                          </button>
+
+                          {/* Delete Step */}
+                          <button
+                            type="button"
+                            onClick={() => {
+                              if (confirm(`Hapus Langkah ${activeIndex + 1}: "${activeAlur.title}"?`)) {
+                                handleRemoveAlur(activeAlur.id);
+                              }
+                            }}
+                            title="Hapus Langkah Ini"
+                            className="p-1.5 text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/30 rounded-lg transition-all border border-rose-200/50 dark:border-rose-900/30"
+                          >
+                            <Trash2 size={13} />
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* 2-Column Split: Form Editor + Realtime Live Preview */}
+                      <div className="grid grid-cols-1 xl:grid-cols-12 gap-6 items-start">
+                        {/* Left: Input Form (7 cols) */}
+                        <div className="xl:col-span-7 space-y-4">
+                          {/* Card 1: Foto / Ilustrasi Langkah */}
+                          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/5 p-4 sm:p-5 rounded-2xl shadow-sm space-y-3.5">
+                            <div className="flex items-center justify-between border-b border-slate-100 dark:border-white/5 pb-2.5">
+                              <div className="flex items-center gap-1.5">
+                                <ImageIcon size={14} className="text-blue-500" />
+                                <h4 className="text-[11px] font-bold text-slate-800 dark:text-white uppercase tracking-wider">
+                                  Foto / Visual Tahapan
+                                </h4>
+                              </div>
+                              <span className="text-[10px] text-slate-400">Rasio 16:9 disarankan</span>
+                            </div>
+
+                            {activeAlur.image ? (
+                              <div className="space-y-2.5">
+                                <div className="relative h-36 sm:h-40 w-full rounded-xl overflow-hidden bg-slate-950 border border-slate-200 dark:border-white/10 group shadow-inner">
+                                  <img
+                                    src={activeAlur.image}
+                                    alt={activeAlur.title}
+                                    className="w-full h-full object-cover"
+                                    onError={(e: any) => {
+                                      e.target.src = "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=800";
+                                    }}
+                                  />
+                                  <div className="absolute inset-0 bg-slate-950/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2 p-3">
+                                    <label className="cursor-pointer px-3 py-1.5 rounded-lg bg-white/90 hover:bg-white text-slate-900 text-[11px] font-bold transition-all shadow flex items-center gap-1">
+                                      <Upload size={12} />
+                                      <span>Ganti File</span>
+                                      <input
+                                        type="file"
+                                        accept="image/*"
+                                        className="hidden"
+                                        onChange={(e) => {
+                                          const file = e.target.files?.[0];
+                                          if (file) handleAlurImageUpload(activeAlur.id, file);
+                                        }}
+                                      />
+                                    </label>
+                                    <button
+                                      type="button"
+                                      onClick={() => handleUpdateAlur(activeAlur.id, "image", "")}
+                                      className="px-3 py-1.5 rounded-lg bg-rose-600 hover:bg-rose-700 text-white text-[11px] font-bold transition-all shadow flex items-center gap-1"
+                                    >
+                                      <Trash2 size={12} />
+                                      <span>Hapus Foto</span>
+                                    </button>
+                                  </div>
+                                </div>
+
+                                <div className="flex items-center justify-between text-[10px] text-slate-400">
+                                  <span>Foto aktif terpasang</span>
+                                  <button
+                                    type="button"
+                                    onClick={() => handleUpdateAlur(activeAlur.id, "image", "")}
+                                    className="text-rose-500 hover:underline font-semibold"
+                                  >
+                                    Hapus &amp; Gunakan Placeholder
+                                  </button>
+                                </div>
+                              </div>
+                            ) : (
+                              <div
+                                onDragEnter={(e) => {
+                                  e.preventDefault();
+                                  e.stopPropagation();
+                                  setAlurDragActive(true);
+                                }}
+                                onDragOver={(e) => {
+                                  e.preventDefault();
+                                  e.stopPropagation();
+                                  setAlurDragActive(true);
+                                }}
+                                onDragLeave={(e) => {
+                                  e.preventDefault();
+                                  e.stopPropagation();
+                                  setAlurDragActive(false);
+                                }}
+                                onDrop={(e) => {
+                                  e.preventDefault();
+                                  e.stopPropagation();
+                                  setAlurDragActive(false);
+                                  const file = e.dataTransfer.files?.[0];
+                                  if (file) handleAlurImageUpload(activeAlur.id, file);
+                                }}
+                                className={`relative h-36 sm:h-40 w-full rounded-xl border-2 border-dashed flex flex-col items-center justify-center p-3 text-center transition-all ${
+                                  alurDragActive
+                                    ? "border-blue-500 bg-blue-50/50 dark:bg-blue-950/20"
+                                    : "border-slate-200 dark:border-white/10 hover:border-blue-400/60 bg-slate-50/50 dark:bg-slate-950/30"
+                                }`}
+                              >
+                                <div className="w-8 h-8 rounded-lg bg-blue-500/10 text-blue-500 flex items-center justify-center mb-1.5">
+                                  <Upload size={16} />
+                                </div>
+                                <p className="text-[11px] font-bold text-slate-700 dark:text-slate-200 mb-0.5">
+                                  Tarik &amp; lepas file foto di sini
+                                </p>
+                                <p className="text-[10px] text-slate-400 mb-2.5">
+                                  Format: JPG, PNG, atau WEBP (Maks. 5MB)
+                                </p>
+                                <label className="cursor-pointer px-3 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-[11px] font-bold transition-all shadow-sm flex items-center gap-1">
+                                  <Upload size={12} />
+                                  <span>Pilih dari Komputer</span>
+                                  <input
+                                    type="file"
+                                    accept="image/*"
+                                    className="hidden"
+                                    onChange={(e) => {
+                                      const file = e.target.files?.[0];
+                                      if (file) handleAlurImageUpload(activeAlur.id, file);
+                                    }}
+                                  />
+                                </label>
+                              </div>
+                            )}
+
+                            {/* URL Image Input & Sample Quick Pickers */}
+                            <div className="space-y-2.5 pt-1 border-t border-slate-100 dark:border-white/5">
+                              <div className="space-y-1">
+                                <label className="text-[10px] font-bold text-slate-500 dark:text-slate-400 block">
+                                  Atau Tempel URL Gambar:
+                                </label>
+                                <div className="flex gap-1.5">
+                                  <input
+                                    type="text"
+                                    placeholder="https://images.unsplash.com/photo-..."
+                                    value={activeAlur.image?.startsWith("data:") ? "" : (activeAlur.image || "")}
+                                    onChange={(e) => handleUpdateAlur(activeAlur.id, "image", e.target.value)}
+                                    className="flex-1 px-3 py-1.5 bg-slate-50 dark:bg-slate-950/60 border border-slate-200 dark:border-white/10 rounded-lg text-[11px] font-mono text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-1 focus:ring-blue-500/30"
+                                  />
+                                  {activeAlur.image && !activeAlur.image.startsWith("data:") && (
+                                    <button
+                                      type="button"
+                                      onClick={() => handleUpdateAlur(activeAlur.id, "image", "")}
+                                      className="px-2.5 py-1 text-[11px] font-semibold text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/20 rounded-lg transition-all"
+                                    >
+                                      Reset
+                                    </button>
+                                  )}
+                                </div>
+                              </div>
+
+                              {/* Sample Inspiration Buttons */}
+                              <div className="space-y-1">
+                                <span className="text-[9px] uppercase font-bold text-slate-400 tracking-wider block">
+                                  Contoh Foto Cepat (Unsplash):
+                                </span>
+                                <div className="flex flex-wrap gap-1.5">
+                                  {sampleAlurImages.map((samp, sIdx) => (
+                                    <button
+                                      key={sIdx}
+                                      type="button"
+                                      onClick={() => {
+                                        handleUpdateAlur(activeAlur.id, "image", samp.url);
+                                        showToastMsg(`Foto "${samp.label}" diterapkan.`);
+                                      }}
+                                      className="px-2 py-0.5 rounded-md bg-slate-100 hover:bg-slate-200 dark:bg-white/5 dark:hover:bg-white/10 text-slate-600 dark:text-slate-300 text-[10px] font-medium transition-colors"
+                                    >
+                                      + {samp.label}
+                                    </button>
+                                  ))}
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Card 2: Konten Teks & Aksen Warna */}
+                          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/5 p-4 sm:p-5 rounded-2xl shadow-sm space-y-3.5">
+                            <div className="flex items-center gap-1.5 border-b border-slate-100 dark:border-white/5 pb-2.5">
+                              <FileText size={14} className="text-blue-500" />
+                              <h4 className="text-[11px] font-bold text-slate-800 dark:text-white uppercase tracking-wider">
+                                Teks Langkah &amp; Warna Aksen
+                              </h4>
+                            </div>
+
+                            {/* Color Selector */}
+                            <div className="space-y-1.5">
+                              <label className="text-[11px] font-bold text-slate-700 dark:text-slate-300 block">
+                                Warna Aksen Nomor &amp; Sorotan
+                              </label>
+                              <div className="flex flex-wrap items-center gap-2">
+                                {alurColorPalette.map((c) => (
+                                  <button
+                                    key={c.value}
+                                    type="button"
+                                    title={c.label}
+                                    onClick={() => handleUpdateAlur(activeAlur.id, "color", c.value)}
+                                    className={`w-6 h-6 rounded-full transition-all flex items-center justify-center ${
+                                      activeColor === c.value
+                                        ? "scale-115 ring-2 ring-offset-2 ring-blue-500 shadow"
+                                        : "opacity-70 hover:opacity-100 hover:scale-105"
+                                    }`}
+                                    style={{ backgroundColor: c.value }}
+                                  >
+                                    {activeColor === c.value && <Check size={11} className="text-white" />}
+                                  </button>
+                                ))}
+                                <span className="text-[10px] font-medium text-slate-400 pl-1.5">
+                                  {alurColorPalette.find(c => c.value === activeColor)?.label || "Kustom"}
+                                </span>
+                              </div>
+                            </div>
+
+                            {/* Step Title Input */}
+                            <div className="space-y-1">
+                              <div className="flex items-center justify-between">
+                                <label className="text-[11px] font-bold text-slate-700 dark:text-slate-300">
+                                  Judul Langkah
+                                </label>
+                                <span className="text-[9px] text-slate-400">{activeAlur.title.length}/100</span>
+                              </div>
+                              <input
+                                type="text"
+                                maxLength={100}
+                                value={activeAlur.title}
+                                onChange={(e) => handleUpdateAlur(activeAlur.id, "title", e.target.value)}
+                                placeholder="Contoh: Pendaftaran Online &amp; Pengisian Berkas"
+                                className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-950/60 border border-slate-200 dark:border-white/10 rounded-xl text-slate-850 dark:text-white font-bold text-xs focus:outline-none focus:ring-1 focus:ring-blue-500/30"
+                              />
+                            </div>
+
+                            {/* Step Description Textarea */}
+                            <div className="space-y-1">
+                              <div className="flex items-center justify-between">
+                                <label className="text-[11px] font-bold text-slate-700 dark:text-slate-300">
+                                  Deskripsi &amp; Instruksi Siswa
+                                </label>
+                                <span className="text-[9px] text-slate-400">{activeAlur.desc.length}/500</span>
+                              </div>
+                              <textarea
+                                rows={3}
+                                maxLength={500}
+                                value={activeAlur.desc}
+                                onChange={(e) => handleUpdateAlur(activeAlur.id, "desc", e.target.value)}
+                                placeholder="Jelaskan tahapan ini secara jelas dan ringkas agar mudah dipahami calon pendaftar..."
+                                className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-950/60 border border-slate-200 dark:border-white/10 rounded-xl text-slate-700 dark:text-slate-200 text-xs leading-relaxed focus:outline-none focus:ring-1 focus:ring-blue-500/30 resize-none"
+                              />
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Right: Real-time Live Preview (5 cols) */}
+                        <div className="xl:col-span-5 sticky top-20 space-y-3">
+                          <div className="flex items-center justify-between px-1">
+                            <span className="text-[11px] font-bold text-slate-600 dark:text-slate-300 flex items-center gap-1.5">
+                              <Eye size={13} className="text-blue-500" />
+                              <span>Pratinjau Halaman Website</span>
+                            </span>
+                            <span className="flex items-center gap-1 text-[9px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 px-2 py-0.5 rounded-full border border-emerald-200/50 dark:border-emerald-800/30">
+                              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                              Sinkron Realtime
+                            </span>
+                          </div>
+
+                          {/* Preview Card reproducing landing page design */}
+                          <div className="p-4 sm:p-5 bg-slate-50/70 dark:bg-slate-950/50 border border-slate-200 dark:border-white/10 rounded-2xl shadow-sm">
+                            <div className="space-y-3.5">
+                              {/* Photo block */}
+                              <div className="relative h-32 sm:h-36 w-full rounded-xl overflow-hidden bg-slate-100 dark:bg-slate-900 border border-slate-200/50 dark:border-white/5 shadow-sm">
+                                {activeAlur.image ? (
+                                  <img
+                                    src={activeAlur.image}
+                                    alt={activeAlur.title}
+                                    className="w-full h-full object-cover"
+                                    onError={(e: any) => {
+                                      e.target.src = "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=800";
+                                    }}
+                                  />
+                                ) : (
+                                  <div
+                                    className="w-full h-full flex flex-col items-center justify-center gap-1"
+                                    style={{ backgroundColor: `${activeColor}15` }}
+                                  >
+                                    <span className="font-black font-mono text-4xl opacity-30" style={{ color: activeColor }}>
+                                      {String(activeIndex + 1).padStart(2, "0")}
+                                    </span>
+                                    <span className="text-[9px] font-bold uppercase tracking-wider text-slate-400">
+                                      Foto Belum Diatur
+                                    </span>
+                                  </div>
+                                )}
+                              </div>
+
+                              {/* Text Below (Open text, no card border, clean breathing space) */}
+                              <div className="px-0.5 space-y-1.5">
+                                <div className="flex items-center gap-1.5">
+                                  <span className="text-xl font-black font-mono leading-none" style={{ color: activeColor }}>
+                                    {String(activeIndex + 1).padStart(2, "0")}
+                                  </span>
+                                  <span className="text-[9px] font-bold uppercase tracking-widest text-slate-400 dark:text-slate-500">
+                                    Tahap
+                                  </span>
+                                </div>
+                                <h3 className="text-sm sm:text-base font-black text-slate-800 dark:text-white leading-snug">
+                                  {activeAlur.title || `Tahap ${activeIndex + 1}`}
+                                </h3>
+                                <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
+                                  {activeAlur.desc || "Belum ada deskripsi instruksi untuk langkah ini."}
+                                </p>
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Info note */}
+                          <div className="p-3 bg-blue-50/60 dark:bg-blue-950/20 border border-blue-200/50 dark:border-blue-900/30 rounded-xl flex items-start gap-2 text-xs text-blue-900 dark:text-blue-200">
+                            <Sparkles size={14} className="text-blue-500 shrink-0 mt-0.5" />
+                            <p className="text-[10px] leading-relaxed">
+                              <strong>Teks &amp; Foto Terpisah:</strong> Gambar dan teks disimpan mandiri. Anda bebas mengedit tulisan sewaktu-waktu tanpa mengubah gambar, dan sebaliknya.
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* VIEW MODE 2: OVERVIEW GRID (Semua Kartu) */}
+                  {alurViewMode === "overview" && (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                      {alurList.map((item, idx) => {
+                        const itemColor = item.color || alurColorPalette[idx % alurColorPalette.length]?.value;
+
+                        return (
+                          <div
+                            key={item.id}
+                            className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/5 rounded-2xl p-4 shadow-sm flex flex-col justify-between space-y-3 hover:border-blue-300 dark:hover:border-blue-500/40 transition-all group"
+                          >
+                            <div className="space-y-3">
+                              {/* Top Bar with Number & Quick Action */}
+                              <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-1.5">
+                                  <span
+                                    className="w-6 h-6 rounded-lg text-white font-mono font-black text-[11px] flex items-center justify-center shadow-sm"
+                                    style={{ backgroundColor: itemColor }}
+                                  >
+                                    {String(idx + 1).padStart(2, "0")}
+                                  </span>
+                                  <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+                                    Langkah {idx + 1}
+                                  </span>
+                                </div>
+
+                                <div className="flex items-center gap-0.5">
+                                  <button
+                                    type="button"
+                                    onClick={() => handleMoveAlur(idx, "up")}
+                                    disabled={idx === 0}
+                                    title="Pindah ke Atas"
+                                    className={`p-1 text-slate-400 hover:text-slate-800 dark:hover:text-white rounded-md transition-colors ${
+                                      idx === 0 ? "opacity-20 cursor-not-allowed" : ""
+                                    }`}
+                                  >
+                                    <ChevronUp size={13} />
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={() => handleMoveAlur(idx, "down")}
+                                    disabled={idx === alurList.length - 1}
+                                    title="Pindah ke Bawah"
+                                    className={`p-1 text-slate-400 hover:text-slate-800 dark:hover:text-white rounded-md transition-colors ${
+                                      idx === alurList.length - 1 ? "opacity-20 cursor-not-allowed" : ""
+                                    }`}
+                                  >
+                                    <ChevronDown size={13} />
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      if (confirm(`Hapus langkah "${item.title}"?`)) {
+                                        handleRemoveAlur(item.id);
+                                      }
+                                    }}
+                                    title="Hapus Langkah"
+                                    className="p-1 text-rose-400 hover:text-rose-600 rounded-md transition-colors"
+                                  >
+                                    <Trash2 size={13} />
+                                  </button>
+                                </div>
+                              </div>
+
+                              {/* Thumbnail preview */}
+                              <div className="relative h-28 w-full rounded-xl overflow-hidden bg-slate-100 dark:bg-slate-950 border border-slate-200/50 dark:border-white/5">
+                                {item.image ? (
+                                  <img
+                                    src={item.image}
+                                    alt={item.title}
+                                    className="w-full h-full object-cover"
+                                    onError={(e: any) => {
+                                      e.target.src = "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=800";
+                                    }}
+                                  />
+                                ) : (
+                                  <div
+                                    className="w-full h-full flex items-center justify-center font-mono font-black text-2xl opacity-20"
+                                    style={{ color: itemColor }}
+                                  >
+                                    {String(idx + 1).padStart(2, "0")}
+                                  </div>
+                                )}
+                              </div>
+
+                              {/* Text info */}
+                              <div className="space-y-1">
+                                <h4 className="text-xs font-bold text-slate-850 dark:text-white line-clamp-1">
+                                  {item.title || `Tahap ${idx + 1}`}
+                                </h4>
+                                <p className="text-[11px] text-slate-400 line-clamp-2 leading-relaxed">
+                                  {item.desc || "Belum ada deskripsi."}
+                                </p>
+                              </div>
+                            </div>
+
+                            {/* Open in Editor button */}
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setActiveAlurId(item.id);
+                                setAlurViewMode("focused");
+                              }}
+                              className="w-full py-1.5 px-2.5 rounded-lg bg-slate-100 hover:bg-blue-600 dark:bg-white/5 dark:hover:bg-blue-600 text-slate-700 dark:text-slate-200 hover:text-white dark:hover:text-white text-[11px] font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+                            >
+                              <SlidersHorizontal size={12} />
+                              <span>Buka di Editor Fokus</span>
+                            </button>
+                          </div>
+                        );
+                      })}
+
+                      {/* Add step card */}
+                      <button
+                        type="button"
+                        onClick={handleAddAlur}
+                        className="border-2 border-dashed border-slate-200 dark:border-slate-800 hover:border-blue-400 dark:hover:border-blue-500 rounded-2xl p-6 flex flex-col items-center justify-center text-center gap-1.5 group transition-all"
+                      >
+                        <div className="w-8 h-8 rounded-xl bg-blue-50 dark:bg-blue-950/40 text-blue-500 flex items-center justify-center group-hover:scale-110 transition-transform">
+                          <Plus size={16} />
+                        </div>
+                        <span className="text-xs font-bold text-slate-700 dark:text-slate-300">
+                          Tambah Langkah Baru
+                        </span>
+                        <span className="text-[10px] text-slate-400">
+                          Tambahkan tahap proses berikutnya
+                        </span>
+                      </button>
                     </div>
                   )}
                 </div>
-              </div>
-            )}
+              );
+            })()}
 
             {/* TAB 4: Form & Panduan */}
             {activeTab === "form" && (
