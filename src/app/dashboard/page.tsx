@@ -1,17 +1,17 @@
 "use client";
 
-import React, { useState, useEffect, useRef, useCallback } from "react";
+import React, { useState, useEffect } from "react";
 import { usePPDB } from "@/context/PPDBContext";
 import {
   Users, ShieldCheck, Clock, AlertTriangle, BarChart2,
-  Pencil, TrendingUp, TrendingDown, ArrowRight
+  Pencil, ArrowRight
 } from "lucide-react";
 import Link from "next/link";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import KuotaTab from "@/components/KuotaTab";
-
-import dynamic from "next/dynamic";
-const ReactApexChart = dynamic(() => import("react-apexcharts"), { ssr: false });
+import StatCard from "@/components/dashboard/StatCard";
+import DashboardAreaChart from "@/components/dashboard/DashboardAreaChart";
+import DashboardBarChart from "@/components/dashboard/DashboardBarChart";
 
 interface MajorItem {
   name: string;
@@ -20,293 +20,6 @@ interface MajorItem {
   count?: number;
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Animated counter hook
-// ─────────────────────────────────────────────────────────────────────────────
-function useCountUp(target: number, duration = 1400, trigger = false) {
-  const [value, setValue] = useState(0);
-  useEffect(() => {
-    if (!trigger || target === 0) { setValue(target); return; }
-    let start: number | null = null;
-    const raf = (ts: number) => {
-      if (!start) start = ts;
-      const p = Math.min((ts - start) / duration, 1);
-      const eased = 1 - Math.pow(1 - p, 3); // cubic ease-out
-      setValue(Math.round(eased * target));
-      if (p < 1) requestAnimationFrame(raf);
-    };
-    requestAnimationFrame(raf);
-  }, [target, duration, trigger]);
-  return value;
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-// Animated Stat Card
-// ─────────────────────────────────────────────────────────────────────────────
-function StatCard({
-  label, value, sub, color, icon, delay = 0, trigger = false
-}: {
-  label: string; value: number; sub: string; color: string;
-  icon: React.ReactNode; delay?: number; trigger?: boolean;
-}) {
-  const displayValue = useCountUp(value, 1300 + delay * 80, trigger);
-  const colorMap: Record<string, { bg: string; text: string; icon: string; border: string; ring: string }> = {
-    blue:    { bg: "bg-blue-50/70 dark:bg-blue-950/30",    text: "text-blue-600 dark:text-blue-400",    icon: "bg-blue-100 dark:bg-blue-950/60 text-blue-500 dark:text-blue-400",    border: "hover:border-blue-200 dark:hover:border-blue-800", ring: "ring-blue-500/20" },
-    emerald: { bg: "bg-emerald-50/70 dark:bg-emerald-950/30", text: "text-emerald-600 dark:text-emerald-400", icon: "bg-emerald-100 dark:bg-emerald-950/60 text-emerald-500 dark:text-emerald-400", border: "hover:border-emerald-200 dark:hover:border-emerald-800", ring: "ring-emerald-500/20" },
-    amber:   { bg: "bg-amber-50/70 dark:bg-amber-950/30",   text: "text-amber-600 dark:text-amber-400",   icon: "bg-amber-100 dark:bg-amber-950/60 text-amber-500 dark:text-amber-400",   border: "hover:border-amber-200 dark:hover:border-amber-800", ring: "ring-amber-500/20" },
-    rose:    { bg: "bg-rose-50/70 dark:bg-rose-950/30",     text: "text-rose-600 dark:text-rose-400",     icon: "bg-rose-100 dark:bg-rose-950/60 text-rose-500 dark:text-rose-400",     border: "hover:border-rose-200 dark:hover:border-rose-800", ring: "ring-rose-500/20" },
-  };
-  const c = colorMap[color] ?? colorMap.blue;
-
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 28, scale: 0.96 }}
-      animate={{ opacity: 1, y: 0, scale: 1 }}
-      transition={{ duration: 0.5, delay: delay * 0.1, ease: [0.22, 1, 0.36, 1] }}
-      className={`bg-white dark:bg-[#111827] border border-slate-200/60 dark:border-slate-800/40 rounded-2xl p-5
-        relative overflow-hidden shadow-sm hover:shadow-lg ${c.border} transition-all duration-300 group cursor-default`}
-    >
-      <div className={`absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 ${c.bg}`} />
-      <div className="relative">
-        <div className="flex items-center justify-between mb-3">
-          <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400 dark:text-slate-500">{label}</span>
-          <div className={`w-9 h-9 rounded-xl flex items-center justify-center ${c.icon}`}>{icon}</div>
-        </div>
-        <h3 className={`text-3xl font-black leading-none mb-1 tabular-nums ${c.text}`}>{displayValue}</h3>
-        <span className="text-[9px] text-slate-400 dark:text-slate-500 font-bold uppercase tracking-wider">{sub}</span>
-      </div>
-    </motion.div>
-  );
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-// Area Chart using ApexCharts (Tailadmin style)
-// ─────────────────────────────────────────────────────────────────────────────
-function AreaChart({
-  data,
-  labels,
-  color = "#3b82f6",
-}: {
-  data: number[];
-  labels: string[];
-  color?: string;
-}) {
-  const [isDark, setIsDark] = useState(false);
-
-  useEffect(() => {
-    setIsDark(document.documentElement.classList.contains("dark"));
-    const observer = new MutationObserver(() => {
-      setIsDark(document.documentElement.classList.contains("dark"));
-    });
-    observer.observe(document.documentElement, { attributes: true, attributeFilter: ["class"] });
-    return () => observer.disconnect();
-  }, []);
-  
-  const series = [
-    {
-      name: "Pendaftar",
-      data: data,
-    },
-  ];
-
-  const options: any = {
-    legend: { show: false, position: "top", horizontalAlign: "left" },
-    colors: [color],
-    chart: {
-      fontFamily: "inherit",
-      height: 335,
-      type: "area",
-      toolbar: {
-        show: true,
-      },
-    },
-    fill: {
-      type: "gradient",
-      gradient: {
-        shadeIntensity: 1,
-        opacityFrom: 0.55,
-        opacityTo: 0.15,
-        stops: [0, 90, 100]
-      },
-    },
-    stroke: {
-      curve: "smooth",
-      width: 2,
-    },
-    xaxis: {
-      categories: labels,
-      axisBorder: { show: false },
-      axisTicks: { show: false },
-      labels: {
-        style: {
-          colors: "#64748b",
-        },
-      },
-    },
-    yaxis: {
-      labels: {
-        style: {
-          colors: "#64748b",
-        },
-      },
-    },
-    grid: {
-      strokeDashArray: 5,
-      xaxis: { lines: { show: false } },
-      yaxis: { lines: { show: true } },
-      borderColor: isDark ? "#334155" : "#e2e8f0",
-    },
-    dataLabels: { enabled: false },
-    tooltip: {
-      theme: isDark ? "dark" : "light",
-    },
-  };
-
-  return (
-    <div className="w-full h-[300px]">
-      <div className="-ml-3">
-        <ReactApexChart
-          options={options}
-          series={series}
-          type="area"
-          height={320}
-          width={"100%"}
-        />
-      </div>
-    </div>
-  );
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-// Bar Chart with animated grow-up bars
-// ─────────────────────────────────────────────────────────────────────────────
-function BarChart({
-  data,
-}: {
-  data: { label: string; value: number; color: string }[];
-}) {
-  const [hovered, setHovered] = useState<number | null>(null);
-  const [animated, setAnimated] = useState(false);
-  const maxVal = Math.max(...data.map((d) => d.value), 1);
-  const total = data.reduce((s, d) => s + d.value, 0) || 1;
-
-  const W = 1000;
-  const H = 260;
-  const PAD_L = 40;
-  const PAD_R = 20;
-  const PAD_T = 20;
-  const PAD_B = 48;
-
-  const barW = Math.min(80, ((W - PAD_L - PAD_R) / data.length) * 0.55);
-  const gap = (W - PAD_L - PAD_R) / data.length;
-
-  const yTicks = [0, 0.25, 0.5, 0.75, 1].map((frac) => ({
-    val: Math.round(maxVal * frac),
-    y: PAD_T + (1 - frac) * (H - PAD_T - PAD_B),
-  }));
-
-  useEffect(() => {
-    const t = setTimeout(() => setAnimated(true), 400);
-    return () => clearTimeout(t);
-  }, []);
-
-  return (
-    <div className="relative w-full" style={{ height: 200 }}>
-      <svg viewBox={`0 0 ${W} ${H}`} className="w-full h-full overflow-visible">
-        {/* Grid */}
-        {yTicks.map((t, i) => (
-          <g key={i}>
-            <line x1={PAD_L} y1={t.y} x2={W - PAD_R} y2={t.y}
-              stroke="currentColor" strokeOpacity="0.06" strokeWidth="1"
-              className="text-slate-900 dark:text-white" />
-            <text x={PAD_L - 6} y={t.y + 4} textAnchor="end"
-              fontSize="11" className="fill-slate-400 dark:fill-slate-600" opacity="0.75">
-              {t.val}
-            </text>
-          </g>
-        ))}
-
-        {data.map((d, i) => {
-          const cx = PAD_L + gap * i + gap / 2;
-          const fullBarH = ((d.value / maxVal) * (H - PAD_T - PAD_B));
-          const barH = animated ? fullBarH : 0;
-          const barY = H - PAD_B - (animated ? fullBarH : 0);
-          const isHov = hovered === i;
-
-          return (
-            <g key={i}
-              onMouseEnter={() => setHovered(i)}
-              onMouseLeave={() => setHovered(null)}
-              className="cursor-pointer"
-            >
-              {/* Ghost bg */}
-              <rect x={cx - barW / 2} y={PAD_T} width={barW}
-                height={H - PAD_T - PAD_B}
-                rx="6" fill={d.color} opacity={isHov ? 0.08 : 0}
-                className="transition-opacity duration-200" />
-              {/* Bar - animated height */}
-              <rect
-                x={cx - barW / 2}
-                y={barY}
-                width={barW}
-                height={barH}
-                rx="6"
-                fill={d.color}
-                opacity={isHov ? 1 : 0.78}
-                style={{
-                  transition: "height 0.7s cubic-bezier(0.22,1,0.36,1), y 0.7s cubic-bezier(0.22,1,0.36,1), opacity 0.2s"
-                }}
-              />
-              {/* Value on hover */}
-              {isHov && animated && (
-                <text x={cx} y={H - PAD_B - fullBarH - 7} textAnchor="middle"
-                  fontSize="12" fontWeight="bold" fill={d.color}>
-                  {d.value}
-                </text>
-              )}
-              {/* X label */}
-              <text x={cx} y={H - PAD_B + 16} textAnchor="middle"
-                fontSize="11" className="fill-slate-500 dark:fill-slate-400">
-                {d.label}
-              </text>
-              {/* Percentage */}
-              <text x={cx} y={H - PAD_B + 30} textAnchor="middle"
-                fontSize="10" className="fill-slate-400 dark:fill-slate-600">
-                {Math.round((d.value / total) * 100)}%
-              </text>
-            </g>
-          );
-        })}
-      </svg>
-
-      {/* Hover Tooltip */}
-      <AnimatePresence>
-        {hovered !== null && (
-          <motion.div
-            initial={{ opacity: 0, y: 4, scale: 0.95 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.1 }}
-            className="absolute pointer-events-none bg-slate-900/95 dark:bg-slate-950 border border-slate-700/50 backdrop-blur-sm rounded-xl px-3.5 py-2.5 shadow-xl z-20 flex flex-col gap-0.5"
-            style={{
-              left: `${((PAD_L + gap * hovered + gap / 2) / W) * 100}%`,
-              top: "10%",
-              transform: "translate(-50%, -100%)",
-            }}
-          >
-            <span className="text-[9px] font-black uppercase tracking-widest text-slate-400">{data[hovered].label}</span>
-            <span className="text-sm font-black text-white">{data[hovered].value} <span className="text-[10px] text-slate-400 font-bold">pendaftar</span></span>
-            <span className="text-[10px] text-slate-400 font-semibold">{Math.round((data[hovered].value / total) * 100)}% dari total</span>
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </div>
-  );
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-// Main Dashboard Page
-// ─────────────────────────────────────────────────────────────────────────────
 export default function DashboardOverview() {
   const { applicants, activeStudents } = usePPDB();
   const [trendView, setTrendView] = useState<"hari" | "minggu" | "bulan" | "periode">("hari");
@@ -326,7 +39,6 @@ export default function DashboardOverview() {
     { name: "Animasi", dbName: "Animasi", color: "#ec4899" },
   ]);
 
-  // Trigger counters shortly after mount
   useEffect(() => {
     const t = setTimeout(() => setCounterTrigger(true), 200);
     return () => clearTimeout(t);
@@ -365,7 +77,6 @@ export default function DashboardOverview() {
       .catch(() => {});
   }, []);
 
-  // ── Trend Data ──────────────────────────────────────────────────────────────
   const getTrendData = () => {
     const labels: string[] = [];
     const counts: number[] = [];
@@ -424,7 +135,6 @@ export default function DashboardOverview() {
 
   return (
     <div className="space-y-6">
-
       {/* ── Stats Cards ──────────────────────────────────────────────────────── */}
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
         {stats.map((s, i) => (
@@ -462,7 +172,7 @@ export default function DashboardOverview() {
                 <button
                   key={v}
                   onClick={() => setTrendView(v)}
-                  className={`px-3 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-wider transition-all ${trendView === v
+                  className={`px-3 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-wider transition-all cursor-pointer ${trendView === v
                     ? "bg-white dark:bg-slate-800 text-blue-600 dark:text-white shadow-sm border border-slate-200/30"
                     : "text-slate-400 hover:text-slate-700 dark:hover:text-white"}`}
                 >
@@ -471,7 +181,7 @@ export default function DashboardOverview() {
               ))}
             </div>
           </div>
-          <AreaChart data={trend.counts} labels={trend.labels} color="#3b82f6" />
+          <DashboardAreaChart data={trend.counts} labels={trend.labels} color="#3b82f6" />
         </div>
 
         {/* Kuota Panel */}
@@ -510,7 +220,6 @@ export default function DashboardOverview() {
             </h3>
             <p className="text-[10px] text-slate-400 dark:text-slate-500 font-semibold mt-0.5">Jumlah calon siswa berdasarkan pilihan jurusan pertama</p>
           </div>
-          {/* Legend */}
           <div className="hidden sm:flex items-center flex-wrap gap-x-4 gap-y-1">
             {majorsList.slice(0, 6).map((m) => (
               <div key={m.name} className="flex items-center gap-1.5">
@@ -520,7 +229,7 @@ export default function DashboardOverview() {
             ))}
           </div>
         </div>
-        <BarChart data={barData} />
+        <DashboardBarChart data={barData} />
       </motion.div>
 
       {/* ── Recent Applicants + Kuota Progress ──────────────────────────────── */}
@@ -560,8 +269,8 @@ export default function DashboardOverview() {
                     transition={{ delay: 0.8 + idx * 0.06, duration: 0.35 }}
                     className="hover:bg-slate-50/60 dark:hover:bg-white/3 transition-all"
                   >
-                    <td className="py-2.5 pl-2 font-bold text-slate-800 dark:text-white max-w-[130px] truncate">{a.nama}</td>
-                    <td className="py-2.5 truncate max-w-[110px] text-slate-500 dark:text-slate-400 font-medium">{a.sekolah_asal || a.sekolahAsal}</td>
+                    <td className="py-2.5 pl-2 font-bold text-slate-800 dark:text-white max-w-32.5 truncate">{a.nama}</td>
+                    <td className="py-2.5 truncate max-w-27.5 text-slate-500 dark:text-slate-400 font-medium">{a.sekolah_asal || a.sekolahAsal}</td>
                     <td className="py-2.5">
                       <span className="px-2 py-0.5 rounded-full bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 border border-blue-100 dark:border-blue-900/40 text-[9px] font-bold uppercase tracking-wide">
                         {majorsList.find((m) => m.dbName === a.jurusan_1 || m.dbName === a.jurusan1)?.name || a.jurusan_1 || "PPLG"}
@@ -602,7 +311,6 @@ export default function DashboardOverview() {
           </div>
         </div>
       </motion.div>
-
     </div>
   );
 }
