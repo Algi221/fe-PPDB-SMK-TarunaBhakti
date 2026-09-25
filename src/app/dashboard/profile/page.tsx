@@ -4,10 +4,10 @@ import React, { useState, useRef, useEffect, useCallback } from "react";
 import { usePPDB } from "@/context/PPDBContext";
 import Cropper from "react-easy-crop";
 import type { Area } from "react-easy-crop";
-import {
-  Camera, User, Save, CheckCircle2,
-  AlertCircle, Shield, Calendar, Trash2, ZoomIn, ZoomOut, RotateCw, Crop
-} from "lucide-react";
+import { ZoomIn, ZoomOut, RotateCw, Crop } from "lucide-react";
+import ProfileAvatarCard from "@/components/dashboard/profile/ProfileAvatarCard";
+import ProfileEditForm from "@/components/dashboard/profile/ProfileEditForm";
+import PasswordEditForm from "@/components/dashboard/profile/PasswordEditForm";
 
 // ── Crop helper ──────────────────────────────────────────────────────────────
 function createImage(url: string): Promise<HTMLImageElement> {
@@ -55,6 +55,14 @@ export default function ProfilePage() {
   const [fotoProfil, setFotoProfil] = useState<string | null>(null);
   const [previewPhoto, setPreviewPhoto] = useState<string | null>(null);
 
+  // ── Password form state ──────────────────────────────────────────────────
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [showCurrentPwd, setShowCurrentPwd] = useState(false);
+  const [showNewPwd, setShowNewPwd] = useState(false);
+  const [showConfirmPwd, setShowConfirmPwd] = useState(false);
+
   // ── Crop modal state ──────────────────────────────────────────────────────
   const [cropModalOpen, setCropModalOpen] = useState(false);
   const [cropImageSrc, setCropImageSrc] = useState<string | null>(null);
@@ -65,7 +73,9 @@ export default function ProfilePage() {
 
   // ── Status ───────────────────────────────────────────────────────────────
   const [profileSaving, setProfileSaving] = useState(false);
+  const [passwordSaving, setPasswordSaving] = useState(false);
   const [profileMsg, setProfileMsg] = useState<{ type: "success" | "error"; text: string } | null>(null);
+  const [passwordMsg, setPasswordMsg] = useState<{ type: "success" | "error"; text: string } | null>(null);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -179,13 +189,58 @@ export default function ProfilePage() {
     }
   };
 
+  // ── Change password ───────────────────────────────────────────────────────
+  const handleChangePassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!currentPassword || !newPassword || !confirmPassword) {
+      setPasswordMsg({ type: "error", text: "Semua kolom password harus diisi." });
+      return;
+    }
+    if (newPassword.length < 6) {
+      setPasswordMsg({ type: "error", text: "Password baru minimal 6 karakter." });
+      return;
+    }
+    if (newPassword !== confirmPassword) {
+      setPasswordMsg({ type: "error", text: "Konfirmasi password tidak cocok." });
+      return;
+    }
 
+    setPasswordSaving(true);
+    setPasswordMsg(null);
+
+    try {
+      const res = await fetch(`${API_URL}/api/auth/change-password`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${adminToken}`,
+        },
+        body: JSON.stringify({
+          currentPassword,
+          newPassword,
+        }),
+      });
+
+      const data = await res.json();
+      if (data.success) {
+        setPasswordMsg({ type: "success", text: "Password berhasil diubah!" });
+        setCurrentPassword("");
+        setNewPassword("");
+        setConfirmPassword("");
+      } else {
+        setPasswordMsg({ type: "error", text: data.message || "Gagal mengubah password." });
+      }
+    } catch {
+      setPasswordMsg({ type: "error", text: "Gagal terhubung ke server." });
+    } finally {
+      setPasswordSaving(false);
+    }
+  };
 
   const userInitial = adminUser?.nama ? adminUser.nama.charAt(0).toUpperCase() : "A";
 
   return (
     <div className="max-w-4xl mx-auto space-y-6 animate-in fade-in duration-500">
-
       {/* ── Page Header ─────────────────────────────────────────────────────── */}
       <div>
         <h1 className="text-xl font-black text-slate-800 dark:text-white tracking-tight">Profil Saya</h1>
@@ -193,190 +248,46 @@ export default function ProfilePage() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-
         {/* ── LEFT: Photo + Info Card ─────────────────────────────────────────── */}
         <div className="lg:col-span-1">
-          <div className="bg-white dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800/40 rounded-3xl p-6 shadow-sm flex flex-col items-center gap-4 text-center">
-
-            {/* Avatar */}
-            <div className="relative group">
-              <div className="w-28 h-28 rounded-3xl overflow-hidden bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center shadow-lg shadow-blue-500/20">
-                {previewPhoto ? (
-                  <img src={previewPhoto} alt="Foto Profil" className="w-full h-full object-cover" />
-                ) : (
-                  <span className="text-4xl font-black text-white">{userInitial}</span>
-                )}
-              </div>
-
-              {/* Camera overlay */}
-              <button
-                type="button"
-                onClick={() => fileInputRef.current?.click()}
-                className="absolute inset-0 rounded-3xl bg-black/50 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity duration-200 cursor-pointer"
-              >
-                <Camera size={24} className="text-white" />
-              </button>
-
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept="image/jpeg,image/png,image/webp"
-                className="hidden"
-                onChange={handlePhotoChange}
-              />
-            </div>
-
-            {/* Photo actions */}
-            <div className="flex gap-2">
-              <button
-                type="button"
-                onClick={() => fileInputRef.current?.click()}
-                className="px-3 py-1.5 bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-900/40 rounded-xl text-xs font-bold hover:bg-blue-100 dark:hover:bg-blue-950/60 transition-all flex items-center gap-1.5"
-              >
-                <Camera size={12} />
-                Ganti Foto
-              </button>
-              {previewPhoto && (
-                <button
-                  type="button"
-                  onClick={handleRemovePhoto}
-                  className="px-3 py-1.5 bg-rose-50 dark:bg-rose-950/40 text-rose-500 dark:text-rose-400 border border-rose-200 dark:border-rose-900/40 rounded-xl text-xs font-bold hover:bg-rose-100 dark:hover:bg-rose-950/60 transition-all flex items-center gap-1.5"
-                >
-                  <Trash2 size={12} />
-                  Hapus
-                </button>
-              )}
-            </div>
-
-            <p className="text-[10px] text-slate-400 dark:text-slate-600 font-medium">
-              JPG, PNG atau WebP. Maks. 2MB.
-            </p>
-
-            <div className="w-full h-px bg-slate-100 dark:bg-slate-800" />
-
-            {/* Info */}
-            <div className="w-full space-y-3 text-left">
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-xl bg-blue-50 dark:bg-blue-950/40 flex items-center justify-center shrink-0">
-                  <User size={14} className="text-blue-500" />
-                </div>
-                <div className="min-w-0">
-                  <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Nama Lengkap</p>
-                  <p className="text-xs font-bold text-slate-800 dark:text-white truncate">{adminUser?.nama || "—"}</p>
-                </div>
-              </div>
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-xl bg-indigo-50 dark:bg-indigo-950/40 flex items-center justify-center shrink-0">
-                  <Shield size={14} className="text-indigo-500" />
-                </div>
-                <div className="min-w-0">
-                  <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Role</p>
-                  <span className={`inline-block px-2 py-0.5 rounded-lg text-[9px] font-black uppercase tracking-wider ${
-                    adminUser?.role === "superadmin"
-                      ? "bg-purple-100 dark:bg-purple-950/50 text-purple-600 dark:text-purple-400"
-                      : "bg-blue-100 dark:bg-blue-950/50 text-blue-600 dark:text-blue-400"
-                  }`}>
-                    {adminUser?.role || "admin"}
-                  </span>
-                </div>
-              </div>
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center shrink-0">
-                  <Calendar size={14} className="text-slate-500" />
-                </div>
-                <div className="min-w-0">
-                  <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Username</p>
-                  <p className="text-xs font-bold text-slate-800 dark:text-white">@{adminUser?.username || "—"}</p>
-                </div>
-              </div>
-            </div>
-          </div>
+          <ProfileAvatarCard
+            adminUser={adminUser}
+            previewPhoto={previewPhoto}
+            fileInputRef={fileInputRef}
+            handlePhotoChange={handlePhotoChange}
+            handleRemovePhoto={handleRemovePhoto}
+            userInitial={userInitial}
+          />
         </div>
 
         {/* ── RIGHT: Forms ──────────────────────────────────────────────────── */}
         <div className="lg:col-span-2 space-y-6">
-
-          {/* Edit Profile Form */}
-          <div className="bg-white dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800/40 rounded-3xl p-6 shadow-sm">
-            <div className="flex items-center gap-3 mb-5">
-              <div className="w-9 h-9 rounded-2xl bg-blue-50 dark:bg-blue-950/40 flex items-center justify-center">
-                <User size={16} className="text-blue-500" />
-              </div>
-              <div>
-                <h2 className="text-xs font-black text-slate-800 dark:text-white uppercase tracking-wider">Informasi Profil</h2>
-                <p className="text-[10px] text-slate-400 font-semibold">Perbarui nama dan username akun Anda</p>
-              </div>
-            </div>
-
-            <form onSubmit={handleSaveProfile} className="space-y-4">
-              <div>
-                <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5">
-                  Nama Lengkap
-                </label>
-                <input
-                  type="text"
-                  value={namaLengkap}
-                  onChange={(e) => setNamaLengkap(e.target.value)}
-                  placeholder="Masukkan nama lengkap"
-                  className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-950/40 border border-slate-200/80 dark:border-slate-700/60 rounded-2xl text-sm font-semibold text-slate-800 dark:text-white placeholder-slate-300 dark:placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500/60 transition-all"
-                />
-              </div>
-
-              <div>
-                <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5">
-                  Username
-                </label>
-                <input
-                  type="text"
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value)}
-                  placeholder="Masukkan username"
-                  className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-950/40 border border-slate-200/80 dark:border-slate-700/60 rounded-2xl text-sm font-semibold text-slate-800 dark:text-white placeholder-slate-300 dark:placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500/60 transition-all"
-                />
-                <p className="text-[10px] text-slate-400 mt-1 font-medium">Hanya huruf, angka, dan underscore.</p>
-              </div>
-
-              {/* Status Message */}
-              {profileMsg && (
-                <div className={`flex items-center gap-2 px-4 py-3 rounded-2xl text-xs font-bold ${
-                  profileMsg.type === "success"
-                    ? "bg-emerald-50 dark:bg-emerald-950/30 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-900/40"
-                    : "bg-rose-50 dark:bg-rose-950/30 text-rose-600 dark:text-rose-400 border border-rose-200 dark:border-rose-900/40"
-                }`}>
-                  {profileMsg.type === "success"
-                    ? <CheckCircle2 size={14} className="shrink-0" />
-                    : <AlertCircle size={14} className="shrink-0" />}
-                  {profileMsg.text}
-                </div>
-              )}
-
-              <div className="flex justify-end">
-                <button
-                  type="submit"
-                  disabled={profileSaving}
-                  className="flex items-center gap-2 px-6 py-3 bg-gradient-to-tr from-blue-600 to-indigo-500 hover:from-blue-500 hover:to-indigo-400 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-2xl text-xs font-black uppercase tracking-wider shadow shadow-blue-500/20 hover:shadow-blue-500/40 transition-all"
-                >
-                  {profileSaving ? (
-                    <>
-                      <svg className="animate-spin w-3.5 h-3.5" fill="none" viewBox="0 0 24 24">
-                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-                      </svg>
-                      Menyimpan...
-                    </>
-                  ) : (
-                    <>
-                      <Save size={14} />
-                      Simpan Perubahan
-                    </>
-                  )}
-                </button>
-              </div>
-            </form>
-          </div>
-
-
-
+          <ProfileEditForm
+            namaLengkap={namaLengkap}
+            setNamaLengkap={setNamaLengkap}
+            username={username}
+            setUsername={setUsername}
+            profileMsg={profileMsg}
+            profileSaving={profileSaving}
+            handleSaveProfile={handleSaveProfile}
+          />
+          <PasswordEditForm
+            currentPassword={currentPassword}
+            setCurrentPassword={setCurrentPassword}
+            newPassword={newPassword}
+            setNewPassword={setNewPassword}
+            confirmPassword={confirmPassword}
+            setConfirmPassword={setConfirmPassword}
+            showCurrentPwd={showCurrentPwd}
+            setShowCurrentPwd={setShowCurrentPwd}
+            showNewPwd={showNewPwd}
+            setShowNewPwd={setShowNewPwd}
+            showConfirmPwd={showConfirmPwd}
+            setShowConfirmPwd={setShowConfirmPwd}
+            passwordMsg={passwordMsg}
+            passwordSaving={passwordSaving}
+            handleChangePassword={handleChangePassword}
+          />
         </div>
       </div>
 
@@ -406,7 +317,7 @@ export default function ProfilePage() {
             {/* Crop Area */}
             <div className="relative w-full h-80 bg-slate-950">
               <Cropper
-                image={cropImageSrc}
+                image={cropImageSrc || undefined}
                 crop={crop}
                 zoom={zoom}
                 rotation={rotation}
@@ -427,6 +338,7 @@ export default function ProfilePage() {
                 <ZoomOut size={14} className="text-slate-400 shrink-0" />
                 <input
                   type="range"
+                  aria-label="Zoom"
                   min={1}
                   max={3}
                   step={0.1}
@@ -442,6 +354,7 @@ export default function ProfilePage() {
                 <RotateCw size={14} className="text-slate-400 shrink-0" />
                 <input
                   type="range"
+                  aria-label="Rotasi"
                   min={0}
                   max={360}
                   step={1}

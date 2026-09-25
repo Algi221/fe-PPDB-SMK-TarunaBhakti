@@ -18,7 +18,7 @@
   --glass-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.05);
   --card-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.03), 0 1px 3px 0 rgba(0, 0, 0, 0.01);
   --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  --font-family: var(--font-plus-jakarta), 'Plus Jakarta Sans', sans-serif;
+  --font-family: var(--font-inter), 'Inter', sans-serif;
   
   --input-bg: #f5f7fa;
   --input-border: #e2e8f0;
@@ -377,6 +377,7 @@ body {
   background: transparent;
   border: none;
   cursor: pointer;
+  white-space: nowrap;
 }
 
 .btn-nav-link:hover {
@@ -1826,4 +1827,5 @@ html.dark .footer-social-link.tiktok:hover {
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(24, 119, 242, 0.35);
 }
+
 

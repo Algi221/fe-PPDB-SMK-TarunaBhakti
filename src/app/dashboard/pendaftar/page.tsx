@@ -2008,3 +2008,4 @@ export default function ApplicantsDirectory() {
     </Suspense>
   );
 }
+
