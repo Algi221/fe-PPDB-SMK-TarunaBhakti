@@ -739,7 +739,7 @@ export function PPDBProvider({ children }: { children: React.ReactNode }) {
       {children}
 
       {/* Toast Alert Portal */}
-      <div className="fixed bottom-6 right-6 z-[100] flex flex-col gap-3 pointer-events-none max-w-sm w-full">
+      <div className="fixed bottom-6 right-6 z-100 flex flex-col gap-3 pointer-events-none max-w-sm w-full">
         {toasts.map((toast) => (
           <div
             key={toast.id}

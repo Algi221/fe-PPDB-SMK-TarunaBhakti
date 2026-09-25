@@ -20,6 +20,8 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    "create_modal.js",
+    "eslint_output.json",
   ]),
 ]);
 
