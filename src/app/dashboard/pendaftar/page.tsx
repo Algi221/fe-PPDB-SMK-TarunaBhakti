@@ -44,9 +44,19 @@ const formatNoPendaftaran = (periode: string | null | undefined, id: number) => 
     const year2 = parts[1].slice(-2);
     const prefix = `${year1}${year2}`;
     const sequence = 10000 + id;
-    return `${prefix}${sequence}`;
+    const num = Number(id) || 1;
+    const seq = String(num).padStart(3, "0");
+    const p = (periode || "2026-2027").trim();
+    const match = p.match(/^(\d{4})/);
+    let code = "228";
+    if (match) {
+      const year = parseInt(match[1], 10);
+      const angkatan = year - 1998;
+      code = `2${angkatan > 0 ? angkatan : 28}`;
+    }
+    return `SPMB-${code}-10-${seq}`;
   } catch (e) {
-    return `2627${10000 + id}`;
+    return `SPMB-228-10-${String(id || 1).padStart(3, "0")}`;
   }
 };
 
@@ -214,7 +224,8 @@ function buildKey(a: Applicant): string {
   const initial = (a.nama || "").trim().charAt(0).toLowerCase();
   const jurusan = (a.jurusan_1 || a.jurusan1 || "").toLowerCase();
   const sekolah = (a.sekolah_asal || a.sekolahAsal || "").toLowerCase();
-  return `${initial}|${jurusan}|${sekolah}`;
+  const noDaftar = formatNoPendaftaran(a.periode, a.id).toLowerCase();
+  return `${initial}|${jurusan}|${sekolah}|${noDaftar}`;
 }
 
 function ApplicantsDirectoryContent() {
@@ -817,7 +828,9 @@ function ApplicantsDirectoryContent() {
                     onDoubleClick={() => handleViewDetail(a)}
                   >
                     <td className="py-4 px-6 pl-8">
-                      <div className="font-extrabold text-blue-600 dark:text-blue-400 text-sm font-mono">{formatNoPendaftaran(a.periode, a.id)}</div>
+                      <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-blue-50/80 dark:bg-blue-950/40 border border-blue-200/60 dark:border-blue-800/50 text-blue-600 dark:text-blue-400 font-extrabold text-xs font-mono tracking-wider shadow-xs">
+                        <span>{formatNoPendaftaran(a.periode, a.id)}</span>
+                      </div>
                     </td>
                     <td className="py-4 px-6">
                       <div className="flex items-center gap-2 flex-wrap">

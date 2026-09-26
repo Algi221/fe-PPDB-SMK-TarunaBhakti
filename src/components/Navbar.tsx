@@ -11,12 +11,42 @@ interface NavbarProps {
 }
 
 export const majorsList = [
-  { code: "RPL", routeCode: "rpl", title: "Rekayasa Perangkat Lunak" },
-  { code: "TJKT", routeCode: "tjkt", title: "Teknik Jaringan Komputer & Telekomunikasi" },
-  { code: "DKV", routeCode: "dkv", title: "Desain Komunikasi Visual" },
-  { code: "BC", routeCode: "bc", title: "Broadcasting & Perfilman" },
-  { code: "ANM", routeCode: "an", title: "Animasi" },
-  { code: "TE", routeCode: "te", title: "Teknik Elektronika" },
+  { 
+    code: "RPL", 
+    routeCode: "rpl", 
+    title: "Rekayasa Perangkat Lunak",
+    desc: "Belajar pemrograman web, aplikasi mobile, game development, cloud computing, serta kecerdasan buatan (AI)."
+  },
+  { 
+    code: "TJKT", 
+    routeCode: "tjkt", 
+    title: "Teknik Jaringan Komputer & Telekomunikasi",
+    desc: "Fokus pada perancangan jaringan, administrasi server Linux & Windows, keamanan cyber, dan cloud."
+  },
+  { 
+    code: "DKV", 
+    routeCode: "dkv", 
+    title: "Desain Komunikasi Visual",
+    desc: "Ekspresikan kreativitas lewat UI/UX design, desain grafis, ilustrasi digital, videografi, serta branding."
+  },
+  { 
+    code: "BC", 
+    routeCode: "bc", 
+    title: "Broadcasting & Perfilman",
+    desc: "Pelajari dunia penyiaran televisi, podcasting, penulisan naskah, tata kamera, serta editing video profesional."
+  },
+  { 
+    code: "ANM", 
+    routeCode: "an", 
+    title: "Animasi",
+    desc: "Kuasai seni pemodelan 2D/3D, karakter rigging, rendering, digital sculpting, serta visual effects (VFX)."
+  },
+  { 
+    code: "TE", 
+    routeCode: "te", 
+    title: "Teknik Elektronika",
+    desc: "Pelajari mikrokontroler, IoT, sistem robotika cerdas, dan otomasi industri modern standar masa kini."
+  },
 ];
 
 export const profileMenuItems = [
@@ -128,7 +158,7 @@ export default function Navbar({ activePath }: NavbarProps) {
                 onClick={() => setIsJurusanDropdownOpen(!isJurusanDropdownOpen)}
                 className={`btn-nav-link flex items-center gap-1.5 cursor-pointer transition-all ${
                   isJurusanDropdownOpen || activePath?.startsWith("/jurusan")
-                    ? "text-blue-600 dark:text-sky-400 bg-blue-50/50 dark:bg-slate-800/60"
+                    ? "text-blue-600 dark:text-white bg-blue-50/60 dark:bg-slate-800/80"
                     : ""
                 }`}
                 aria-expanded={isJurusanDropdownOpen}
@@ -137,23 +167,28 @@ export default function Navbar({ activePath }: NavbarProps) {
                 <ChevronDown
                   size={14}
                   className={`transition-transform duration-200 text-slate-500 dark:text-slate-400 ${
-                    isJurusanDropdownOpen ? "rotate-180 text-blue-600 dark:text-sky-400" : ""
+                    isJurusanDropdownOpen ? "rotate-180 text-blue-600 dark:text-white" : ""
                   }`}
                 />
               </button>
 
               {isJurusanDropdownOpen && (
-                <div className="absolute top-full left-0 pt-2 w-[280px] z-50 animate-in fade-in slide-in-from-top-2 duration-150">
-                  <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-2xl shadow-xl shadow-slate-900/10 dark:shadow-black/50 p-2.5">
-                    <div className="space-y-0.5">
+                <div className="absolute top-full -left-14 sm:-left-24 md:-left-36 pt-2 w-[90vw] sm:w-[480px] md:w-[520px] max-w-[520px] z-50 animate-in fade-in slide-in-from-top-2 duration-150">
+                  <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800/80 rounded-xl shadow-xl p-3.5 sm:p-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 sm:gap-x-5 gap-y-1.5 sm:gap-y-2">
                       {majorsList.map((m) => (
                         <Link
                           key={m.code}
                           href={`/jurusan/${m.routeCode}`}
                           onClick={() => setIsJurusanDropdownOpen(false)}
-                          className="block py-2.5 px-3 text-[13.5px] font-medium text-slate-700 dark:text-slate-300 hover:text-blue-600 dark:hover:text-sky-400 hover:bg-blue-50/50 dark:hover:bg-slate-800/70 rounded-xl transition-colors text-left"
+                          className="group p-2 rounded-lg hover:bg-slate-100/80 dark:hover:bg-slate-800/70 transition-all text-left block cursor-pointer"
                         >
-                          {m.title}
+                          <div className="font-bold text-[13px] text-slate-850 dark:text-white group-hover:text-blue-600 dark:group-hover:text-sky-400 transition-colors leading-tight mb-0.5">
+                            {m.title}
+                          </div>
+                          <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-snug line-clamp-2">
+                            {m.desc}
+                          </p>
                         </Link>
                       ))}
                     </div>

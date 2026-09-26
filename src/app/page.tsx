@@ -734,23 +734,23 @@ export default function Home() {
               <button
                 type="button"
                 onClick={() => setIsJurusanDropdownOpen(!isJurusanDropdownOpen)}
-                className={`btn-nav-link flex items-center gap-1.5 cursor-pointer transition-all ${isJurusanDropdownOpen ? 'text-blue-600 dark:text-sky-400 bg-blue-50/50 dark:bg-slate-800/60' : ''}`}
+                className={`btn-nav-link flex items-center gap-1.5 cursor-pointer transition-all ${isJurusanDropdownOpen ? 'text-blue-600 dark:text-white bg-blue-50/60 dark:bg-slate-800/80' : ''}`}
                 aria-expanded={isJurusanDropdownOpen}
               >
                 <span>Jurusan</span>
                 <ChevronDown 
                   size={14} 
-                  className={`transition-transform duration-200 text-slate-500 dark:text-slate-400 ${isJurusanDropdownOpen ? 'rotate-180 text-blue-600 dark:text-sky-400' : ''}`} 
+                  className={`transition-transform duration-200 text-slate-500 dark:text-slate-400 ${isJurusanDropdownOpen ? 'rotate-180 text-blue-600 dark:text-white' : ''}`} 
                 />
               </button>
 
-              {/* Dropdown Menu */}
+              {/* Dropdown Menu - 2 Columns Mega Menu with Title & Descriptions (Compact) */}
               {isJurusanDropdownOpen && (
                 <div 
-                  className="absolute top-full left-0 pt-2 w-[280px] z-50 animate-in fade-in slide-in-from-top-2 duration-150"
+                  className="absolute top-full -left-14 sm:-left-24 md:-left-36 pt-2 w-[90vw] sm:w-[480px] md:w-[520px] max-w-[520px] z-50 animate-in fade-in slide-in-from-top-2 duration-150"
                 >
-                  <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-2xl shadow-xl shadow-slate-900/10 dark:shadow-black/50 p-2.5">
-                    <div className="space-y-0.5">
+                  <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800/80 rounded-xl shadow-xl p-3.5 sm:p-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 sm:gap-x-5 gap-y-1.5 sm:gap-y-2">
                       {majors.map((m) => {
                         const routeCode = m.code.toLowerCase() === 'anm' ? 'an' : m.code.toLowerCase();
                         return (
@@ -758,9 +758,14 @@ export default function Home() {
                             key={m.code}
                             href={`/jurusan/${routeCode}`}
                             onClick={() => setIsJurusanDropdownOpen(false)}
-                            className="block py-2.5 px-3 text-[13.5px] font-medium text-slate-700 dark:text-slate-300 hover:text-blue-600 dark:hover:text-sky-400 hover:bg-blue-50/50 dark:hover:bg-slate-800/70 rounded-xl transition-colors text-left"
+                            className="group p-2 rounded-lg hover:bg-slate-100/80 dark:hover:bg-slate-800/70 transition-all text-left block cursor-pointer"
                           >
-                            {m.title}
+                            <div className="font-bold text-[13px] text-slate-850 dark:text-white group-hover:text-blue-600 dark:group-hover:text-sky-400 transition-colors leading-tight mb-0.5">
+                              {m.title}
+                            </div>
+                            <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-snug line-clamp-2">
+                              {m.desc}
+                            </p>
                           </Link>
                         );
                       })}
@@ -1080,9 +1085,23 @@ export default function Home() {
             {heroSubtitle}
           </p>
 
-          <div className="hero-action">
-            <Link href="/daftar" className="btn-hero-action">
-              Daftar Sekarang <ArrowRight size={18} />
+          <div className="hero-action flex flex-wrap items-center justify-center gap-3.5">
+            {/* Primary CTA - Solid, confident royal blue */}
+            <Link 
+              href="/daftar" 
+              className="group inline-flex items-center gap-2.5 px-8 py-3.5 rounded-full bg-blue-600 hover:bg-blue-500 active:bg-blue-700 text-white font-extrabold text-sm tracking-wide shadow-xl shadow-blue-600/25 hover:shadow-blue-500/40 border border-blue-400/30 transition-all duration-200 hover:-translate-y-0.5 active:translate-y-0 cursor-pointer"
+            >
+              <span>Daftar Sekarang</span>
+              <ArrowRight size={17} className="transform group-hover:translate-x-1 transition-transform" />
+            </Link>
+
+            {/* Secondary CTA - High-contrast, clean modern slate */}
+            <Link 
+              href="/lengkapi_data" 
+              className="group inline-flex items-center gap-2.5 px-7 py-3.5 rounded-full bg-white/85 hover:bg-white dark:bg-slate-900/80 dark:hover:bg-slate-800 text-slate-800 dark:text-slate-200 font-bold text-sm tracking-wide border border-slate-200/90 dark:border-slate-750/80 shadow-md hover:shadow-lg shadow-slate-200/30 dark:shadow-none backdrop-blur-md transition-all duration-200 hover:-translate-y-0.5 active:translate-y-0 cursor-pointer"
+            >
+              <FileText size={17} className="text-blue-600 dark:text-sky-400 group-hover:scale-105 transition-transform" />
+              <span>Lengkapi Data Calon Siswa</span>
             </Link>
           </div>
 

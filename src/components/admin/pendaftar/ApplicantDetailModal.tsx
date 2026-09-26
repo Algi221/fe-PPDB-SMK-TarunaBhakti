@@ -113,7 +113,7 @@ export default function ApplicantDetailModal({
                   </h3>
                   <p className="text-xs text-slate-400 font-bold uppercase tracking-wider mt-1 flex items-center flex-wrap gap-2">
                     <span className="text-blue-400">NO. PENDAFTARAN:</span>
-                    <span className="font-mono text-blue-400 font-extrabold">{formatNoPendaftaran(selectedApplicant.periode, selectedApplicant.id)}</span>
+                    <span className="font-mono text-blue-400 font-extrabold px-2 py-0.5 rounded-lg bg-blue-500/10 border border-blue-500/25 tracking-wider">{formatNoPendaftaran(selectedApplicant.periode, selectedApplicant.id)}</span>
                     <span className="text-slate-600">•</span>
                     <span className="text-blue-400">NISN:</span>
                     <span className="font-mono text-slate-200">{selectedApplicant.nisn}</span>

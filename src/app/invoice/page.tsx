@@ -23,9 +23,19 @@ const formatNoPendaftaran = (periode: string | null | undefined, id: number) => 
     const year2 = parts[1].slice(-2);
     const prefix = `${year1}${year2}`;
     const sequence = 10000 + id;
-    return `${prefix}${sequence}`;
+    const num = Number(id) || 1;
+    const seq = String(num).padStart(3, "0");
+    const p = (periode || "2026-2027").trim();
+    const match = p.match(/^(\d{4})/);
+    let code = "228";
+    if (match) {
+      const year = parseInt(match[1], 10);
+      const angkatan = year - 1998;
+      code = `2${angkatan > 0 ? angkatan : 28}`;
+    }
+    return `SPMB-${code}-10-${seq}`;
   } catch (e) {
-    return `2627${10000 + id}`;
+    return `SPMB-228-10-${String(id || 1).padStart(3, "0")}`;
   }
 };
 

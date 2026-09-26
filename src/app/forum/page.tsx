@@ -108,12 +108,60 @@ export default function ForumPage() {
   const jurusanDropdownRef = useRef<HTMLDivElement>(null);
 
   const forumMajors = [
-    { code: "RPL", routeCode: "rpl", title: "Rekayasa Perangkat Lunak", alias: "PPLG", logo: "/assets/jurusan/pplg.png", color: "#0066ff", desc: "Pemrograman Web, Mobile, AI & Game Dev" },
-    { code: "TJKT", routeCode: "tjkt", title: "Teknik Jaringan Komputer & Telkom", alias: "TJKT", logo: "/assets/jurusan/tjkt.png", color: "#0ea5e9", desc: "Cybersecurity, Cloud Infra & CISCO" },
-    { code: "DKV", routeCode: "dkv", title: "Desain Komunikasi Visual", alias: "DKV", logo: "/assets/jurusan/dkv.png", color: "#6366f1", desc: "UI/UX, Desain Grafis, Branding & Foto" },
-    { code: "BC", routeCode: "bc", title: "Broadcasting & Perfilman", alias: "BC", logo: "/assets/jurusan/bc.png", color: "#f59e0b", desc: "Produksi Film, Podcast & Penyiaran TV" },
-    { code: "ANM", routeCode: "an", title: "Animasi", alias: "ANIMASI", logo: "/assets/jurusan/animasi.png", color: "#ec4899", desc: "2D/3D Animation, Rigging, VFX & Modeling" },
-    { code: "TE", routeCode: "te", title: "Teknik Elektronika", alias: "TE", logo: "/assets/jurusan/te.png", color: "#10b981", desc: "Robotika, IoT & Automasi Industri" },
+    { 
+      code: "RPL", 
+      routeCode: "rpl", 
+      title: "Rekayasa Perangkat Lunak", 
+      alias: "PPLG", 
+      logo: "/assets/jurusan/pplg.png", 
+      color: "#0066ff", 
+      desc: "Belajar pemrograman web, aplikasi mobile, game development, cloud computing, serta kecerdasan buatan (AI)." 
+    },
+    { 
+      code: "TJKT", 
+      routeCode: "tjkt", 
+      title: "Teknik Jaringan Komputer & Telekomunikasi", 
+      alias: "TJKT", 
+      logo: "/assets/jurusan/tjkt.png", 
+      color: "#0ea5e9", 
+      desc: "Fokus pada perancangan jaringan, administrasi server Linux & Windows, keamanan cyber, dan cloud." 
+    },
+    { 
+      code: "DKV", 
+      routeCode: "dkv", 
+      title: "Desain Komunikasi Visual", 
+      alias: "DKV", 
+      logo: "/assets/jurusan/dkv.png", 
+      color: "#6366f1", 
+      desc: "Ekspresikan kreativitas lewat UI/UX design, desain grafis, ilustrasi digital, videografi, serta branding." 
+    },
+    { 
+      code: "BC", 
+      routeCode: "bc", 
+      title: "Broadcasting & Perfilman", 
+      alias: "BC", 
+      logo: "/assets/jurusan/bc.png", 
+      color: "#f59e0b", 
+      desc: "Pelajari dunia penyiaran televisi, podcasting, penulisan naskah, tata kamera, serta editing video profesional." 
+    },
+    { 
+      code: "ANM", 
+      routeCode: "an", 
+      title: "Animasi", 
+      alias: "ANIMASI", 
+      logo: "/assets/jurusan/animasi.png", 
+      color: "#ec4899", 
+      desc: "Kuasai seni pemodelan 2D/3D, karakter rigging, rendering, digital sculpting, serta visual effects (VFX)." 
+    },
+    { 
+      code: "TE", 
+      routeCode: "te", 
+      title: "Teknik Elektronika", 
+      alias: "TE", 
+      logo: "/assets/jurusan/te.png", 
+      color: "#10b981", 
+      desc: "Pelajari mikrokontroler, IoT, sistem robotika cerdas, dan otomasi industri modern standar masa kini." 
+    },
   ];
 
   const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
@@ -261,31 +309,36 @@ export default function ForumPage() {
               <button
                 type="button"
                 onClick={() => setIsJurusanDropdownOpen(!isJurusanDropdownOpen)}
-                className={`btn-nav-link flex items-center gap-1.5 cursor-pointer transition-all ${isJurusanDropdownOpen ? 'text-blue-600 dark:text-sky-400 bg-blue-50/50 dark:bg-slate-800/60' : ''}`}
+                className={`btn-nav-link flex items-center gap-1.5 cursor-pointer transition-all ${isJurusanDropdownOpen ? 'text-blue-600 dark:text-white bg-blue-50/60 dark:bg-slate-800/80' : ''}`}
                 aria-expanded={isJurusanDropdownOpen}
               >
                 <span>Jurusan</span>
                 <ChevronDown 
                   size={14} 
-                  className={`transition-transform duration-200 text-slate-500 dark:text-slate-400 ${isJurusanDropdownOpen ? 'rotate-180 text-blue-600 dark:text-sky-400' : ''}`} 
+                  className={`transition-transform duration-200 text-slate-500 dark:text-slate-400 ${isJurusanDropdownOpen ? 'rotate-180 text-blue-600 dark:text-white' : ''}`} 
                 />
               </button>
 
-              {/* Dropdown Menu */}
+              {/* Dropdown Menu - 2 Columns Mega Menu with Title & Descriptions (Compact) */}
               {isJurusanDropdownOpen && (
                 <div 
-                  className="absolute top-full left-0 pt-2 w-[280px] z-50 animate-in fade-in slide-in-from-top-2 duration-150"
+                  className="absolute top-full -left-14 sm:-left-24 md:-left-36 pt-2 w-[90vw] sm:w-[480px] md:w-[520px] max-w-[520px] z-50 animate-in fade-in slide-in-from-top-2 duration-150"
                 >
-                  <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-2xl shadow-xl shadow-slate-900/10 dark:shadow-black/50 p-2.5">
-                    <div className="space-y-0.5">
+                  <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800/80 rounded-xl shadow-xl p-3.5 sm:p-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 sm:gap-x-5 gap-y-1.5 sm:gap-y-2">
                       {forumMajors.map((m) => (
                         <Link
                           key={m.code}
                           href={`/jurusan/${m.routeCode}`}
                           onClick={() => setIsJurusanDropdownOpen(false)}
-                          className="block py-2.5 px-3 text-[13.5px] font-medium text-slate-700 dark:text-slate-300 hover:text-blue-600 dark:hover:text-sky-400 hover:bg-blue-50/50 dark:hover:bg-slate-800/70 rounded-xl transition-colors text-left"
+                          className="group p-2 rounded-lg hover:bg-slate-100/80 dark:hover:bg-slate-800/70 transition-all text-left block cursor-pointer"
                         >
-                          {m.title}
+                          <div className="font-bold text-[13px] text-slate-850 dark:text-white group-hover:text-blue-600 dark:group-hover:text-sky-400 transition-colors leading-tight mb-0.5">
+                            {m.title}
+                          </div>
+                          <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-snug line-clamp-2">
+                            {m.desc}
+                          </p>
                         </Link>
                       ))}
                     </div>
