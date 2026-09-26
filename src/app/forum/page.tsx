@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { 
   Search, 
@@ -13,7 +13,8 @@ import {
   User,
   BookOpen,
   Menu,
-  X
+  X,
+  ChevronDown
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import BlurText from '../../components/BlurText';
@@ -99,6 +100,41 @@ export default function ForumPage() {
   const [schoolPeriod, setSchoolPeriod] = useState("2026-2027");
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [lightboxImage, setLightboxImage] = useState<string | null>(null);
+
+  const [isJurusanDropdownOpen, setIsJurusanDropdownOpen] = useState(false);
+  const [isMobileJurusanOpen, setIsMobileJurusanOpen] = useState(false);
+  const dropdownTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const jurusanDropdownRef = useRef<HTMLDivElement>(null);
+
+  const forumMajors = [
+    { code: "RPL", routeCode: "rpl", title: "Rekayasa Perangkat Lunak", alias: "PPLG", logo: "/assets/jurusan/pplg.png", color: "#0066ff", desc: "Pemrograman Web, Mobile, AI & Game Dev" },
+    { code: "TJKT", routeCode: "tjkt", title: "Teknik Jaringan Komputer & Telkom", alias: "TJKT", logo: "/assets/jurusan/tjkt.png", color: "#0ea5e9", desc: "Cybersecurity, Cloud Infra & CISCO" },
+    { code: "DKV", routeCode: "dkv", title: "Desain Komunikasi Visual", alias: "DKV", logo: "/assets/jurusan/dkv.png", color: "#6366f1", desc: "UI/UX, Desain Grafis, Branding & Foto" },
+    { code: "BC", routeCode: "bc", title: "Broadcasting & Perfilman", alias: "BC", logo: "/assets/jurusan/bc.png", color: "#f59e0b", desc: "Produksi Film, Podcast & Penyiaran TV" },
+    { code: "ANM", routeCode: "an", title: "Animasi", alias: "ANIMASI", logo: "/assets/jurusan/animasi.png", color: "#ec4899", desc: "2D/3D Animation, Rigging, VFX & Modeling" },
+    { code: "TE", routeCode: "te", title: "Teknik Elektronika", alias: "TE", logo: "/assets/jurusan/te.png", color: "#10b981", desc: "Robotika, IoT & Automasi Industri" },
+  ];
+
+  const handleDropdownEnter = () => {
+    if (dropdownTimeoutRef.current) clearTimeout(dropdownTimeoutRef.current);
+    setIsJurusanDropdownOpen(true);
+  };
+
+  const handleDropdownLeave = () => {
+    dropdownTimeoutRef.current = setTimeout(() => {
+      setIsJurusanDropdownOpen(false);
+    }, 150);
+  };
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (jurusanDropdownRef.current && !jurusanDropdownRef.current.contains(event.target as Node)) {
+        setIsJurusanDropdownOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   const handleViewDetail = async (id: number) => {
     try {
@@ -186,9 +222,53 @@ export default function ForumPage() {
             </Link>
           </div>
 
-          <div className="hidden md:flex items-center gap-2">
+          <div className="hidden md:flex items-center gap-1 lg:gap-2">
+            <Link href="/" className="btn-nav-link">Beranda</Link>
             <Link href="/#alur" className="btn-nav-link">Alur Pendaftaran</Link>
-            <Link href="/#majors" className="btn-nav-link">Jurusan</Link>
+
+            {/* Jurusan Dropdown (Minimalist Reference Style) */}
+            <div 
+              ref={jurusanDropdownRef}
+              className="relative"
+              onMouseEnter={handleDropdownEnter}
+              onMouseLeave={handleDropdownLeave}
+            >
+              <button
+                type="button"
+                onClick={() => setIsJurusanDropdownOpen(!isJurusanDropdownOpen)}
+                className={`btn-nav-link flex items-center gap-1.5 cursor-pointer transition-all ${isJurusanDropdownOpen ? 'text-blue-600 dark:text-sky-400 bg-blue-50/50 dark:bg-slate-800/60' : ''}`}
+                aria-expanded={isJurusanDropdownOpen}
+              >
+                <span>Jurusan</span>
+                <ChevronDown 
+                  size={14} 
+                  className={`transition-transform duration-200 text-slate-500 dark:text-slate-400 ${isJurusanDropdownOpen ? 'rotate-180 text-blue-600 dark:text-sky-400' : ''}`} 
+                />
+              </button>
+
+              {/* Dropdown Menu */}
+              {isJurusanDropdownOpen && (
+                <div 
+                  className="absolute top-full left-0 pt-2 w-[280px] z-50 animate-in fade-in slide-in-from-top-2 duration-150"
+                >
+                  <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-2xl shadow-xl shadow-slate-900/10 dark:shadow-black/50 p-2.5">
+                    <div className="space-y-0.5">
+                      {forumMajors.map((m) => (
+                        <Link
+                          key={m.code}
+                          href={`/jurusan/${m.routeCode}`}
+                          onClick={() => setIsJurusanDropdownOpen(false)}
+                          className="block py-2.5 px-3 text-[13.5px] font-medium text-slate-700 dark:text-slate-300 hover:text-blue-600 dark:hover:text-sky-400 hover:bg-blue-50/50 dark:hover:bg-slate-800/70 rounded-xl transition-colors text-left"
+                        >
+                          {m.title}
+                        </Link>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+
             <Link href="/#kemitraan" className="btn-nav-link">Mitra Industri</Link>
             <Link href="/#faq" className="btn-nav-link">FAQ</Link>
             <Link href="/forum" className="btn-nav-link" style={{color: 'var(--color-blue-600, #2563eb)', fontWeight: 700}}>Forum Informasi</Link>
@@ -224,12 +304,19 @@ export default function ForumPage() {
           <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] rounded-full bg-blue-500/10 blur-[80px] pointer-events-none"></div>
           <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] rounded-full bg-amber-500/10 blur-[80px] pointer-events-none"></div>
 
-          <div className="flex flex-col items-center gap-6 text-center p-6 w-full max-w-sm relative z-10">
-            <Link href="/" onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-2 mb-6">
+          <div className="flex flex-col items-center gap-6 text-center p-6 w-full max-w-sm relative z-10 max-h-[90vh] overflow-y-auto">
+            <Link href="/" onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-2 mb-2">
               <img src={ppdbLogo} alt="Logo Sekolah" className="w-12 h-12 object-contain" />
               <span className="text-2xl font-black text-slate-800 dark:text-white">{ppdbTitle}</span>
             </Link>
 
+            <Link
+              href="/"
+              onClick={() => setMobileMenuOpen(false)}
+              className="text-lg font-extrabold text-slate-800 dark:text-white hover:text-blue-600 dark:hover:text-blue-400 transition-colors py-3 border-b border-slate-100 dark:border-slate-800/60 w-full"
+            >
+              Beranda
+            </Link>
             <Link
               href="/#alur"
               onClick={() => setMobileMenuOpen(false)}
@@ -237,13 +324,36 @@ export default function ForumPage() {
             >
               Alur Pendaftaran
             </Link>
-            <Link
-              href="/#majors"
-              onClick={() => setMobileMenuOpen(false)}
-              className="text-lg font-extrabold text-slate-800 dark:text-white hover:text-blue-600 dark:hover:text-blue-400 transition-colors py-3 border-b border-slate-100 dark:border-slate-800/60 w-full"
-            >
-              Jurusan
-            </Link>
+
+            {/* Jurusan Accordion in Mobile */}
+            <div className="w-full border-b border-slate-100 dark:border-slate-800/60">
+              <button
+                type="button"
+                onClick={() => setIsMobileJurusanOpen(!isMobileJurusanOpen)}
+                className="w-full flex items-center justify-between text-lg font-extrabold text-slate-800 dark:text-white hover:text-blue-600 dark:hover:text-sky-400 transition-colors py-3"
+              >
+                <span>Jurusan</span>
+                <ChevronDown 
+                  size={18} 
+                  className={`transition-transform duration-200 ${isMobileJurusanOpen ? 'rotate-180 text-blue-600 dark:text-sky-400' : 'text-slate-400'}`} 
+                />
+              </button>
+
+              {isMobileJurusanOpen && (
+                <div className="pb-3 pl-3.5 space-y-1 animate-in fade-in slide-in-from-top-1 duration-150 text-left border-l-2 border-blue-500/20 ml-1 mb-2">
+                  {forumMajors.map((m) => (
+                    <Link
+                      key={m.code}
+                      href={`/jurusan/${m.routeCode}`}
+                      onClick={() => setMobileMenuOpen(false)}
+                      className="block py-2 px-3 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 text-[14px] font-medium transition-colors hover:text-blue-600 dark:hover:text-sky-400"
+                    >
+                      {m.title}
+                    </Link>
+                  ))}
+                </div>
+              )}
+            </div>
             <Link
               href="/#kemitraan"
               onClick={() => setMobileMenuOpen(false)}

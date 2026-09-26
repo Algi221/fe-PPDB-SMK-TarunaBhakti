@@ -23,6 +23,7 @@ import {
   ShieldCheck,
   ChevronRight,
   ChevronLeft,
+  ChevronDown,
   BookOpen,
   Cpu,
   Layers,
@@ -606,23 +607,32 @@ export default function Home() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  const [isMajorsVisible, setIsMajorsVisible] = useState(false);
+
+
+  const [isJurusanDropdownOpen, setIsJurusanDropdownOpen] = useState(false);
+  const [isMobileJurusanOpen, setIsMobileJurusanOpen] = useState(false);
+  const dropdownTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const jurusanDropdownRef = useRef<HTMLDivElement>(null);
+
+  const handleDropdownEnter = () => {
+    if (dropdownTimeoutRef.current) clearTimeout(dropdownTimeoutRef.current);
+    setIsJurusanDropdownOpen(true);
+  };
+
+  const handleDropdownLeave = () => {
+    dropdownTimeoutRef.current = setTimeout(() => {
+      setIsJurusanDropdownOpen(false);
+    }, 150);
+  };
 
   useEffect(() => {
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          setIsMajorsVisible(true);
-          observer.unobserve(entry.target); 
-        }
-      },
-      { threshold: 0.05 }
-    );
-    const element = document.getElementById("majors");
-    if (element) observer.observe(element);
-    return () => {
-      if (element) observer.unobserve(element);
+    const handleClickOutside = (event: MouseEvent) => {
+      if (jurusanDropdownRef.current && !jurusanDropdownRef.current.contains(event.target as Node)) {
+        setIsJurusanDropdownOpen(false);
+      }
     };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
   return (
@@ -638,11 +648,67 @@ export default function Home() {
             </Link>
           </div>
 
-          <div className="hidden md:flex items-center gap-2">
+          <div className="hidden md:flex items-center gap-1 lg:gap-2">
+            <a
+              href="#"
+              onClick={(e) => {
+                e.preventDefault();
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+              }}
+              className="btn-nav-link"
+            >
+              Beranda
+            </a>
             <a href="#alur" className="btn-nav-link">Alur Pendaftaran</a>
-            <a href="#majors" className="btn-nav-link">Jurusan</a>
+
+            {/* Jurusan Dropdown (Minimalist Reference Style) */}
+            <div 
+              ref={jurusanDropdownRef}
+              className="relative"
+              onMouseEnter={handleDropdownEnter}
+              onMouseLeave={handleDropdownLeave}
+            >
+              <button
+                type="button"
+                onClick={() => setIsJurusanDropdownOpen(!isJurusanDropdownOpen)}
+                className={`btn-nav-link flex items-center gap-1.5 cursor-pointer transition-all ${isJurusanDropdownOpen ? 'text-blue-600 dark:text-sky-400 bg-blue-50/50 dark:bg-slate-800/60' : ''}`}
+                aria-expanded={isJurusanDropdownOpen}
+              >
+                <span>Jurusan</span>
+                <ChevronDown 
+                  size={14} 
+                  className={`transition-transform duration-200 text-slate-500 dark:text-slate-400 ${isJurusanDropdownOpen ? 'rotate-180 text-blue-600 dark:text-sky-400' : ''}`} 
+                />
+              </button>
+
+              {/* Dropdown Menu */}
+              {isJurusanDropdownOpen && (
+                <div 
+                  className="absolute top-full left-0 pt-2 w-[280px] z-50 animate-in fade-in slide-in-from-top-2 duration-150"
+                >
+                  <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-2xl shadow-xl shadow-slate-900/10 dark:shadow-black/50 p-2.5">
+                    <div className="space-y-0.5">
+                      {majors.map((m) => {
+                        const routeCode = m.code.toLowerCase() === 'anm' ? 'an' : m.code.toLowerCase();
+                        return (
+                          <Link
+                            key={m.code}
+                            href={`/jurusan/${routeCode}`}
+                            onClick={() => setIsJurusanDropdownOpen(false)}
+                            className="block py-2.5 px-3 text-[13.5px] font-medium text-slate-700 dark:text-slate-300 hover:text-blue-600 dark:hover:text-sky-400 hover:bg-blue-50/50 dark:hover:bg-slate-800/70 rounded-xl transition-colors text-left"
+                          >
+                            {m.title}
+                          </Link>
+                        );
+                      })}
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+
             <a href="#kemitraan" className="btn-nav-link">Mitra Industri</a>
-              <a href="#faq" className="btn-nav-link">FAQ</a>
+            <a href="#faq" className="btn-nav-link">FAQ</a>
             <Link href="/forum" className="btn-nav-link">Forum Informasi</Link>
           </div>
 
@@ -686,12 +752,23 @@ export default function Home() {
           <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] rounded-full bg-blue-500/10 blur-[80px] pointer-events-none"></div>
           <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] rounded-full bg-amber-500/10 blur-[80px] pointer-events-none"></div>
 
-          <div className="flex flex-col items-center gap-6 text-center p-6 w-full max-w-sm relative z-10">
-            <Link href="/" onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-2 mb-6">
+          <div className="flex flex-col items-center gap-6 text-center p-6 w-full max-w-sm relative z-10 max-h-[90vh] overflow-y-auto">
+            <Link href="/" onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-2 mb-2">
               <SafeImage src={ppdbLogo} alt="Logo Sekolah" width={48} height={48} className="w-12 h-12 object-contain" />
               <span className="text-2xl font-black text-slate-800 dark:text-white">{ppdbTitle}</span>
             </Link>
 
+            <a
+              href="#"
+              onClick={(e) => {
+                e.preventDefault();
+                setMobileMenuOpen(false);
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+              }}
+              className="text-lg font-extrabold text-slate-800 dark:text-white hover:text-blue-600 dark:hover:text-blue-400 transition-colors py-3 border-b border-slate-100 dark:border-slate-800/60 w-full"
+            >
+              Beranda
+            </a>
             <a
               href="#alur"
               onClick={() => setMobileMenuOpen(false)}
@@ -699,13 +776,39 @@ export default function Home() {
             >
               Alur Pendaftaran
             </a>
-            <a
-              href="#majors"
-              onClick={() => setMobileMenuOpen(false)}
-              className="text-lg font-extrabold text-slate-800 dark:text-white hover:text-blue-600 dark:hover:text-blue-400 transition-colors py-3 border-b border-slate-100 dark:border-slate-800/60 w-full"
-            >
-              Jurusan
-            </a>
+
+            {/* Jurusan Accordion in Mobile */}
+            <div className="w-full border-b border-slate-100 dark:border-slate-800/60">
+              <button
+                type="button"
+                onClick={() => setIsMobileJurusanOpen(!isMobileJurusanOpen)}
+                className="w-full flex items-center justify-between text-lg font-extrabold text-slate-800 dark:text-white hover:text-blue-600 dark:hover:text-sky-400 transition-colors py-3"
+              >
+                <span>Jurusan</span>
+                <ChevronDown 
+                  size={18} 
+                  className={`transition-transform duration-200 ${isMobileJurusanOpen ? 'rotate-180 text-blue-600 dark:text-sky-400' : 'text-slate-400'}`} 
+                />
+              </button>
+
+              {isMobileJurusanOpen && (
+                <div className="pb-3 pl-3.5 space-y-1 animate-in fade-in slide-in-from-top-1 duration-150 text-left border-l-2 border-blue-500/20 ml-1 mb-2">
+                  {majors.map((m) => {
+                    const routeCode = m.code.toLowerCase() === 'anm' ? 'an' : m.code.toLowerCase();
+                    return (
+                      <Link
+                        key={m.code}
+                        href={`/jurusan/${routeCode}`}
+                        onClick={() => setMobileMenuOpen(false)}
+                        className="block py-2 px-3 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 text-[14px] font-medium transition-colors hover:text-blue-600 dark:hover:text-sky-400"
+                      >
+                        {m.title}
+                      </Link>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
             <a
               href="#kemitraan"
               onClick={() => setMobileMenuOpen(false)}
@@ -1097,31 +1200,6 @@ export default function Home() {
         </div>
       </section>
 
-      {/* PROGRAM KEAHLIAN / JURUSAN GRID */}
-      <section id="majors" className="py-24 max-w-6xl mx-auto px-6 relative z-10">
-        <div className={`text-center mb-16 transform transition-all duration-1000 ${isMajorsVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"}`}>
-          <ScrollFloat
-            containerClassName="text-3xl md:text-4xl font-extrabold text-slate-800 mb-4"
-            animationDuration={1}
-            ease='back.inOut(2)'
-            scrollStart='center bottom+=50%'
-            scrollEnd='bottom bottom-=40%'
-            stagger={0.03}
-          >
-            Program Kompetensi Keahlian
-          </ScrollFloat>
-          <ScrollFloat
-            containerClassName="text-slate-500 max-w-xl mx-auto text-sm md:text-base leading-relaxed"
-            animationDuration={1}
-            ease='back.inOut(2)'
-            scrollStart='center bottom+=50%'
-            scrollEnd='bottom bottom-=40%'
-            stagger={0.01}
-            textMode={false}
-          >
-            Tersedia 6 jurusan unggulan dengan kurikulum berstandar industri nasional maupun internasional.
-          </ScrollFloat>
-        </div>
 
         <ScrollFloat containerClassName="w-full" textClassName="w-full" textMode={false}>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
