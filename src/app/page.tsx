@@ -1200,6 +1200,42 @@ export default function Home() {
         </div>
       </section>
 
+      {/* PROGRAM KEAHLIAN / JURUSAN */}
+      <section id="jurusan" className="py-24 max-w-6xl mx-auto px-6 relative z-10">
+        <div className="text-center mb-16">
+          <ScrollFloat
+            containerClassName="inline-block mb-2"
+            textClassName="text-blue-600 dark:text-blue-400 font-bold text-xs uppercase tracking-wider bg-blue-50 dark:bg-blue-950/50 border border-blue-100/50 dark:border-blue-900/30 px-3.5 py-1.5 rounded-full"
+            animationDuration={1}
+            ease="back.inOut(2)"
+            scrollStart="top 90%"
+            scrollEnd="bottom bottom-=40%"
+            stagger={0.02}
+          >
+            Pilihan Masa Depan Cerah
+          </ScrollFloat>
+          <ScrollFloat
+            containerClassName="text-3xl md:text-5xl font-black text-slate-800 dark:text-white mt-4 mb-4 drop-shadow-sm pb-2"
+            animationDuration={1}
+            ease="back.inOut(2)"
+            scrollStart="top 90%"
+            scrollEnd="bottom bottom-=40%"
+            stagger={0.03}
+          >
+            Program Keahlian Unggulan
+          </ScrollFloat>
+          <ScrollFloat
+            containerClassName="text-slate-500 dark:text-slate-400 max-w-xl mx-auto text-sm md:text-base leading-relaxed font-medium"
+            animationDuration={1}
+            ease="back.inOut(2)"
+            scrollStart="top 90%"
+            scrollEnd="bottom bottom-=40%"
+            stagger={0.01}
+            textMode={false}
+          >
+            Pilih konsentrasi keahlian yang sesuai dengan minat dan bakat Anda untuk mempersiapkan karir profesional di industri.
+          </ScrollFloat>
+        </div>
 
         <ScrollFloat containerClassName="w-full" textClassName="w-full" textMode={false}>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -1208,7 +1244,7 @@ export default function Home() {
               <Link
                 href={`/jurusan/${major.code.toLowerCase()}`}
                 key={major.code}
-                className={`bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border border-white/50 dark:border-slate-800 rounded-3xl p-8 shadow-md hover:shadow-xl hover:-translate-y-2 hover:border-blue-500/30 transition-all duration-700 cursor-pointer flex flex-col justify-between relative overflow-hidden group transform ${isMajorsVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-12"}`}
+                className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border border-white/50 dark:border-slate-800 rounded-3xl p-8 shadow-md hover:shadow-xl hover:-translate-y-2 hover:border-blue-500/30 transition-all duration-700 cursor-pointer flex flex-col justify-between relative overflow-hidden group transform opacity-100 translate-y-0"
                 style={{ transitionDelay: `${index * 150}ms` }}
               >
                 <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(0,102,255,0.08)_0%,transparent_60%)] opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none z-0"></div>
