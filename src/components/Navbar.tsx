@@ -4,6 +4,7 @@ import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { usePPDB } from "@/context/PPDBContext";
 import { ChevronDown, Sun, Moon, Menu, X } from "lucide-react";
+import { toggleThemeWithTransition } from "@/utils/themeTransition";
 
 interface NavbarProps {
   activePath?: string;
@@ -57,16 +58,8 @@ export default function Navbar({ activePath }: NavbarProps) {
     }
   }, []);
 
-  const toggleDark = () => {
-    const next = !isDark;
-    setIsDark(next);
-    if (next) {
-      document.documentElement.classList.add("dark");
-      localStorage.setItem("ppdb-theme", "dark");
-    } else {
-      document.documentElement.classList.remove("dark");
-      localStorage.setItem("ppdb-theme", "light");
-    }
+  const toggleDark = (e?: React.MouseEvent<HTMLElement>) => {
+    toggleThemeWithTransition(e?.currentTarget || null, isDark, setIsDark);
   };
 
   const handleDropdownEnter = () => {
@@ -231,12 +224,16 @@ export default function Navbar({ activePath }: NavbarProps) {
 
           <div className="flex items-center gap-3">
             <button
-              onClick={toggleDark}
-              className="flex items-center justify-center w-10 h-10 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors border border-slate-200 dark:border-slate-700 cursor-pointer"
+              onClick={(e) => toggleDark(e)}
+              className="flex items-center justify-center w-10 h-10 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-amber-400 hover:bg-slate-200 dark:hover:bg-slate-700 transition-all border border-slate-200 dark:border-slate-700 cursor-pointer shadow-xs hover:scale-105 active:scale-95 group"
               title={isDark ? "Mode Terang" : "Mode Gelap"}
-              aria-label="Toggle Mode"
+              aria-label="Toggle Mode Gelap atau Terang"
             >
-              {isDark ? <Sun size={18} /> : <Moon size={18} />}
+              {isDark ? (
+                <Sun size={18} className="transition-transform duration-300 group-hover:rotate-45" />
+              ) : (
+                <Moon size={18} className="transition-transform duration-300 group-hover:-rotate-12" />
+              )}
             </button>
             <Link href="/daftar" className="btn-primary-pill hidden! md:inline-flex!">
               Daftar

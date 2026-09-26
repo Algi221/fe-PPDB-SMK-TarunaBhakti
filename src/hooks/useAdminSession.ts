@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { usePPDB } from "@/context/PPDBContext";
+import { toggleThemeWithTransition } from "@/utils/themeTransition";
 
 export function useAdminSession() {
   const { adminToken, logoutAdmin } = usePPDB();
@@ -19,24 +20,8 @@ export function useAdminSession() {
     localStorage.setItem("ppdb-sidebar-collapsed", String(nextVal));
   };
 
-  const toggleTheme = () => {
-    const doToggle = () => {
-      setIsDark(!isDark);
-      if (!isDark) {
-        document.documentElement.classList.add("dark");
-        localStorage.setItem("ppdb-theme", "dark");
-      } else {
-        document.documentElement.classList.remove("dark");
-        localStorage.setItem("ppdb-theme", "light");
-      }
-    };
-
-    // Use View Transitions API if supported (modern browsers)
-    if (!document.startViewTransition) {
-      doToggle();
-    } else {
-      document.startViewTransition(doToggle);
-    }
+  const toggleTheme = (triggerElement?: HTMLElement | null) => {
+    toggleThemeWithTransition(triggerElement || null, isDark, setIsDark);
   };
 
   const getTimeoutDuration = () => {

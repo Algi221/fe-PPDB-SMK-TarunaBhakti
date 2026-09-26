@@ -19,7 +19,7 @@ export default function Header({
   pathname: string;
   wsStatus: string;
   isDark: boolean;
-  toggleTheme: () => void;
+  toggleTheme: (triggerElement?: HTMLElement | null) => void;
   adminUser: any;
   handleLogout: () => void;
 }) {
@@ -67,11 +67,16 @@ export default function Header({
 
         {/* Dark Mode Moon Toggle */}
         <button
-          onClick={toggleTheme}
-          className="w-9 h-9 rounded-full bg-white dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700/80 flex items-center justify-center text-slate-500 dark:text-slate-400 hover:text-blue-500 dark:hover:text-blue-400 hover:bg-slate-50 dark:hover:bg-slate-700/60 transition-all shadow-xs"
+          onClick={(e) => toggleTheme(e.currentTarget)}
+          className="w-9 h-9 rounded-full bg-white dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700/80 flex items-center justify-center text-slate-500 dark:text-amber-400 hover:text-amber-500 dark:hover:text-amber-300 hover:bg-slate-50 dark:hover:bg-slate-700/60 transition-all shadow-xs cursor-pointer hover:scale-105 active:scale-95 group"
           title={isDark ? "Beralih ke Terang" : "Beralih ke Gelap"}
+          aria-label="Toggle Tema Gelap atau Terang"
         >
-          {isDark ? <Sun size={15} /> : <Moon size={15} />}
+          {isDark ? (
+            <Sun size={15} className="transition-transform duration-300 group-hover:rotate-45" />
+          ) : (
+            <Moon size={15} className="transition-transform duration-300 group-hover:-rotate-12" />
+          )}
         </button>
 
         {/* User Profile Button */}

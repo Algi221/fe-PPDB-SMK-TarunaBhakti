@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import dompurify from "dompurify";
+import { toggleThemeWithTransition } from "@/utils/themeTransition";
 
 const sanitizeUrl = (url: string | undefined | null): string | null => {
   if (!url) return null;
@@ -508,16 +509,8 @@ export default function MajorPage() {
     loadKuota();
   }, []);
 
-  const toggleDark = () => {
-    const next = !isDark;
-    setIsDark(next);
-    if (next) {
-      document.documentElement.classList.add("dark");
-      localStorage.setItem("ppdb-theme", "dark");
-    } else {
-      document.documentElement.classList.remove("dark");
-      localStorage.setItem("ppdb-theme", "light");
-    }
+  const toggleDark = (e?: React.MouseEvent<HTMLElement>) => {
+    toggleThemeWithTransition(e?.currentTarget || null, isDark, setIsDark);
   };
 
   if (!major) {
@@ -633,11 +626,16 @@ export default function MajorPage() {
 
       <div className="fixed top-6 right-6 z-50">
         <button 
-          onClick={toggleDark} 
-          className="flex items-center justify-center w-10 h-10 rounded-full bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-200 shadow-lg shadow-slate-200/20 dark:shadow-none hover:bg-slate-50 dark:hover:bg-slate-800 hover:border-slate-300 dark:hover:border-slate-700 transition-all" 
-          title={isDark ? 'Mode Terang' : 'Mode Gelap'}
+          onClick={(e) => toggleDark(e)} 
+          className="flex items-center justify-center w-10 h-10 rounded-full bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-amber-400 shadow-lg shadow-slate-200/20 dark:shadow-none hover:bg-slate-50 dark:hover:bg-slate-800 hover:border-slate-300 dark:hover:border-slate-700 transition-all cursor-pointer hover:scale-105 active:scale-95 group" 
+          title={isDark ? "Mode Terang" : "Mode Gelap"}
+          aria-label="Toggle Mode Gelap atau Terang"
         >
-          {isDark ? <Sun size={18} className="text-amber-500" /> : <Moon size={18} className="text-slate-750" />}
+          {isDark ? (
+            <Sun size={18} className="transition-transform duration-300 group-hover:rotate-45" />
+          ) : (
+            <Moon size={18} className="transition-transform duration-300 group-hover:-rotate-12" />
+          )}
         </button>
       </div>
 

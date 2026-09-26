@@ -1860,27 +1860,17 @@ html.dark .footer-social-link.tiktok:hover {
   box-shadow: 0 4px 12px rgba(24, 119, 242, 0.35);
 }
 
-/* --- Theme View Transition Animation (Wipe from Top Right) --- */
+/* --- Theme View Transition Animation (Circle Spread) --- */
 ::view-transition-old(root),
 ::view-transition-new(root) {
-  animation: none;
-  mix-blend-mode: normal;
+  animation: none !important;
+  mix-blend-mode: normal !important;
 }
 
 ::view-transition-old(root) {
-  z-index: 1;
+  z-index: 1 !important;
 }
 
 ::view-transition-new(root) {
-  z-index: 2;
-  animation: expandCircle 1.5s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-@keyframes expandCircle {
-  from {
-    clip-path: circle(0% at 100% 0%);
-  }
-  to {
-    clip-path: circle(150% at 100% 0%);
-  }
+  z-index: 9999 !important;
 }
