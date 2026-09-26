@@ -333,8 +333,8 @@ export default function DaftarTahapSatuPage() {
 
   const handleRecover = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!recoverNisn.trim()) {
-      setRecoverError("NISN wajib diisi.");
+    if (!recoverNisn.trim() || !recoverTglLahir.trim()) {
+      setRecoverError("NISN dan Tanggal Lahir wajib diisi keduanya.");
       return;
     }
     setIsRecovering(true);
@@ -1032,7 +1032,7 @@ export default function DaftarTahapSatuPage() {
               Cek / Pulihkan Data Pendaftaran
             </h3>
             <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 mb-5">
-              Masukkan NISN calon siswa untuk mencari kembali Nomor Pendaftaran &amp; Kode Unik (PIN) Anda.
+              Masukkan NISN dan Tanggal Lahir calon siswa untuk mencari kembali Nomor Pendaftaran &amp; Kode Unik (PIN) Anda.
             </p>
 
             <form onSubmit={handleRecover} className="space-y-4">
@@ -1052,7 +1052,7 @@ export default function DaftarTahapSatuPage() {
 
               <div>
                 <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">
-                  Tanggal Lahir (Opsional)
+                  Tanggal Lahir <span className="text-rose-500">*</span>
                 </label>
                 <input
                   type="date"
@@ -1078,8 +1078,8 @@ export default function DaftarTahapSatuPage() {
                 </button>
                 <button
                   type="submit"
-                  disabled={isRecovering}
-                  className="px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold shadow-md shadow-blue-500/20 transition-colors flex items-center gap-2 cursor-pointer disabled:opacity-50"
+                  disabled={!recoverNisn.trim() || !recoverTglLahir.trim() || isRecovering}
+                  className="px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold shadow-md shadow-blue-500/20 transition-colors flex items-center gap-2 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
                 >
                   {isRecovering ? (
                     <>
