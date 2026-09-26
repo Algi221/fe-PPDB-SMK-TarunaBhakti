@@ -5,6 +5,7 @@ import { usePPDB } from "@/context/PPDBContext";
 import { useRouter, useSearchParams } from "next/navigation";
 import dompurify from "dompurify";
 import ApplicantDetailModal from "@/components/admin/pendaftar/ApplicantDetailModal";
+import { getBerkasFisikStatus, getMissingBerkasSummary } from "@/utils/berkasFisik";
 
 const sanitizeUrl = (url: string | undefined | null): string => {
   if (!url) return "";
@@ -227,6 +228,15 @@ function ApplicantsDirectoryContent() {
   const [selectedApplicant, setSelectedApplicant] = useState<Applicant | null>(null);
   const [rejectingApplicantId, setRejectingApplicantId] = useState<number | null>(null);
   const [rejectionReasonInput, setRejectionReasonInput] = useState<string>("");
+  const [berkasUpdateTrigger, setBerkasUpdateTrigger] = useState<number>(0);
+
+  useEffect(() => {
+    const handleBerkasUpdated = () => {
+      setBerkasUpdateTrigger((prev) => prev + 1);
+    };
+    window.addEventListener("ppdb_berkas_updated", handleBerkasUpdated);
+    return () => window.removeEventListener("ppdb_berkas_updated", handleBerkasUpdated);
+  }, []);
   
   // Trash bin implementation
   const router = useRouter();
@@ -798,7 +808,9 @@ function ApplicantsDirectoryContent() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 dark:divide-white/5">
-                {paginatedApplicants.map((a: Applicant, idx: number) => (
+                {paginatedApplicants.map((a: Applicant, idx: number) => {
+                  const bSummary = getMissingBerkasSummary(getBerkasFisikStatus(a.id));
+                  return (
                   <tr
                     key={a.id || idx}
                     className="hover:bg-slate-50/60 dark:hover:bg-white/5 transition-all group cursor-pointer"
@@ -808,7 +820,30 @@ function ApplicantsDirectoryContent() {
                       <div className="font-extrabold text-blue-600 dark:text-blue-400 text-sm font-mono">{formatNoPendaftaran(a.periode, a.id)}</div>
                     </td>
                     <td className="py-4 px-6">
-                      <div className="font-extrabold text-slate-850 dark:text-white text-sm">{a.nama}</div>
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className="font-extrabold text-slate-850 dark:text-white text-sm">{a.nama}</span>
+                        {bSummary.isComplete ? (
+                          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider bg-emerald-500/10 border border-emerald-500/30 text-emerald-600 dark:text-emerald-400">
+                            <Check size={10} className="stroke-[3]" /> Berkas Lengkap
+                          </span>
+                        ) : bSummary.isOnlyIjazah ? (
+                          <span
+                            className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider bg-amber-500/15 border border-amber-500/40 text-amber-600 dark:text-amber-400"
+                            title={bSummary.missingList.map((m) => m.label).join(", ")}
+                          >
+                            <span className="w-1.5 h-1.5 rounded-full bg-amber-500 shrink-0"></span>
+                            <span>{bSummary.text}</span>
+                          </span>
+                        ) : (
+                          <span
+                            className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider bg-rose-500/10 border border-rose-500/30 text-rose-600 dark:text-rose-400"
+                            title={bSummary.missingList.map((m) => m.label).join(", ")}
+                          >
+                            <span className="w-1.5 h-1.5 rounded-full bg-rose-500 shrink-0"></span>
+                            <span>{bSummary.text}</span>
+                          </span>
+                        )}
+                      </div>
                       <span className="text-[9px] text-slate-400 dark:text-slate-500 font-bold tracking-wide uppercase mt-0.5 block">
                         Daftar: {new Date(a.tgl_daftar || a.createdAt || Date.now()).toLocaleDateString("id-ID")} · {a.gelombang || "Gelombang 1"} · Lahir: {a.tempat_lahir || a.tempatLahir || "-"}, {a.tgl_lahir || a.tglLahir || "-"}
                         {a.status === "Approved" && a.verified_by && ` · Diverifikasi: ${a.verified_by}`}
@@ -909,7 +944,8 @@ function ApplicantsDirectoryContent() {
                       </div>
                     </td>
                   </tr>
-                ))}
+                  );
+                })}
 
                 {filteredApplicants.length === 0 && (
                   <tr>
@@ -974,7 +1010,15 @@ function ApplicantsDirectoryContent() {
                       className={`py-2.5 px-4 truncate border-r border-slate-200 dark:border-slate-800 text-slate-850 dark:text-white font-extrabold text-sm ${activeCell?.row === rowIdx && activeCell?.col === 1 ? "bg-blue-500/10 outline-2 outline-blue-500" : ""
                         }`}
                     >
-                      {a.nama}
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="truncate">{a.nama}</span>
+                        {!getMissingBerkasSummary(getBerkasFisikStatus(a.id)).isComplete && (
+                          <span
+                            className="w-2 h-2 rounded-full bg-rose-500 shrink-0"
+                            title={getMissingBerkasSummary(getBerkasFisikStatus(a.id)).text}
+                          />
+                        )}
+                      </div>
                     </td>
 
                     {/* Column C: Sekolah */}

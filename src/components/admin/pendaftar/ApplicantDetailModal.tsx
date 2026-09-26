@@ -3,6 +3,7 @@ import Swal from 'sweetalert2';
 import React from 'react';
 import { User, Info, Calendar, Heart, HelpCircle, FileCheck, Layers, Users, FileImage, FileText, Check, X, Pencil, School } from 'lucide-react';
 import CustomSelect from "@/components/ui/CustomSelect";
+import { BERKAS_FISIK_LIST, getBerkasFisikStatus, setBerkasFisikStatus, getMissingBerkasSummary } from '@/utils/berkasFisik';
 
 const sanitizeUrl = (url: string) => { if (!url) return '#'; if (url.startsWith('http') || url.startsWith('data:')) return url; return `/${url}`; };
 
@@ -32,6 +33,25 @@ export default function ApplicantDetailModal({
   const [editApplicant, setEditApplicant] = React.useState<any>(null);
   const [editForm, setEditForm] = React.useState<any>({});
   const [isSaving, setIsSaving] = React.useState(false);
+  const [berkasStatus, setBerkasStatus] = React.useState<Record<string, boolean>>({});
+
+  React.useEffect(() => {
+    if (selectedApplicant?.id) {
+      setBerkasStatus(getBerkasFisikStatus(selectedApplicant.id));
+    }
+  }, [selectedApplicant?.id]);
+
+  const toggleBerkas = (id: string) => {
+    if (!selectedApplicant?.id) return;
+    const updated = {
+      ...berkasStatus,
+      [id]: !berkasStatus[id]
+    };
+    setBerkasStatus(updated);
+    setBerkasFisikStatus(selectedApplicant.id, updated);
+  };
+
+  const missingSummary = getMissingBerkasSummary(berkasStatus);
 
   const handleEditSave = async () => {
     setIsSaving(true);
@@ -62,7 +82,7 @@ export default function ApplicantDetailModal({
                   {selectedApplicant.nama?.substring(0, 1).toUpperCase() || "S"}
                 </div>
                 <div>
-                  <h3 className="text-xl md:text-2xl font-black text-white flex items-center gap-3 uppercase tracking-wide">
+                  <h3 className="text-xl md:text-2xl font-black text-white flex items-center gap-3 uppercase tracking-wide flex-wrap">
                     <span>{selectedApplicant.nama}</span>
                     <span
                       className={`px-3 py-0.5 rounded-full text-[9px] font-black border uppercase tracking-widest ${
@@ -75,6 +95,21 @@ export default function ApplicantDetailModal({
                     >
                       {selectedApplicant.status === "Approved" ? "Terverifikasi" : selectedApplicant.status === "Rejected" ? "Ditolak" : "Pending"}
                     </span>
+                    {missingSummary.isComplete ? (
+                      <span className="px-2.5 py-0.5 rounded-full text-[9px] font-black border uppercase tracking-wider bg-emerald-500/10 border-emerald-500/30 text-emerald-400 flex items-center gap-1">
+                        <Check size={11} className="stroke-[3]" /> Berkas Fisik Lengkap
+                      </span>
+                    ) : missingSummary.isOnlyIjazah ? (
+                      <span className="px-2.5 py-0.5 rounded-full text-[9px] font-black border uppercase tracking-wider bg-amber-500/15 border-amber-500/40 text-amber-400 flex items-center gap-1.5">
+                        <span className="w-1.5 h-1.5 rounded-full bg-amber-400 shrink-0"></span>
+                        {missingSummary.text}
+                      </span>
+                    ) : (
+                      <span className="px-2.5 py-0.5 rounded-full text-[9px] font-black border uppercase tracking-wider bg-rose-500/15 border-rose-500/40 text-rose-400 flex items-center gap-1.5 animate-pulse">
+                        <span className="w-1.5 h-1.5 rounded-full bg-rose-500 shrink-0"></span>
+                        {missingSummary.text}
+                      </span>
+                    )}
                   </h3>
                   <p className="text-xs text-slate-400 font-bold uppercase tracking-wider mt-1 flex items-center flex-wrap gap-2">
                     <span className="text-blue-400">NO. PENDAFTARAN:</span>
@@ -117,7 +152,7 @@ export default function ApplicantDetailModal({
 
             {/* Modal Tabs Navigation */}
             <div className="px-6 py-3 bg-[#070d1a] border-b border-slate-800/60 shrink-0">
-              <div className="flex flex-wrap bg-[#0c162b] p-1.5 rounded-2xl gap-1 w-full border border-slate-800/60">
+              <div className="flex items-center gap-1.5 p-1.5 rounded-2xl bg-[#0c162b] border border-slate-800/60 w-full overflow-x-auto no-scrollbar">
                 {[
                   { id: "biodata", label: "BIODATA" },
                   { id: "periodik", label: "PERIODIK" },
@@ -130,7 +165,7 @@ export default function ApplicantDetailModal({
                   <button
                     key={t.id}
                     onClick={() => setActiveTab(t.id)}
-                    className={`px-4 py-2 text-[10px] md:text-xs font-extrabold transition-all rounded-xl uppercase tracking-wider flex-1 text-center min-w-[100px] whitespace-nowrap cursor-pointer ${
+                    className={`px-3.5 py-2 text-[10px] md:text-xs font-extrabold transition-all rounded-xl uppercase tracking-wider shrink-0 whitespace-nowrap cursor-pointer ${
                       activeTab === t.id
                         ? "bg-[#132247] text-white shadow-sm border border-blue-500/40"
                         : "text-slate-400 hover:text-slate-200 hover:bg-slate-800/30 border border-transparent"
@@ -434,37 +469,106 @@ export default function ApplicantDetailModal({
                   </h4>
 
                   <div className="bg-[#0c162c] border border-slate-800/80 rounded-3xl p-6 space-y-6">
-                    <div className="flex items-center justify-between pb-4 border-b border-slate-800/60">
+                    <div className="flex items-center justify-between pb-4 border-b border-slate-800/60 flex-wrap gap-3">
                       <div className="flex items-center gap-3">
-                        <div className="w-7 h-7 rounded-lg bg-emerald-500/10 text-emerald-400 flex items-center justify-center border border-emerald-500/20">
-                          <Check size={16} className="stroke-[3]" />
+                        <div className={`w-8 h-8 rounded-xl flex items-center justify-center border transition-all ${
+                          missingSummary.isComplete
+                            ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/30"
+                            : "bg-amber-500/10 text-amber-400 border-amber-500/30"
+                        }`}>
+                          <FileCheck size={18} className="stroke-[2.5]" />
                         </div>
                         <div>
                           <h5 className="text-white font-black uppercase tracking-wider text-xs">CHECKLIST BERKAS FISIK</h5>
                           <p className="text-[10px] text-slate-400 font-bold mt-0.5">Tandai dokumen yang telah diserahkan secara fisik ke sekolah.</p>
                         </div>
                       </div>
-                      <span className="px-3.5 py-1 rounded-full text-[9px] font-black uppercase tracking-widest bg-amber-500/15 border border-amber-500/30 text-amber-400">
-                        BELUM LENGKAP
+                      <span className={`px-3.5 py-1.5 rounded-full text-[9px] font-black uppercase tracking-widest border transition-all ${
+                        missingSummary.isComplete
+                          ? "bg-emerald-500/15 border-emerald-500/30 text-emerald-400"
+                          : "bg-amber-500/15 border-amber-500/30 text-amber-400"
+                      }`}>
+                        {missingSummary.isComplete ? "LENGKAP (6/6)" : `BELUM LENGKAP (${6 - missingSummary.missingList.length}/6)`}
                       </span>
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                      {[
-                        "Fotokopi Kartu Keluarga (KK)",
-                        "Fotokopi KTP Orang Tua (Ayah & Ibu)",
-                        "Akta Kelahiran asli & 1 Fotokopi",
-                        "Fotokopi Ijazah / SKL legalisir",
-                        "Pas foto berwarna 3x4 (3 lembar)",
-                        "Bukti Pembayaran Pendaftaran"
-                      ].map((item, idx) => (
-                        <div key={idx} className="bg-[#070d1a] border border-slate-800/80 hover:border-slate-700/80 rounded-2xl p-4 flex items-center gap-3 transition-all">
-                          <div className="w-5 h-5 rounded-lg border border-slate-700/80 bg-slate-900/60 flex items-center justify-center shrink-0">
-                            {/* Unchecked state style matching reference */}
-                          </div>
-                          <span className="text-slate-200 font-bold text-xs">{item}</span>
+                    {/* Missing berkas warning banner */}
+                    {!missingSummary.isComplete && (
+                      <div className={`p-4 rounded-2xl flex items-start gap-3 border ${
+                        missingSummary.isOnlyIjazah
+                          ? "bg-amber-950/25 border-amber-900/50 text-amber-300"
+                          : "bg-rose-950/25 border-rose-900/50 text-rose-300"
+                      }`}>
+                        <span className={`w-2.5 h-2.5 rounded-full mt-1 shrink-0 ${
+                          missingSummary.isOnlyIjazah ? "bg-amber-400" : "bg-rose-500 animate-pulse"
+                        }`} />
+                        <div className="text-xs">
+                          <span className={`font-extrabold uppercase tracking-wide block mb-0.5 ${
+                            missingSummary.isOnlyIjazah ? "text-amber-400" : "text-rose-400"
+                          }`}>
+                            {missingSummary.isOnlyIjazah
+                              ? "Dokumen Belum Diserahkan (Bisa Menyusul):"
+                              : `Dokumen Belum Diserahkan (${missingSummary.missingList.length} Berkas Masih Belum Lengkap):`}
+                          </span>
+                          <span className={`font-bold ${missingSummary.isOnlyIjazah ? "text-amber-200" : "text-rose-200"}`}>
+                            {missingSummary.missingList.map((m) => m.label).join(" • ")}
+                          </span>
                         </div>
-                      ))}
+                      </div>
+                    )}
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                      {BERKAS_FISIK_LIST.map((item) => {
+                        const isChecked = !!berkasStatus[item.id];
+                        const isIjazah = item.id === "ijazah";
+                        return (
+                          <div
+                            key={item.id}
+                            onClick={() => toggleBerkas(item.id)}
+                            className={`rounded-2xl p-4 flex items-center justify-between gap-3 transition-all cursor-pointer select-none border ${
+                              isChecked
+                                ? "bg-emerald-950/20 border-emerald-500/40 hover:border-emerald-500/60 shadow-sm shadow-emerald-950/20"
+                                : isIjazah
+                                ? "bg-[#070d1a] border-amber-500/30 hover:border-amber-500/50 hover:bg-amber-950/15"
+                                : "bg-[#070d1a] border-slate-800/80 hover:border-slate-700/80 hover:bg-slate-900/30"
+                            }`}
+                          >
+                            <div className="flex items-center gap-3">
+                              <div
+                                className={`w-5 h-5 rounded-lg flex items-center justify-center shrink-0 border transition-all ${
+                                  isChecked
+                                    ? "bg-emerald-500 border-emerald-500 text-white shadow-sm"
+                                    : isIjazah
+                                    ? "border-amber-500/40 bg-amber-950/20 hover:border-amber-400"
+                                    : "border-slate-700/80 bg-slate-900/60 hover:border-slate-500"
+                                }`}
+                              >
+                                {isChecked && <Check size={13} className="stroke-[3]" />}
+                              </div>
+                              <span className={`text-xs font-bold transition-all ${
+                                isChecked
+                                  ? "text-emerald-200"
+                                  : isIjazah
+                                  ? "text-amber-200/90"
+                                  : "text-slate-300"
+                              }`}>
+                                {item.label}
+                              </span>
+                            </div>
+                            <span
+                              className={`text-[9px] font-black uppercase tracking-wider px-2.5 py-0.5 rounded-full border shrink-0 ${
+                                isChecked
+                                  ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-400"
+                                  : isIjazah
+                                  ? "bg-amber-500/15 border-amber-500/40 text-amber-400"
+                                  : "bg-rose-500/10 border-rose-500/30 text-rose-400"
+                              }`}
+                            >
+                              {isChecked ? "Sudah" : "Belum"}
+                            </span>
+                          </div>
+                        );
+                      })}
                     </div>
                   </div>
 
