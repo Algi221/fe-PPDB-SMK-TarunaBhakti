@@ -315,7 +315,7 @@ export default function ApplicantDetailModal({
 
               {/* TAB 4: ORANG TUA */}
               {activeTab === "orangtua" && (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                   <div>
                     <h4 className="text-white font-black uppercase tracking-widest mb-4 border-b border-slate-800/80 pb-3 text-[11px] flex items-center gap-2">
                       <div className="w-6 h-6 rounded-md bg-indigo-500/10 flex items-center justify-center text-indigo-400">
@@ -323,18 +323,18 @@ export default function ApplicantDetailModal({
                       </div>
                       DATA AYAH KANDUNG
                     </h4>
-                    <div className="flex flex-col gap-3">
-                      <div className="bg-[#0c162c] rounded-2xl p-3.5 border border-slate-800/80">
-                        <span className="text-slate-400 block mb-1 font-bold uppercase text-[9px] tracking-wider">NAMA AYAH</span>
-                        <span className="text-white font-bold text-xs">{selectedApplicant.nama_ayah || selectedApplicant.namaAyah || "-"}</span>
+                    <div className="divide-y divide-slate-800/60">
+                      <div className="py-3.5 flex items-center justify-between gap-4">
+                        <span className="text-slate-400 font-bold uppercase text-[9px] tracking-wider">NAMA AYAH</span>
+                        <span className="text-white font-extrabold text-xs text-right">{selectedApplicant.nama_ayah || selectedApplicant.namaAyah || "-"}</span>
                       </div>
-                      <div className="bg-[#0c162c] rounded-2xl p-3.5 border border-slate-800/80">
-                        <span className="text-slate-400 block mb-1 font-bold uppercase text-[9px] tracking-wider">PEKERJAAN</span>
-                        <span className="text-white font-bold text-xs">{selectedApplicant.pekerjaan_ayah || selectedApplicant.pekerjaanAyah || "-"}</span>
+                      <div className="py-3.5 flex items-center justify-between gap-4">
+                        <span className="text-slate-400 font-bold uppercase text-[9px] tracking-wider">PEKERJAAN</span>
+                        <span className="text-white font-extrabold text-xs text-right">{selectedApplicant.pekerjaan_ayah || selectedApplicant.pekerjaanAyah || "-"}</span>
                       </div>
-                      <div className="bg-[#0c162c] rounded-2xl p-3.5 border border-slate-800/80">
-                        <span className="text-slate-400 block mb-1 font-bold uppercase text-[9px] tracking-wider">PENGHASILAN</span>
-                        <span className="text-white font-bold text-xs">{selectedApplicant.penghasilan_ayah || selectedApplicant.penghasilanAyah || "-"}</span>
+                      <div className="py-3.5 flex items-center justify-between gap-4">
+                        <span className="text-slate-400 font-bold uppercase text-[9px] tracking-wider">PENGHASILAN</span>
+                        <span className="text-white font-extrabold text-xs text-right">{selectedApplicant.penghasilan_ayah || selectedApplicant.penghasilanAyah || "-"}</span>
                       </div>
                     </div>
                   </div>
@@ -346,22 +346,22 @@ export default function ApplicantDetailModal({
                       </div>
                       DATA IBU KANDUNG
                     </h4>
-                    <div className="flex flex-col gap-3">
-                      <div className="bg-[#0c162c] rounded-2xl p-3.5 border border-slate-800/80">
-                        <span className="text-slate-400 block mb-1 font-bold uppercase text-[9px] tracking-wider">NAMA IBU</span>
-                        <span className="text-white font-bold text-xs">{selectedApplicant.nama_ibu || selectedApplicant.namaIbu || "-"}</span>
+                    <div className="divide-y divide-slate-800/60">
+                      <div className="py-3.5 flex items-center justify-between gap-4">
+                        <span className="text-slate-400 font-bold uppercase text-[9px] tracking-wider">NAMA IBU</span>
+                        <span className="text-white font-extrabold text-xs text-right">{selectedApplicant.nama_ibu || selectedApplicant.namaIbu || "-"}</span>
                       </div>
-                      <div className="bg-[#0c162c] rounded-2xl p-3.5 border border-slate-800/80">
-                        <span className="text-slate-400 block mb-1 font-bold uppercase text-[9px] tracking-wider">PEKERJAAN</span>
-                        <span className="text-white font-bold text-xs">{selectedApplicant.pekerjaan_ibu || selectedApplicant.pekerjaanIbu || "-"}</span>
+                      <div className="py-3.5 flex items-center justify-between gap-4">
+                        <span className="text-slate-400 font-bold uppercase text-[9px] tracking-wider">PEKERJAAN</span>
+                        <span className="text-white font-extrabold text-xs text-right">{selectedApplicant.pekerjaan_ibu || selectedApplicant.pekerjaanIbu || "-"}</span>
                       </div>
-                      <div className="bg-[#0c162c] rounded-2xl p-3.5 border border-slate-800/80">
-                        <span className="text-slate-400 block mb-1 font-bold uppercase text-[9px] tracking-wider">PENGHASILAN</span>
-                        <span className="text-white font-bold text-xs">{selectedApplicant.penghasilan_ibu || selectedApplicant.penghasilanIbu || "-"}</span>
+                      <div className="py-3.5 flex items-center justify-between gap-4">
+                        <span className="text-slate-400 font-bold uppercase text-[9px] tracking-wider">PENGHASILAN</span>
+                        <span className="text-white font-extrabold text-xs text-right">{selectedApplicant.penghasilan_ibu || selectedApplicant.penghasilanIbu || "-"}</span>
                       </div>
-                      <div className="bg-[#0c162c] rounded-2xl p-3.5 border border-slate-800/80">
-                        <span className="text-slate-400 block mb-1 font-bold uppercase text-[9px] tracking-wider">TELEPON ORTU</span>
-                        <span className="text-blue-400 font-mono text-xs font-bold">{selectedApplicant.telepon_ortu || selectedApplicant.teleponOrtu || "-"}</span>
+                      <div className="py-3.5 flex items-center justify-between gap-4">
+                        <span className="text-slate-400 font-bold uppercase text-[9px] tracking-wider">TELEPON ORTU</span>
+                        <span className="text-blue-400 font-mono font-bold text-xs text-right">{selectedApplicant.telepon_ortu || selectedApplicant.teleponOrtu || "-"}</span>
                       </div>
                     </div>
                   </div>
@@ -370,7 +370,7 @@ export default function ApplicantDetailModal({
 
               {/* TAB 5: AKADEMIK */}
               {activeTab === "akademik" && (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                   <div>
                     <h4 className="text-white font-black uppercase tracking-widest mb-4 border-b border-slate-800/80 pb-3 text-[11px] flex items-center gap-2">
                       <div className="w-6 h-6 rounded-md bg-blue-500/10 flex items-center justify-center text-blue-400">
@@ -378,22 +378,22 @@ export default function ApplicantDetailModal({
                       </div>
                       PENDIDIKAN SEBELUMNYA
                     </h4>
-                    <div className="flex flex-col gap-3">
-                      <div className="bg-[#0c162c] rounded-2xl p-3.5 border border-slate-800/80">
-                        <span className="text-slate-400 block mb-1 font-bold uppercase text-[9px] tracking-wider">ASAL SEKOLAH</span>
-                        <span className="text-white font-black text-xs uppercase">{selectedApplicant.sekolah_asal || selectedApplicant.sekolahAsal || "-"}</span>
+                    <div className="divide-y divide-slate-800/60">
+                      <div className="py-3.5 flex items-center justify-between gap-4">
+                        <span className="text-slate-400 font-bold uppercase text-[9px] tracking-wider">ASAL SEKOLAH</span>
+                        <span className="text-white font-black text-xs uppercase text-right">{selectedApplicant.sekolah_asal || selectedApplicant.sekolahAsal || "-"}</span>
                       </div>
-                      <div className="bg-[#0c162c] rounded-2xl p-3.5 border border-slate-800/80">
-                        <span className="text-slate-400 block mb-1 font-bold uppercase text-[9px] tracking-wider">TAHUN LULUS</span>
-                        <span className="text-white font-bold text-xs">{selectedApplicant.tgl_lulus || selectedApplicant.tglLulus || "-"}</span>
+                      <div className="py-3.5 flex items-center justify-between gap-4">
+                        <span className="text-slate-400 font-bold uppercase text-[9px] tracking-wider">TAHUN LULUS</span>
+                        <span className="text-white font-extrabold text-xs text-right">{selectedApplicant.tgl_lulus || selectedApplicant.tglLulus || "-"}</span>
                       </div>
-                      <div className="bg-[#0c162c] rounded-2xl p-3.5 border border-slate-800/80">
-                        <span className="text-slate-400 block mb-1 font-bold uppercase text-[9px] tracking-wider">NO. IJAZAH / SKL</span>
-                        <span className="text-white font-mono font-bold text-xs">{selectedApplicant.no_ijazah || selectedApplicant.noIjazah || "-"}</span>
+                      <div className="py-3.5 flex items-center justify-between gap-4">
+                        <span className="text-slate-400 font-bold uppercase text-[9px] tracking-wider">NO. IJAZAH / SKL</span>
+                        <span className="text-white font-mono font-bold text-xs text-right">{selectedApplicant.no_ijazah || selectedApplicant.noIjazah || "-"}</span>
                       </div>
-                      <div className="bg-[#0c162c] rounded-2xl p-3.5 border border-slate-800/80">
-                        <span className="text-slate-400 block mb-1 font-bold uppercase text-[9px] tracking-wider">NO. SKHUN</span>
-                        <span className="text-white font-mono font-bold text-xs">{selectedApplicant.no_skhun || selectedApplicant.noSkhun || "-"}</span>
+                      <div className="py-3.5 flex items-center justify-between gap-4">
+                        <span className="text-slate-400 font-bold uppercase text-[9px] tracking-wider">NO. SKHUN</span>
+                        <span className="text-white font-mono font-bold text-xs text-right">{selectedApplicant.no_skhun || selectedApplicant.noSkhun || "-"}</span>
                       </div>
                     </div>
                   </div>
@@ -405,18 +405,18 @@ export default function ApplicantDetailModal({
                       </div>
                       PILIHAN MINAT & BAKAT
                     </h4>
-                    <div className="flex flex-col gap-3">
-                      <div className="bg-[#0c162c] rounded-2xl p-3.5 border border-slate-800/80">
-                        <span className="text-slate-400 block mb-1 font-bold uppercase text-[9px] tracking-wider">JURUSAN PILIHAN</span>
-                        <span className="text-blue-400 font-bold text-xs uppercase">{selectedApplicant.jurusan_1 || selectedApplicant.jurusan1 || "-"}</span>
+                    <div className="divide-y divide-slate-800/60">
+                      <div className="py-3.5 flex items-center justify-between gap-4">
+                        <span className="text-slate-400 font-bold uppercase text-[9px] tracking-wider">JURUSAN PILIHAN</span>
+                        <span className="text-blue-400 font-extrabold text-xs uppercase text-right">{selectedApplicant.jurusan_1 || selectedApplicant.jurusan1 || "-"}</span>
                       </div>
-                      <div className="bg-[#0c162c] rounded-2xl p-3.5 border border-slate-800/80">
-                        <span className="text-slate-400 block mb-1 font-bold uppercase text-[9px] tracking-wider">CITA - CITA</span>
-                        <span className="text-white font-bold text-xs">{selectedApplicant.cita_cita || selectedApplicant.citaCita || "-"}</span>
+                      <div className="py-3.5 flex items-center justify-between gap-4">
+                        <span className="text-slate-400 font-bold uppercase text-[9px] tracking-wider">CITA - CITA</span>
+                        <span className="text-white font-extrabold text-xs text-right">{selectedApplicant.cita_cita || selectedApplicant.citaCita || "-"}</span>
                       </div>
-                      <div className="bg-[#0c162c] rounded-2xl p-3.5 border border-slate-800/80">
-                        <span className="text-slate-400 block mb-1 font-bold uppercase text-[9px] tracking-wider">ALASAN MEMILIH</span>
-                        <span className="text-white font-bold text-xs">{selectedApplicant.alasan_memilih || selectedApplicant.alasanMemilih || "Ingin belajar IT"}</span>
+                      <div className="py-3.5 flex items-center justify-between gap-4">
+                        <span className="text-slate-400 font-bold uppercase text-[9px] tracking-wider">ALASAN MEMILIH</span>
+                        <span className="text-white font-extrabold text-xs text-right">{selectedApplicant.alasan_memilih || selectedApplicant.alasanMemilih || "Ingin belajar IT"}</span>
                       </div>
                     </div>
                   </div>
