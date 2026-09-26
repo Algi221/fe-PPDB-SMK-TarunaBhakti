@@ -426,14 +426,53 @@ export default function ApplicantDetailModal({
               {/* TAB 6: VERIFIKASI BERKAS */}
               {activeTab === "pembayaran" && (
                 <div className="space-y-6 animate-in fade-in duration-300">
-                  <h4 className="text-white font-black uppercase tracking-widest border-b border-slate-800/80 pb-2 text-[11px] flex items-center gap-1.5">
-                    <FileImage size={14} className="text-blue-400" /> STATUS & BUKTI PEMBAYARAN
+                  <h4 className="text-white font-black uppercase tracking-widest border-b border-slate-800/80 pb-3 text-[11px] flex items-center gap-2">
+                    <div className="w-6 h-6 rounded-md bg-blue-500/10 flex items-center justify-center text-blue-400">
+                      <FileCheck size={14} />
+                    </div>
+                    STATUS VERIFIKASI BERKAS FISIK
                   </h4>
-                  
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+                  <div className="bg-[#0c162c] border border-slate-800/80 rounded-3xl p-6 space-y-6">
+                    <div className="flex items-center justify-between pb-4 border-b border-slate-800/60">
+                      <div className="flex items-center gap-3">
+                        <div className="w-7 h-7 rounded-lg bg-emerald-500/10 text-emerald-400 flex items-center justify-center border border-emerald-500/20">
+                          <Check size={16} className="stroke-[3]" />
+                        </div>
+                        <div>
+                          <h5 className="text-white font-black uppercase tracking-wider text-xs">CHECKLIST BERKAS FISIK</h5>
+                          <p className="text-[10px] text-slate-400 font-bold mt-0.5">Tandai dokumen yang telah diserahkan secara fisik ke sekolah.</p>
+                        </div>
+                      </div>
+                      <span className="px-3.5 py-1 rounded-full text-[9px] font-black uppercase tracking-widest bg-amber-500/15 border border-amber-500/30 text-amber-400">
+                        BELUM LENGKAP
+                      </span>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                      {[
+                        "Fotokopi Kartu Keluarga (KK)",
+                        "Fotokopi KTP Orang Tua (Ayah & Ibu)",
+                        "Akta Kelahiran asli & 1 Fotokopi",
+                        "Fotokopi Ijazah / SKL legalisir",
+                        "Pas foto berwarna 3x4 (3 lembar)",
+                        "Bukti Pembayaran Pendaftaran"
+                      ].map((item, idx) => (
+                        <div key={idx} className="bg-[#070d1a] border border-slate-800/80 hover:border-slate-700/80 rounded-2xl p-4 flex items-center gap-3 transition-all">
+                          <div className="w-5 h-5 rounded-lg border border-slate-700/80 bg-slate-900/60 flex items-center justify-center shrink-0">
+                            {/* Unchecked state style matching reference */}
+                          </div>
+                          <span className="text-slate-200 font-bold text-xs">{item}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Payment & Invoice Info Section */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
                     <div className="p-4 bg-[#0c162c] border border-slate-800/80 rounded-2xl">
                       <span className="text-slate-400 block mb-1 font-bold uppercase text-[9px] tracking-wider">METODE PEMBAYARAN</span>
-                      <span className="text-white font-extrabold text-sm uppercase">
+                      <span className="text-white font-extrabold text-xs uppercase">
                         {selectedApplicant.metode_pembayaran || "Payment Gateway"}
                       </span>
                     </div>
@@ -441,7 +480,7 @@ export default function ApplicantDetailModal({
                       <span className="text-slate-400 block mb-1 font-bold uppercase text-[9px] tracking-wider">STATUS PEMBAYARAN</span>
                       <div>
                         <span
-                          className={`inline-flex px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider border ${
+                          className={`inline-flex px-3 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider border ${
                             selectedApplicant.payment_status === "Paid"
                               ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-400"
                               : "bg-rose-500/10 border-rose-500/30 text-rose-400"
@@ -463,110 +502,73 @@ export default function ApplicantDetailModal({
                       </div>
                       <button
                         onClick={() => window.open(`/invoice?nisn=${selectedApplicant.nisn}`, '_blank')}
-                        className="px-5 py-3 bg-linear-to-tr from-blue-600 to-indigo-500 hover:from-blue-500 hover:to-indigo-400 text-white rounded-xl text-xs font-black uppercase tracking-wider shadow-lg shadow-blue-500/20 transition-all flex items-center gap-2 shrink-0 cursor-pointer"
+                        className="px-5 py-3 bg-gradient-to-tr from-blue-600 to-indigo-500 hover:from-blue-500 hover:to-indigo-400 text-white rounded-xl text-xs font-black uppercase tracking-wider shadow-lg shadow-blue-500/20 transition-all flex items-center gap-2 shrink-0 cursor-pointer"
                       >
                         <FileText className="w-4 h-4" />
                         <span>Cetak / Unduh Invoice</span>
                       </button>
                     </div>
                   )}
-
-                  <div className="bg-[#0c162c] border border-slate-800/80 rounded-2xl p-5 space-y-4">
-                    <span className="text-slate-400 block font-bold uppercase text-[9px] tracking-wider">
-                      DOKUMEN BUKTI TRANSFER MANUAL
-                    </span>
-                    {selectedApplicant.bukti_bayar ? (
-                      <div className="flex flex-col items-center gap-4">
-                        {selectedApplicant.bukti_bayar.startsWith("data:application/pdf") ? (
-                          <div className="w-full py-10 bg-slate-900 rounded-xl flex flex-col items-center justify-center border border-slate-800">
-                            <FileText size={48} className="text-blue-400 mb-2" />
-                            <p className="text-xs font-bold text-slate-200">Dokumen PDF Bukti Transfer</p>
-                            <a
-                              href={sanitizeUrl(selectedApplicant.bukti_bayar)}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="mt-4 px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-lg text-xs font-black uppercase tracking-wider shadow"
-                            >
-                              Unduh / Lihat PDF
-                            </a>
-                          </div>
-                        ) : (
-                          <div className="max-w-sm rounded-xl overflow-hidden border border-slate-800 shadow-md">
-                            <img
-                              src={sanitizeSrc(selectedApplicant.bukti_bayar)}
-                              alt="Bukti Transfer Manual"
-                              className="max-h-64 object-contain mx-auto bg-white rounded-lg cursor-pointer hover:brightness-95 transition-all w-full"
-                              onClick={() => setIsFullscreenImageOpen(true)}
-                            />
-                          </div>
-                        )}
-                        
-                        {selectedApplicant.payment_status !== "Paid" && (
-                          <button
-                            onClick={async () => {
-                              const result = await Swal.fire({
-                                title: 'Konfirmasi',
-                                text: "Apakah Anda yakin ingin memverifikasi bukti pembayaran ini dan menandai Lunas?",
-                                icon: 'warning',
-                                showCancelButton: true,
-                                confirmButtonText: 'Ya',
-                                cancelButtonText: 'Batal'
-                              });
-                              if (result.isConfirmed) {
-                                const res = await updateApplicant(selectedApplicant.id, { payment_status: "Paid" });
-                                if (res?.success) {
-                                  setSelectedApplicant(prev => prev ? { ...prev, payment_status: "Paid" } : null);
-                                  window.location.href = `/invoice?nisn=${selectedApplicant.nisn}&isAdmin=true`;
-                                } else {
-                                  alert(res?.message || "Gagal memperbarui status pembayaran.");
-                                }
-                              }
-                            }}
-                            className="px-6 py-3 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-black uppercase tracking-wider rounded-xl shadow-md flex items-center gap-1.5 transition cursor-pointer"
-                          >
-                            <Check size={14} />
-                            <span>Verifikasi Pembayaran Lunas</span>
-                          </button>
-                        )}
-                      </div>
-                    ) : (
-                      <div className="py-8 text-center text-slate-400 italic font-semibold">
-                        Tidak ada bukti transfer manual yang diunggah oleh pendaftar.
-                      </div>
-                    )}
-                  </div>
                 </div>
               )}
 
               {/* TAB 7: PERNYATAAN */}
               {activeTab === "pernyataan" && (
-                <div className="space-y-6">
-                  <h4 className="text-white font-black uppercase tracking-widest border-b border-slate-800/80 pb-2 text-[11px] flex items-center gap-1.5">
-                    <FileCheck size={14} className="text-blue-400" /> KOMITMEN & JANJI KEDISIPLINAN
+                <div className="space-y-6 animate-in fade-in duration-300">
+                  <h4 className="text-white font-black uppercase tracking-widest border-b border-slate-800/80 pb-3 text-[11px] flex items-center gap-2">
+                    <div className="w-6 h-6 rounded-md bg-blue-500/10 flex items-center justify-center text-blue-400">
+                      <FileText size={14} />
+                    </div>
+                    KOMITMEN & JANJI KEDISIPLINAN
                   </h4>
+
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div className="p-4 bg-[#0c162c] border border-slate-800/80 rounded-2xl">
-                      <span className="text-slate-400 block mb-1 font-bold uppercase text-[9px] tracking-wider">TAWURAN / PERKELAHIAN</span>
-                      <span className={`font-black px-2.5 py-0.5 rounded-lg text-[9px] uppercase tracking-wide border ${selectedApplicant.perkelahian === "Ya" ? "bg-rose-500/10 border-rose-500/30 text-rose-400" : "bg-emerald-500/10 border-emerald-500/30 text-emerald-400"}`}>{selectedApplicant.perkelahian || "Tidak"}</span>
+                    <div className="p-4 bg-[#0c162c] border border-slate-800/80 rounded-2xl flex flex-col justify-between min-h-[90px]">
+                      <span className="text-slate-400 block font-bold uppercase text-[9px] tracking-wider mb-2">TAWURAN / PERKELAHIAN</span>
+                      <div>
+                        <span className="inline-block px-4 py-1 rounded-full text-[10px] font-black uppercase tracking-widest bg-emerald-500/10 border border-emerald-500/30 text-emerald-400">
+                          {selectedApplicant.perkelahian || "TIDAK"}
+                        </span>
+                      </div>
                     </div>
-                    <div className="p-4 bg-[#0c162c] border border-slate-800/80 rounded-2xl">
-                      <span className="text-slate-400 block mb-1 font-bold uppercase text-[9px] tracking-wider">PENYALAHGUNAAN NARKOBA</span>
-                      <span className={`font-black px-2.5 py-0.5 rounded-lg text-[9px] uppercase tracking-wide border ${selectedApplicant.narkoba === "Ya" ? "bg-rose-500/10 border-rose-500/30 text-rose-400" : "bg-emerald-500/10 border-emerald-500/30 text-emerald-400"}`}>{selectedApplicant.narkoba || "Tidak"}</span>
+                    <div className="p-4 bg-[#0c162c] border border-slate-800/80 rounded-2xl flex flex-col justify-between min-h-[90px]">
+                      <span className="text-slate-400 block font-bold uppercase text-[9px] tracking-wider mb-2">PENYALAHGUNAAN NARKOBA</span>
+                      <div>
+                        <span className="inline-block px-4 py-1 rounded-full text-[10px] font-black uppercase tracking-widest bg-emerald-500/10 border border-emerald-500/30 text-emerald-400">
+                          {selectedApplicant.narkoba || "TIDAK"}
+                        </span>
+                      </div>
                     </div>
-                    <div className="p-4 bg-[#0c162c] border border-slate-800/80 rounded-2xl">
-                      <span className="text-slate-400 block mb-1 font-bold uppercase text-[9px] tracking-wider">PELANGGARAN HUKUM LAIN</span>
-                      <span className={`font-black px-2.5 py-0.5 rounded-lg text-[9px] uppercase tracking-wide border ${selectedApplicant.pelanggaran_lain === "Ya" ? "bg-rose-500/10 border-rose-500/30 text-rose-400" : "bg-emerald-500/10 border-emerald-500/30 text-emerald-400"}`}>{selectedApplicant.pelanggaran_lain || "Tidak"}</span>
+                    <div className="p-4 bg-[#0c162c] border border-slate-800/80 rounded-2xl flex flex-col justify-between min-h-[90px]">
+                      <span className="text-slate-400 block font-bold uppercase text-[9px] tracking-wider mb-2">PELANGGARAN HUKUM LAIN</span>
+                      <div>
+                        <span className="inline-block px-4 py-1 rounded-full text-[10px] font-black uppercase tracking-widest bg-emerald-500/10 border border-emerald-500/30 text-emerald-400">
+                          {selectedApplicant.pelanggaran_lain || "TIDAK"}
+                        </span>
+                      </div>
                     </div>
                   </div>
 
-                  <div className="p-5 bg-blue-950/20 border border-blue-900/30 rounded-2xl space-y-3">
-                    <span className="text-blue-400 font-black uppercase tracking-wider text-[9px] block">PERNYATAAN KESANGGUPAN CALON TARUNA BARU:</span>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2.5 text-[10px] text-slate-300">
-                      <div className="flex items-center gap-2"><span className="text-emerald-400 font-extrabold">✓</span> Patuh Aturan Sekolah</div>
-                      <div className="flex items-center gap-2"><span className="text-emerald-400 font-extrabold">✓</span> Menerima Sanksi Sekolah</div>
-                      <div className="flex items-center gap-2"><span className="text-emerald-400 font-extrabold">✓</span> Hubungan Akrab Taruna</div>
-                      <div className="flex items-center gap-2"><span className="text-emerald-400 font-extrabold">✓</span> Belajar Dengan Tekun</div>
-                      <div className="flex items-center gap-2"><span className="text-emerald-400 font-extrabold">✓</span> Menjaga Nama Baik Almamater</div>
+                  <div className="p-6 bg-[#0c162c] border border-slate-800/80 rounded-3xl space-y-4">
+                    <span className="text-blue-400 font-extrabold uppercase tracking-wider text-[10px] block">
+                      PERNYATAAN KESANGGUPAN CALON TARUNA BARU:
+                    </span>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-y-3.5 gap-x-6 text-xs font-bold text-slate-200">
+                      <div className="flex items-center gap-2.5">
+                        <span className="text-emerald-400 font-black text-sm">✓</span> Patuh Aturan Sekolah
+                      </div>
+                      <div className="flex items-center gap-2.5">
+                        <span className="text-emerald-400 font-black text-sm">✓</span> Menerima Sanksi Sekolah
+                      </div>
+                      <div className="flex items-center gap-2.5">
+                        <span className="text-emerald-400 font-black text-sm">✓</span> Hubungan Akrab Taruna
+                      </div>
+                      <div className="flex items-center gap-2.5">
+                        <span className="text-emerald-400 font-black text-sm">✓</span> Belajar Dengan Tekun
+                      </div>
+                      <div className="flex items-center gap-2.5">
+                        <span className="text-emerald-400 font-black text-sm">✓</span> Menjaga Nama Baik Almamater
+                      </div>
                     </div>
                   </div>
                 </div>
