@@ -62,7 +62,7 @@ export default function HeroSection(props: HeroProps) {
             className={`w-24 h-24 border-2 border-dashed rounded-3xl flex flex-col items-center justify-center p-2 relative overflow-hidden transition-all duration-300 ${
               dragActiveStates["school_logo"]
                 ? "border-blue-500 bg-blue-500/5"
-                : "border-slate-200 dark:border-white/10 hover:border-slate-350 dark:hover:border-white/20 bg-white dark:bg-slate-900"
+                : "border-slate-200 dark:border-white/10 hover:border-slate-300 dark:hover:border-white/20 bg-white dark:bg-slate-900"
             }`}
             onDragEnter={(e) => handleDragState(e, "school_logo", true)}
             onDragOver={(e) => handleDragState(e, "school_logo", true)}

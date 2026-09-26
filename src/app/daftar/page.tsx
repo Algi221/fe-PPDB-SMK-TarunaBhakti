@@ -755,9 +755,9 @@ export default function DaftarPage() {
   const getStepFields = (step: number): string[] => {
     switch (step) {
       case 1: return ['nama', 'jenisKelamin', 'nisn', 'nik', 'tempatLahir', 'tglLahir', 'agama', 'kewarganegaraan'];
-      case 2: return ['alamat', 'rtRw', 'kelurahan', 'kecamatan', 'kodePos'];
-      case 3: return ['tinggalDengan', 'transportasi', 'tinggiBadan', 'beratBadan', 'jarakSekolah', 'jarakKm', 'waktuJam', 'waktuMenit', 'jumlahSaudara', 'golonganDarah'];
-      case 4: return ['penyakitDiderita', 'kebutuhanKhusus'];
+      case 2: return ['alamat', 'rtRw', 'kelurahan', 'kecamatan', 'kodePos', 'whatsapp', 'teleponOrtu', 'email', 'tinggalDengan', 'transportasi'];
+      case 3: return ['tinggiBadan', 'beratBadan', 'jarakSekolah', 'jarakKm', 'waktuJam', 'waktuMenit', 'jumlahSaudara'];
+      case 4: return ['golonganDarah', 'penyakitDiderita', 'kebutuhanKhusus'];
       case 5: return ['jenisPrestasi', 'tingkatPrestasi', 'uraianPrestasi', 'tahunPrestasi', 'penyelenggara'];
       case 6: return ['jenisBeasiswa', 'uraianBeasiswa', 'tahunMulaiBeasiswa', 'tahunSelesaiBeasiswa'];
       case 7: return ['sekolahAsal', 'tglLulus', 'noIjazah', 'noSKHUN', 'noPesertaUN', 'lamaBelajar', 'pindahanDari', 'alasanPindah', 'diterimaKelas', 'diterimaTanggal'];
@@ -1114,13 +1114,13 @@ export default function DaftarPage() {
             border-color: #e2e8f0 !important;
           }
 
-          html.dark .printable-invoice-sheet .text-slate-955,
+          html.dark .printable-invoice-sheet .text-slate-950,
           html.dark .printable-invoice-sheet .text-slate-900,
           html.dark .printable-invoice-sheet .text-slate-850,
           html.dark .printable-invoice-sheet .text-slate-855,
           html.dark .printable-invoice-sheet .text-slate-800,
           html.dark .printable-invoice-sheet .text-slate-700,
-          .printable-invoice-sheet .text-slate-955,
+          .printable-invoice-sheet .text-slate-950,
           .printable-invoice-sheet .text-slate-900,
           .printable-invoice-sheet .text-slate-855,
           .printable-invoice-sheet .text-slate-850,
@@ -1129,11 +1129,11 @@ export default function DaftarPage() {
             color: #0f172a !important;
           }
 
-          html.dark .printable-invoice-sheet .text-slate-550,
+          html.dark .printable-invoice-sheet .text-slate-500,
           html.dark .printable-invoice-sheet .text-slate-500,
           html.dark .printable-invoice-sheet .text-slate-450,
           html.dark .printable-invoice-sheet .text-slate-400,
-          .printable-invoice-sheet .text-slate-550,
+          .printable-invoice-sheet .text-slate-500,
           .printable-invoice-sheet .text-slate-500,
           .printable-invoice-sheet .text-slate-450,
           .printable-invoice-sheet .text-slate-400 {
@@ -1722,11 +1722,11 @@ export default function DaftarPage() {
                   <span>Subtotal:</span>
                   <span>Rp {regCost.toLocaleString("id-ID")}</span>
                 </div>
-                <div className="flex justify-between text-slate-550">
+                <div className="flex justify-between text-slate-500">
                   <span>Pajak (PPN 0%):</span>
                   <span>Nihil</span>
                 </div>
-                <div className="flex justify-between text-slate-955 font-black text-xs py-2 border-t-2 border-slate-800">
+                <div className="flex justify-between text-slate-950 font-black text-xs py-2 border-t-2 border-slate-800">
                   <span>Total Tagihan:</span>
                   <span className="text-blue-600 font-black text-sm">Rp {regCost.toLocaleString("id-ID")}</span>
                 </div>
@@ -2020,17 +2020,58 @@ export default function DaftarPage() {
                 </div>
               </div>
 
-              {/* Tombol Bantuan Pembayaran */}
-              <div className="mt-6 pt-6 border-t border-slate-200/50 dark:border-slate-800/80">
+              {/* Tombol Navigasi & Bantuan Pembayaran */}
+              <div className="mt-6 pt-6 border-t border-slate-200/50 dark:border-slate-800/80 space-y-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowPaymentGate(false);
+                    setWizardStep(13);
+                  }}
+                  className="flex items-center justify-center gap-2 w-full py-2.5 px-4 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 font-bold text-xs hover:bg-slate-200 dark:hover:bg-slate-700 transition-all cursor-pointer shadow-xs"
+                >
+                  <ArrowLeft size={14} />
+                  <span>Kembali ke Formulir (Edit Data)</span>
+                </button>
+
                 <a
                   href="https://wa.me/6281234567890?text=Halo%20Panitia%20PPDB%20SMK%20Taruna%20Bhakti,%20saya%20butuh%20bantuan%20terkait%20pembayaran..."
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center justify-center gap-2 w-full py-3 px-4 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-blue-650 dark:text-sky-400 font-extrabold text-xs hover:bg-slate-50 dark:hover:bg-slate-850 hover:border-slate-300 dark:hover:border-slate-700 transition-all shadow-sm active:scale-95 cursor-pointer"
+                  className="flex items-center justify-center gap-2 w-full py-2.5 px-4 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-blue-650 dark:text-sky-400 font-extrabold text-xs hover:bg-slate-50 dark:hover:bg-slate-850 hover:border-slate-300 dark:hover:border-slate-700 transition-all shadow-sm active:scale-95 cursor-pointer"
                 >
                   <HelpCircle size={14} />
                   <span>Bantuan Pembayaran</span>
                 </a>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    Swal.fire({
+                      title: 'Batal & Daftar Baru?',
+                      text: 'Sesi checkout aktif akan dibatalkan dan Anda dapat mengisi formulir pendaftaran baru.',
+                      icon: 'question',
+                      showCancelButton: true,
+                      confirmButtonColor: '#ef4444',
+                      cancelButtonColor: '#64748b',
+                      confirmButtonText: 'Ya, Daftar Baru',
+                      cancelButtonText: 'Batal'
+                    }).then((result) => {
+                      if (result.isConfirmed) {
+                        localStorage.removeItem('ppdb_active_checkout');
+                        localStorage.removeItem('ppdb_registration_form_data');
+                        localStorage.removeItem('ppdb_registration_wizard_step');
+                        setShowPaymentGate(false);
+                        setSubmittedCandidate(null);
+                        setWizardStep(1);
+                        setFurthestStep(1);
+                      }
+                    });
+                  }}
+                  className="flex items-center justify-center gap-1.5 w-full py-2 px-4 text-[11px] text-red-500 hover:text-red-600 font-bold transition-all cursor-pointer text-center"
+                >
+                  <span>Batal &amp; Daftar Baru</span>
+                </button>
               </div>
             </div>
 
@@ -2077,7 +2118,7 @@ export default function DaftarPage() {
                         )}
                       </div>
                       <div>
-                        <span className="text-[8px] font-black text-slate-455 uppercase tracking-widest block leading-none">Pilihan Jurusan</span>
+                        <span className="text-[8px] font-black text-slate-400 uppercase tracking-widest block leading-none">Pilihan Jurusan</span>
                         <span className="text-xs font-extrabold text-slate-800 dark:text-white uppercase">
                           {submittedCandidate?.jurusan_1 || submittedCandidate?.jurusan1 || "-"}
                         </span>
@@ -2085,7 +2126,7 @@ export default function DaftarPage() {
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs font-bold text-slate-600 dark:text-slate-350">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs font-bold text-slate-600 dark:text-slate-300">
                     <div className="flex justify-between items-center bg-slate-50/50 dark:bg-slate-950/10 px-4 py-2.5 rounded-xl border border-slate-150 dark:border-slate-850">
                       <span className="text-slate-400 dark:text-slate-500">Nama Lengkap:</span>
                       <span className="text-slate-850 dark:text-white uppercase truncate max-w-37.5">{submittedCandidate?.nama}</span>
@@ -2186,7 +2227,7 @@ export default function DaftarPage() {
                                 <button
                                   type="button"
                                   onClick={() => handleCopy(bank.accountNumber || "157-00-0174092-2")}
-                                  className="p-1.5 bg-white/10 hover:bg-white/20 border border-white/15 text-slate-350 hover:text-white rounded-lg transition duration-150 active:scale-95 cursor-pointer"
+                                  className="p-1.5 bg-white/10 hover:bg-white/20 border border-white/15 text-slate-300 hover:text-white rounded-lg transition duration-150 active:scale-95 cursor-pointer"
                                   title="Salin Nomor Rekening"
                                 >
                                   {copied ? <Check size={12} className="text-emerald-400" /> : <Copy size={12} />}
@@ -2239,7 +2280,7 @@ export default function DaftarPage() {
                         
                         <div className="bg-slate-50/80 dark:bg-slate-950/30 border border-slate-200/60 dark:border-slate-850 rounded-3xl p-5 flex flex-col md:flex-row items-center justify-between gap-4 animate-in fade-in zoom-in-95 duration-200">
                           <div className="flex items-center gap-4 w-full md:w-auto">
-                            <div className="w-16 h-16 rounded-2xl bg-white dark:bg-slate-900 border border-slate-205 dark:border-slate-805 flex items-center justify-center text-blue-550 shrink-0 shadow-sm overflow-hidden relative">
+                            <div className="w-16 h-16 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-805 flex items-center justify-center text-blue-550 shrink-0 shadow-sm overflow-hidden relative">
                               {manualReceiptBase64.startsWith("data:application/pdf") ? (
                                 <FileText size={32} className="text-red-500" />
                               ) : (
@@ -2298,7 +2339,7 @@ export default function DaftarPage() {
                         <FileText size={14} className="shrink-0" />
                         PENTING: BAWA BERKAS PERSYARATAN DI BAWAH INI!
                       </div>
-                      <p className="text-[11px] text-slate-605 dark:text-slate-350 leading-relaxed font-bold">
+                      <p className="text-[11px] text-slate-605 dark:text-slate-300 leading-relaxed font-bold">
                         Calon siswa diimbau untuk langsung membawa surat-surat/dokumen berikut saat melakukan pembayaran di sekolah guna mempercepat verifikasi fisik berkas:
                       </p>
                       <ul className="text-[11px] text-slate-700 dark:text-slate-200 font-bold space-y-1.5 pl-4.5 list-disc leading-normal">
@@ -2343,7 +2384,7 @@ export default function DaftarPage() {
       <div className="fixed top-6 left-6 z-50">
         <Link 
           href="/" 
-          className="flex items-center gap-2 px-4 py-2.5 rounded-full bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-200 font-bold text-xs shadow-lg shadow-slate-200/20 dark:shadow-none hover:bg-slate-50 dark:hover:bg-slate-800 hover:border-slate-350 dark:hover:border-slate-700 transition-all group"
+          className="flex items-center gap-2 px-4 py-2.5 rounded-full bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-200 font-bold text-xs shadow-lg shadow-slate-200/20 dark:shadow-none hover:bg-slate-50 dark:hover:bg-slate-800 hover:border-slate-300 dark:hover:border-slate-700 transition-all group"
         >
           <ArrowLeft size={14} className="transform group-hover:-translate-x-0.5 transition-transform" />
           <span>Kembali</span>
@@ -2353,7 +2394,7 @@ export default function DaftarPage() {
       <div className="fixed top-6 right-6 z-50">
         <button 
           onClick={toggleDark} 
-          className="flex items-center justify-center w-10 h-10 rounded-full bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-200 shadow-lg shadow-slate-200/20 dark:shadow-none hover:bg-slate-50 dark:hover:bg-slate-800 hover:border-slate-350 dark:hover:border-slate-700 transition-all" 
+          className="flex items-center justify-center w-10 h-10 rounded-full bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-200 shadow-lg shadow-slate-200/20 dark:shadow-none hover:bg-slate-50 dark:hover:bg-slate-800 hover:border-slate-300 dark:hover:border-slate-700 transition-all" 
           title={isDark ? 'Mode Terang' : 'Mode Gelap'}
         >
           {isDark ? <Sun size={18} className="text-amber-500" /> : <Moon size={18} className="text-slate-750" />}
@@ -3749,7 +3790,7 @@ export default function DaftarPage() {
                     <span>Ubah Data</span>
                   </button>
                 </div>
-                <div className="text-xs space-y-2.5 font-bold text-slate-650 dark:text-slate-350">
+                <div className="text-xs space-y-2.5 font-bold text-slate-600 dark:text-slate-300">
                   <div className="flex justify-between"><span className="text-slate-400">Nama Lengkap:</span><span className="text-slate-850 dark:text-white uppercase">{formData.nama || "-"}</span></div>
                   <div className="flex justify-between"><span className="text-slate-400">NISN:</span><span className="font-mono text-slate-850 dark:text-white">{formData.nisn || "-"}</span></div>
                   <div className="flex justify-between"><span className="text-slate-400">NIK:</span><span className="font-mono text-slate-850 dark:text-white">{formData.nik || "-"}</span></div>
@@ -3771,7 +3812,7 @@ export default function DaftarPage() {
                     <span>Ubah Data</span>
                   </button>
                 </div>
-                <div className="text-xs space-y-2.5 font-bold text-slate-655 dark:text-slate-350">
+                <div className="text-xs space-y-2.5 font-bold text-slate-600 dark:text-slate-300">
                   <div className="flex justify-between"><span className="text-slate-400">Alamat Rumah:</span><span className="text-right max-w-45 truncate">{formData.alamat || "-"}</span></div>
                   <div className="flex justify-between"><span className="text-slate-400">RT / RW:</span><span>{formData.rtRw || "-"}</span></div>
                   <div className="flex justify-between"><span className="text-slate-400">Kelurahan:</span><span>{formData.kelurahan || "-"}</span></div>
@@ -3793,7 +3834,7 @@ export default function DaftarPage() {
                     <span>Ubah Data</span>
                   </button>
                 </div>
-                <div className="text-xs space-y-2.5 font-bold text-slate-655 dark:text-slate-350">
+                <div className="text-xs space-y-2.5 font-bold text-slate-600 dark:text-slate-300">
                   <div className="flex justify-between"><span className="text-slate-400">Sekolah Asal:</span><span className="uppercase">{formData.sekolahAsal || "-"}</span></div>
                   <div className="flex justify-between"><span className="text-slate-400">Jurusan Utama:</span><span className="text-blue-600 dark:text-sky-450 uppercase">{formData.jurusan1 || "-"}</span></div>
                   <div className="flex justify-between"><span className="text-slate-400">Tanggal Lulus:</span><span>{formData.tglLulus || "-"}</span></div>
@@ -3812,7 +3853,7 @@ export default function DaftarPage() {
                     <span>Ubah Data</span>
                   </button>
                 </div>
-                <div className="text-xs space-y-2.5 font-bold text-slate-655 dark:text-slate-350">
+                <div className="text-xs space-y-2.5 font-bold text-slate-600 dark:text-slate-300">
                   <div className="flex justify-between"><span className="text-slate-400">Nama Ayah:</span><span className="uppercase">{formData.namaAyah || "-"}</span></div>
                   <div className="flex justify-between"><span className="text-slate-400">Nama Ibu:</span><span className="uppercase">{formData.namaIbu || "-"}</span></div>
                   <div className="flex justify-between"><span className="text-slate-400">Nama Wali:</span><span className="uppercase">{formData.namaWali || "-"}</span></div>
@@ -3832,7 +3873,7 @@ export default function DaftarPage() {
                     <span>Ubah Data</span>
                   </button>
                 </div>
-                <div className="text-xs space-y-2.5 font-bold text-slate-655 dark:text-slate-350">
+                <div className="text-xs space-y-2.5 font-bold text-slate-600 dark:text-slate-300">
                   <div className="flex justify-between"><span className="text-slate-400">Nilai US Teori:</span><span className="font-mono">{formData.nilaiUSTeori || "0"}</span></div>
                   <div className="flex justify-between"><span className="text-slate-400">Nilai US Praktik:</span><span className="font-mono">{formData.nilaiUSPraktik || "0"}</span></div>
                   <div className="flex justify-between"><span className="text-slate-400">Nilai Muatan Lokal:</span><span className="font-mono">{formData.nilaiMuatanLokal || "0"}</span></div>
@@ -3852,7 +3893,7 @@ export default function DaftarPage() {
                     <span>Ubah Data</span>
                   </button>
                 </div>
-                <div className="text-xs space-y-2.5 font-bold text-slate-655 dark:text-slate-350">
+                <div className="text-xs space-y-2.5 font-bold text-slate-600 dark:text-slate-300">
                   <div className="flex justify-between"><span className="text-slate-400">Sanggup Taat Tata Tertib:</span><span>{formData.janjiTaat || "-"}</span></div>
                   <div className="flex justify-between"><span className="text-slate-400">Sanggup Sanksi:</span><span>{formData.janjiSanksi || "-"}</span></div>
                   <div className="flex justify-between"><span className="text-slate-400">Penerima KPS/KIP:</span><span>KPS: {formData.punyaKPS}, KIP: {formData.punyaKIP}</span></div>
@@ -3882,7 +3923,7 @@ export default function DaftarPage() {
                   <h4 className="font-black text-slate-900 dark:text-amber-400 text-lg md:text-xl mb-2 tracking-tight">
                     PENTING: Informasi Verifikasi Berkas Fisik Calon Siswa
                   </h4>
-                  <p className="text-slate-650 dark:text-slate-350 text-sm leading-relaxed mb-6 font-semibold">
+                  <p className="text-slate-600 dark:text-slate-300 text-sm leading-relaxed mb-6 font-semibold">
                     Anda <span className="text-amber-600 dark:text-amber-400 font-black underline underline-offset-4">tidak perlu mengunggah berkas digital</span> di dalam formulir online ini. Sebagai gantinya, silakan lengkapi dan bawa berkas fisik/fotokopi berikut ini langsung ke panitia PPDB di sekolah saat melakukan proses verifikasi langsung:
                   </p>
                   
@@ -3915,11 +3956,11 @@ export default function DaftarPage() {
               <label className="flex items-start gap-3.5 cursor-pointer p-5 rounded-2xl bg-slate-50 dark:bg-slate-950/40 border border-slate-100 dark:border-slate-800/60 transition-all hover:bg-slate-100/60 dark:hover:bg-slate-900/40">
                 <input
                   type="checkbox"
-                  className="mt-1 w-5 h-5 accent-blue-600 rounded border-slate-350 dark:border-slate-700 shrink-0 cursor-pointer"
+                  className="mt-1 w-5 h-5 accent-blue-600 rounded border-slate-300 dark:border-slate-700 shrink-0 cursor-pointer"
                   checked={formData.deklarasi}
                   onChange={(e) => setFormData(prev => ({ ...prev, deklarasi: e.target.checked }))}
                 />
-                <span className="text-xs md:text-sm text-slate-650 dark:text-slate-350 leading-relaxed cursor-pointer font-medium">
+                <span className="text-xs md:text-sm text-slate-600 dark:text-slate-300 leading-relaxed cursor-pointer font-medium">
                   <strong>Pernyataan Kebenaran Data:</strong> Saya menyatakan dengan sadar dan penuh tanggung jawab bahwa seluruh data yang saya isikan di dalam formulir pendaftaran online ini adalah benar, lengkap, dan sesuai dengan dokumen asli. Apabila di kemudian hari ditemukan ketidaksesuaian atau pemalsuan data, saya bersedia menerima sanksi administrasi termasuk pembatalan pendaftaran di SMK Taruna Bhakti.
                 </span>
               </label>

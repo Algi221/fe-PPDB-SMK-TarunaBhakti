@@ -41,9 +41,9 @@ export default function Breadcrumbs({ pathname }: { pathname: string }) {
           <React.Fragment key={idx}>
             {idx > 0 && <span className="text-slate-300 dark:text-slate-700">›</span>}
             {isLast ? (
-              <span className="text-slate-650 dark:text-slate-300 font-semibold">{bc.label}</span>
+              <span className="text-slate-600 dark:text-slate-300 font-semibold">{bc.label}</span>
             ) : (
-              <Link href={bc.href} className="hover:text-slate-650 dark:hover:text-slate-350 transition-colors">
+              <Link href={bc.href} className="hover:text-slate-600 dark:hover:text-slate-300 transition-colors">
                 {bc.label}
               </Link>
             )}

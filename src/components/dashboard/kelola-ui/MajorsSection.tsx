@@ -157,7 +157,7 @@ export default function MajorsSection(props: MajorsSectionProps) {
                 setEditingMajor(null);
                 setIsNewMajor(false);
               }}
-              className="flex items-center gap-2 px-4.5 py-2.5 rounded-xl bg-slate-50 hover:bg-slate-100 dark:bg-slate-950 border border-slate-200 dark:border-white/5 text-[10px] uppercase font-bold text-slate-700 dark:text-slate-350 transition-colors cursor-pointer"
+              className="flex items-center gap-2 px-4.5 py-2.5 rounded-xl bg-slate-50 hover:bg-slate-100 dark:bg-slate-950 border border-slate-200 dark:border-white/5 text-[10px] uppercase font-bold text-slate-700 dark:text-slate-300 transition-colors cursor-pointer"
             >
               <ArrowLeft size={12} />
               <span>Kembali ke List Kartu</span>
@@ -227,7 +227,7 @@ export default function MajorsSection(props: MajorsSectionProps) {
                   <div className="absolute inset-0 bg-slate-950/60 backdrop-blur-[2px] opacity-90 group-hover:opacity-95 flex flex-col items-center justify-center text-white p-3">
                     <Upload size={20} className="animate-bounce text-blue-400 mb-1" />
                     <span className="text-[9px] font-black uppercase tracking-wider">Drag / Ganti Logo</span>
-                    <span className="text-[7px] font-bold text-slate-350 uppercase mt-0.5">Atau Klik Explorer</span>
+                    <span className="text-[7px] font-bold text-slate-300 uppercase mt-0.5">Atau Klik Explorer</span>
                   </div>
                 </div>
               </div>
@@ -275,7 +275,7 @@ export default function MajorsSection(props: MajorsSectionProps) {
                   <div className="absolute inset-0 bg-slate-950/60 backdrop-blur-[2px] opacity-90 group-hover:opacity-95 flex flex-col items-center justify-center text-white p-3">
                     <Upload size={20} className="animate-bounce text-blue-400 mb-1" />
                     <span className="text-[9px] font-black uppercase tracking-wider">Drag / Ganti Banner</span>
-                    <span className="text-[7px] font-bold text-slate-350 uppercase mt-0.5">Atau Klik Explorer</span>
+                    <span className="text-[7px] font-bold text-slate-300 uppercase mt-0.5">Atau Klik Explorer</span>
                   </div>
                 </div>
               </div>
@@ -449,7 +449,7 @@ export default function MajorsSection(props: MajorsSectionProps) {
                           <div className="absolute inset-0 bg-slate-950/65 backdrop-blur-[1px] opacity-80 group-hover:opacity-90 transition-opacity flex flex-col items-center justify-center text-white p-2">
                             <ImageIcon size={18} className="text-blue-400 mb-1 animate-pulse" />
                             <span className="text-[8px] font-black uppercase tracking-wider">Ganti Foto Galeri #{slotIdx+1}</span>
-                            <span className="text-[6px] font-bold text-slate-350 uppercase mt-0.5">Atau Klik Explorer</span>
+                            <span className="text-[6px] font-bold text-slate-300 uppercase mt-0.5">Atau Klik Explorer</span>
                           </div>
                         </div>
 

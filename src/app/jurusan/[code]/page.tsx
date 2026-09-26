@@ -624,7 +624,7 @@ export default function MajorPage() {
       <div className="fixed top-6 left-6 z-50">
         <Link 
           href="/" 
-          className="flex items-center gap-2 px-4 py-2.5 rounded-full bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-200 font-bold text-xs shadow-lg shadow-slate-200/20 dark:shadow-none hover:bg-slate-50 dark:hover:bg-slate-800 hover:border-slate-350 dark:hover:border-slate-700 transition-all group"
+          className="flex items-center gap-2 px-4 py-2.5 rounded-full bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-200 font-bold text-xs shadow-lg shadow-slate-200/20 dark:shadow-none hover:bg-slate-50 dark:hover:bg-slate-800 hover:border-slate-300 dark:hover:border-slate-700 transition-all group"
         >
           <ArrowLeft size={14} className="transform group-hover:-translate-x-0.5 transition-transform" />
           <span>Kembali</span>
@@ -634,7 +634,7 @@ export default function MajorPage() {
       <div className="fixed top-6 right-6 z-50">
         <button 
           onClick={toggleDark} 
-          className="flex items-center justify-center w-10 h-10 rounded-full bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-200 shadow-lg shadow-slate-200/20 dark:shadow-none hover:bg-slate-50 dark:hover:bg-slate-800 hover:border-slate-350 dark:hover:border-slate-700 transition-all" 
+          className="flex items-center justify-center w-10 h-10 rounded-full bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-200 shadow-lg shadow-slate-200/20 dark:shadow-none hover:bg-slate-50 dark:hover:bg-slate-800 hover:border-slate-300 dark:hover:border-slate-700 transition-all" 
           title={isDark ? 'Mode Terang' : 'Mode Gelap'}
         >
           {isDark ? <Sun size={18} className="text-amber-500" /> : <Moon size={18} className="text-slate-750" />}
@@ -1045,7 +1045,7 @@ export default function MajorPage() {
                 <img src="/logo_smktb.png" alt="Logo SMK TB" className="w-12 h-12 object-contain shrink-0" />
                 <div>
                   <span className="logo-text font-black text-slate-800 dark:text-white text-lg">PPDB <span className="text-blue-600 dark:text-sky-400">SMK TB</span></span>
-                  <span className="block text-[10px] font-bold tracking-widest text-slate-400 dark:text-slate-550 uppercase mt-0.5">SMK Taruna Bhakti</span>
+                  <span className="block text-[10px] font-bold tracking-widest text-slate-400 dark:text-slate-500 uppercase mt-0.5">SMK Taruna Bhakti</span>
                 </div>
               </div>
               <p className="text-xs leading-relaxed font-medium">
@@ -1131,14 +1131,14 @@ export default function MajorPage() {
                 Jalan Pekapuran Kel. Curug, Kec. Cimanggis, Kota Depok, Jawa Barat 16453
               </p>
               <div className="space-y-1.5 text-xs font-semibold text-slate-500 dark:text-slate-400">
-                <p>Telp: <span className="text-slate-700 dark:text-slate-350">+62 21 874 4810</span></p>
-                <p>WhatsApp: <span className="text-slate-700 dark:text-slate-350">08119892324</span></p>
-                <p>Email: <span className="text-slate-700 dark:text-slate-350">info@smktarunabhakti.sch.id</span></p>
+                <p>Telp: <span className="text-slate-700 dark:text-slate-300">+62 21 874 4810</span></p>
+                <p>WhatsApp: <span className="text-slate-700 dark:text-slate-300">08119892324</span></p>
+                <p>Email: <span className="text-slate-700 dark:text-slate-300">info@smktarunabhakti.sch.id</span></p>
               </div>
             </div>
           </div>
 
-          <div className="border-t border-slate-200/50 dark:border-slate-900 mt-12 pt-8 flex flex-col md:flex-row justify-between items-center gap-4 text-center md:text-left text-xs font-semibold text-slate-400 dark:text-slate-550">
+          <div className="border-t border-slate-200/50 dark:border-slate-900 mt-12 pt-8 flex flex-col md:flex-row justify-between items-center gap-4 text-center md:text-left text-xs font-semibold text-slate-400 dark:text-slate-500">
             <div>
               &copy; {new Date().getFullYear()} SMK Taruna Bhakti Depok. All rights reserved.
             </div>

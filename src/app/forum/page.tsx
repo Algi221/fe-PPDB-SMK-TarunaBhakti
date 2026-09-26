@@ -503,7 +503,7 @@ export default function ForumPage() {
                   className="w-full md:w-auto md:max-w-[45%] bg-slate-100 dark:bg-slate-950 flex items-center justify-center p-4 border-b md:border-b-0 md:border-r border-slate-200 dark:border-slate-800 cursor-zoom-in relative group max-h-87.5 md:max-h-none shrink-0"
                 >
                   <img src={sanitizeSrc(media.foto)} alt={selectedPost.judul} className="max-w-full max-h-full md:max-h-[75vh] w-auto h-auto object-contain rounded-xl" />
-                  <div className="absolute inset-0 bg-slate-955/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center pointer-events-none">
+                  <div className="absolute inset-0 bg-slate-950/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center pointer-events-none">
                     <span className="bg-black/60 text-white text-[10px] font-bold uppercase tracking-wider px-3 py-1.5 rounded-full backdrop-blur-sm">🔍 Klik untuk Zoom</span>
                   </div>
                 </div>
@@ -538,8 +538,8 @@ export default function ForumPage() {
                         {/* Video Player (Inline playback only, no download) */}
                         {media.video && (
                           <div className="space-y-3 text-left">
-                            <span className="text-[10px] font-bold text-slate-400 dark:text-slate-555 uppercase tracking-wider block">🎥 Video Lampiran:</span>
-                            <div className="rounded-2xl border border-slate-200 dark:border-slate-800 overflow-hidden bg-slate-955 shadow-md">
+                            <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider block">🎥 Video Lampiran:</span>
+                            <div className="rounded-2xl border border-slate-200 dark:border-slate-800 overflow-hidden bg-slate-950 shadow-md">
                               <video src={sanitizeSrc(media.video)} controls className="w-full max-h-72 object-contain">
                                 <track kind="captions" label="No captions" default />
                               </video>
@@ -562,7 +562,7 @@ export default function ForumPage() {
                                 className="rounded-2xl border border-slate-200 dark:border-slate-800 overflow-hidden shadow-md bg-slate-100 dark:bg-slate-900 flex items-center justify-center p-4 cursor-zoom-in group relative"
                               >
                                 <img src={sanitizeSrc(media.dokumen)} alt="Dokumen Preview" className="max-w-full max-h-80 object-contain rounded-xl" />
-                                <div className="absolute inset-0 bg-slate-955/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center pointer-events-none">
+                                <div className="absolute inset-0 bg-slate-950/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center pointer-events-none">
                                   <span className="bg-black/60 text-white text-[9px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full">🔍 Zoom Dokumen</span>
                                 </div>
                               </div>
@@ -573,7 +573,7 @@ export default function ForumPage() {
                                 </div>
                                 <div className="min-w-0 flex-1">
                                   <h6 className="text-xs font-bold text-slate-800 dark:text-slate-200 truncate">{media.dokumenName || "dokumen.pdf"}</h6>
-                                  <span className="text-[9px] text-slate-400 dark:text-slate-550 block mt-0.5">Pratinjau langsung tidak tersedia untuk format berkas ini. Silakan unduh dokumen untuk melihat isi berkas.</span>
+                                  <span className="text-[9px] text-slate-400 dark:text-slate-500 block mt-0.5">Pratinjau langsung tidak tersedia untuk format berkas ini. Silakan unduh dokumen untuk melihat isi berkas.</span>
                                 </div>
                               </div>
                             )}

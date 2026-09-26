@@ -227,7 +227,7 @@ export default function AdminLogin() {
               <div className="text-xl font-black text-blue-600 dark:text-blue-400">
                 {s.value}{s.suffix}
               </div>
-              <div className="text-[9px] font-bold text-slate-400 dark:text-slate-550 uppercase tracking-wider mt-0.5">
+              <div className="text-[9px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mt-0.5">
                 {s.label}
               </div>
             </div>
@@ -274,7 +274,7 @@ export default function AdminLogin() {
 
             {/* Username */}
             <div ref={el => { formElementsRef.current[1] = el as HTMLDivElement; }} className="space-y-1.5">
-              <label className="text-xs font-bold text-slate-600 dark:text-slate-350 uppercase tracking-wider">
+              <label className="text-xs font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
                 Username
               </label>
               <div className="relative group">
@@ -301,7 +301,7 @@ export default function AdminLogin() {
 
             {/* Password */}
             <div ref={el => { formElementsRef.current[2] = el as HTMLDivElement; }} className="space-y-1.5">
-              <label className="text-xs font-bold text-slate-600 dark:text-slate-350 uppercase tracking-wider">
+              <label className="text-xs font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
                 Password
               </label>
               <div className="relative group">

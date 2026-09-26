@@ -35,7 +35,7 @@ import {
   School
 } from "lucide-react";
 
-export const formatNoPendaftaran = (periode: string | null | undefined, id: number) => {
+const formatNoPendaftaran = (periode: string | null | undefined, id: number) => {
   try {
     const parts = (periode || "2026-2027").split("-");
     const year1 = parts[0].slice(-2);
@@ -784,7 +784,7 @@ function ApplicantsDirectoryContent() {
         {!isSpreadsheetMode ? (
           
           <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs font-bold text-slate-650 dark:text-slate-355">
+            <table className="w-full text-left text-xs font-bold text-slate-600 dark:text-slate-300">
               <thead>
                 <tr className="border-b border-slate-100 dark:border-white/5 text-slate-400 dark:text-slate-500 font-black text-[9px] uppercase tracking-widest bg-slate-50/50 dark:bg-slate-950/15">
                   <th className="py-4 px-6 pl-8">No. Pendaftaran</th>
@@ -808,7 +808,7 @@ function ApplicantsDirectoryContent() {
                     </td>
                     <td className="py-4 px-6">
                       <div className="font-extrabold text-slate-850 dark:text-white text-sm">{a.nama}</div>
-                      <span className="text-[9px] text-slate-400 dark:text-slate-555 font-bold tracking-wide uppercase mt-0.5 block">
+                      <span className="text-[9px] text-slate-400 dark:text-slate-500 font-bold tracking-wide uppercase mt-0.5 block">
                         Daftar: {new Date(a.tgl_daftar || a.createdAt || Date.now()).toLocaleDateString("id-ID")} · {a.gelombang || "Gelombang 1"} · Lahir: {a.tempat_lahir || a.tempatLahir || "-"}, {a.tgl_lahir || a.tglLahir || "-"}
                         {a.status === "Approved" && a.verified_by && ` · Diverifikasi: ${a.verified_by}`}
                         {a.status === "Rejected" && a.rejected_by && ` · Digugurkan: ${a.rejected_by}`}
@@ -849,7 +849,7 @@ function ApplicantsDirectoryContent() {
                       <div className="flex items-center justify-end gap-1.5" onClick={(e) => e.stopPropagation()}>
                         <button
                           onClick={() => handleViewDetail(a)}
-                          className="p-2 bg-slate-100 hover:bg-slate-200 dark:bg-white/5 dark:hover:bg-white/10 text-slate-600 dark:text-slate-355 hover:text-slate-850 dark:hover:text-white rounded-xl transition-all border border-slate-200/50 dark:border-white/5"
+                          className="p-2 bg-slate-100 hover:bg-slate-200 dark:bg-white/5 dark:hover:bg-white/10 text-slate-600 dark:text-slate-300 hover:text-slate-850 dark:hover:text-white rounded-xl transition-all border border-slate-200/50 dark:border-white/5"
                           title="Lihat Detail Form"
                         >
                           <Eye size={13} />
@@ -900,7 +900,7 @@ function ApplicantsDirectoryContent() {
                               deleteApplicant(a.id);
                             }
                           }}
-                          className="p-2 bg-slate-100 hover:bg-rose-500/10 dark:bg-slate-955/20 dark:hover:bg-rose-500/10 text-slate-400 hover:text-rose-600 dark:hover:text-rose-300 rounded-xl transition-all border border-slate-200/50 dark:border-white/5 hover:border-rose-500/25"
+                          className="p-2 bg-slate-100 hover:bg-rose-500/10 dark:bg-slate-950/20 dark:hover:bg-rose-500/10 text-slate-400 hover:text-rose-600 dark:hover:text-rose-300 rounded-xl transition-all border border-slate-200/50 dark:border-white/5 hover:border-rose-500/25"
                           title="Hapus Permanen"
                         >
                           <Trash2 size={13} />
@@ -928,10 +928,10 @@ function ApplicantsDirectoryContent() {
                 <FileSpreadsheet size={13} className="text-emerald-500" />
                 <span>EXCEL MODE : PPDB_SMK_TARUNABHAKTI_2026.XLSX</span>
               </span>
-              <span className="text-slate-400 dark:text-slate-655">Double-click baris untuk Verifikasi Dokumen</span>
+              <span className="text-slate-400 dark:text-slate-600">Double-click baris untuk Verifikasi Dokumen</span>
             </div>
 
-            <table className="w-full text-left text-xs font-semibold text-slate-650 dark:text-slate-355 border-collapse table-fixed">
+            <table className="w-full text-left text-xs font-semibold text-slate-600 dark:text-slate-300 border-collapse table-fixed">
               <thead>
                 {/* Column Headers (Alphabetical A-G) */}
                 <tr className="border-b border-slate-200 dark:border-slate-800 bg-slate-100/80 dark:bg-slate-950/60 font-mono text-[10px] tracking-wide text-slate-500">
@@ -962,7 +962,7 @@ function ApplicantsDirectoryContent() {
                     <td className="py-2.5 text-center border-r border-slate-200 dark:border-slate-800">
                       <input
                         type="checkbox"
-                        className="rounded border-slate-350 text-blue-600 focus:ring-blue-500 w-3 h-3 cursor-pointer"
+                        className="rounded border-slate-300 text-blue-600 focus:ring-blue-500 w-3 h-3 cursor-pointer"
                         onClick={(e) => e.stopPropagation()}
                       />
                     </td>
@@ -979,7 +979,7 @@ function ApplicantsDirectoryContent() {
                     {/* Column C: Sekolah */}
                     <td
                       onClick={() => setActiveCell({ row: rowIdx, col: 3 })}
-                      className={`py-2.5 px-4 truncate border-r border-slate-200 dark:border-slate-800 text-slate-500 dark:text-slate-455 font-semibold ${activeCell?.row === rowIdx && activeCell?.col === 3 ? "bg-blue-500/10 outline-2 outline-blue-500" : ""
+                      className={`py-2.5 px-4 truncate border-r border-slate-200 dark:border-slate-800 text-slate-500 dark:text-slate-400 font-semibold ${activeCell?.row === rowIdx && activeCell?.col === 3 ? "bg-blue-500/10 outline-2 outline-blue-500" : ""
                         }`}
                     >
                       {a.sekolah_asal || a.sekolahAsal}
@@ -997,7 +997,7 @@ function ApplicantsDirectoryContent() {
                     {/* Column E: WA */}
                     <td
                       onClick={() => setActiveCell({ row: rowIdx, col: 5 })}
-                      className={`py-2.5 px-4 text-center border-r border-slate-200 dark:border-slate-800 font-mono text-slate-655 dark:text-slate-300 text-[11px] ${activeCell?.row === rowIdx && activeCell?.col === 5 ? "bg-blue-500/10 outline-2 outline-blue-500" : ""
+                      className={`py-2.5 px-4 text-center border-r border-slate-200 dark:border-slate-800 font-mono text-slate-600 dark:text-slate-300 text-[11px] ${activeCell?.row === rowIdx && activeCell?.col === 5 ? "bg-blue-500/10 outline-2 outline-blue-500" : ""
                         }`}
                     >
                       {a.whatsapp || "-"}
@@ -1020,7 +1020,7 @@ function ApplicantsDirectoryContent() {
                     {/* Column G: Tanggal Lahir */}
                     <td
                       onClick={() => setActiveCell({ row: rowIdx, col: 7 })}
-                      className={`py-2.5 px-4 text-center border-r border-slate-200 dark:border-slate-800 text-xs font-mono font-bold text-slate-600 dark:text-slate-355 ${activeCell?.row === rowIdx && activeCell?.col === 7 ? "bg-blue-500/10 outline-2 outline-blue-500" : ""
+                      className={`py-2.5 px-4 text-center border-r border-slate-200 dark:border-slate-800 text-xs font-mono font-bold text-slate-600 dark:text-slate-300 ${activeCell?.row === rowIdx && activeCell?.col === 7 ? "bg-blue-500/10 outline-2 outline-blue-500" : ""
                         }`}
                     >
                       {a.tgl_lahir || a.tglLahir || "-"}
@@ -1029,7 +1029,7 @@ function ApplicantsDirectoryContent() {
                     {/* Column H: Gender */}
                     <td
                       onClick={() => setActiveCell({ row: rowIdx, col: 8 })}
-                      className={`py-2.5 px-4 text-center text-xs font-mono font-bold text-slate-600 dark:text-slate-355 ${activeCell?.row === rowIdx && activeCell?.col === 8 ? "bg-blue-500/10 outline-2 outline-blue-500" : ""
+                      className={`py-2.5 px-4 text-center text-xs font-mono font-bold text-slate-600 dark:text-slate-300 ${activeCell?.row === rowIdx && activeCell?.col === 8 ? "bg-blue-500/10 outline-2 outline-blue-500" : ""
                         }`}
                     >
                       {(a.jenis_kelamin || a.jenisKelamin) ? (
@@ -1067,17 +1067,17 @@ function ApplicantsDirectoryContent() {
               <button
                 disabled={currentPage === 1}
                 onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
-                className="px-4 py-2 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-655 dark:text-slate-350 disabled:opacity-40 disabled:pointer-events-none rounded-xl text-xs font-black uppercase tracking-wider transition-all"
+                className="px-4 py-2 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 disabled:opacity-40 disabled:pointer-events-none rounded-xl text-xs font-black uppercase tracking-wider transition-all"
               >
                 Sebelumnya
               </button>
-              <span className="text-xs text-slate-550 dark:text-slate-400 font-extrabold uppercase px-2">
+              <span className="text-xs text-slate-500 dark:text-slate-400 font-extrabold uppercase px-2">
                 Halaman {currentPage} dari {totalPages}
               </span>
               <button
                 disabled={currentPage === totalPages}
                 onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
-                className="px-4 py-2 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-655 dark:text-slate-350 disabled:opacity-40 disabled:pointer-events-none rounded-xl text-xs font-black uppercase tracking-wider transition-all"
+                className="px-4 py-2 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 disabled:opacity-40 disabled:pointer-events-none rounded-xl text-xs font-black uppercase tracking-wider transition-all"
               >
                 Selanjutnya
               </button>
@@ -1093,7 +1093,7 @@ function ApplicantsDirectoryContent() {
             <div className="p-8 text-center text-slate-500 dark:text-slate-400 font-medium animate-pulse">Memuat data sampah...</div>
           ) : (
             <div className="overflow-x-auto">
-              <table className="w-full text-left text-xs font-bold text-slate-655 dark:text-slate-355">
+              <table className="w-full text-left text-xs font-bold text-slate-600 dark:text-slate-300">
                 <thead>
                   <tr className="border-b border-slate-100 dark:border-white/5 text-slate-400 dark:text-slate-500 font-black text-[9px] uppercase tracking-widest bg-slate-50/50 dark:bg-slate-950/15">
                     <th className="py-4 px-6 pl-8">Nama Calon Siswa</th>
@@ -1109,7 +1109,7 @@ function ApplicantsDirectoryContent() {
                     <tr key={a.id || idx} className="hover:bg-slate-50/60 dark:hover:bg-white/5 transition-all">
                       <td className="py-4 px-6 pl-8">
                         <div className="font-extrabold text-slate-850 dark:text-white text-sm">{a.nama}</div>
-                        <span className="text-[9px] text-slate-400 dark:text-slate-555 font-bold tracking-wide uppercase mt-0.5 block">
+                        <span className="text-[9px] text-slate-400 dark:text-slate-500 font-bold tracking-wide uppercase mt-0.5 block">
                           NISN: {a.nisn} · Lahir: {a.tempat_lahir || a.tempatLahir || "-"}, {a.tgl_lahir || a.tglLahir || "-"}
                           {a.deleted_by && ` · Dihapus: ${a.deleted_by}`}
                         </span>
@@ -1221,7 +1221,7 @@ function ApplicantsDirectoryContent() {
                       {selectedApplicant.status === "Approved" ? "Terverifikasi" : selectedApplicant.status === "Rejected" ? "Ditolak" : "Pending"}
                     </span>
                   </h3>
-                  <p className="text-xs text-slate-400 dark:text-slate-555 font-bold uppercase tracking-wider mt-1.5 flex items-center flex-wrap gap-2">
+                  <p className="text-xs text-slate-400 dark:text-slate-500 font-bold uppercase tracking-wider mt-1.5 flex items-center flex-wrap gap-2">
                     <span className="text-blue-500">No. Pendaftaran:</span> <span className="font-mono text-blue-600 dark:text-blue-400">{formatNoPendaftaran(selectedApplicant.periode, selectedApplicant.id)}</span>
                     <span className="text-slate-300 dark:text-slate-700">•</span> 
                     <span className="text-blue-500">NISN:</span> {selectedApplicant.nisn} 
@@ -1289,7 +1289,7 @@ function ApplicantsDirectoryContent() {
             </div>
 
             {/* Modal Tab Content Viewport */}
-            <div className="flex-1 overflow-y-auto p-8 text-xs leading-relaxed text-slate-655 dark:text-slate-350 font-bold max-h-[50vh] transition-colors duration-300">
+            <div className="flex-1 overflow-y-auto p-8 text-xs leading-relaxed text-slate-600 dark:text-slate-300 font-bold max-h-[50vh] transition-colors duration-300">
               {activeTab === "biodata" && (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                   <div>
@@ -1301,19 +1301,19 @@ function ApplicantsDirectoryContent() {
                     </h4>
                     <div className="flex flex-col gap-3">
                       <div className="bg-slate-50 dark:bg-slate-800/30 rounded-xl p-3 border border-slate-100 dark:border-white/5 hover:border-blue-500/20 transition-colors">
-                        <span className="text-slate-400 dark:text-slate-550 block mb-1 font-bold uppercase text-[9px] tracking-wider">Nama Lengkap</span>
+                        <span className="text-slate-400 dark:text-slate-500 block mb-1 font-bold uppercase text-[9px] tracking-wider">Nama Lengkap</span>
                         <span className="text-slate-850 dark:text-white text-sm font-black">{selectedApplicant.nama}</span>
                       </div>
                       <div className="bg-slate-50 dark:bg-slate-800/30 rounded-xl p-3 border border-slate-100 dark:border-white/5 hover:border-blue-500/20 transition-colors">
-                        <span className="text-slate-400 dark:text-slate-550 block mb-1 font-bold uppercase text-[9px] tracking-wider">NISN / NIK</span>
+                        <span className="text-slate-400 dark:text-slate-500 block mb-1 font-bold uppercase text-[9px] tracking-wider">NISN / NIK</span>
                         <span className="text-slate-800 dark:text-white font-mono font-bold text-xs">{selectedApplicant.nisn} / {selectedApplicant.nik || "-"}</span>
                       </div>
                       <div className="bg-slate-50 dark:bg-slate-800/30 rounded-xl p-3 border border-slate-100 dark:border-white/5 hover:border-blue-500/20 transition-colors">
-                        <span className="text-slate-400 dark:text-slate-550 block mb-1 font-bold uppercase text-[9px] tracking-wider">Tempat, Tanggal Lahir</span>
+                        <span className="text-slate-400 dark:text-slate-500 block mb-1 font-bold uppercase text-[9px] tracking-wider">Tempat, Tanggal Lahir</span>
                         <span className="text-slate-800 dark:text-white font-bold text-xs">{selectedApplicant.tempat_lahir || selectedApplicant.tempatLahir}, {selectedApplicant.tgl_lahir || selectedApplicant.tglLahir}</span>
                       </div>
                       <div className="bg-slate-50 dark:bg-slate-800/30 rounded-xl p-3 border border-slate-100 dark:border-white/5 hover:border-blue-500/20 transition-colors">
-                        <span className="text-slate-400 dark:text-slate-550 block mb-1 font-bold uppercase text-[9px] tracking-wider">Jenis Kelamin / Agama</span>
+                        <span className="text-slate-400 dark:text-slate-500 block mb-1 font-bold uppercase text-[9px] tracking-wider">Jenis Kelamin / Agama</span>
                         <span className="text-slate-800 dark:text-white font-bold text-xs">{selectedApplicant.jenis_kelamin || selectedApplicant.jenisKelamin} / {selectedApplicant.agama}</span>
                       </div>
                     </div>
@@ -1327,19 +1327,19 @@ function ApplicantsDirectoryContent() {
                     </h4>
                     <div className="flex flex-col gap-3">
                       <div className="bg-slate-50 dark:bg-slate-800/30 rounded-xl p-3 border border-slate-100 dark:border-white/5 hover:border-blue-500/20 transition-colors">
-                        <span className="text-slate-400 dark:text-slate-550 block mb-1 font-bold uppercase text-[9px] tracking-wider">WhatsApp / Email</span>
+                        <span className="text-slate-400 dark:text-slate-500 block mb-1 font-bold uppercase text-[9px] tracking-wider">WhatsApp / Email</span>
                         <span className="text-blue-600 dark:text-blue-400 text-xs font-mono font-black">{selectedApplicant.whatsapp} / {selectedApplicant.email}</span>
                       </div>
                       <div className="bg-slate-50 dark:bg-slate-800/30 rounded-xl p-3 border border-slate-100 dark:border-white/5 hover:border-blue-500/20 transition-colors">
-                        <span className="text-slate-400 dark:text-slate-550 block mb-1 font-bold uppercase text-[9px] tracking-wider">Alamat Tempat Tinggal</span>
+                        <span className="text-slate-400 dark:text-slate-500 block mb-1 font-bold uppercase text-[9px] tracking-wider">Alamat Tempat Tinggal</span>
                         <span className="text-slate-800 dark:text-white font-bold text-xs">{selectedApplicant.alamat} (RT/RW {selectedApplicant.rt_rw || selectedApplicant.rtRw})</span>
                       </div>
                       <div className="bg-slate-50 dark:bg-slate-800/30 rounded-xl p-3 border border-slate-100 dark:border-white/5 hover:border-blue-500/20 transition-colors">
-                        <span className="text-slate-400 dark:text-slate-550 block mb-1 font-bold uppercase text-[9px] tracking-wider">Kelurahan / Kecamatan</span>
+                        <span className="text-slate-400 dark:text-slate-500 block mb-1 font-bold uppercase text-[9px] tracking-wider">Kelurahan / Kecamatan</span>
                         <span className="text-slate-800 dark:text-white font-bold text-xs">{selectedApplicant.kelurahan} / {selectedApplicant.kecamatan}</span>
                       </div>
                       <div className="bg-slate-50 dark:bg-slate-800/30 rounded-xl p-3 border border-slate-100 dark:border-white/5 hover:border-blue-500/20 transition-colors">
-                        <span className="text-slate-400 dark:text-slate-555 block mb-1 font-bold uppercase text-[9px] tracking-wider">Tinggal Dengan / Transportasi</span>
+                        <span className="text-slate-400 dark:text-slate-500 block mb-1 font-bold uppercase text-[9px] tracking-wider">Tinggal Dengan / Transportasi</span>
                         <span className="text-slate-800 dark:text-white font-bold text-xs">{selectedApplicant.tinggal_dengan || selectedApplicant.tinggalDengan} / {selectedApplicant.transportasi}</span>
                       </div>
                     </div>
@@ -1358,19 +1358,19 @@ function ApplicantsDirectoryContent() {
                     </h4>
                     <div className="flex flex-col gap-3">
                       <div className="bg-slate-50 dark:bg-slate-800/30 rounded-xl p-3 border border-slate-100 dark:border-white/5 hover:border-emerald-500/20 transition-colors">
-                        <span className="text-slate-400 dark:text-slate-550 block mb-1 font-bold uppercase text-[9px] tracking-wider">Tinggi / Berat Badan</span>
+                        <span className="text-slate-400 dark:text-slate-500 block mb-1 font-bold uppercase text-[9px] tracking-wider">Tinggi / Berat Badan</span>
                         <span className="text-slate-800 dark:text-white font-bold text-xs">{selectedApplicant.tinggi_badan || selectedApplicant.tinggiBadan || "-"} cm / {selectedApplicant.berat_badan || selectedApplicant.beratBadan || "-"} kg</span>
                       </div>
                       <div className="bg-slate-50 dark:bg-slate-800/30 rounded-xl p-3 border border-slate-100 dark:border-white/5 hover:border-emerald-500/20 transition-colors">
-                        <span className="text-slate-400 dark:text-slate-550 block mb-1 font-bold uppercase text-[9px] tracking-wider">Jarak ke Sekolah</span>
+                        <span className="text-slate-400 dark:text-slate-500 block mb-1 font-bold uppercase text-[9px] tracking-wider">Jarak ke Sekolah</span>
                         <span className="text-slate-800 dark:text-white font-bold text-xs">{selectedApplicant.jarak_sekolah || selectedApplicant.jarakSekolah || "-"} km</span>
                       </div>
                       <div className="bg-slate-50 dark:bg-slate-800/30 rounded-xl p-3 border border-slate-100 dark:border-white/5 hover:border-emerald-500/20 transition-colors">
-                        <span className="text-slate-400 dark:text-slate-555 block mb-1 font-bold uppercase text-[9px] tracking-wider">Waktu Tempuh Perjalanan</span>
+                        <span className="text-slate-400 dark:text-slate-500 block mb-1 font-bold uppercase text-[9px] tracking-wider">Waktu Tempuh Perjalanan</span>
                         <span className="text-slate-800 dark:text-white font-bold text-xs">{selectedApplicant.waktu_jam || selectedApplicant.waktuJam || 0} Jam {selectedApplicant.waktu_menit || selectedApplicant.waktuMenit || 0} Menit</span>
                       </div>
                       <div className="bg-slate-50 dark:bg-slate-800/30 rounded-xl p-3 border border-slate-100 dark:border-white/5 hover:border-emerald-500/20 transition-colors">
-                        <span className="text-slate-400 dark:text-slate-555 block mb-1 font-bold uppercase text-[9px] tracking-wider">Jumlah Saudara Kandung</span>
+                        <span className="text-slate-400 dark:text-slate-500 block mb-1 font-bold uppercase text-[9px] tracking-wider">Jumlah Saudara Kandung</span>
                         <span className="text-slate-800 dark:text-white font-bold text-xs">{selectedApplicant.jumlah_saudara || selectedApplicant.jumlahSaudara || 0} orang</span>
                       </div>
                     </div>
@@ -1384,19 +1384,19 @@ function ApplicantsDirectoryContent() {
                     </h4>
                     <div className="flex flex-col gap-3">
                       <div className="bg-slate-50 dark:bg-slate-800/30 rounded-xl p-3 border border-slate-100 dark:border-white/5 hover:border-rose-500/20 transition-colors">
-                        <span className="text-slate-400 dark:text-slate-550 block mb-1 font-bold uppercase text-[9px] tracking-wider">Golongan Darah</span>
+                        <span className="text-slate-400 dark:text-slate-500 block mb-1 font-bold uppercase text-[9px] tracking-wider">Golongan Darah</span>
                         <span className="text-rose-600 dark:text-rose-400 font-black text-xs uppercase">{selectedApplicant.golongan_darah || selectedApplicant.golonganDarah || "-"}</span>
                       </div>
                       <div className="bg-slate-50 dark:bg-slate-800/30 rounded-xl p-3 border border-slate-100 dark:border-white/5 hover:border-rose-500/20 transition-colors">
-                        <span className="text-slate-400 dark:text-slate-550 block mb-1 font-bold uppercase text-[9px] tracking-wider">Riwayat Penyakit</span>
+                        <span className="text-slate-400 dark:text-slate-500 block mb-1 font-bold uppercase text-[9px] tracking-wider">Riwayat Penyakit</span>
                         <span className="text-slate-800 dark:text-white font-bold text-xs">{selectedApplicant.penyakit_diderita || selectedApplicant.penyakitDiderita || "Tidak Ada"}</span>
                       </div>
                       <div className="bg-slate-50 dark:bg-slate-800/30 rounded-xl p-3 border border-slate-100 dark:border-white/5 hover:border-rose-500/20 transition-colors">
-                        <span className="text-slate-400 dark:text-slate-550 block mb-2 font-bold uppercase text-[9px] tracking-wider">Kebutuhan Khusus</span>
+                        <span className="text-slate-400 dark:text-slate-500 block mb-2 font-bold uppercase text-[9px] tracking-wider">Kebutuhan Khusus</span>
                         <div className="flex flex-wrap gap-1.5">
                           {Array.isArray(selectedApplicant.kebutuhan_khusus) ? selectedApplicant.kebutuhan_khusus.map((k, idx) => (
-                            <span key={idx} className="bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-350 border border-slate-200 dark:border-white/5 px-2.5 py-1 rounded-lg font-black text-[9px] uppercase shadow-sm">{k}</span>
-                          )) : <span className="text-slate-455 italic font-semibold">Tidak Ada</span>}
+                            <span key={idx} className="bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-white/5 px-2.5 py-1 rounded-lg font-black text-[9px] uppercase shadow-sm">{k}</span>
+                          )) : <span className="text-slate-400 italic font-semibold">Tidak Ada</span>}
                         </div>
                       </div>
                     </div>
@@ -1415,11 +1415,11 @@ function ApplicantsDirectoryContent() {
                     </h4>
                     <div className="flex flex-col gap-3">
                       <div className="bg-slate-50 dark:bg-slate-800/30 rounded-xl p-3 border border-slate-100 dark:border-white/5 hover:border-amber-500/20 transition-colors">
-                        <span className="text-slate-400 dark:text-slate-550 block mb-1 font-bold uppercase text-[9px] tracking-wider">Penerima KPS</span>
+                        <span className="text-slate-400 dark:text-slate-500 block mb-1 font-bold uppercase text-[9px] tracking-wider">Penerima KPS</span>
                         <span className="text-slate-800 dark:text-white font-bold text-xs">{selectedApplicant.punya_kps || selectedApplicant.punyaKps || "Tidak"} {selectedApplicant.no_kps || selectedApplicant.noKps ? `(No: ${selectedApplicant.no_kps || selectedApplicant.noKps})` : ""}</span>
                       </div>
                       <div className="bg-slate-50 dark:bg-slate-800/30 rounded-xl p-3 border border-slate-100 dark:border-white/5 hover:border-amber-500/20 transition-colors">
-                        <span className="text-slate-400 dark:text-slate-550 block mb-1 font-bold uppercase text-[9px] tracking-wider">Penerima KIP</span>
+                        <span className="text-slate-400 dark:text-slate-500 block mb-1 font-bold uppercase text-[9px] tracking-wider">Penerima KIP</span>
                         <span className="text-slate-800 dark:text-white font-bold text-xs">{selectedApplicant.punya_kip || selectedApplicant.punyaKip || "Tidak"} {selectedApplicant.no_kip || selectedApplicant.noKip ? `(No: ${selectedApplicant.no_kip || selectedApplicant.noKip})` : ""}</span>
                       </div>
                     </div>
@@ -1433,29 +1433,29 @@ function ApplicantsDirectoryContent() {
                     </h4>
                     <div className="flex flex-col gap-3">
                       <div className="bg-slate-50 dark:bg-slate-800/30 rounded-xl p-3 border border-slate-100 dark:border-white/5 hover:border-purple-500/20 transition-colors">
-                        <span className="text-slate-400 dark:text-slate-550 block mb-1 font-bold uppercase text-[9px] tracking-wider">Jenis Prestasi</span>
+                        <span className="text-slate-400 dark:text-slate-500 block mb-1 font-bold uppercase text-[9px] tracking-wider">Jenis Prestasi</span>
                         <span className="text-slate-800 dark:text-white font-bold text-xs">{Array.isArray(selectedApplicant.jenis_prestasi) ? selectedApplicant.jenis_prestasi.join(", ") : selectedApplicant.jenisPrestasi || "Tidak Ada"}</span>
                       </div>
                       <div className="bg-slate-50 dark:bg-slate-800/30 rounded-xl p-3 border border-slate-100 dark:border-white/5 hover:border-purple-500/20 transition-colors">
-                        <span className="text-slate-400 dark:text-slate-550 block mb-1 font-bold uppercase text-[9px] tracking-wider">Tingkat Prestasi</span>
+                        <span className="text-slate-400 dark:text-slate-500 block mb-1 font-bold uppercase text-[9px] tracking-wider">Tingkat Prestasi</span>
                         <span className="text-slate-800 dark:text-white font-bold text-xs">{Array.isArray(selectedApplicant.tingkat_prestasi) ? selectedApplicant.tingkat_prestasi.join(", ") : selectedApplicant.tingkatPrestasi || "Tidak Ada"}</span>
                       </div>
                       <div className="bg-slate-50 dark:bg-slate-800/30 rounded-xl p-3 border border-slate-100 dark:border-white/5 hover:border-purple-500/20 transition-colors">
-                        <span className="text-slate-400 dark:text-slate-550 block mb-1 font-bold uppercase text-[9px] tracking-wider">Uraian Prestasi</span>
+                        <span className="text-slate-400 dark:text-slate-500 block mb-1 font-bold uppercase text-[9px] tracking-wider">Uraian Prestasi</span>
                         <span className="text-slate-800 dark:text-white font-bold text-xs">{selectedApplicant.uraian_prestasi || selectedApplicant.uraianPrestasi || "Tidak Ada"}</span>
                       </div>
                       <div className="bg-slate-50 dark:bg-slate-800/30 rounded-xl p-3 border border-slate-100 dark:border-white/5 hover:border-purple-500/20 transition-colors">
-                        <span className="text-slate-400 dark:text-slate-550 block mb-1 font-bold uppercase text-[9px] tracking-wider">Tahun Prestasi</span>
+                        <span className="text-slate-400 dark:text-slate-500 block mb-1 font-bold uppercase text-[9px] tracking-wider">Tahun Prestasi</span>
                         <span className="text-slate-800 dark:text-white font-bold text-xs">{selectedApplicant.tahun_prestasi || selectedApplicant.tahunPrestasi || "Tidak Ada"}</span>
                       </div>
                       {selectedApplicant.berkas_prestasi && (
                         <div className="bg-slate-50 dark:bg-slate-800/30 rounded-xl p-3 border border-slate-100 dark:border-white/5 hover:border-purple-500/20 transition-colors">
-                          <span className="text-slate-400 dark:text-slate-550 block mb-1 font-bold uppercase text-[9px] tracking-wider">Berkas Prestasi</span>
+                          <span className="text-slate-400 dark:text-slate-500 block mb-1 font-bold uppercase text-[9px] tracking-wider">Berkas Prestasi</span>
                           <a href={sanitizeSrc(selectedApplicant.berkas_prestasi)} target="_blank" rel="noopener noreferrer" className="text-xs font-bold text-blue-500 hover:text-blue-600 underline text-left block w-full truncate">Lihat Sertifikat</a>
                         </div>
                       )}
                       <div className="bg-slate-50 dark:bg-slate-800/30 rounded-xl p-3 border border-slate-100 dark:border-white/5 hover:border-purple-500/20 transition-colors">
-                        <span className="text-slate-400 dark:text-slate-555 block mb-1 font-bold uppercase text-[9px] tracking-wider">Uraian Beasiswa</span>
+                        <span className="text-slate-400 dark:text-slate-500 block mb-1 font-bold uppercase text-[9px] tracking-wider">Uraian Beasiswa</span>
                         <span className="text-slate-800 dark:text-white font-bold text-xs">{selectedApplicant.uraian_beasiswa || selectedApplicant.uraianBeasiswa || "Tidak Ada"}</span>
                       </div>
                     </div>
@@ -1474,15 +1474,15 @@ function ApplicantsDirectoryContent() {
                     </h4>
                     <div className="flex flex-col gap-3">
                       <div className="bg-slate-50 dark:bg-slate-800/30 rounded-xl p-3 border border-slate-100 dark:border-white/5 hover:border-indigo-500/20 transition-colors">
-                        <span className="text-slate-400 dark:text-slate-550 block mb-1 font-bold uppercase text-[9px] tracking-wider">Nama Lengkap</span>
+                        <span className="text-slate-400 dark:text-slate-500 block mb-1 font-bold uppercase text-[9px] tracking-wider">Nama Lengkap</span>
                         <span className="text-slate-850 dark:text-white font-bold text-xs">{selectedApplicant.nama_ayah || selectedApplicant.namaAyah || "-"}</span>
                       </div>
                       <div className="bg-slate-50 dark:bg-slate-800/30 rounded-xl p-3 border border-slate-100 dark:border-white/5 hover:border-indigo-500/20 transition-colors">
-                        <span className="text-slate-400 dark:text-slate-550 block mb-1 font-bold uppercase text-[9px] tracking-wider">Pekerjaan Ayah</span>
+                        <span className="text-slate-400 dark:text-slate-500 block mb-1 font-bold uppercase text-[9px] tracking-wider">Pekerjaan Ayah</span>
                         <span className="text-slate-800 dark:text-white font-bold text-xs">{selectedApplicant.pekerjaan_ayah || selectedApplicant.pekerjaanAyah || "-"}</span>
                       </div>
                       <div className="bg-slate-50 dark:bg-slate-800/30 rounded-xl p-3 border border-slate-100 dark:border-white/5 hover:border-indigo-500/20 transition-colors">
-                        <span className="text-slate-400 dark:text-slate-550 block mb-1 font-bold uppercase text-[9px] tracking-wider">Penghasilan Bulanan</span>
+                        <span className="text-slate-400 dark:text-slate-500 block mb-1 font-bold uppercase text-[9px] tracking-wider">Penghasilan Bulanan</span>
                         <span className="text-slate-800 dark:text-white font-bold text-xs">{selectedApplicant.penghasilan_ayah || selectedApplicant.penghasilanAyah || "-"}</span>
                       </div>
                     </div>
@@ -1496,15 +1496,15 @@ function ApplicantsDirectoryContent() {
                     </h4>
                     <div className="flex flex-col gap-3">
                       <div className="bg-slate-50 dark:bg-slate-800/30 rounded-xl p-3 border border-slate-100 dark:border-white/5 hover:border-pink-500/20 transition-colors">
-                        <span className="text-slate-400 dark:text-slate-550 block mb-1 font-bold uppercase text-[9px] tracking-wider">Nama Lengkap</span>
+                        <span className="text-slate-400 dark:text-slate-500 block mb-1 font-bold uppercase text-[9px] tracking-wider">Nama Lengkap</span>
                         <span className="text-slate-850 dark:text-white font-bold text-xs">{selectedApplicant.nama_ibu || selectedApplicant.namaIbu || "-"}</span>
                       </div>
                       <div className="bg-slate-50 dark:bg-slate-800/30 rounded-xl p-3 border border-slate-100 dark:border-white/5 hover:border-pink-500/20 transition-colors">
-                        <span className="text-slate-400 dark:text-slate-550 block mb-1 font-bold uppercase text-[9px] tracking-wider">Pendidikan / Pekerjaan</span>
+                        <span className="text-slate-400 dark:text-slate-500 block mb-1 font-bold uppercase text-[9px] tracking-wider">Pendidikan / Pekerjaan</span>
                         <span className="text-slate-800 dark:text-white font-bold text-xs">{selectedApplicant.pendidikan_ibu || selectedApplicant.pendidikanIbu || "-"} / {selectedApplicant.pekerjaan_ibu || selectedApplicant.pekerjaanIbu || "-"}</span>
                       </div>
                       <div className="bg-slate-50 dark:bg-slate-800/30 rounded-xl p-3 border border-slate-100 dark:border-white/5 hover:border-pink-500/20 transition-colors">
-                        <span className="text-slate-400 dark:text-slate-555 block mb-1 font-bold uppercase text-[9px] tracking-wider">Penghasilan Bulanan</span>
+                        <span className="text-slate-400 dark:text-slate-500 block mb-1 font-bold uppercase text-[9px] tracking-wider">Penghasilan Bulanan</span>
                         <span className="text-slate-800 dark:text-white font-bold text-xs">{selectedApplicant.penghasilan_ibu || selectedApplicant.penghasilanIbu || "-"}</span>
                       </div>
                     </div>
@@ -1518,11 +1518,11 @@ function ApplicantsDirectoryContent() {
                     </h4>
                     <div className="flex flex-col gap-3">
                       <div className="bg-slate-50 dark:bg-slate-800/30 rounded-xl p-3 border border-slate-100 dark:border-white/5 hover:border-teal-500/20 transition-colors">
-                        <span className="text-slate-400 dark:text-slate-550 block mb-1 font-bold uppercase text-[9px] tracking-wider">Nama Wali</span>
+                        <span className="text-slate-400 dark:text-slate-500 block mb-1 font-bold uppercase text-[9px] tracking-wider">Nama Wali</span>
                         <span className="text-slate-850 dark:text-white font-bold text-xs">{selectedApplicant.nama_wali || selectedApplicant.namaWali || "Tidak Ada"}</span>
                       </div>
                       <div className="bg-slate-50 dark:bg-slate-800/30 rounded-xl p-3 border border-slate-100 dark:border-white/5 hover:border-teal-500/20 transition-colors">
-                        <span className="text-slate-400 dark:text-slate-550 block mb-1 font-bold uppercase text-[9px] tracking-wider">No. Telepon Orang Tua</span>
+                        <span className="text-slate-400 dark:text-slate-500 block mb-1 font-bold uppercase text-[9px] tracking-wider">No. Telepon Orang Tua</span>
                         <span className="text-teal-600 dark:text-teal-400 font-mono text-sm font-black">{selectedApplicant.telepon_ortu || selectedApplicant.teleponOrtu || "-"}</span>
                       </div>
                     </div>
@@ -1541,15 +1541,15 @@ function ApplicantsDirectoryContent() {
                     </h4>
                     <div className="flex flex-col gap-3">
                       <div className="bg-slate-50 dark:bg-slate-800/30 rounded-xl p-3 border border-slate-100 dark:border-white/5 hover:border-blue-500/20 transition-colors">
-                        <span className="text-slate-400 dark:text-slate-550 block mb-1 font-bold uppercase text-[9px] tracking-wider">Nama Sekolah Asal</span>
+                        <span className="text-slate-400 dark:text-slate-500 block mb-1 font-bold uppercase text-[9px] tracking-wider">Nama Sekolah Asal</span>
                         <span className="text-slate-850 dark:text-white text-sm font-black">{selectedApplicant.sekolah_asal || selectedApplicant.sekolahAsal}</span>
                       </div>
                       <div className="bg-slate-50 dark:bg-slate-800/30 rounded-xl p-3 border border-slate-100 dark:border-white/5 hover:border-blue-500/20 transition-colors">
-                        <span className="text-slate-400 dark:text-slate-550 block mb-1 font-bold uppercase text-[9px] tracking-wider">No. Ijazah / SKHUN</span>
+                        <span className="text-slate-400 dark:text-slate-500 block mb-1 font-bold uppercase text-[9px] tracking-wider">No. Ijazah / SKHUN</span>
                         <span className="text-slate-800 dark:text-white font-mono font-bold text-xs">{selectedApplicant.no_ijazah || selectedApplicant.noIjazah || "-"} / {selectedApplicant.no_skhun || selectedApplicant.noSkhun || "-"}</span>
                       </div>
                       <div className="bg-slate-50 dark:bg-slate-800/30 rounded-xl p-3 border border-slate-100 dark:border-white/5 hover:border-blue-500/20 transition-colors">
-                        <span className="text-slate-400 dark:text-slate-555 block mb-1 font-bold uppercase text-[9px] tracking-wider">Tgl Lulus / Lama Belajar</span>
+                        <span className="text-slate-400 dark:text-slate-500 block mb-1 font-bold uppercase text-[9px] tracking-wider">Tgl Lulus / Lama Belajar</span>
                         <span className="text-slate-800 dark:text-white font-bold text-xs">{selectedApplicant.tgl_lulus || selectedApplicant.tglLulus || "-"} ({selectedApplicant.lama_belajar || selectedApplicant.lamaBelajar || 3} Tahun)</span>
                       </div>
                     </div>
@@ -1567,7 +1567,7 @@ function ApplicantsDirectoryContent() {
                         <span className="text-blue-700 dark:text-blue-300 text-sm font-black uppercase">{selectedApplicant.jurusan_1 || selectedApplicant.jurusan1}</span>
                       </div>
                       <div className="bg-slate-50 dark:bg-slate-800/30 rounded-xl p-3 border border-slate-100 dark:border-white/5 hover:border-orange-500/20 transition-colors">
-                        <span className="text-slate-400 dark:text-slate-555 block mb-1 font-bold uppercase text-[9px] tracking-wider">Alasan Memilih Jurusan</span>
+                        <span className="text-slate-400 dark:text-slate-500 block mb-1 font-bold uppercase text-[9px] tracking-wider">Alasan Memilih Jurusan</span>
                         <span className="text-slate-800 dark:text-white font-bold text-xs">{selectedApplicant.alasan_memilih || selectedApplicant.alasanMemilih || "Ingin belajar IT"}</span>
                       </div>
                     </div>
@@ -1583,13 +1583,13 @@ function ApplicantsDirectoryContent() {
                   
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="p-4 bg-slate-50 dark:bg-slate-950 border border-slate-200/50 dark:border-white/5 rounded-2xl">
-                      <span className="text-slate-400 dark:text-slate-555 block mb-1 font-bold uppercase text-[9px] tracking-wider">Metode Pembayaran</span>
+                      <span className="text-slate-400 dark:text-slate-500 block mb-1 font-bold uppercase text-[9px] tracking-wider">Metode Pembayaran</span>
                       <span className="text-slate-800 dark:text-white font-extrabold text-sm uppercase">
                         {selectedApplicant.metode_pembayaran || "Payment Gateway"}
                       </span>
                     </div>
                     <div className="p-4 bg-slate-50 dark:bg-slate-950 border border-slate-200/50 dark:border-white/5 rounded-2xl">
-                      <span className="text-slate-400 dark:text-slate-555 block mb-1 font-bold uppercase text-[9px] tracking-wider">Status Pembayaran</span>
+                      <span className="text-slate-400 dark:text-slate-500 block mb-1 font-bold uppercase text-[9px] tracking-wider">Status Pembayaran</span>
                       <div>
                         <span
                           className={`inline-flex px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider border ${
@@ -1609,7 +1609,7 @@ function ApplicantsDirectoryContent() {
                     <div className="p-5 bg-blue-50/50 dark:bg-blue-950/20 border border-blue-200/40 dark:border-blue-900/50 rounded-3xl flex flex-col md:flex-row items-center justify-between gap-4">
                       <div className="text-left">
                         <span className="text-blue-600 dark:text-sky-400 font-black uppercase tracking-widest text-[9px] block">Invoice Resmi Pembayaran</span>
-                        <p className="text-[11px] text-slate-500 dark:text-slate-455 font-bold mt-1 leading-relaxed">
+                        <p className="text-[11px] text-slate-500 dark:text-slate-400 font-bold mt-1 leading-relaxed">
                           Invoice pendaftaran resmi telah diterbitkan dan diverifikasi untuk calon siswa ini. Klik tombol di bawah untuk melihat, mencetak, atau menyimpannya sebagai file PDF.
                         </p>
                       </div>
@@ -1627,7 +1627,7 @@ function ApplicantsDirectoryContent() {
 
                   {/* Manual receipt slip visual display */}
                   <div className="bg-slate-50 dark:bg-slate-950 border border-slate-200/50 dark:border-white/5 rounded-2xl p-5 space-y-4">
-                    <span className="text-slate-400 dark:text-slate-555 block font-bold uppercase text-[9px] tracking-wider">
+                    <span className="text-slate-400 dark:text-slate-500 block font-bold uppercase text-[9px] tracking-wider">
                       Dokumen Bukti Transfer Manual
                     </span>
                     {selectedApplicant.bukti_bayar ? (
@@ -1635,7 +1635,7 @@ function ApplicantsDirectoryContent() {
                         {selectedApplicant.bukti_bayar.startsWith("data:application/pdf") ? (
                           <div className="w-full py-10 bg-slate-100 dark:bg-[#0b1121] rounded-xl flex flex-col items-center justify-center border dark:border-white/5">
                             <FileText size={48} className="text-blue-500 mb-2" />
-                            <p className="text-xs font-bold text-slate-700 dark:text-slate-350">Dokumen PDF Bukti Transfer</p>
+                            <p className="text-xs font-bold text-slate-700 dark:text-slate-300">Dokumen PDF Bukti Transfer</p>
                             <a
                               href={sanitizeUrl(selectedApplicant.bukti_bayar)}
                               target="_blank"
@@ -1701,22 +1701,22 @@ function ApplicantsDirectoryContent() {
                   </h4>
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div className="p-4 bg-slate-50 dark:bg-slate-950 border border-slate-200/50 dark:border-white/5 rounded-2xl">
-                      <span className="text-slate-400 dark:text-slate-555 block mb-1 font-bold uppercase text-[9px] tracking-wider">Tawuran / Perkelahian</span>
+                      <span className="text-slate-400 dark:text-slate-500 block mb-1 font-bold uppercase text-[9px] tracking-wider">Tawuran / Perkelahian</span>
                       <span className={`font-black px-2.5 py-0.5 rounded-lg text-[9px] uppercase tracking-wide border ${selectedApplicant.perkelahian === "Ya" ? "bg-rose-50 border-rose-200 text-rose-600 dark:bg-rose-500/10 dark:text-rose-400" : "bg-emerald-50 border-emerald-200 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400"}`}>{selectedApplicant.perkelahian || "Tidak"}</span>
                     </div>
                     <div className="p-4 bg-slate-50 dark:bg-slate-950 border border-slate-200/50 dark:border-white/5 rounded-2xl">
-                      <span className="text-slate-400 dark:text-slate-555 block mb-1 font-bold uppercase text-[9px] tracking-wider">Penyalahgunaan Narkoba</span>
+                      <span className="text-slate-400 dark:text-slate-500 block mb-1 font-bold uppercase text-[9px] tracking-wider">Penyalahgunaan Narkoba</span>
                       <span className={`font-black px-2.5 py-0.5 rounded-lg text-[9px] uppercase tracking-wide border ${selectedApplicant.narkoba === "Ya" ? "bg-rose-50 border-rose-200 text-rose-600 dark:bg-rose-500/10 dark:text-rose-400" : "bg-emerald-50 border-emerald-200 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400"}`}>{selectedApplicant.narkoba || "Tidak"}</span>
                     </div>
                     <div className="p-4 bg-slate-50 dark:bg-slate-950 border border-slate-200/50 dark:border-white/5 rounded-2xl">
-                      <span className="text-slate-400 dark:text-slate-555 block mb-1 font-bold uppercase text-[9px] tracking-wider">Pelanggaran Hukum Lain</span>
+                      <span className="text-slate-400 dark:text-slate-500 block mb-1 font-bold uppercase text-[9px] tracking-wider">Pelanggaran Hukum Lain</span>
                       <span className={`font-black px-2.5 py-0.5 rounded-lg text-[9px] uppercase tracking-wide border ${selectedApplicant.pelanggaran_lain === "Ya" ? "bg-rose-50 border-rose-200 text-rose-600 dark:bg-rose-500/10 dark:text-rose-400" : "bg-emerald-50 border-emerald-200 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400"}`}>{selectedApplicant.pelanggaran_lain || "Tidak"}</span>
                     </div>
                   </div>
 
                   <div className="p-5 bg-blue-50 dark:bg-blue-900/10 border border-blue-200/50 dark:border-blue-500/10 rounded-2xl space-y-3">
                     <span className="text-blue-600 dark:text-blue-400 font-black uppercase tracking-wider text-[9px] block">Pernyataan Kesanggupan Calon Taruna Baru:</span>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2.5 text-[10px] text-slate-655 dark:text-slate-350">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2.5 text-[10px] text-slate-600 dark:text-slate-300">
                       <div className="flex items-center gap-2"><span className="text-emerald-500 font-extrabold">✓</span> Patuh Aturan Sekolah</div>
                       <div className="flex items-center gap-2"><span className="text-emerald-500 font-extrabold">✓</span> Menerima Sanksi Sekolah</div>
                       <div className="flex items-center gap-2"><span className="text-emerald-500 font-extrabold">✓</span> Hubungan Akrab Taruna</div>
@@ -1733,7 +1733,7 @@ function ApplicantsDirectoryContent() {
               <div className="flex items-center gap-2.5">
                 <button
                   onClick={() => setSelectedApplicant(null)}
-                  className="px-5 py-2.5 bg-slate-100 hover:bg-slate-200 dark:bg-white/5 dark:hover:bg-white/10 text-slate-600 dark:text-slate-355 hover:text-slate-850 dark:hover:text-white rounded-xl text-xs font-black uppercase tracking-wider transition-all border border-slate-200/50 dark:border-white/5"
+                  className="px-5 py-2.5 bg-slate-100 hover:bg-slate-200 dark:bg-white/5 dark:hover:bg-white/10 text-slate-600 dark:text-slate-300 hover:text-slate-850 dark:hover:text-white rounded-xl text-xs font-black uppercase tracking-wider transition-all border border-slate-200/50 dark:border-white/5"
                 >
                   Tutup
                 </button>
@@ -1866,7 +1866,7 @@ function ApplicantsDirectoryContent() {
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
                     {section.fields.map((f) => (
                       <div key={f.key} className="group">
-                        <label className="block text-[10px] font-black uppercase tracking-widest text-slate-455 dark:text-slate-450 mb-2 group-focus-within:text-blue-500 dark:group-focus-within:text-blue-400 transition-colors">{f.label}</label>
+                        <label className="block text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-450 mb-2 group-focus-within:text-blue-500 dark:group-focus-within:text-blue-400 transition-colors">{f.label}</label>
                         {f.type === "select" ? (
                           <CustomSelect
                             value={(editForm as any)[f.key] || ""}
@@ -1966,7 +1966,7 @@ function ApplicantsDirectoryContent() {
                   setRejectingApplicantId(null);
                   setRejectionReasonInput("");
                 }}
-                className="flex-1 py-3.5 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-2xl text-[10px] font-black uppercase tracking-wider text-slate-700 dark:text-slate-300 transition-all border border-slate-205 dark:border-slate-700 cursor-pointer text-center"
+                className="flex-1 py-3.5 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-2xl text-[10px] font-black uppercase tracking-wider text-slate-700 dark:text-slate-300 transition-all border border-slate-200 dark:border-slate-700 cursor-pointer text-center"
               >
                 Batal
               </button>

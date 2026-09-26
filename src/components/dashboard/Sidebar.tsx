@@ -15,7 +15,8 @@ import {
   Settings,
   ChevronDown,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  AlertCircle
 } from "lucide-react";
 
 export default function Sidebar({
@@ -64,7 +65,12 @@ export default function Sidebar({
           ]
         },
         { href: "/dashboard/pembagian-kelas", icon: <Layers size={18} />, label: "Pembagian Kelas" },
-        { href: "/dashboard/siswa-aktif", icon: <GraduationCap size={18} />, label: "Siswa Aktif" }
+        { href: "/dashboard/siswa-aktif", icon: <GraduationCap size={18} />, label: "Siswa Aktif" },
+        {
+          href: "/dashboard/siswa-aktif?tab=tidak-lancar",
+          icon: <AlertCircle size={18} />,
+          label: "Riwayat Tidak Lancar"
+        }
       ]
     },
     {
@@ -101,7 +107,7 @@ export default function Sidebar({
   const sectionHeader = (label: string) => (
     <div className="flex items-center py-2 overflow-hidden min-h-[32px]">
       <div className={`flex items-center w-full transition-all duration-300 ${isCollapsed ? "justify-center px-0" : "px-4 gap-2"}`}>
-        <span className={`text-[10px] font-black text-slate-400 dark:text-slate-555 uppercase tracking-widest select-none transition-all duration-300 ease-in-out overflow-hidden whitespace-nowrap ${
+        <span className={`text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest select-none transition-all duration-300 ease-in-out overflow-hidden whitespace-nowrap ${
           isCollapsed ? "max-w-0 opacity-0" : "max-w-[150px] opacity-100"
         }`}>
           {label}
@@ -114,11 +120,17 @@ export default function Sidebar({
   const renderMenuItem = (item: any, delayIndex: number) => {
     const hasSub = !!item.subItems;
     const isOpen = !!openDropdowns[item.href];
+    const itemPathname = item.href.split("?")[0];
+    const itemTab = new URLSearchParams(item.href.split("?")[1] || "").get("tab");
+    const currentTab = searchParams ? searchParams.get("tab") : null;
+
     const isActive = item.exact
       ? pathname === item.href
-      : pathname === item.href || (pathname && pathname.startsWith(item.href + "/"));
-
-    const currentTab = searchParams ? searchParams.get("tab") : null;
+      : itemTab
+      ? pathname === itemPathname && currentTab === itemTab
+      : hasSub
+      ? pathname === itemPathname
+      : pathname === itemPathname && (!currentTab || currentTab === "active");
 
     const handleItemClick = (e: React.MouseEvent) => {
       if (hasSub) {
@@ -184,7 +196,7 @@ export default function Sidebar({
                   className="pl-8 pr-2 py-1.5 space-y-1"
                 >
                   {item.subItems.map((sub: any) => {
-                    const defaultTab = sub.href.includes("pendaftar") ? "active" : "hero";
+                    const defaultTab = sub.href.includes("pendaftar") ? "active" : sub.href.includes("siswa-aktif") ? "active" : "hero";
                     const urlParams = new URLSearchParams(sub.href.split("?")[1] || "");
                     const tabVal = urlParams.get("tab");
                     const isSubActive =
@@ -203,7 +215,7 @@ export default function Sidebar({
                       >
                         <span
                           className={`w-1.5 h-1.5 rounded-full shrink-0 ${
-                            isSubActive ? "bg-blue-500" : "bg-slate-350 dark:bg-slate-650"
+                            isSubActive ? "bg-blue-500" : "bg-slate-300 dark:bg-slate-600"
                           }`}
                         />
                         <span className="truncate">{sub.label}</span>

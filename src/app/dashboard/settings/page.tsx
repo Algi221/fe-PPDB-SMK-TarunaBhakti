@@ -174,7 +174,7 @@ export default function SimulationSettings() {
       <div className="flex items-center justify-center min-h-75">
         <div className="flex flex-col items-center gap-3">
           <RefreshCw className="animate-spin text-blue-500 dark:text-blue-400" size={32} />
-          <span className="text-sm font-semibold text-slate-500 dark:text-slate-455">Memuat konfigurasi...</span>
+          <span className="text-sm font-semibold text-slate-500 dark:text-slate-400">Memuat konfigurasi...</span>
         </div>
       </div>
     );
@@ -189,7 +189,7 @@ export default function SimulationSettings() {
           <Settings className="text-blue-500 dark:text-blue-400" size={24} />
           <span>Pengaturan Sistem & Keamanan</span>
         </h1>
-        <p className="text-sm font-medium text-slate-500 dark:text-slate-455 mt-1">
+        <p className="text-sm font-medium text-slate-500 dark:text-slate-400 mt-1">
           Perbarui keamanan akun administrator dan kendalikan konfigurasi biaya pendaftaran serta link WhatsApp.
         </p>
       </div>
@@ -212,7 +212,7 @@ export default function SimulationSettings() {
                   <h3 className="text-base font-extrabold text-slate-850 dark:text-white tracking-tight">
                     Keamanan & Ganti Password
                   </h3>
-                  <p className="text-xs text-slate-455 font-semibold mt-0.5">
+                  <p className="text-xs text-slate-400 font-semibold mt-0.5">
                     Perbarui kata sandi akun administrator secara berkala untuk perlindungan data
                   </p>
                 </div>
@@ -235,8 +235,8 @@ export default function SimulationSettings() {
 
               {/* Password saat ini */}
               <div className="space-y-2">
-                <label className="text-xs font-black uppercase tracking-wider text-slate-500 dark:text-slate-455 flex items-center gap-1.5">
-                  <KeyRound size={13} className="text-slate-455" />
+                <label className="text-xs font-black uppercase tracking-wider text-slate-500 dark:text-slate-400 flex items-center gap-1.5">
+                  <KeyRound size={13} className="text-slate-400" />
                   Password Saat Ini
                 </label>
                 <div className="relative">
@@ -250,7 +250,7 @@ export default function SimulationSettings() {
                   <button
                     type="button"
                     onClick={() => setShowPasswords(!showPasswords)}
-                    className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-655 dark:hover:text-white transition-colors"
+                    className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-white transition-colors"
                   >
                     {showPasswords ? <EyeOff size={16} /> : <Eye size={16} />}
                   </button>
@@ -260,8 +260,8 @@ export default function SimulationSettings() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {/* Password baru */}
                 <div className="space-y-2">
-                  <label className="text-xs font-black uppercase tracking-wider text-slate-500 dark:text-slate-455 flex items-center gap-1.5">
-                    <Lock size={13} className="text-slate-455" />
+                  <label className="text-xs font-black uppercase tracking-wider text-slate-500 dark:text-slate-400 flex items-center gap-1.5">
+                    <Lock size={13} className="text-slate-400" />
                     Password Baru
                   </label>
                   <div className="relative">
@@ -277,8 +277,8 @@ export default function SimulationSettings() {
 
                 {/* Konfirmasi password baru */}
                 <div className="space-y-2">
-                  <label className="text-xs font-black uppercase tracking-wider text-slate-500 dark:text-slate-455 flex items-center gap-1.5">
-                    <ShieldCheck size={13} className="text-slate-455" />
+                  <label className="text-xs font-black uppercase tracking-wider text-slate-500 dark:text-slate-400 flex items-center gap-1.5">
+                    <ShieldCheck size={13} className="text-slate-400" />
                     Konfirmasi Password Baru
                   </label>
                   <div className="relative">
@@ -329,7 +329,7 @@ export default function SimulationSettings() {
                   <h3 className="text-base font-extrabold text-slate-850 dark:text-white tracking-tight">
                     Mode Pengujian Data
                   </h3>
-                  <p className="text-xs text-slate-455 font-semibold mt-0.5">
+                  <p className="text-xs text-slate-400 font-semibold mt-0.5">
                     Masukkan data pendaftar dummy untuk simulasi dan pengujian sistem
                   </p>
                 </div>
@@ -451,7 +451,7 @@ export default function SimulationSettings() {
               Keamanan Akun & Tips
             </h4>
             
-            <div className="space-y-4 text-xs font-medium text-slate-600 dark:text-slate-355 leading-relaxed">
+            <div className="space-y-4 text-xs font-medium text-slate-600 dark:text-slate-300 leading-relaxed">
               <p>Jaga keamanan dashboard administrator PPDB dengan mengikuti panduan dasar berikut:</p>
               
               <div className="relative pl-6 border-l-2 border-slate-200 dark:border-slate-800 space-y-4">

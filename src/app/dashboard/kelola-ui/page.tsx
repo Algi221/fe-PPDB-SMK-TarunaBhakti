@@ -474,6 +474,7 @@ export default function KelolaUserInterface() {
   const [formFee, setFormFee] = useState("250000");
   const [schoolLogo, setSchoolLogo] = useState("/logo_smktb.png");
   const [schoolTitle, setSchoolTitle] = useState("PPDB SMK TB");
+  const [portalStatus, setPortalStatus] = useState("open");
 
   const [gelombangConfig, setGelombangConfig] = useState({
     gelombang1: { start: "2026-06-03", end: "2026-07-24" },
@@ -560,6 +561,7 @@ export default function KelolaUserInterface() {
       ppdb_partners_config: partnersList,
       ppdb_logo_url: schoolLogo,
       ppdb_title: schoolTitle,
+      ppdb_portal_status: portalStatus,
     };
 
     localStorage.setItem("ppdb_ui_editor_draft", JSON.stringify(draft));
@@ -621,6 +623,7 @@ export default function KelolaUserInterface() {
       if (activeConfig.ppdb_form_fee) setFormFee(activeConfig.ppdb_form_fee);
       if (activeConfig.ppdb_logo_url) setSchoolLogo(activeConfig.ppdb_logo_url);
       if (activeConfig.ppdb_title) setSchoolTitle(activeConfig.ppdb_title);
+      if (activeConfig.ppdb_portal_status) setPortalStatus(activeConfig.ppdb_portal_status);
       
       if (activeConfig.ppdb_alur_config && Array.isArray(activeConfig.ppdb_alur_config)) {
         const defaultColors = ["#f97316", "#38bdf8", "#a855f7", "#f59e0b", "#10b981", "#ec4899"];
@@ -915,6 +918,7 @@ export default function KelolaUserInterface() {
         ppdb_partners_config: partnersList,
         ppdb_logo_url: schoolLogo,
         ppdb_title: schoolTitle,
+        ppdb_portal_status: portalStatus,
         ppdb_fields_config: fieldsConfigUI
       };
 
@@ -1063,7 +1067,7 @@ export default function KelolaUserInterface() {
           </div>
           <div>
             <h2 className="text-base font-black uppercase text-slate-800 dark:text-white tracking-wider">Kelola User Interface</h2>
-            <p className="text-[10px] text-slate-400 dark:text-slate-550 font-bold uppercase tracking-wider mt-0.5">Edit Semua Foto, Teks, Jurusan, dan Formulir PPDB secara Real-time</p>
+            <p className="text-[10px] text-slate-400 dark:text-slate-500 font-bold uppercase tracking-wider mt-0.5">Edit Semua Foto, Teks, Jurusan, dan Formulir PPDB secara Real-time</p>
           </div>
         </div>
         
@@ -1156,7 +1160,7 @@ export default function KelolaUserInterface() {
                       className={`w-24 h-24 border-2 border-dashed rounded-3xl flex flex-col items-center justify-center p-2 relative overflow-hidden transition-all duration-300 ${
                         dragActiveStates["school_logo"]
                           ? "border-blue-500 bg-blue-500/5"
-                          : "border-slate-200 dark:border-white/10 hover:border-slate-350 dark:hover:border-white/20 bg-white dark:bg-slate-900"
+                          : "border-slate-200 dark:border-white/10 hover:border-slate-300 dark:hover:border-white/20 bg-white dark:bg-slate-900"
                       }`}
                       onDragEnter={(e) => handleDragState(e, "school_logo", true)}
                       onDragOver={(e) => handleDragState(e, "school_logo", true)}
@@ -1200,6 +1204,35 @@ export default function KelolaUserInterface() {
                       />
                     </div>
                   </div>
+                </div>
+
+                <div className="bg-slate-50 dark:bg-slate-900/60 p-5 rounded-2xl border border-slate-200/80 dark:border-white/10 mb-6 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+                  <div>
+                    <h4 className="font-bold text-slate-800 dark:text-white text-sm flex items-center gap-2">
+                      <span className={`w-3 h-3 rounded-full ${portalStatus === 'open' ? 'bg-emerald-500 animate-pulse' : 'bg-red-500'}`} />
+                      Status Portal Pendaftaran PPDB
+                    </h4>
+                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                      {portalStatus === 'open'
+                        ? 'Portal pendaftaran saat ini DIBUKA. Calon siswa dapat mengisi formulir di /daftar.'
+                        : 'Portal pendaftaran saat ini DITUTUP. Halaman /daftar akan menampilkan pesan pendaftaran ditutup.'}
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const next = portalStatus === 'open' ? 'closed' : 'open';
+                      setPortalStatus(next);
+                      localStorage.setItem('ppdb_portal_status', next);
+                    }}
+                    className={`px-5 py-2.5 rounded-xl font-bold text-xs flex items-center gap-2 transition-all ${
+                      portalStatus === 'open'
+                        ? 'bg-red-500 hover:bg-red-600 text-white shadow-lg shadow-red-500/20'
+                        : 'bg-emerald-600 hover:bg-emerald-700 text-white shadow-lg shadow-emerald-600/20'
+                    }`}
+                  >
+                    {portalStatus === 'open' ? 'Tutup Pendaftaran' : 'Buka Pendaftaran'}
+                  </button>
                 </div>
 
                 <div className="border-b border-slate-100 dark:border-white/5 pb-4 mt-8 mb-4">
@@ -1479,7 +1512,7 @@ export default function KelolaUserInterface() {
                           setEditingMajor(null);
                           setIsNewMajor(false);
                         }}
-                        className="flex items-center gap-2 px-4.5 py-2.5 rounded-xl bg-slate-50 hover:bg-slate-100 dark:bg-slate-950 border border-slate-200 dark:border-white/5 text-[10px] uppercase font-bold text-slate-700 dark:text-slate-350 transition-colors cursor-pointer"
+                        className="flex items-center gap-2 px-4.5 py-2.5 rounded-xl bg-slate-50 hover:bg-slate-100 dark:bg-slate-950 border border-slate-200 dark:border-white/5 text-[10px] uppercase font-bold text-slate-700 dark:text-slate-300 transition-colors cursor-pointer"
                       >
                         <ArrowLeft size={12} />
                         <span>Kembali ke List Kartu</span>
@@ -1553,7 +1586,7 @@ export default function KelolaUserInterface() {
                             <div className="absolute inset-0 bg-slate-950/60 backdrop-blur-[2px] opacity-90 group-hover:opacity-95 flex flex-col items-center justify-center text-white p-3">
                               <Upload size={20} className="animate-bounce text-blue-400 mb-1" />
                               <span className="text-[9px] font-black uppercase tracking-wider">Drag / Ganti Logo</span>
-                              <span className="text-[7px] font-bold text-slate-350 uppercase mt-0.5">Atau Klik Explorer</span>
+                              <span className="text-[7px] font-bold text-slate-300 uppercase mt-0.5">Atau Klik Explorer</span>
                             </div>
                           </div>
                         </div>
@@ -1603,7 +1636,7 @@ export default function KelolaUserInterface() {
                             <div className="absolute inset-0 bg-slate-950/60 backdrop-blur-[2px] opacity-90 group-hover:opacity-95 flex flex-col items-center justify-center text-white p-3">
                               <Upload size={20} className="animate-bounce text-blue-400 mb-1" />
                               <span className="text-[9px] font-black uppercase tracking-wider">Drag / Ganti Banner</span>
-                              <span className="text-[7px] font-bold text-slate-350 uppercase mt-0.5">Atau Klik Explorer</span>
+                              <span className="text-[7px] font-bold text-slate-300 uppercase mt-0.5">Atau Klik Explorer</span>
                             </div>
                           </div>
                         </div>
@@ -1783,7 +1816,7 @@ export default function KelolaUserInterface() {
                                     <div className="absolute inset-0 bg-slate-950/65 backdrop-blur-[1px] opacity-80 group-hover:opacity-90 transition-opacity flex flex-col items-center justify-center text-white p-2">
                                       <ImageIcon size={18} className="text-blue-400 mb-1 animate-pulse" />
                                       <span className="text-[8px] font-black uppercase tracking-wider">Ganti Foto Galeri #{slotIdx+1}</span>
-                                      <span className="text-[6px] font-bold text-slate-350 uppercase mt-0.5">Atau Klik Explorer</span>
+                                      <span className="text-[6px] font-bold text-slate-300 uppercase mt-0.5">Atau Klik Explorer</span>
                                     </div>
                                   </div>
 

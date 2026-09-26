@@ -272,7 +272,7 @@ export default function VerificationPage() {
             </div>
             <div className="space-y-1">
               <h3 className="text-emerald-700 dark:text-emerald-400 text-sm font-black uppercase tracking-wider">Pendaftaran Terverifikasi Sah</h3>
-              <p className="text-slate-700 dark:text-slate-350 text-xs md:text-sm font-bold leading-relaxed max-w-md mx-auto">
+              <p className="text-slate-700 dark:text-slate-300 text-xs md:text-sm font-bold leading-relaxed max-w-md mx-auto">
                 Selamat, <span className="underline font-black text-slate-800 dark:text-white uppercase tracking-wider">{data.nama}</span>! Data pendaftaran Anda telah secara resmi diverifikasi sah oleh Panitia PPDB SMK Taruna Bhakti.
               </p>
             </div>
@@ -284,7 +284,7 @@ export default function VerificationPage() {
             </div>
             <div className="space-y-2">
               <h3 className="text-rose-750 dark:text-rose-400 text-sm font-black uppercase tracking-wider">Pendaftaran Gugur / Ditolak</h3>
-              <p className="text-slate-700 dark:text-slate-350 text-xs md:text-sm font-bold leading-relaxed max-w-md mx-auto">
+              <p className="text-slate-700 dark:text-slate-300 text-xs md:text-sm font-bold leading-relaxed max-w-md mx-auto">
                 Mohon maaf, pendaftaran atas nama <span className="font-black text-rose-600 dark:text-rose-450 uppercase tracking-wider">{data.nama}</span> dinyatakan <strong className="text-rose-600 dark:text-rose-400">ditolak / tidak memenuhi syarat</strong>.
               </p>
               {data.alasan_ditolak && (
@@ -302,7 +302,7 @@ export default function VerificationPage() {
             </div>
             <div className="space-y-1">
               <h3 className="text-blue-750 dark:text-blue-400 text-sm font-black uppercase tracking-wider">Menunggu Proses Verifikasi</h3>
-              <p className="text-slate-700 dark:text-slate-355 text-xs md:text-sm font-bold leading-relaxed max-w-md mx-auto">
+              <p className="text-slate-700 dark:text-slate-300 text-xs md:text-sm font-bold leading-relaxed max-w-md mx-auto">
                 Pendaftaran atas nama <span className="font-black text-blue-600 dark:text-blue-400 uppercase tracking-wider">{data.nama}</span> sedang diproses dan menunggu verifikasi berkas oleh Panitia PPDB SMK Taruna Bhakti.
               </p>
             </div>
@@ -313,7 +313,7 @@ export default function VerificationPage() {
         <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
           <Link 
             href="/"
-            className="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 hover:border-slate-350 hover:bg-slate-50 text-xs font-black uppercase tracking-wider text-slate-600 dark:text-slate-300 transition-all shadow-sm w-full sm:w-auto"
+            className="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 hover:border-slate-300 hover:bg-slate-50 text-xs font-black uppercase tracking-wider text-slate-600 dark:text-slate-300 transition-all shadow-sm w-full sm:w-auto"
           >
             <ArrowLeft size={14} />
             Ke Halaman Utama

@@ -1128,20 +1128,20 @@ export default function ClassDivisionManagement() {
           </div>
           <div>
             <h2 className="text-base font-black uppercase text-slate-800 dark:text-white tracking-wider">Manajemen Pembagian Kelas</h2>
-            <p className="text-[10px] text-slate-400 dark:text-slate-550 font-bold uppercase tracking-wider mt-0.5">SMK Taruna Bhakti · PPDB Portal Kelas</p>
+            <p className="text-[10px] text-slate-400 dark:text-slate-500 font-bold uppercase tracking-wider mt-0.5">SMK Taruna Bhakti · PPDB Portal Kelas</p>
           </div>
         </div>
 
         {/* Metric 1: Total Classes */}
         <div className="bg-white dark:bg-[#0b1121] border border-slate-200/80 dark:border-slate-800/60 rounded-3xl p-6 shadow-[0_2px_12px_rgba(0,0,0,0.02)] flex flex-col justify-center transition-colors duration-300 text-left">
-          <span className="text-[9px] text-slate-400 dark:text-slate-550 font-black uppercase tracking-widest">Kelas Terbentuk (Kelas {selectedGrade} {selectedMajor})</span>
-          <span className="text-2xl font-black text-slate-800 dark:text-white mt-1">{classesOfSelectedMajor.length} <span className="text-xs text-slate-455 font-bold">Kelas</span></span>
+          <span className="text-[9px] text-slate-400 dark:text-slate-500 font-black uppercase tracking-widest">Kelas Terbentuk (Kelas {selectedGrade} {selectedMajor})</span>
+          <span className="text-2xl font-black text-slate-800 dark:text-white mt-1">{classesOfSelectedMajor.length} <span className="text-xs text-slate-400 font-bold">Kelas</span></span>
         </div>
 
         {/* Metric 2: Filled Classes */}
         <div className="bg-white dark:bg-[#0b1121] border border-slate-200/80 dark:border-slate-800/60 rounded-3xl p-6 shadow-[0_2px_12px_rgba(0,0,0,0.02)] flex flex-col justify-center transition-colors duration-300 text-left">
-          <span className="text-[9px] text-slate-400 dark:text-slate-550 font-black uppercase tracking-widest">Jumlah Kelas Terisi Siswa</span>
-          <span className="text-2xl font-black text-emerald-600 dark:text-emerald-400 mt-1">{totalClassesFilled} <span className="text-xs text-slate-455 font-bold">Terisi</span></span>
+          <span className="text-[9px] text-slate-400 dark:text-slate-500 font-black uppercase tracking-widest">Jumlah Kelas Terisi Siswa</span>
+          <span className="text-2xl font-black text-emerald-600 dark:text-emerald-400 mt-1">{totalClassesFilled} <span className="text-xs text-slate-400 font-bold">Terisi</span></span>
         </div>
 
       </div>
@@ -1164,7 +1164,7 @@ export default function ClassDivisionManagement() {
           >
             {getMajorLogo(m.code, "w-12 h-12 shadow-md", m.logo)}
             <span className={`mt-3 text-[9px] font-black uppercase tracking-widest leading-normal ${
-              selectedMajor === m.code ? "text-white" : "text-slate-700 dark:text-slate-350"
+              selectedMajor === m.code ? "text-white" : "text-slate-700 dark:text-slate-300"
             }`}>
               {m.name}
             </span>
@@ -1223,7 +1223,7 @@ export default function ClassDivisionManagement() {
             </button>
             <button
               onClick={() => setIsAddingClass(!isAddingClass)}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-50 hover:bg-slate-100 dark:bg-slate-950/30 border border-slate-250 dark:border-white/5 text-[10px] uppercase font-bold text-slate-655 dark:text-slate-350 dark:hover:text-white transition-all shadow-sm cursor-pointer"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-50 hover:bg-slate-100 dark:bg-slate-950/30 border border-slate-250 dark:border-white/5 text-[10px] uppercase font-bold text-slate-600 dark:text-slate-300 dark:hover:text-white transition-all shadow-sm cursor-pointer"
             >
               {isAddingClass ? <X size={12} /> : <Plus size={12} />}
               <span>{isAddingClass ? "Tutup Form" : "Buat Kelas Baru"}</span>
@@ -1375,7 +1375,7 @@ export default function ClassDivisionManagement() {
 
         {/* Student Table Checklist */}
         <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs font-bold text-slate-655 dark:text-slate-350">
+          <table className="w-full text-left text-xs font-bold text-slate-600 dark:text-slate-300">
             <thead>
               <tr className="border-b border-slate-100 dark:border-white/5 text-slate-400 dark:text-slate-500 font-black text-[9px] uppercase tracking-widest bg-slate-50/50 dark:bg-slate-950/15">
                 <th className="py-3.5 px-4 text-center w-12 pl-6">
@@ -1421,7 +1421,7 @@ export default function ClassDivisionManagement() {
                         type="checkbox"
                         checked={isSelected}
                         onChange={() => handleSelectStudent(student.id)}
-                        className="rounded border-slate-350 dark:border-white/10 text-blue-600 focus:ring-blue-500 w-3.5 h-3.5 cursor-pointer"
+                        className="rounded border-slate-300 dark:border-white/10 text-blue-600 focus:ring-blue-500 w-3.5 h-3.5 cursor-pointer"
                       />
                     </td>
 
@@ -1454,7 +1454,7 @@ export default function ClassDivisionManagement() {
                       {student.nisn}
                     </td>
 
-                    <td className="py-3 px-4 text-slate-550 dark:text-slate-450 font-semibold uppercase">
+                    <td className="py-3 px-4 text-slate-500 dark:text-slate-450 font-semibold uppercase">
                       {student.sekolah_asal || student.sekolahAsal}
                     </td>
 
@@ -1560,7 +1560,7 @@ export default function ClassDivisionManagement() {
 
             {/* Modal Student Table */}
             <div className="flex-1 overflow-y-auto p-6 max-h-[45vh]">
-              <table className="w-full text-left text-xs font-bold text-slate-655 dark:text-slate-350">
+              <table className="w-full text-left text-xs font-bold text-slate-600 dark:text-slate-300">
                 <thead>
                   <tr className="border-b border-slate-100 dark:border-white/5 text-slate-400 dark:text-slate-500 font-black text-[9px] uppercase tracking-widest">
                     <th className="py-2.5 px-3 text-left w-12">No</th>
@@ -1624,7 +1624,7 @@ export default function ClassDivisionManagement() {
             <div className="p-6 border-t border-slate-100 dark:border-white/5 bg-slate-50/40 dark:bg-slate-950/15 flex justify-end shrink-0">
               <button
                 onClick={() => { setSelectedClassDetail(null); setClassSearchTerm(""); }}
-                className="px-5 py-2.5 bg-slate-200 hover:bg-slate-300 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-655 dark:text-slate-350 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all"
+                className="px-5 py-2.5 bg-slate-200 hover:bg-slate-300 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all"
               >
                 Tutup Jendela
               </button>

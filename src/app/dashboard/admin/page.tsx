@@ -567,7 +567,7 @@ function AdminManagementPageContent() {
                   <button 
                     type="button" 
                     onClick={handleCancelEdit}
-                    className="text-slate-400 hover:text-slate-650 dark:hover:text-slate-250"
+                    className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-250"
                   >
                     <X size={20} />
                   </button>
