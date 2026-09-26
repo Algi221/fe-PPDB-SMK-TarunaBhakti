@@ -10,13 +10,15 @@ import {
   Layers,
   GraduationCap,
   Megaphone,
+  Newspaper,
   Palette,
   Shield,
   Settings,
   ChevronDown,
   ChevronLeft,
   ChevronRight,
-  AlertCircle
+  AlertCircle,
+  School
 } from "lucide-react";
 
 export default function Sidebar({
@@ -42,6 +44,8 @@ export default function Sidebar({
     if (pathname) {
       if (pathname.startsWith("/dashboard/pendaftar")) {
         setOpenDropdowns((prev) => ({ ...prev, "/dashboard/pendaftar": true }));
+      } else if (pathname.startsWith("/dashboard/kelola-profile")) {
+        setOpenDropdowns((prev) => ({ ...prev, "/dashboard/kelola-profile": true }));
       } else if (pathname.startsWith("/dashboard/kelola-ui")) {
         setOpenDropdowns((prev) => ({ ...prev, "/dashboard/kelola-ui": true }));
       }
@@ -77,6 +81,18 @@ export default function Sidebar({
       category: "Konten Portal",
       items: [
         { href: "/dashboard/informasi", icon: <Megaphone size={18} />, label: "Kelola Informasi" },
+        { href: "/dashboard/kelola-blog", icon: <Newspaper size={18} />, label: "Kelola Blog" },
+        {
+          href: "/dashboard/kelola-profile",
+          icon: <School size={18} />,
+          label: "Profile Sekolah",
+          subItems: [
+            { label: "Sejarah", href: "/dashboard/kelola-profile?tab=sejarah" },
+            { label: "Visi & Misi", href: "/dashboard/kelola-profile?tab=visi-misi" },
+            { label: "Tujuan", href: "/dashboard/kelola-profile?tab=tujuan" },
+            { label: "Tenaga Pendidik", href: "/dashboard/kelola-profile?tab=tenaga-pendidik" }
+          ]
+        },
         {
           href: "/dashboard/kelola-ui",
           icon: <Palette size={18} />,

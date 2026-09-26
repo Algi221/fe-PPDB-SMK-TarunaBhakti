@@ -115,6 +115,18 @@ export default function ForumPage() {
     { code: "TE", routeCode: "te", title: "Teknik Elektronika", alias: "TE", logo: "/assets/jurusan/te.png", color: "#10b981", desc: "Robotika, IoT & Automasi Industri" },
   ];
 
+  const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
+  const [isMobileProfileOpen, setIsMobileProfileOpen] = useState(false);
+  const profileDropdownTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const profileDropdownRef = useRef<HTMLDivElement>(null);
+
+  const profileMenuItems = [
+    { title: "Sejarah", href: "/profile/sejarah" },
+    { title: "Visi-Misi", href: "/profile/visi-misi" },
+    { title: "Tujuan", href: "/profile/tujuan" },
+    { title: "Tenaga Pendidik", href: "/profile/tenaga-pendidik" },
+  ];
+
   const handleDropdownEnter = () => {
     if (dropdownTimeoutRef.current) clearTimeout(dropdownTimeoutRef.current);
     setIsJurusanDropdownOpen(true);
@@ -126,10 +138,24 @@ export default function ForumPage() {
     }, 150);
   };
 
+  const handleProfileDropdownEnter = () => {
+    if (profileDropdownTimeoutRef.current) clearTimeout(profileDropdownTimeoutRef.current);
+    setIsProfileDropdownOpen(true);
+  };
+
+  const handleProfileDropdownLeave = () => {
+    profileDropdownTimeoutRef.current = setTimeout(() => {
+      setIsProfileDropdownOpen(false);
+    }, 150);
+  };
+
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (jurusanDropdownRef.current && !jurusanDropdownRef.current.contains(event.target as Node)) {
         setIsJurusanDropdownOpen(false);
+      }
+      if (profileDropdownRef.current && !profileDropdownRef.current.contains(event.target as Node)) {
+        setIsProfileDropdownOpen(false);
       }
     };
     document.addEventListener("mousedown", handleClickOutside);
@@ -224,7 +250,6 @@ export default function ForumPage() {
 
           <div className="hidden md:flex items-center gap-1 lg:gap-2">
             <Link href="/" className="btn-nav-link">Beranda</Link>
-            <Link href="/#alur" className="btn-nav-link">Alur Pendaftaran</Link>
 
             {/* Jurusan Dropdown (Minimalist Reference Style) */}
             <div 
@@ -269,8 +294,50 @@ export default function ForumPage() {
               )}
             </div>
 
-            <Link href="/#kemitraan" className="btn-nav-link">Mitra Industri</Link>
-            <Link href="/#faq" className="btn-nav-link">FAQ</Link>
+            {/* Profile Sekolah Dropdown */}
+            <div 
+              ref={profileDropdownRef}
+              className="relative"
+              onMouseEnter={handleProfileDropdownEnter}
+              onMouseLeave={handleProfileDropdownLeave}
+            >
+              <button
+                type="button"
+                onClick={() => setIsProfileDropdownOpen(!isProfileDropdownOpen)}
+                className={`btn-nav-link flex items-center gap-1.5 cursor-pointer transition-all ${isProfileDropdownOpen ? 'text-blue-600 dark:text-sky-400 bg-blue-50/50 dark:bg-slate-800/60' : ''}`}
+                aria-expanded={isProfileDropdownOpen}
+              >
+                <span>Profile Sekolah</span>
+                <ChevronDown 
+                  size={14} 
+                  className={`transition-transform duration-200 text-slate-500 dark:text-slate-400 ${isProfileDropdownOpen ? 'rotate-180 text-blue-600 dark:text-sky-400' : ''}`} 
+                />
+              </button>
+
+              {/* Dropdown Menu */}
+              {isProfileDropdownOpen && (
+                <div 
+                  className="absolute top-full left-0 pt-2 w-[220px] z-50 animate-in fade-in slide-in-from-top-2 duration-150"
+                >
+                  <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-2xl shadow-xl shadow-slate-900/10 dark:shadow-black/50 p-2.5">
+                    <div className="space-y-0.5">
+                      {profileMenuItems.map((item) => (
+                        <Link
+                          key={item.href}
+                          href={item.href}
+                          onClick={() => setIsProfileDropdownOpen(false)}
+                          className="block py-2.5 px-3 text-[13.5px] font-medium text-slate-700 dark:text-slate-300 hover:text-blue-600 dark:hover:text-sky-400 hover:bg-blue-50/50 dark:hover:bg-slate-800/70 rounded-xl transition-colors text-left"
+                        >
+                          {item.title}
+                        </Link>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            <Link href="/blog" className="btn-nav-link">Blog</Link>
             <Link href="/forum" className="btn-nav-link" style={{color: 'var(--color-blue-600, #2563eb)', fontWeight: 700}}>Forum Informasi</Link>
           </div>
 
@@ -317,13 +384,6 @@ export default function ForumPage() {
             >
               Beranda
             </Link>
-            <Link
-              href="/#alur"
-              onClick={() => setMobileMenuOpen(false)}
-              className="text-lg font-extrabold text-slate-800 dark:text-white hover:text-blue-600 dark:hover:text-blue-400 transition-colors py-3 border-b border-slate-100 dark:border-slate-800/60 w-full"
-            >
-              Alur Pendaftaran
-            </Link>
 
             {/* Jurusan Accordion in Mobile */}
             <div className="w-full border-b border-slate-100 dark:border-slate-800/60">
@@ -354,20 +414,45 @@ export default function ForumPage() {
                 </div>
               )}
             </div>
+
+            {/* Profile Sekolah Accordion in Mobile */}
+            <div className="w-full border-b border-slate-100 dark:border-slate-800/60">
+              <button
+                type="button"
+                onClick={() => setIsMobileProfileOpen(!isMobileProfileOpen)}
+                className="w-full flex items-center justify-between text-lg font-extrabold text-slate-800 dark:text-white hover:text-blue-600 dark:hover:text-sky-400 transition-colors py-3"
+              >
+                <span>Profile Sekolah</span>
+                <ChevronDown 
+                  size={18} 
+                  className={`transition-transform duration-200 ${isMobileProfileOpen ? 'rotate-180 text-blue-600 dark:text-sky-400' : 'text-slate-400'}`} 
+                />
+              </button>
+
+              {isMobileProfileOpen && (
+                <div className="pb-3 pl-3.5 space-y-1 animate-in fade-in slide-in-from-top-1 duration-150 text-left border-l-2 border-blue-500/20 ml-1 mb-2">
+                  {profileMenuItems.map((item) => (
+                    <Link
+                      key={item.href}
+                      href={item.href}
+                      onClick={() => setMobileMenuOpen(false)}
+                      className="block py-2 px-3 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 text-[14px] font-medium transition-colors hover:text-blue-600 dark:hover:text-sky-400"
+                    >
+                      {item.title}
+                    </Link>
+                  ))}
+                </div>
+              )}
+            </div>
+
             <Link
-              href="/#kemitraan"
+              href="/blog"
               onClick={() => setMobileMenuOpen(false)}
               className="text-lg font-extrabold text-slate-800 dark:text-white hover:text-blue-600 dark:hover:text-blue-400 transition-colors py-3 border-b border-slate-100 dark:border-slate-800/60 w-full"
             >
-              Mitra Industri
+              Blog
             </Link>
-            <Link
-              href="/#faq"
-              onClick={() => setMobileMenuOpen(false)}
-              className="text-lg font-extrabold text-slate-800 dark:text-white hover:text-blue-600 dark:hover:text-blue-400 transition-colors py-3 border-b border-slate-100 dark:border-slate-800/60 w-full"
-            >
-              FAQ
-            </Link>
+
             <Link
               href="/forum"
               onClick={() => setMobileMenuOpen(false)}
