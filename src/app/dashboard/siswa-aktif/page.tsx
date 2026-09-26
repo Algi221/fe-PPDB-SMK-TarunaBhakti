@@ -55,6 +55,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense } from "react";
 import KuotaTab from "@/components/KuotaTab";
 import Swal from 'sweetalert2';
+import CustomSelect from "@/components/ui/CustomSelect";
 
 
 export const formatNoPendaftaran = (periode: string | null | undefined, id: number) => {
@@ -1048,12 +1049,12 @@ function ActiveStudentsDirectoryContent() {
       </div>
 
       {/* Control Filter Bar */}
-      <div className="bg-white dark:bg-[#0b1121] border border-slate-200/90 dark:border-slate-800/80 ring-1 ring-slate-900/5 dark:ring-white/5 rounded-2xl p-2.5 shadow-sm flex items-center justify-between gap-3 w-full mt-4 transition-colors duration-300 overflow-x-auto whitespace-nowrap hide-scrollbar">
+      <div className="bg-white dark:bg-[#0b1121] border border-slate-200/90 dark:border-slate-800/80 ring-1 ring-slate-900/5 dark:ring-white/5 rounded-2xl p-2.5 shadow-sm flex flex-wrap md:flex-nowrap items-center justify-between gap-3 w-full mt-4 transition-colors duration-300 relative z-20">
         
         {/* Left Group: Search & Filters */}
-        <div className="flex items-center gap-2.5 shrink-0">
+        <div className="flex flex-wrap items-center gap-2.5">
           {/* Universal Search Input */}
-          <div className="relative w-[260px] lg:w-[300px] shrink-0">
+          <div className="relative w-60 lg:w-70 shrink-0">
             <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500" size={14} />
             <input
               type="text"
@@ -1065,56 +1066,51 @@ function ActiveStudentsDirectoryContent() {
           </div>
 
           {/* Major/Prodi selection dropdown */}
-          <div className="relative min-w-[135px] shrink-0">
-            <select
+          <div className="shrink-0 min-w-36.25">
+            <CustomSelect
               value={majorFilter}
-              onChange={(e) => setMajorFilter(e.target.value)}
-              className="w-full pl-3 pr-7 py-2 bg-white dark:bg-[#0b1121] border border-slate-200 dark:border-slate-800 rounded-xl text-xs font-normal text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-blue-500 transition-all appearance-none cursor-pointer truncate"
-            >
-              <option value="ALL">Semua Jurusan</option>
-              <option value="Rekayasa Perangkat Lunak">RPL / PPLG</option>
-              <option value="Teknik Jaringan Komputer & Telekomunikasi">TJKT / TKJ</option>
-              <option value="Desain Komunikasi Visual">DKV</option>
-              <option value="Animasi">Animasi</option>
-              <option value="Broadcasting & Perfilman">Broadcasting / BCF</option>
-              <option value="Teknik Elektronika">Teknik Elektronika / TE</option>
-            </select>
-            <div className="absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
-              <ChevronDown size={13} />
-            </div>
+              onChange={(val) => setMajorFilter(val)}
+              options={[
+                { value: "ALL", label: "Semua Jurusan" },
+                { value: "Rekayasa Perangkat Lunak", label: "RPL / PPLG" },
+                { value: "Teknik Jaringan Komputer & Telekomunikasi", label: "TJKT / TKJ" },
+                { value: "Desain Komunikasi Visual", label: "DKV" },
+                { value: "Animasi", label: "Animasi" },
+                { value: "Broadcasting & Perfilman", label: "Broadcasting / BCF" },
+                { value: "Teknik Elektronika", label: "Teknik Elektronika / TE" }
+              ]}
+              triggerClassName="py-2 text-xs"
+            />
           </div>
 
           {/* Class selection dropdown */}
-          <div className="relative min-w-[125px] shrink-0">
-            <select
+          <div className="shrink-0 min-w-38.75">
+            <CustomSelect
               value={classFilter}
-              onChange={(e) => setClassFilter(e.target.value)}
-              className="w-full pl-3 pr-7 py-2 bg-white dark:bg-[#0b1121] border border-slate-200 dark:border-slate-800 rounded-xl text-xs font-normal text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-blue-500 transition-all appearance-none cursor-pointer truncate"
-            >
-              <option value="ALL">Semua Kelas</option>
-              {uniqueClasses.map((kls) => (
-                <option key={kls} value={kls}>{kls} (L: {classStats[kls].L}, P: {classStats[kls].P})</option>
-              ))}
-            </select>
-            <div className="absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
-              <ChevronDown size={13} />
-            </div>
+              onChange={(val) => setClassFilter(val)}
+              options={[
+                { value: "ALL", label: "Semua Kelas" },
+                ...uniqueClasses.map((kls) => ({
+                  value: kls,
+                  label: `${kls} (L: ${classStats[kls]?.L || 0}, P: ${classStats[kls]?.P || 0})`
+                }))
+              ]}
+              triggerClassName="py-2 text-xs"
+            />
           </div>
 
           {/* Gender selection dropdown */}
-          <div className="relative min-w-[125px] shrink-0">
-            <select
+          <div className="shrink-0 min-w-32.5">
+            <CustomSelect
               value={genderFilter}
-              onChange={(e) => setGenderFilter(e.target.value)}
-              className="w-full pl-3 pr-7 py-2 bg-white dark:bg-[#0b1121] border border-slate-200 dark:border-slate-800 rounded-xl text-xs font-normal text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-blue-500 transition-all appearance-none cursor-pointer truncate"
-            >
-              <option value="ALL">Semua Gender</option>
-              <option value="L">Laki-Laki</option>
-              <option value="P">Perempuan</option>
-            </select>
-            <div className="absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
-              <ChevronDown size={13} />
-            </div>
+              onChange={(val) => setGenderFilter(val)}
+              options={[
+                { value: "ALL", label: "Semua Gender" },
+                { value: "L", label: "Laki-Laki" },
+                { value: "P", label: "Perempuan" }
+              ]}
+              triggerClassName="py-2 text-xs"
+            />
           </div>
         </div>
 
@@ -1184,11 +1180,11 @@ function ActiveStudentsDirectoryContent() {
             const students = groupedByPeriod[period];
             const isExpanded = expandedPeriods[period] ?? false;
 
-            const rombelCounts: Record<string, number> = {};
+            const kelasCounts: Record<string, number> = {};
             students.forEach((s) => {
               const k = s.diterima_kelas || s.diterimaKelas;
               if (k && k !== "-" && k !== "BELUM ADA") {
-                rombelCounts[k] = (rombelCounts[k] || 0) + 1;
+                kelasCounts[k] = (kelasCounts[k] || 0) + 1;
               }
             });
 
@@ -1217,16 +1213,16 @@ function ActiveStudentsDirectoryContent() {
                       </div>
                       <div className="flex items-center gap-1.5 mt-1.5 flex-wrap">
                         <span className="text-[10px] text-slate-400 dark:text-slate-500 font-normal flex items-center gap-1">
-                          <Layers size={11} className="text-slate-400" /> Rombel Terisi:
+                          <Layers size={11} className="text-slate-400" /> Kelas Terisi:
                         </span>
-                        {Object.entries(rombelCounts).length > 0 ? (
-                          Object.entries(rombelCounts).map(([cls, count]) => (
+                        {Object.entries(kelasCounts).length > 0 ? (
+                          Object.entries(kelasCounts).map(([cls, count]) => (
                             <span key={cls} className="bg-slate-100 dark:bg-slate-800/80 text-slate-600 dark:text-slate-300 font-mono text-[9px] font-normal px-1.5 py-0.5 rounded border border-slate-200/60 dark:border-slate-700/50">
                               {cls}({count})
                             </span>
                           ))
                         ) : (
-                          <span className="text-[9px] text-slate-400 italic">Belum ada rombel terisi</span>
+                          <span className="text-[9px] text-slate-400 italic">Belum ada kelas terisi</span>
                         )}
                       </div>
                     </div>
@@ -1399,53 +1395,59 @@ function ActiveStudentsDirectoryContent() {
 
       {/* Beautiful Rich ReadOnly Detail Modal */}
       {selectedApplicant && (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-60 flex items-center justify-center p-4">
           <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" onClick={() => setSelectedApplicant(null)}></div>
-          <div className="relative bg-white w-full max-w-4xl rounded-[24px] shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200 flex flex-col max-h-[90vh]">
+          <div className="relative bg-white dark:bg-slate-900 w-full max-w-3xl rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-800 overflow-hidden animate-in fade-in zoom-in-95 duration-200 flex flex-col max-h-[85vh]">
             
-            {/* Modal Top Header */}
-            <div className="px-8 pt-8 pb-6 flex justify-between items-start">
-              <div className="flex gap-5 items-center">
-                <div className="w-16 h-16 rounded-2xl bg-blue-600 flex items-center justify-center text-white font-black text-3xl shadow-lg shadow-blue-500/30 shrink-0">
+            {/* Modal Top Header (Compact & Styled as Foto 1) */}
+            <div className="px-6 pt-6 pb-4 flex justify-between items-start border-b border-slate-100 dark:border-slate-800/80">
+              <div className="flex gap-4 items-center">
+                {/* Gray Student Profile Initial Box */}
+                <div className="w-12 h-12 md:w-13 md:h-13 rounded-2xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 flex items-center justify-center text-slate-400 dark:text-slate-500 font-black text-2xl shrink-0 shadow-sm">
                   {(selectedApplicant.nama || "K")[0].toUpperCase()}
                 </div>
                 <div>
-                  <div className="flex items-center gap-3 mb-1.5">
-                    <h2 className="text-2xl font-black text-slate-800 uppercase tracking-tight">{selectedApplicant.nama}</h2>
-                    <span className="px-3 py-1 text-[10px] font-bold text-emerald-600 bg-emerald-50 border border-emerald-500/30 rounded-full uppercase tracking-widest whitespace-nowrap">
+                  <div className="flex items-center gap-2.5 mb-0.5">
+                    <h2 className="text-lg md:text-xl font-black text-slate-900 dark:text-white uppercase tracking-tight">{selectedApplicant.nama}</h2>
+                    <span className="px-2.5 py-0.5 text-[10px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-300 dark:border-emerald-800 rounded-full uppercase tracking-wider whitespace-nowrap">
                       Siswa Aktif
                     </span>
                   </div>
-                  <div className="text-xs font-bold text-slate-400 uppercase tracking-widest flex items-center gap-2 flex-wrap">
-                    <span className="text-blue-500 font-mono">NIPD: {nipdMap.get(selectedApplicant.id) || "-"}</span>
+                  <div className="text-xs font-semibold text-blue-600 dark:text-blue-400 font-mono tracking-wide">
+                    NIPD: {nipdMap.get(selectedApplicant.id) || "-"}
                   </div>
-                  <div className="flex items-center gap-1.5 px-3 py-1 bg-white/5 rounded-lg border border-white/10 shadow-sm backdrop-blur-md transition-all hover:bg-white/10 cursor-default">
-                    <BookOpen size={13} className="text-blue-400" />
-                    <span className="text-blue-500 font-mono">NO. DAFTAR: {formatNoPendaftaran(selectedApplicant.periode, selectedApplicant.id)}</span>
-                    <span className="w-1 h-1 bg-slate-300 rounded-full"></span>
-                    <span className="text-blue-500 flex items-center gap-1">
+                  {/* Clean Metadata Pill Container */}
+                  <div className="mt-2 inline-flex items-center gap-2 px-3 py-1.5 bg-slate-50/90 dark:bg-slate-800/60 rounded-xl border border-slate-200 dark:border-slate-700/80 text-[11px] text-slate-500 dark:text-slate-400 flex-wrap shadow-sm">
+                    <BookOpen size={13} className="text-blue-500 shrink-0" />
+                    <span className="text-blue-600 dark:text-blue-400 font-semibold font-mono">
+                      NO. DAFTAR: {formatNoPendaftaran(selectedApplicant.periode, selectedApplicant.id)}
+                    </span>
+                    <span className="text-slate-300 dark:text-slate-600">•</span>
+                    <span className="text-blue-600 dark:text-blue-400 font-semibold font-mono">
                       NISN: {selectedApplicant.nisn}
                     </span>
-                    <span className="w-1 h-1 bg-slate-300 rounded-full"></span>
-                    <span className="flex items-center gap-1">
+                    <span className="text-slate-300 dark:text-slate-600">•</span>
+                    <span className="font-medium text-slate-600 dark:text-slate-300">
                       NIK: {selectedApplicant.nik || "-"}
                     </span>
-                    <span className="w-1 h-1 bg-slate-300 rounded-full"></span>
-                    <span>ANGKATAN: {selectedApplicant.periode || "2026-2027"}</span>
+                    <span className="text-slate-300 dark:text-slate-600">•</span>
+                    <span className="font-medium text-slate-600 dark:text-slate-300">
+                      ANGKATAN: {selectedApplicant.periode || "2026-2027"}
+                    </span>
                   </div>
                 </div>
               </div>
               <button
                 onClick={() => setSelectedApplicant(null)}
-                className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-400 hover:bg-slate-200 hover:text-slate-600 transition-colors shrink-0 ml-4"
+                className="w-9 h-9 rounded-full bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 flex items-center justify-center text-slate-400 hover:text-slate-600 dark:text-slate-300 transition-colors shrink-0 ml-4"
               >
-                <X size={18} />
+                <X size={16} />
               </button>
             </div>
 
             {/* Navigation Tabs */}
-            <div className="px-8 shrink-0">
-              <div className="bg-slate-100 p-1.5 rounded-[16px] flex items-center gap-1 w-full overflow-x-auto scrollbar-none">
+            <div className="px-6 py-2.5 shrink-0">
+              <div className="bg-slate-100 dark:bg-slate-800/80 p-1 rounded-xl flex items-center gap-1 w-full overflow-x-auto scrollbar-none">
                 {[
                   { id: "biodata", label: "Biodata" },
                   { id: "periodik", label: "Periodik" },
@@ -1460,10 +1462,10 @@ function ActiveStudentsDirectoryContent() {
                       setActiveTab(t.id);
                       setSelectedDoc(null);
                     }}
-                    className={`px-6 py-2.5 text-[11px] font-bold uppercase tracking-widest rounded-[12px] shrink-0 transition-colors ${
+                    className={`px-4 py-2 text-[11px] font-bold uppercase tracking-wider rounded-lg shrink-0 transition-colors ${
                       activeTab === t.id
-                        ? "bg-white text-blue-600 shadow-sm"
-                        : "text-slate-500 hover:text-slate-700 hover:bg-slate-200/50"
+                        ? "bg-white dark:bg-slate-900 text-blue-600 dark:text-blue-400 shadow-sm"
+                        : "text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-200/50 dark:hover:bg-slate-700/50"
                     }`}
                   >
                     {t.label}
@@ -1473,7 +1475,7 @@ function ActiveStudentsDirectoryContent() {
             </div>
 
             {/* Modal Tab Content Viewport */}
-            <div className="flex-1 overflow-y-auto p-8 max-h-[60vh] transition-colors duration-300">
+            <div className="flex-1 overflow-y-auto p-6 max-h-[55vh] transition-colors duration-300">
               {activeTab === "biodata" && (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                   {/* Identitas Diri Column */}
@@ -1485,22 +1487,22 @@ function ActiveStudentsDirectoryContent() {
                       <h3 className="text-[11px] font-extrabold text-slate-700 uppercase tracking-widest">Identitas Diri</h3>
                     </div>
 
-                    <div className="bg-slate-50 rounded-[16px] p-4 border border-slate-100">
+                    <div className="bg-slate-50 rounded-2xl p-4 border border-slate-100">
                       <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Nama Lengkap</div>
                       <div className="text-sm font-bold text-slate-800">{selectedApplicant.nama}</div>
                     </div>
 
-                    <div className="bg-slate-50 rounded-[16px] p-4 border border-slate-100">
+                    <div className="bg-slate-50 rounded-2xl p-4 border border-slate-100">
                       <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">NISN / NIK</div>
                       <div className="text-sm font-bold text-slate-600">{selectedApplicant.nisn} / {selectedApplicant.nik || "-"}</div>
                     </div>
 
-                    <div className="bg-slate-50 rounded-[16px] p-4 border border-slate-100">
+                    <div className="bg-slate-50 rounded-2xl p-4 border border-slate-100">
                       <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Tempat, Tanggal Lahir</div>
                       <div className="text-sm font-bold text-slate-600">{selectedApplicant.tempat_lahir || selectedApplicant.tempatLahir}, {selectedApplicant.tgl_lahir || selectedApplicant.tglLahir}</div>
                     </div>
 
-                    <div className="bg-slate-50 rounded-[16px] p-4 border border-slate-100">
+                    <div className="bg-slate-50 rounded-2xl p-4 border border-slate-100">
                       <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Jenis Kelamin / Agama</div>
                       <div className="text-sm font-bold text-slate-600">{selectedApplicant.jenis_kelamin || selectedApplicant.jenisKelamin} / {selectedApplicant.agama}</div>
                     </div>
@@ -1515,22 +1517,22 @@ function ActiveStudentsDirectoryContent() {
                       <h3 className="text-[11px] font-extrabold text-slate-700 uppercase tracking-widest">Alamat & Kontak</h3>
                     </div>
 
-                    <div className="bg-slate-50 rounded-[16px] p-4 border border-slate-100">
+                    <div className="bg-slate-50 rounded-2xl p-4 border border-slate-100">
                       <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">WhatsApp / Email</div>
                       <div className="text-sm font-bold text-blue-500">{selectedApplicant.whatsapp || "-"} / {selectedApplicant.email || "-"}</div>
                     </div>
 
-                    <div className="bg-slate-50 rounded-[16px] p-4 border border-slate-100">
+                    <div className="bg-slate-50 rounded-2xl p-4 border border-slate-100">
                       <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Alamat Tempat Tinggal</div>
                       <div className="text-sm font-bold text-slate-600">{selectedApplicant.alamat} (RT/RW {selectedApplicant.rt_rw || selectedApplicant.rtRw})</div>
                     </div>
 
-                    <div className="bg-slate-50 rounded-[16px] p-4 border border-slate-100">
+                    <div className="bg-slate-50 rounded-2xl p-4 border border-slate-100">
                       <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Kelurahan / Kecamatan</div>
                       <div className="text-sm font-bold text-slate-600">{selectedApplicant.kelurahan} / {selectedApplicant.kecamatan}</div>
                     </div>
 
-                    <div className="bg-slate-50 rounded-[16px] p-4 border border-slate-100">
+                    <div className="bg-slate-50 rounded-2xl p-4 border border-slate-100">
                       <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Tinggal Dengan / Transportasi</div>
                       <div className="text-sm font-bold text-slate-600">{selectedApplicant.tinggal_dengan || selectedApplicant.tinggalDengan} / {selectedApplicant.transportasi}</div>
                     </div>
@@ -1722,7 +1724,7 @@ function ActiveStudentsDirectoryContent() {
                       alasan_memilih: selectedApplicant.alasan_memilih || selectedApplicant.alasanMemilih || "",
                     });
                   }}
-                  className="px-6 py-2.5 rounded-[12px] font-bold text-[11px] uppercase tracking-widest bg-blue-600 hover:bg-blue-700 text-white shadow-md transition-colors"
+                  className="px-6 py-2.5 rounded-xl font-bold text-[11px] uppercase tracking-widest bg-blue-600 hover:bg-blue-700 text-white shadow-md transition-colors"
                 >
                   Edit Data
                 </button>
@@ -1730,7 +1732,7 @@ function ActiveStudentsDirectoryContent() {
               <div className="flex items-center gap-3">
                 <button
                   onClick={() => setSelectedApplicant(null)}
-                  className="px-6 py-2.5 rounded-[12px] font-bold text-[11px] uppercase tracking-widest bg-slate-50 text-slate-600 hover:bg-slate-100 hover:text-slate-900 border border-slate-100 transition-colors"
+                  className="px-6 py-2.5 rounded-xl font-bold text-[11px] uppercase tracking-widest bg-slate-50 text-slate-600 hover:bg-slate-100 hover:text-slate-900 border border-slate-100 transition-colors"
                 >
                   Tutup
                 </button>
@@ -1742,7 +1744,7 @@ function ActiveStudentsDirectoryContent() {
 
       {/* Add Period Modal */}
       {isAddPeriodModalOpen && (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/60 backdrop-blur-md overflow-hidden animate-in fade-in duration-300">
+        <div className="fixed inset-0 z-60 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md overflow-hidden animate-in fade-in duration-300">
           <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-white/10 rounded-3xl w-full max-w-sm flex flex-col shadow-[0_30px_70px_rgba(0,0,0,0.1)] dark:shadow-[0_30px_70px_rgba(0,0,0,0.5)] overflow-hidden animate-in zoom-in-95 transition-colors duration-300">
             <div className="p-6 border-b border-slate-100 dark:border-white/5 bg-slate-50/50 dark:bg-slate-950/15">
               <h3 className="text-lg font-black text-slate-850 dark:text-white uppercase tracking-wide">
@@ -1795,11 +1797,11 @@ function ActiveStudentsDirectoryContent() {
       )}
       {/* ===== EDIT MODAL ===== */}
       {editApplicant && (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 lg:p-8 bg-black/70 backdrop-blur-sm animate-in fade-in duration-200">
+        <div className="fixed inset-0 z-60 flex items-center justify-center p-4 lg:p-8 bg-black/70 backdrop-blur-sm animate-in fade-in duration-200">
           <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-white/10 rounded-3xl w-full max-w-4xl max-h-[90vh] flex flex-col shadow-2xl overflow-hidden animate-in zoom-in-95 transition-all">
             {/* Header */}
             <div className="p-6 md:p-8 border-b border-slate-100 dark:border-white/5 flex items-start justify-between bg-white dark:bg-slate-900 shrink-0 relative">
-              <div className="absolute inset-0 bg-gradient-to-r from-blue-50/50 to-transparent dark:from-blue-900/10 dark:to-transparent pointer-events-none"></div>
+              <div className="absolute inset-0 bg-linear-to-r from-blue-50/50 to-transparent dark:from-blue-900/10 dark:to-transparent pointer-events-none"></div>
               
               <div className="flex items-center gap-5 relative z-10">
                 <div className="w-14 h-14 rounded-2xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 flex items-center justify-center text-slate-700 dark:text-slate-200 shadow-sm shrink-0">
@@ -1886,13 +1888,12 @@ function ActiveStudentsDirectoryContent() {
                       <div key={f.key} className="group">
                         <label className="block text-[10px] font-black uppercase tracking-widest text-slate-455 dark:text-slate-450 mb-2 group-focus-within:text-blue-500 dark:group-focus-within:text-blue-400 transition-colors">{f.label}</label>
                         {f.type === "select" ? (
-                          <select
+                          <CustomSelect
                             value={(editForm as any)[f.key] || ""}
-                            onChange={e => setEditForm(prev => ({ ...prev, [f.key]: e.target.value }))}
-                            className="w-full bg-slate-50 hover:bg-slate-100/80 dark:bg-slate-800 border border-slate-200/80 dark:border-white/10 rounded-xl px-4 py-3 text-xs font-bold text-slate-700 dark:text-white focus:outline-none focus:ring-4 focus:ring-blue-500/15 focus:border-blue-500 transition-all cursor-pointer"
-                          >
-                            {(f.options || []).map(o => <option key={o} value={o}>{o}</option>)}
-                          </select>
+                            onChange={(val) => setEditForm((prev) => ({ ...prev, [f.key]: val }))}
+                            options={(f.options || []).map((o: string) => ({ value: o, label: o }))}
+                            placeholder={`Pilih ${f.label}`}
+                          />
                         ) : (
                           <input
                             type={f.type || "text"}
@@ -1930,7 +1931,7 @@ function ActiveStudentsDirectoryContent() {
 
       {/* Import Modal */}
       {isImportModalOpen && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-100 flex items-center justify-center p-4">
           <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" onClick={() => setIsImportModalOpen(false)}></div>
           <div className="bg-white dark:bg-[#0b1121] rounded-3xl w-full max-w-3xl flex flex-col relative z-10 shadow-2xl animate-in zoom-in-95 duration-200 border border-slate-200 dark:border-slate-800">
             {/* Header */}

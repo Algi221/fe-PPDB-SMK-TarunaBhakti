@@ -22,6 +22,7 @@ import { saveAs } from 'file-saver';
 import { Check, X, Eye, FileText, Download, Upload, Filter, Search, TableProperties, FileSpreadsheet, Trash2, Layers, Pencil, PieChart, CloudLightning, ChevronDown } from "lucide-react";
 import KuotaTab from "@/components/KuotaTab";
 import Swal from 'sweetalert2';
+import CustomSelect from "@/components/ui/CustomSelect";
 import {
   Info,
   Calendar,
@@ -673,55 +674,48 @@ function ApplicantsDirectoryContent() {
         {/* Toolbar Action Buttons */}
         <div className="flex flex-wrap items-center gap-3 w-full xl:w-auto">
           {/* Status Filter */}
-          <div className="relative min-w-[140px]">
-            <select
+          <div className="shrink-0 min-w-38.75">
+            <CustomSelect
               value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value)}
-              className="w-full px-4 py-2.5 bg-white dark:bg-[#0b1121] border border-slate-200 dark:border-slate-800/80 rounded-xl text-[11px] font-bold text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all appearance-none cursor-pointer tracking-wider truncate shadow-sm"
-            >
-              <option value="ALL">Semua Status</option>
-              <option value="Pending">Menunggu Verifikasi</option>
-              <option value="Approved">Terverifikasi</option>
-              <option value="Rejected">Ditolak / Gugur</option>
-            </select>
-            <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
-              <ChevronDown size={14} />
-            </div>
+              onChange={(val) => setStatusFilter(val)}
+              options={[
+                { value: "ALL", label: "Semua Status" },
+                { value: "Pending", label: "Menunggu Verifikasi" },
+                { value: "Approved", label: "Terverifikasi" },
+                { value: "Rejected", label: "Ditolak / Gugur" }
+              ]}
+              triggerClassName="py-2.5 text-[11px] font-bold"
+            />
           </div>
 
           {/* Major Filter */}
-          <div className="relative min-w-[140px]">
-            <select
+          <div className="shrink-0 min-w-38.75">
+            <CustomSelect
               value={majorFilter}
-              onChange={(e) => setMajorFilter(e.target.value)}
-              className="w-full px-4 py-2.5 bg-white dark:bg-[#0b1121] border border-slate-200 dark:border-slate-800/80 rounded-xl text-[11px] font-bold text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all appearance-none cursor-pointer tracking-wider truncate shadow-sm"
-            >
-              <option value="ALL">Semua Jurusan</option>
-              {majorsList.map((m, idx) => (
-                <option key={idx} value={m}>
-                  {m.replace("Teknik ", "").replace("Komunikasi ", "")}
-                </option>
-              ))}
-            </select>
-            <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
-              <ChevronDown size={14} />
-            </div>
+              onChange={(val) => setMajorFilter(val)}
+              options={[
+                { value: "ALL", label: "Semua Jurusan" },
+                ...majorsList.map((m) => ({
+                  value: m,
+                  label: m.replace("Teknik ", "").replace("Komunikasi ", "")
+                }))
+              ]}
+              triggerClassName="py-2.5 text-[11px] font-bold"
+            />
           </div>
 
           {/* Gender Filter */}
-          <div className="relative min-w-[120px]">
-            <select
+          <div className="shrink-0 min-w-32.5">
+            <CustomSelect
               value={genderFilter}
-              onChange={(e) => setGenderFilter(e.target.value)}
-              className="w-full px-4 py-2.5 bg-white dark:bg-[#0b1121] border border-slate-200 dark:border-slate-800/80 rounded-xl text-[11px] font-bold text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all appearance-none cursor-pointer tracking-wider truncate shadow-sm"
-            >
-              <option value="ALL">Semua Gender</option>
-              <option value="L">Laki-Laki</option>
-              <option value="P">Perempuan</option>
-            </select>
-            <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
-              <ChevronDown size={14} />
-            </div>
+              onChange={(val) => setGenderFilter(val)}
+              options={[
+                { value: "ALL", label: "Semua Gender" },
+                { value: "L", label: "Laki-Laki" },
+                { value: "P", label: "Perempuan" }
+              ]}
+              triggerClassName="py-2.5 text-[11px] font-bold"
+            />
           </div>
 
           {/* Gelombang Filter Buttons */}
@@ -943,13 +937,13 @@ function ApplicantsDirectoryContent() {
                 <tr className="border-b border-slate-200 dark:border-slate-800 bg-slate-100/80 dark:bg-slate-950/60 font-mono text-[10px] tracking-wide text-slate-500">
                   <th className="py-2 px-2 text-center w-12 border-r border-slate-200 dark:border-slate-800">#</th>
                   <th className="py-2 px-3 border-r border-slate-200 dark:border-slate-800 w-8 flex-none text-center">A</th>
-                  <th className="py-2 px-4 border-r border-slate-200 dark:border-slate-800 w-[220px]">B (NAMA_LENGKAP)</th>
-                  <th className="py-2 px-4 border-r border-slate-200 dark:border-slate-800 w-[200px]">C (ASAL_SEKOLAH)</th>
-                  <th className="py-2 px-4 border-r border-slate-200 dark:border-slate-800 w-[180px]">D (JURUSAN_UTAMA)</th>
-                  <th className="py-2 px-4 border-r border-slate-200 dark:border-slate-800 w-[130px] text-center font-mono">E (NO_WA)</th>
-                  <th className="py-2 px-4 border-r border-slate-200 dark:border-slate-800 w-[120px] text-center font-mono">F (STATUS)</th>
-                  <th className="py-2 px-4 border-r border-slate-200 dark:border-slate-800 w-[160px] text-center font-mono">G (TANGGAL_LAHIR)</th>
-                  <th className="py-2 px-4 w-[60px] text-center font-mono">H (L/P)</th>
+                  <th className="py-2 px-4 border-r border-slate-200 dark:border-slate-800 w-55">B (NAMA_LENGKAP)</th>
+                  <th className="py-2 px-4 border-r border-slate-200 dark:border-slate-800 w-50">C (ASAL_SEKOLAH)</th>
+                  <th className="py-2 px-4 border-r border-slate-200 dark:border-slate-800 w-45">D (JURUSAN_UTAMA)</th>
+                  <th className="py-2 px-4 border-r border-slate-200 dark:border-slate-800 w-32.5 text-center font-mono">E (NO_WA)</th>
+                  <th className="py-2 px-4 border-r border-slate-200 dark:border-slate-800 w-30 text-center font-mono">F (STATUS)</th>
+                  <th className="py-2 px-4 border-r border-slate-200 dark:border-slate-800 w-40 text-center font-mono">G (TANGGAL_LAHIR)</th>
+                  <th className="py-2 px-4 w-15 text-center font-mono">H (L/P)</th>
                 </tr>
               </thead>
               <tbody>
@@ -976,7 +970,7 @@ function ApplicantsDirectoryContent() {
                     {/* Column B: Nama */}
                     <td
                       onClick={() => setActiveCell({ row: rowIdx, col: 1 })}
-                      className={`py-2.5 px-4 truncate border-r border-slate-200 dark:border-slate-800 text-slate-850 dark:text-white font-extrabold text-sm ${activeCell?.row === rowIdx && activeCell?.col === 1 ? "bg-blue-500/10 outline outline-2 outline-blue-500" : ""
+                      className={`py-2.5 px-4 truncate border-r border-slate-200 dark:border-slate-800 text-slate-850 dark:text-white font-extrabold text-sm ${activeCell?.row === rowIdx && activeCell?.col === 1 ? "bg-blue-500/10 outline-2 outline-blue-500" : ""
                         }`}
                     >
                       {a.nama}
@@ -985,7 +979,7 @@ function ApplicantsDirectoryContent() {
                     {/* Column C: Sekolah */}
                     <td
                       onClick={() => setActiveCell({ row: rowIdx, col: 3 })}
-                      className={`py-2.5 px-4 truncate border-r border-slate-200 dark:border-slate-800 text-slate-500 dark:text-slate-450 font-semibold ${activeCell?.row === rowIdx && activeCell?.col === 3 ? "bg-blue-500/10 outline outline-2 outline-blue-500" : ""
+                      className={`py-2.5 px-4 truncate border-r border-slate-200 dark:border-slate-800 text-slate-500 dark:text-slate-455 font-semibold ${activeCell?.row === rowIdx && activeCell?.col === 3 ? "bg-blue-500/10 outline-2 outline-blue-500" : ""
                         }`}
                     >
                       {a.sekolah_asal || a.sekolahAsal}
@@ -994,7 +988,7 @@ function ApplicantsDirectoryContent() {
                     {/* Column D: Jurusan */}
                     <td
                       onClick={() => setActiveCell({ row: rowIdx, col: 4 })}
-                      className={`py-2.5 px-4 truncate border-r border-slate-200 dark:border-slate-800 text-blue-600 dark:text-blue-400 font-bold uppercase tracking-wider text-[10px] ${activeCell?.row === rowIdx && activeCell?.col === 4 ? "bg-blue-500/10 outline outline-2 outline-blue-500" : ""
+                      className={`py-2.5 px-4 truncate border-r border-slate-200 dark:border-slate-800 text-blue-600 dark:text-blue-400 font-bold uppercase tracking-wider text-[10px] ${activeCell?.row === rowIdx && activeCell?.col === 4 ? "bg-blue-500/10 outline-2 outline-blue-500" : ""
                         }`}
                     >
                       {a.jurusan_1 || a.jurusan1}
@@ -1003,7 +997,7 @@ function ApplicantsDirectoryContent() {
                     {/* Column E: WA */}
                     <td
                       onClick={() => setActiveCell({ row: rowIdx, col: 5 })}
-                      className={`py-2.5 px-4 text-center border-r border-slate-200 dark:border-slate-800 font-mono text-slate-655 dark:text-slate-300 text-[11px] ${activeCell?.row === rowIdx && activeCell?.col === 5 ? "bg-blue-500/10 outline outline-2 outline-blue-500" : ""
+                      className={`py-2.5 px-4 text-center border-r border-slate-200 dark:border-slate-800 font-mono text-slate-655 dark:text-slate-300 text-[11px] ${activeCell?.row === rowIdx && activeCell?.col === 5 ? "bg-blue-500/10 outline-2 outline-blue-500" : ""
                         }`}
                     >
                       {a.whatsapp || "-"}
@@ -1017,7 +1011,7 @@ function ApplicantsDirectoryContent() {
                           : a.status === "Rejected"
                             ? "text-rose-600 dark:text-rose-400 bg-rose-500/5"
                             : "text-amber-600 dark:text-amber-400 bg-amber-500/5"
-                        } ${activeCell?.row === rowIdx && activeCell?.col === 6 ? "bg-blue-500/10 outline outline-2 outline-blue-500" : ""
+                        } ${activeCell?.row === rowIdx && activeCell?.col === 6 ? "bg-blue-500/10 outline-2 outline-blue-500" : ""
                         }`}
                     >
                       {a.status || "Pending"}
@@ -1026,7 +1020,7 @@ function ApplicantsDirectoryContent() {
                     {/* Column G: Tanggal Lahir */}
                     <td
                       onClick={() => setActiveCell({ row: rowIdx, col: 7 })}
-                      className={`py-2.5 px-4 text-center border-r border-slate-200 dark:border-slate-800 text-xs font-mono font-bold text-slate-600 dark:text-slate-355 ${activeCell?.row === rowIdx && activeCell?.col === 7 ? "bg-blue-500/10 outline outline-2 outline-blue-500" : ""
+                      className={`py-2.5 px-4 text-center border-r border-slate-200 dark:border-slate-800 text-xs font-mono font-bold text-slate-600 dark:text-slate-355 ${activeCell?.row === rowIdx && activeCell?.col === 7 ? "bg-blue-500/10 outline-2 outline-blue-500" : ""
                         }`}
                     >
                       {a.tgl_lahir || a.tglLahir || "-"}
@@ -1035,7 +1029,7 @@ function ApplicantsDirectoryContent() {
                     {/* Column H: Gender */}
                     <td
                       onClick={() => setActiveCell({ row: rowIdx, col: 8 })}
-                      className={`py-2.5 px-4 text-center text-xs font-mono font-bold text-slate-600 dark:text-slate-355 ${activeCell?.row === rowIdx && activeCell?.col === 8 ? "bg-blue-500/10 outline outline-2 outline-blue-500" : ""
+                      className={`py-2.5 px-4 text-center text-xs font-mono font-bold text-slate-600 dark:text-slate-355 ${activeCell?.row === rowIdx && activeCell?.col === 8 ? "bg-blue-500/10 outline-2 outline-blue-500" : ""
                         }`}
                     >
                       {(a.jenis_kelamin || a.jenisKelamin) ? (
@@ -1208,7 +1202,7 @@ function ApplicantsDirectoryContent() {
 
             {/* Modal Header */}
             <div className="p-6 md:p-8 border-b border-slate-100 dark:border-white/5 flex items-start justify-between shrink-0 bg-white dark:bg-[#0b1121] relative">
-              <div className="absolute inset-0 bg-gradient-to-r from-blue-50/50 to-transparent dark:from-blue-900/10 dark:to-transparent pointer-events-none"></div>
+              <div className="absolute inset-0 bg-linear-to-r from-blue-50/50 to-transparent dark:from-blue-900/10 dark:to-transparent pointer-events-none"></div>
                            <div className="flex items-center gap-5 relative z-10">
                 <div className="w-14 h-14 rounded-2xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 flex items-center justify-center text-slate-700 dark:text-slate-200 text-2xl font-black shrink-0">
                   {selectedApplicant.nama.substring(0, 1).toUpperCase()}
@@ -1283,7 +1277,7 @@ function ApplicantsDirectoryContent() {
                   <button
                     key={t.id}
                     onClick={() => setActiveTab(t.id)}
-                    className={`px-3 py-2.5 text-[10px] md:text-xs font-black transition-all rounded-xl uppercase tracking-wider flex-1 text-center min-w-[90px] whitespace-nowrap ${activeTab === t.id
+                    className={`px-3 py-2.5 text-[10px] md:text-xs font-black transition-all rounded-xl uppercase tracking-wider flex-1 text-center min-w-22.5 whitespace-nowrap ${activeTab === t.id
                         ? "bg-white dark:bg-slate-800 text-blue-600 dark:text-white shadow-sm border border-slate-200/50 dark:border-white/10"
                         : "text-slate-500 dark:text-slate-450 hover:text-slate-800 dark:hover:text-white hover:bg-slate-200/50 dark:hover:bg-slate-800/50 border border-transparent"
                       }`}
@@ -1621,7 +1615,7 @@ function ApplicantsDirectoryContent() {
                       </div>
                       <button
                         onClick={() => window.open(`/invoice?nisn=${selectedApplicant.nisn}`, '_blank')}
-                        className="px-5 py-3 bg-gradient-to-tr from-blue-600 to-indigo-500 hover:from-blue-500 hover:to-indigo-400 text-white rounded-xl text-xs font-black uppercase tracking-wider shadow shadow-blue-500/20 hover:shadow-blue-500/40 transition-all flex items-center gap-2 shrink-0 animate-pulse"
+                        className="px-5 py-3 bg-linear-to-tr from-blue-600 to-indigo-500 hover:from-blue-500 hover:to-indigo-400 text-white rounded-xl text-xs font-black uppercase tracking-wider shadow shadow-blue-500/20 hover:shadow-blue-500/40 transition-all flex items-center gap-2 shrink-0 animate-pulse"
                       >
                         <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
@@ -1775,11 +1769,11 @@ function ApplicantsDirectoryContent() {
 
       {/* ===== EDIT MODAL ===== */}
       {editApplicant && (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 lg:p-8 bg-black/70 backdrop-blur-sm animate-in fade-in duration-200">
+        <div className="fixed inset-0 z-60 flex items-center justify-center p-4 lg:p-8 bg-black/70 backdrop-blur-sm animate-in fade-in duration-200">
           <div className="bg-white dark:bg-[#0b1121] border border-slate-200/80 dark:border-white/10 rounded-3xl w-full max-w-4xl max-h-[90vh] flex flex-col shadow-2xl overflow-hidden animate-in zoom-in-95 transition-all">
             {/* Header */}
             <div className="p-6 md:p-8 border-b border-slate-100 dark:border-white/5 flex items-start justify-between bg-white dark:bg-[#0b1121] shrink-0 relative">
-              <div className="absolute inset-0 bg-gradient-to-r from-blue-50/50 to-transparent dark:from-blue-900/10 dark:to-transparent pointer-events-none"></div>
+              <div className="absolute inset-0 bg-linear-to-r from-blue-50/50 to-transparent dark:from-blue-900/10 dark:to-transparent pointer-events-none"></div>
               
               <div className="flex items-center gap-5 relative z-10">
                 <div className="w-14 h-14 rounded-2xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 flex items-center justify-center text-slate-700 dark:text-slate-200 shadow-sm shrink-0">
@@ -1874,13 +1868,12 @@ function ApplicantsDirectoryContent() {
                       <div key={f.key} className="group">
                         <label className="block text-[10px] font-black uppercase tracking-widest text-slate-455 dark:text-slate-450 mb-2 group-focus-within:text-blue-500 dark:group-focus-within:text-blue-400 transition-colors">{f.label}</label>
                         {f.type === "select" ? (
-                          <select
+                          <CustomSelect
                             value={(editForm as any)[f.key] || ""}
-                            onChange={e => setEditForm(prev => ({ ...prev, [f.key]: e.target.value }))}
-                            className="w-full bg-slate-50 hover:bg-slate-100/80 dark:bg-slate-800 border border-slate-200/80 dark:border-white/10 rounded-xl px-4 py-3 text-xs font-bold text-slate-700 dark:text-white focus:outline-none focus:ring-4 focus:ring-blue-500/15 focus:border-blue-500 transition-all cursor-pointer"
-                          >
-                            {(f.options || []).map(o => <option key={o} value={o}>{o}</option>)}
-                          </select>
+                            onChange={(val) => setEditForm((prev) => ({ ...prev, [f.key]: val }))}
+                            options={(f.options || []).map((o: string) => ({ value: o, label: o }))}
+                            placeholder={`Pilih ${f.label}`}
+                          />
                         ) : (
                           <input
                             type={f.type || "text"}
@@ -1919,7 +1912,7 @@ function ApplicantsDirectoryContent() {
       {/* Fullscreen Image Modal */}
       {isFullscreenImageOpen && (
         <div 
-          className="fixed inset-0 z-[110] bg-black/90 backdrop-blur-md flex items-center justify-center p-4 animate-in fade-in duration-200 cursor-zoom-out"
+          className="fixed inset-0 z-110 bg-black/90 backdrop-blur-md flex items-center justify-center p-4 animate-in fade-in duration-200 cursor-zoom-out"
           onClick={() => setIsFullscreenImageOpen(false)}
         >
           <button
@@ -1939,8 +1932,8 @@ function ApplicantsDirectoryContent() {
 
       {/* Custom Rejection Reason Modal */}
       {rejectingApplicantId !== null && (
-        <div className="fixed inset-0 z-[120] bg-black/60 backdrop-blur-md flex items-center justify-center p-4 animate-in fade-in duration-300">
-          <div className="bg-white dark:bg-[#0b1121] border border-slate-200 dark:border-white/10 rounded-[32px] p-8 shadow-2xl flex flex-col gap-6 text-left max-w-md w-full backdrop-blur-xl animate-in zoom-in-95 duration-200">
+        <div className="fixed inset-0 z-120 bg-black/60 backdrop-blur-md flex items-center justify-center p-4 animate-in fade-in duration-300">
+          <div className="bg-white dark:bg-[#0b1121] border border-slate-200 dark:border-white/10 rounded-4xl p-8 shadow-2xl flex flex-col gap-6 text-left max-w-md w-full backdrop-blur-xl animate-in zoom-in-95 duration-200">
             <div className="w-14 h-14 bg-rose-50 dark:bg-rose-950/40 rounded-2xl flex items-center justify-center text-rose-600 dark:text-rose-500 border border-rose-100 dark:border-rose-900/40 shadow-inner">
               <svg className="w-7 h-7 animate-pulse" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
@@ -1990,7 +1983,7 @@ function ApplicantsDirectoryContent() {
                     setRejectionReasonInput("");
                   }
                 }}
-                className="flex-1 py-3.5 bg-gradient-to-tr from-rose-600 to-red-500 hover:brightness-110 disabled:opacity-50 text-white rounded-2xl text-[10px] font-black uppercase tracking-wider shadow shadow-rose-500/20 transition-all cursor-pointer text-center animate-pulse"
+                className="flex-1 py-3.5 bg-linear-to-tr from-rose-600 to-red-500 hover:brightness-110 disabled:opacity-50 text-white rounded-2xl text-[10px] font-black uppercase tracking-wider shadow shadow-rose-500/20 transition-all cursor-pointer text-center animate-pulse"
               >
                 Tolak Siswa
               </button>

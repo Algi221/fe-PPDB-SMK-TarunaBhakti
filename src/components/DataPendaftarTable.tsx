@@ -4,6 +4,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { Search, Eye, X, CheckCircle, Clock, XCircle, User, MapPin, Phone, Mail, FileText, ChevronLeft, ChevronRight, ArrowRight, Calendar, Sparkles } from "lucide-react";
 import { usePPDB } from "@/context/PPDBContext";
 import Image from "next/image";
+import CustomSelect from "@/components/ui/CustomSelect";
 
 interface Student {
   id: number;
@@ -122,7 +123,7 @@ export default function DataPendaftarTable() {
         {/* Premium Flexing Card */}
         <div className="flex-1 w-full flex flex-col items-center py-4 overflow-y-auto scrollbar-none">
           
-          <div className="w-full max-w-xl md:max-w-2xl bg-gradient-to-br from-white via-slate-50 to-blue-50/50 dark:from-slate-950 dark:via-slate-900 dark:to-indigo-950/40 border border-slate-200/80 dark:border-blue-500/30 rounded-[32px] p-6 sm:p-8 shadow-2xl relative overflow-hidden flex flex-col justify-between transition-all duration-500 shrink-0 mb-6 group hover:shadow-[0_20px_60px_-15px_rgba(59,130,246,0.2)] dark:hover:shadow-[0_20px_60px_-15px_rgba(59,130,246,0.3)] hover:border-blue-300 dark:hover:border-blue-500/60">
+          <div className="w-full max-w-xl md:max-w-2xl bg-linear-to-br from-white via-slate-50 to-blue-50/50 dark:from-slate-950 dark:via-slate-900 dark:to-indigo-950/40 border border-slate-200/80 dark:border-blue-500/30 rounded-4xl p-6 sm:p-8 shadow-2xl relative overflow-hidden flex flex-col justify-between transition-all duration-500 shrink-0 mb-6 group hover:shadow-[0_20px_60px_-15px_rgba(59,130,246,0.2)] dark:hover:shadow-[0_20px_60px_-15px_rgba(59,130,246,0.3)] hover:border-blue-300 dark:hover:border-blue-500/60">
             <style>{`
               @keyframes scan {
                 0%, 100% { top: 0%; opacity: 0; }
@@ -139,7 +140,7 @@ export default function DataPendaftarTable() {
             <div className="absolute -bottom-20 -left-20 w-80 h-80 bg-indigo-500/10 dark:bg-indigo-600/15 rounded-full blur-[80px] pointer-events-none group-hover:bg-indigo-500/20 transition-colors duration-1000" />
             
             {/* Holographic grid lines - subtle */}
-            <div className="absolute inset-0 bg-[linear-gradient(rgba(59,130,246,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(59,130,246,0.03)_1px,transparent_1px)] bg-[size:30px_30px] pointer-events-none opacity-50 dark:bg-[linear-gradient(rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.02)_1px,transparent_1px)]" />
+            <div className="absolute inset-0 bg-[linear-gradient(rgba(59,130,246,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(59,130,246,0.03)_1px,transparent_1px)] bg-size-[30px_30px] pointer-events-none opacity-50 dark:bg-[linear-gradient(rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.02)_1px,transparent_1px)]" />
 
             {/* Faint rotating background logo */}
             <img src="/logo_smktb.png" alt="" width={288} height={288} className="absolute -right-10 -bottom-10 w-72 h-72 object-contain opacity-[0.03] dark:opacity-[0.05] grayscale animate-[spin_80s_linear_infinite] pointer-events-none" />
@@ -184,13 +185,13 @@ export default function DataPendaftarTable() {
                   <span className="text-[10px] font-black text-slate-600 dark:text-slate-300 uppercase tracking-[0.3em] bg-slate-100 dark:bg-slate-800/50 px-3 py-1 rounded-full border border-slate-200 dark:border-slate-700/50">Calon Peserta Didik</span>
                 </div>
                 
-                <h2 className="text-3xl md:text-5xl font-black text-slate-800 dark:text-transparent dark:bg-clip-text dark:bg-gradient-to-br dark:from-slate-800 dark:via-blue-600 dark:to-indigo-500 dark:dark:from-white dark:dark:via-blue-100 dark:dark:to-indigo-300 uppercase tracking-tighter leading-tight break-words whitespace-normal mb-5 group-hover:scale-[1.02] origin-left transition-transform duration-300 cursor-default">
+                <h2 className="text-3xl md:text-5xl font-black text-slate-800 dark:text-transparent dark:bg-clip-text dark:bg-linear-to-br dark:from-slate-800 dark:via-blue-600 dark:to-indigo-500 dark:dark:from-white dark:dark:via-blue-100 dark:dark:to-indigo-300 uppercase tracking-tighter leading-tight wrap-break-word whitespace-normal mb-5 group-hover:scale-[1.02] origin-left transition-transform duration-300 cursor-default">
                   {selectedStudent.nama}
                 </h2>
                 
                 {/* Sekolah Asal Details - Clean dynamic card */}
                 <div className="flex items-center gap-4 bg-white/60 dark:bg-slate-900/40 border border-slate-200/80 dark:border-slate-700/50 rounded-2xl p-4 backdrop-blur-md hover:bg-white dark:hover:bg-slate-800/80 transition-all duration-300 group/school w-fit shadow-sm hover:shadow-md hover:border-blue-300 dark:hover:border-blue-500/40">
-                   <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white shrink-0 shadow-lg shadow-blue-500/20 group-hover/school:scale-110 group-hover/school:rotate-3 transition-transform duration-500">
+                   <div className="w-10 h-10 rounded-xl bg-linear-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white shrink-0 shadow-lg shadow-blue-500/20 group-hover/school:scale-110 group-hover/school:rotate-3 transition-transform duration-500">
                       <MapPin size={18} />
                    </div>
                    <div>
@@ -213,7 +214,7 @@ export default function DataPendaftarTable() {
                   <div className="absolute -bottom-1.5 -right-1.5 w-5 h-5 border-b-4 border-r-4 border-blue-500 rounded-br-xl opacity-0 group-hover/qr:opacity-100 transition-opacity duration-300" />
                   
                   {/* Scanner line (animated laser) */}
-                  <div className="absolute left-0 w-full h-[2px] bg-blue-500 shadow-[0_0_12px_3px_rgba(59,130,246,0.5)] z-20 scanner-line pointer-events-none rounded-full hidden group-hover/qr:block" />
+                  <div className="absolute left-0 w-full h-0.5 bg-blue-500 shadow-[0_0_12px_3px_rgba(59,130,246,0.5)] z-20 scanner-line pointer-events-none rounded-full hidden group-hover/qr:block" />
                   
                   {(() => {
                     const verifyUrl = typeof window !== 'undefined' 
@@ -311,23 +312,21 @@ export default function DataPendaftarTable() {
             className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg pl-9 pr-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500/50 text-slate-800 dark:text-white transition-all placeholder:text-slate-400"
           />
         </div>
-        <div className="flex gap-2">
-          <label htmlFor="filter-jurusan-select" className="sr-only">Filter berdasarkan jurusan</label>
-          <select
-            id="filter-jurusan-select"
+        <div className="min-w-37.5">
+          <CustomSelect
             value={filterJurusan}
-            onChange={(e) => setFilterJurusan(e.target.value)}
-            aria-label="Filter berdasarkan jurusan"
-            className="bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500/50 text-slate-800 dark:text-white transition-all"
-          >
-            <option value="Semua">Semua Jurusan</option>
-            <option value="Rekayasa Perangkat Lunak">RPL</option>
-            <option value="Teknik Jaringan Komputer & Telekomunikasi">TJKT</option>
-            <option value="Desain Komunikasi Visual">DKV</option>
-            <option value="Broadcasting & Perfilman">BC</option>
-            <option value="Animasi">Animasi</option>
-            <option value="Teknik Elektronika">TE</option>
-          </select>
+            onChange={(val) => setFilterJurusan(val)}
+            options={[
+              { value: "Semua", label: "Semua Jurusan" },
+              { value: "Rekayasa Perangkat Lunak", label: "RPL" },
+              { value: "Teknik Jaringan Komputer & Telekomunikasi", label: "TJKT" },
+              { value: "Desain Komunikasi Visual", label: "DKV" },
+              { value: "Broadcasting & Perfilman", label: "BC" },
+              { value: "Animasi", label: "Animasi" },
+              { value: "Teknik Elektronika", label: "TE" }
+            ]}
+            triggerClassName="py-2 text-xs"
+          />
         </div>
       </div>
 

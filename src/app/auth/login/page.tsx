@@ -170,7 +170,7 @@ export default function AdminLogin() {
         <div className="absolute inset-0 opacity-[0.04] dark:opacity-[0.07]
           bg-[linear-gradient(to_right,#0f172a_1px,transparent_1px),linear-gradient(to_bottom,#0f172a_1px,transparent_1px)]
           dark:bg-[linear-gradient(to_right,#e2e8f0_1px,transparent_1px),linear-gradient(to_bottom,#e2e8f0_1px,transparent_1px)]
-          bg-[size:28px_28px]" />
+          bg-size-[28px_28px]" />
 
         {/* Soft radial glow */}
         <div className="absolute top-0 right-0 w-96 h-96 bg-blue-400/10 dark:bg-blue-500/10 rounded-full blur-3xl pointer-events-none" />
@@ -198,7 +198,7 @@ export default function AdminLogin() {
         {/* Lottie Animation */}
         <div className="lottie-container relative z-10 my-4 lg:my-0 flex items-center justify-center flex-1">
           {lottieData ? (
-            <div className="w-full max-w-[520px] mx-auto">
+            <div className="w-full max-w-130 mx-auto">
               <Lottie
                 lottieRef={lottieRef}
                 animationData={lottieData}
@@ -243,7 +243,7 @@ export default function AdminLogin() {
           p-6 md:p-12
           bg-white dark:bg-[#0B1120] transition-colors duration-300"
       >
-        <div className="w-full max-w-[420px]">
+        <div className="w-full max-w-105">
 
           {/* Heading */}
           <div ref={el => { formElementsRef.current[0] = el; }} className="mb-9">
@@ -340,7 +340,7 @@ export default function AdminLogin() {
                 type="submit"
                 disabled={loading || loginSuccess}
                 className="login-btn w-full flex items-center justify-center gap-2.5 py-3.5 px-4
-                  bg-gradient-to-r from-blue-600 to-blue-500
+                  bg-linear-to-r from-blue-600 to-blue-500
                   hover:from-blue-700 hover:to-blue-600
                   text-white rounded-xl text-sm font-bold
                   transition-all active:scale-[0.98]

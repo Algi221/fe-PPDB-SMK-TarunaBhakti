@@ -4,6 +4,7 @@ import React, { useEffect, useState } from 'react';
 import ExcelJS from 'exceljs';
 import { saveAs } from 'file-saver';
 import { Download, RefreshCw, AlertCircle, Pencil, Save, X, Calendar } from 'lucide-react';
+import CustomSelect from "@/components/ui/CustomSelect";
 
 interface KuotaItem {
   no: number;
@@ -463,19 +464,20 @@ export default function KuotaTab({ type = "pendaftar", variant = "default" }: Ku
         </div>
         <div className="flex flex-wrap items-center gap-3">
           {/* Periode Selector */}
-          <div className="relative">
-            <Calendar size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
-            <select
+          <div className="min-w-42.5">
+            <CustomSelect
               value={selectedPeriode}
-              onChange={(e) => handlePeriodeChange(e.target.value)}
+              onChange={(val) => handlePeriodeChange(val)}
               disabled={editMode}
-              className="pl-9 pr-4 py-2.5 bg-slate-50 dark:bg-slate-950/40 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-bold text-slate-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/30 transition-all appearance-none cursor-pointer disabled:opacity-50"
-            >
-              <option value="">Semua Periode</option>
-              {availablePeriodes.map(p => (
-                <option key={p} value={p}>TA {p.replace("-", "/")}</option>
-              ))}
-            </select>
+              options={[
+                { value: "", label: "Semua Periode" },
+                ...availablePeriodes.map(p => ({
+                  value: p,
+                  label: `TA ${p.replace("-", "/")}`
+                }))
+              ]}
+              triggerClassName="py-2 text-xs font-bold"
+            />
           </div>
 
           {editMode ? (

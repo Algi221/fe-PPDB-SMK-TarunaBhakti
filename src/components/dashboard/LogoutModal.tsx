@@ -15,7 +15,7 @@ export default function LogoutModal({
   if (!showLogoutConfirm) return null;
 
   return (
-    <div className="fixed inset-0 z-[100] bg-black/60 backdrop-blur-md flex items-center justify-center animate-in fade-in duration-300">
+    <div className="fixed inset-0 z-100 bg-black/60 backdrop-blur-md flex items-center justify-center animate-in fade-in duration-300">
       <div className="bg-white/80 dark:bg-slate-900/80 border border-slate-200 dark:border-white/10 rounded-3xl p-8 shadow-2xl flex flex-col items-center gap-6 text-center max-w-sm w-full mx-4 backdrop-blur-xl animate-in zoom-in-95 duration-200">
         <div className="w-16 h-16 bg-rose-50 dark:bg-rose-950/40 rounded-full flex items-center justify-center text-rose-550 dark:text-rose-500 border border-rose-100 dark:border-rose-900/40 shadow-inner">
           <LogOut size={28} className="animate-pulse" />
@@ -37,7 +37,7 @@ export default function LogoutModal({
           <button
             type="button"
             onClick={confirmLogout}
-            className="flex-1 py-3 bg-gradient-to-tr from-rose-600 to-red-500 hover:from-rose-500 hover:to-red-400 text-white rounded-2xl text-[10px] font-black uppercase tracking-wider shadow shadow-rose-500/20 hover:shadow-rose-500/40 transition-all cursor-pointer"
+            className="flex-1 py-3 bg-linear-to-tr from-rose-600 to-red-500 hover:from-rose-500 hover:to-red-400 text-white rounded-2xl text-[10px] font-black uppercase tracking-wider shadow shadow-rose-500/20 hover:shadow-rose-500/40 transition-all cursor-pointer"
           >
             Ya, Keluar
           </button>

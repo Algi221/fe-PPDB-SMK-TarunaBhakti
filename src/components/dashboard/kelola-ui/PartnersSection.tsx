@@ -3,6 +3,7 @@
 import React from "react";
 import DOMPurify from "dompurify";
 import { Briefcase, Plus, Trash2, ImageIcon } from "lucide-react";
+import CustomSelect from "@/components/ui/CustomSelect";
 
 export interface PartnerItem {
   id: number;
@@ -118,21 +119,21 @@ export default function PartnersSection(props: PartnersSectionProps) {
 
               <div className="space-y-2">
                 <label className="text-[9px] uppercase font-bold text-slate-450 tracking-wider">Ukuran Logo</label>
-                <select
+                <CustomSelect
                   value={partner.h}
-                  onChange={(e) => {
-                    const val = e.target.value;
+                  onChange={(val) => {
                     setPartnersList(prev => prev.map(p => p.id === partner.id ? { ...p, h: val } : p));
                   }}
-                  className="w-full px-3 py-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/5 rounded-xl text-slate-800 dark:text-white font-semibold text-xs focus:outline-none focus:border-blue-500"
-                >
-                  <option value="h-8">Sangat Kecil (h-8)</option>
-                  <option value="h-10">Kecil (h-10)</option>
-                  <option value="h-12">Sedang (h-12)</option>
-                  <option value="h-14">Besar (h-14)</option>
-                  <option value="h-16">Sangat Besar (h-16)</option>
-                  <option value="h-20">Raksasa (h-20)</option>
-                </select>
+                  options={[
+                    { value: "h-8", label: "Sangat Kecil (h-8)" },
+                    { value: "h-10", label: "Kecil (h-10)" },
+                    { value: "h-12", label: "Sedang (h-12)" },
+                    { value: "h-14", label: "Besar (h-14)" },
+                    { value: "h-16", label: "Sangat Besar (h-16)" },
+                    { value: "h-20", label: "Raksasa (h-20)" }
+                  ]}
+                  triggerClassName="py-2 text-xs font-semibold"
+                />
               </div>
               
             </div>

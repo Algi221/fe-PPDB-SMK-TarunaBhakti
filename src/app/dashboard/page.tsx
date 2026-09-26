@@ -163,7 +163,7 @@ function AreaChart({
   };
 
   return (
-    <div className="w-full h-[300px]">
+    <div className="w-full h-75">
       <div className="-ml-3">
         <ReactApexChart
           options={options}
@@ -599,8 +599,8 @@ export default function DashboardOverview() {
                   transition={{ delay: 0.8 + idx * 0.06, duration: 0.35 }}
                   className="hover:bg-slate-50/60 dark:hover:bg-white/3 transition-all"
                 >
-                  <td className="py-2.5 pl-2 font-bold text-slate-800 dark:text-white max-w-[200px] truncate">{a.nama}</td>
-                  <td className="py-2.5 truncate max-w-[180px] text-slate-500 dark:text-slate-400 font-medium">{a.sekolah_asal || a.sekolahAsal}</td>
+                  <td className="py-2.5 pl-2 font-bold text-slate-800 dark:text-white max-w-50 truncate">{a.nama}</td>
+                  <td className="py-2.5 truncate max-w-45 text-slate-500 dark:text-slate-400 font-medium">{a.sekolah_asal || a.sekolahAsal}</td>
                   <td className="py-2.5">
                     <span className="px-2 py-0.5 rounded-full bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 border border-blue-100 dark:border-blue-900/40 text-[9px] font-bold uppercase tracking-wide">
                       {majorsList.find((m) => m.dbName === a.jurusan_1 || m.dbName === a.jurusan1)?.name || a.jurusan_1 || "PPLG"}

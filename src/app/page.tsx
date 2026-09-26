@@ -654,14 +654,14 @@ export default function Home() {
             >
               {isDark ? <Sun size={18} /> : <Moon size={18} />}
             </button>
-            <Link href="/daftar" className="btn-primary-pill !hidden md:!inline-flex">
+            <Link href="/daftar" className="btn-primary-pill hidden! md:inline-flex!">
               Daftar
             </Link>
 
             {/* Hamburger Button visible only on mobile/tablet */}
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="flex md:hidden items-center justify-center w-10 h-10 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors border border-slate-200 dark:border-slate-700 z-[101]"
+              className="flex md:hidden items-center justify-center w-10 h-10 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors border border-slate-200 dark:border-slate-700 z-101"
               aria-label="Toggle Mobile Menu"
             >
               {mobileMenuOpen ? <X size={18} /> : <Menu size={18} />}
@@ -672,7 +672,7 @@ export default function Home() {
 
       {/* Fullscreen Mobile Navigation Menu Overlay */}
       {mobileMenuOpen && (
-        <div className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-white/95 dark:bg-slate-900/98 backdrop-blur-2xl animate-in fade-in duration-300 md:hidden">
+        <div className="fixed inset-0 z-100 flex flex-col items-center justify-center bg-white/95 dark:bg-slate-900/98 backdrop-blur-2xl animate-in fade-in duration-300 md:hidden">
           {/* Close Button X in top right */}
           <button
             onClick={() => setMobileMenuOpen(false)}
@@ -748,10 +748,10 @@ export default function Home() {
       )}
 
       {/* HERO SECTION WRAPPER */}
-      <main className="flex-grow w-full">
+      <main className="grow w-full">
         <div className="relative w-full overflow-hidden">
           {/* Video Background - Full Width */}
-          <div className="absolute inset-0 w-full h-full z-0 overflow-hidden bg-gradient-to-br from-indigo-50/50 via-white to-sky-50/50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950">
+          <div className="absolute inset-0 w-full h-full z-0 overflow-hidden bg-linear-to-br from-indigo-50/50 via-white to-sky-50/50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950">
             {loadVideo && (
               <video
                 ref={videoRef}
@@ -829,7 +829,7 @@ export default function Home() {
             <span className="badge-pill">SMK TARUNA BHAKTI DEPOK</span>
             <div className="flex items-center gap-2 text-[11px] md:text-xs font-semibold text-slate-700 dark:text-slate-200 bg-white/60 dark:bg-slate-800/60 px-4 py-2 rounded-full backdrop-blur-md border border-slate-200/50 dark:border-slate-700/50 shadow-sm animate-[fadeIn_0.8s_ease-out_0.2s_both]">
                <MapPin size={14} className="text-blue-600 dark:text-blue-400" />
-               <span className="max-w-[280px] md:max-w-none truncate md:whitespace-normal">{address}</span>
+               <span className="max-w-70 md:max-w-none truncate md:whitespace-normal">{address}</span>
             </div>
           </div>
 
@@ -871,7 +871,7 @@ export default function Home() {
               </div>
 
               {/* Data Pendaftar Table View */}
-              <div className="dashboard-view block w-full p-6 h-[600px] bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xl relative z-10 rounded-2xl transition-colors duration-300">
+              <div className="dashboard-view block w-full p-6 h-150 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xl relative z-10 rounded-2xl transition-colors duration-300">
                 <DataPendaftarTable />
               </div>
 
@@ -901,7 +901,7 @@ export default function Home() {
             return (
               <div className={`bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border ${status.active ? 'border-blue-500/30 dark:border-blue-500/20 shadow-blue-500/5' : 'border-white/50 dark:border-slate-800'} rounded-3xl p-8 shadow-lg hover:shadow-xl transition-all duration-300 relative overflow-hidden group`}>
                 {status.active && (
-                  <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-bl from-blue-500/10 to-transparent pointer-events-none" />
+                  <div className="absolute top-0 right-0 w-24 h-24 bg-linear-to-bl from-blue-500/10 to-transparent pointer-events-none" />
                 )}
                 <div className="flex justify-between items-start mb-6">
                   <div>
@@ -935,7 +935,7 @@ export default function Home() {
             return (
               <div className={`bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border ${status.active ? 'border-blue-500/30 dark:border-blue-500/20 shadow-blue-500/5' : 'border-white/50 dark:border-slate-800'} rounded-3xl p-8 shadow-lg hover:shadow-xl transition-all duration-300 relative overflow-hidden group`}>
                 {status.active && (
-                  <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-bl from-blue-500/10 to-transparent pointer-events-none" />
+                  <div className="absolute top-0 right-0 w-24 h-24 bg-linear-to-bl from-blue-500/10 to-transparent pointer-events-none" />
                 )}
                 <div className="flex justify-between items-start mb-6">
                   <div>
@@ -1039,7 +1039,7 @@ export default function Home() {
                       scrollStart="top 85%"
                       scrollEnd="bottom 60%"
                     >
-                      <div className={`relative group ${isLeft ? "md:-rotate-[2deg] hover:rotate-0" : "md:rotate-[2deg] hover:rotate-0"} transition-transform duration-300`}>
+                      <div className={`relative group ${isLeft ? "md:-rotate-2 hover:rotate-0" : "md:rotate-2 hover:rotate-0"} transition-transform duration-300`}>
 
                         {/* Photo block */}
                         <div className="relative w-full h-60 sm:h-72 rounded-2xl overflow-hidden bg-slate-100 dark:bg-slate-900 mb-6">
@@ -1134,7 +1134,7 @@ export default function Home() {
                 style={{ transitionDelay: `${index * 150}ms` }}
               >
                 <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(0,102,255,0.08)_0%,transparent_60%)] opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none z-0"></div>
-                <div className="absolute top-0 left-0 w-full h-[4px] bg-gradient-to-r from-blue-600 to-sky-400 opacity-0 scale-x-0 group-hover:opacity-100 group-hover:scale-x-100 origin-left transition-all duration-500 z-10"></div>
+                <div className="absolute top-0 left-0 w-full h-1 bg-linear-to-r from-blue-600 to-sky-400 opacity-0 scale-x-0 group-hover:opacity-100 group-hover:scale-x-100 origin-left transition-all duration-500 z-10"></div>
 
                 <div className="relative z-10">
                   <div className="w-16 h-16 rounded-2xl overflow-hidden mb-6 flex items-center justify-center group-hover:scale-110 group-hover:rotate-3 transition-all duration-500 bg-white border border-slate-100 shadow-md group-hover:shadow-xl group-hover:shadow-blue-500/20">
@@ -1254,7 +1254,7 @@ export default function Home() {
                           <img
                             src={dompurify.sanitize(sanitizeSrc(partner.logo) || "") || undefined}
                             alt={partner.name}
-                            className={`w-auto object-contain ${partner.h} max-w-[150px] transition-all duration-300 drop-shadow-sm`}
+                            className={`w-auto object-contain ${partner.h} max-w-37.5 transition-all duration-300 drop-shadow-sm`}
                             loading="lazy"
                             width={width}
                             height={height}
@@ -1407,7 +1407,7 @@ export default function Home() {
               </ScrollFloat>
             </div>
 
-            <div className="relative w-full h-[500px] rounded-[2.5rem] overflow-hidden shadow-2xl shadow-slate-200/50 dark:shadow-none border border-slate-200/60 dark:border-slate-800/80 group">
+            <div className="relative w-full h-125 rounded-[2.5rem] overflow-hidden shadow-2xl shadow-slate-200/50 dark:shadow-none border border-slate-200/60 dark:border-slate-800/80 group">
               <div className="absolute inset-0 bg-blue-500/5 mix-blend-overlay pointer-events-none group-hover:bg-transparent transition-colors duration-500 z-10"></div>
               
               <iframe
@@ -1418,11 +1418,11 @@ export default function Home() {
                 allowFullScreen={true} 
                 loading="lazy" 
                 referrerPolicy="no-referrer-when-downgrade"
-                className="absolute inset-0 w-full h-full grayscale-[15%] group-hover:grayscale-0 transition-all duration-700"
+                className="absolute inset-0 w-full h-full grayscale-15 group-hover:grayscale-0 transition-all duration-700"
               ></iframe>
 
               {/* Floating Address Card */}
-              <div className="absolute bottom-6 left-6 right-6 md:left-1/2 md:right-auto md:-translate-x-1/2 md:w-[450px] bg-white/95 dark:bg-slate-900/95 backdrop-blur-md p-6 rounded-3xl border border-white/20 dark:border-slate-800/50 shadow-2xl z-20 transition-transform duration-300 hover:-translate-y-2">
+              <div className="absolute bottom-6 left-6 right-6 md:left-1/2 md:right-auto md:-translate-x-1/2 md:w-112.5 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md p-6 rounded-3xl border border-white/20 dark:border-slate-800/50 shadow-2xl z-20 transition-transform duration-300 hover:-translate-y-2">
                 <div className="flex items-start gap-4">
                   <div className="w-12 h-12 rounded-2xl bg-emerald-50 dark:bg-emerald-500/10 flex items-center justify-center shrink-0 border border-emerald-100 dark:border-emerald-500/20">
                     <MapPin size={24} className="text-emerald-500" />
@@ -1456,7 +1456,7 @@ export default function Home() {
               )}`)}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 bg-gradient-to-r from-emerald-600 to-green-500 hover:from-emerald-700 hover:to-green-600 text-white font-extrabold text-xs uppercase tracking-wider py-3.5 px-8 rounded-full shadow-lg shadow-emerald-500/20 transition-all duration-300 transform hover:scale-[1.02] active:scale-[0.98]"
+              className="inline-flex items-center gap-2 bg-linear-to-r from-emerald-600 to-green-500 hover:from-emerald-700 hover:to-green-600 text-white font-extrabold text-xs uppercase tracking-wider py-3.5 px-8 rounded-full shadow-lg shadow-emerald-500/20 transition-all duration-300 transform hover:scale-[1.02] active:scale-[0.98]"
             >
               <Phone size={14} />
               <span>Konsultasi Lewat WA Admin</span>

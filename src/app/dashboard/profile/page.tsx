@@ -293,7 +293,7 @@ export default function ProfilePage() {
 
       {/* ── Crop Modal ─────────────────────────────────────────────────────── */}
       {cropModalOpen && cropImageSrc && (
-        <div className="fixed inset-0 z-[70] flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-in fade-in duration-200">
+        <div className="fixed inset-0 z-70 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-in fade-in duration-200">
           <div className="bg-white dark:bg-[#0b1121] border border-slate-200/60 dark:border-slate-800/40 rounded-3xl w-full max-w-lg flex flex-col shadow-2xl overflow-hidden animate-in zoom-in-95">
             {/* Header */}
             <div className="px-6 py-4 border-b border-slate-100 dark:border-white/5 flex items-center justify-between">
@@ -376,7 +376,7 @@ export default function ProfilePage() {
               </button>
               <button
                 onClick={handleCropSave}
-                className="px-5 py-2.5 bg-gradient-to-tr from-blue-600 to-indigo-500 hover:from-blue-500 hover:to-indigo-400 text-white rounded-xl text-xs font-black uppercase tracking-wider shadow shadow-blue-500/20 transition-all flex items-center gap-2"
+                className="px-5 py-2.5 bg-linear-to-tr from-blue-600 to-indigo-500 hover:from-blue-500 hover:to-indigo-400 text-white rounded-xl text-xs font-black uppercase tracking-wider shadow shadow-blue-500/20 transition-all flex items-center gap-2"
               >
                 <Crop size={14} />
                 Terapkan

@@ -35,6 +35,7 @@ import {
 import DateRangeCalendar from "@/components/DateRangeCalendar";
 import { sanitizeSrc } from "@/utils/security";
 import DOMPurify from "dompurify";
+import CustomSelect from "@/components/ui/CustomSelect";
 
 interface AlurItem {
   id: number;
@@ -1040,7 +1041,7 @@ export default function KelolaUserInterface() {
 
       {/* Loading Overlay */}
       {saving && (
-        <div className="fixed inset-0 z-[100] bg-black/60 backdrop-blur-sm flex items-center justify-center">
+        <div className="fixed inset-0 z-100 bg-black/60 backdrop-blur-sm flex items-center justify-center">
           <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 rounded-3xl p-8 shadow-2xl flex flex-col items-center gap-4 text-center max-w-sm w-full mx-4">
             <svg className="animate-spin h-8 w-8 text-blue-500" fill="none" viewBox="0 0 24 24">
               <circle className="opacity-25" cx={12} cy={12} r={10} stroke="currentColor" strokeWidth={4} />
@@ -1114,7 +1115,7 @@ export default function KelolaUserInterface() {
                 editingMajor !== null && tab.id !== "majors" ? "opacity-30 cursor-not-allowed" : "cursor-pointer"
               } ${
                 activeTab === tab.id
-                  ? "bg-blue-600 text-white shadow-md shadow-blue-500/20 rounded-xl scale-[1.02] -translate-y-[0.5px]"
+                  ? "bg-blue-600 text-white shadow-md shadow-blue-500/20 rounded-xl scale-[1.02] translate-y-[-0.5px]"
                   : "text-slate-500 hover:text-slate-850 dark:text-slate-400 dark:hover:text-white hover:bg-slate-100/80 dark:hover:bg-slate-900/80 rounded-xl hover:border-blue-500/30"
               }`}
             >
@@ -1432,7 +1433,7 @@ export default function KelolaUserInterface() {
                                   showToastMsg(`Jurusan ${major.code} dihapus secara lokal. Silakan klik "Simpan Perubahan" di pojok kanan atas untuk menerapkannya secara permanen.`, "info");
                                 }
                               }}
-                              className="absolute top-3 right-3 p-2 bg-rose-600/90 hover:bg-rose-600 text-white rounded-xl shadow-lg border border-rose-500/30 opacity-0 group-hover:opacity-100 focus:opacity-100 transition-all duration-300 transform translate-y-[-4px] group-hover:translate-y-0 z-10 hover:scale-105 cursor-pointer"
+                              className="absolute top-3 right-3 p-2 bg-rose-600/90 hover:bg-rose-600 text-white rounded-xl shadow-lg border border-rose-500/30 opacity-0 group-hover:opacity-100 focus:opacity-100 transition-all duration-300 transform -translate-y-1 group-hover:translate-y-0 z-10 hover:scale-105 cursor-pointer"
                               title="Hapus Jurusan"
                             >
                               <Trash2 size={13} />
@@ -2055,7 +2056,7 @@ export default function KelolaUserInterface() {
                               {idx + 1}
                             </span>
 
-                            <div className="max-w-[110px] truncate">
+                            <div className="max-w-27.5 truncate">
                               <span className="block truncate">{item.title || `Tahap ${idx + 1}`}</span>
                             </div>
 
@@ -2725,7 +2726,7 @@ export default function KelolaUserInterface() {
                                 title={cfg.active ? 'Nonaktifkan field' : 'Aktifkan field'}
                               >
                                 <span className={`absolute top-0.5 w-4 h-4 rounded-full bg-white shadow transition-all duration-200 ${
-                                  cfg.active ? 'left-[18px]' : 'left-0.5'
+                                  cfg.active ? 'left-4.5' : 'left-0.5'
                                 }`} />
                               </button>
                             </td>
@@ -2740,7 +2741,7 @@ export default function KelolaUserInterface() {
                                 title={cfg.required ? 'Jadikan opsional' : 'Jadikan wajib'}
                               >
                                 <span className={`absolute top-0.5 w-4 h-4 rounded-full bg-white shadow transition-all duration-200 ${
-                                  cfg.required && cfg.active ? 'left-[18px]' : 'left-0.5'
+                                  cfg.required && cfg.active ? 'left-4.5' : 'left-0.5'
                                 }`} />
                               </button>
                             </td>
@@ -3092,21 +3093,21 @@ export default function KelolaUserInterface() {
 
                         <div className="space-y-2">
                           <label className="text-[9px] uppercase font-bold text-slate-450 tracking-wider">Ukuran Logo</label>
-                          <select
+                          <CustomSelect
                             value={partner.h}
-                            onChange={(e) => {
-                              const val = e.target.value;
+                            onChange={(val) => {
                               setPartnersList(prev => prev.map(p => p.id === partner.id ? { ...p, h: val } : p));
                             }}
-                            className="w-full px-3 py-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/5 rounded-xl text-slate-800 dark:text-white font-semibold text-xs focus:outline-none focus:border-blue-500"
-                          >
-                            <option value="h-8">Sangat Kecil (h-8)</option>
-                            <option value="h-10">Kecil (h-10)</option>
-                            <option value="h-12">Sedang (h-12)</option>
-                            <option value="h-14">Besar (h-14)</option>
-                            <option value="h-16">Sangat Besar (h-16)</option>
-                            <option value="h-20">Raksasa (h-20)</option>
-                          </select>
+                            options={[
+                              { value: "h-8", label: "Sangat Kecil (h-8)" },
+                              { value: "h-10", label: "Kecil (h-10)" },
+                              { value: "h-12", label: "Sedang (h-12)" },
+                              { value: "h-14", label: "Besar (h-14)" },
+                              { value: "h-16", label: "Sangat Besar (h-16)" },
+                              { value: "h-20", label: "Raksasa (h-20)" }
+                            ]}
+                            triggerClassName="py-2 text-xs font-semibold"
+                          />
                         </div>
                         
                       </div>
@@ -3127,7 +3128,7 @@ export default function KelolaUserInterface() {
 
       {/* CONFIRMATION & NOTE MODAL */}
       {showConfirmModal && (
-        <div className="fixed inset-0 z-[110] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-110 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
           <form 
             onSubmit={handleSaveAll}
             className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 rounded-3xl p-6 shadow-2xl max-w-md w-full animate-in zoom-in-95 duration-200 space-y-4"

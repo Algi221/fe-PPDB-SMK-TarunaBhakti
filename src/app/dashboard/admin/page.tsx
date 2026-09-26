@@ -6,6 +6,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { Shield, Plus, Trash2, Edit3, User, KeyRound, Eye, EyeOff, Save, X, RotateCcw } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import Swal from 'sweetalert2';
+import CustomSelect from "@/components/ui/CustomSelect";
 
 
 function AdminManagementPageContent() {
@@ -528,14 +529,15 @@ function AdminManagementPageContent() {
 
                   <div>
                     <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 mb-1.5 uppercase">Peran (Role)</label>
-                    <select
+                    <CustomSelect
                       value={formData.role}
-                      onChange={e => setFormData({ ...formData, role: e.target.value })}
-                      className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-800 dark:text-white rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/50 transition-all"
-                    >
-                      <option value="admin">Admin Biasa</option>
-                      <option value="superadmin">Super Admin</option>
-                    </select>
+                      onChange={(val) => setFormData({ ...formData, role: val })}
+                      options={[
+                        { value: "admin", label: "Admin Biasa" },
+                        { value: "superadmin", label: "Super Admin" }
+                      ]}
+                      triggerClassName="py-2.5 text-sm"
+                    />
                   </div>
                 </div>
 
@@ -602,14 +604,15 @@ function AdminManagementPageContent() {
 
                   <div>
                     <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 mb-1.5 uppercase">Peran (Role)</label>
-                    <select
+                    <CustomSelect
                       value={formData.role}
-                      onChange={e => setFormData({ ...formData, role: e.target.value })}
-                      className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-800 dark:text-white rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/50 transition-all"
-                    >
-                      <option value="admin">Admin Biasa</option>
-                      <option value="superadmin">Super Admin</option>
-                    </select>
+                      onChange={(val) => setFormData({ ...formData, role: val })}
+                      options={[
+                        { value: "admin", label: "Admin Biasa" },
+                        { value: "superadmin", label: "Super Admin" }
+                      ]}
+                      triggerClassName="py-2.5 text-sm"
+                    />
                   </div>
                 </div>
 

@@ -93,7 +93,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         {/* Content Area */}
         <main className="flex-1 overflow-y-auto p-4 md:p-8 bg-transparent scroll-smooth">
           <motion.div
-            className="mx-auto max-w-[1600px]"
+            className="mx-auto max-w-400"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.25, ease: [0.22, 1, 0.36, 1] }}

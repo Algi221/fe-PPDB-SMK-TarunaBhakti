@@ -171,7 +171,7 @@ export default function SimulationSettings() {
 
   if (!mounted) {
     return (
-      <div className="flex items-center justify-center min-h-[300px]">
+      <div className="flex items-center justify-center min-h-75">
         <div className="flex flex-col items-center gap-3">
           <RefreshCw className="animate-spin text-blue-500 dark:text-blue-400" size={32} />
           <span className="text-sm font-semibold text-slate-500 dark:text-slate-455">Memuat konfigurasi...</span>
@@ -201,7 +201,7 @@ export default function SimulationSettings() {
           
           {/* Keamanan & Ganti Password Admin Card */}
           <div className="bg-white dark:bg-[#0b1121] border border-slate-200/85 dark:border-slate-800/60 rounded-3xl p-6 md:p-8 shadow-[0_4px_20px_rgba(0,0,0,0.02)] transition-colors duration-300 relative overflow-hidden">
-            <div className="absolute top-[-10%] right-[-10%] w-[250px] h-[250px] rounded-full bg-blue-500/5 blur-[80px] pointer-events-none"></div>
+            <div className="absolute top-[-10%] right-[-10%] w-62.5 h-62.5 rounded-full bg-blue-500/5 blur-[80px] pointer-events-none"></div>
 
             <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800/60 pb-5 mb-6">
               <div className="flex items-center gap-3">
@@ -298,7 +298,7 @@ export default function SimulationSettings() {
                 <button
                   type="submit"
                   disabled={isChangingPassword}
-                  className="px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-500 hover:brightness-110 text-white rounded-2xl text-xs font-bold tracking-wider uppercase transition-all shadow-[0_4px_15_rgba(59,130,246,0.15)] hover:shadow-[0_4px_20_rgba(59,130,246,0.25)] active:scale-[0.98] disabled:opacity-50 flex items-center gap-2 cursor-pointer font-black"
+                  className="px-6 py-3 bg-linear-to-r from-blue-600 to-indigo-500 hover:brightness-110 text-white rounded-2xl text-xs font-black tracking-wider uppercase transition-all shadow-[0_4px_15_rgba(59,130,246,0.15)] hover:shadow-[0_4px_20_rgba(59,130,246,0.25)] active:scale-[0.98] disabled:opacity-50 flex items-center gap-2 cursor-pointer"
                 >
                   {isChangingPassword ? (
                     <>
@@ -318,7 +318,7 @@ export default function SimulationSettings() {
 
           {/* ── Student Seeder / Test Data Generator ──────────────────────── */}
           <div className="bg-white dark:bg-[#0b1121] border border-slate-200/85 dark:border-slate-800/60 rounded-3xl p-6 md:p-8 shadow-[0_4px_20px_rgba(0,0,0,0.02)] transition-colors duration-300 relative overflow-hidden">
-            <div className="absolute top-[-10%] left-[-10%] w-[250px] h-[250px] rounded-full bg-emerald-500/5 blur-[80px] pointer-events-none"></div>
+            <div className="absolute top-[-10%] left-[-10%] w-62.5 h-62.5 rounded-full bg-emerald-500/5 blur-[80px] pointer-events-none"></div>
 
             <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800/60 pb-5 mb-6">
               <div className="flex items-center gap-3">
@@ -357,7 +357,7 @@ export default function SimulationSettings() {
                 <button
                   onClick={handleSingleInsert}
                   disabled={isSingleInserting || seederRunning}
-                  className="px-5 py-3 bg-gradient-to-r from-emerald-600 to-teal-500 hover:brightness-110 text-white rounded-2xl text-xs font-black tracking-wider uppercase transition-all shadow-[0_4px_15px_rgba(16,185,129,0.15)] hover:shadow-[0_4px_20px_rgba(16,185,129,0.25)] active:scale-[0.98] disabled:opacity-50 flex items-center gap-2 cursor-pointer shrink-0"
+                  className="px-5 py-3 bg-linear-to-r from-emerald-600 to-teal-500 hover:brightness-110 text-white rounded-2xl text-xs font-black tracking-wider uppercase transition-all shadow-[0_4px_15px_rgba(16,185,129,0.15)] hover:shadow-[0_4px_20px_rgba(16,185,129,0.25)] active:scale-[0.98] disabled:opacity-50 flex items-center gap-2 cursor-pointer shrink-0"
                 >
                   {isSingleInserting ? (
                     <>
@@ -406,7 +406,7 @@ export default function SimulationSettings() {
                   {!seederRunning ? (
                     <button
                       onClick={handleStartAutoGenerate}
-                      className="px-5 py-3 bg-gradient-to-r from-blue-600 to-indigo-500 hover:brightness-110 text-white rounded-2xl text-xs font-black tracking-wider uppercase transition-all shadow-[0_4px_15px_rgba(59,130,246,0.15)] hover:shadow-[0_4px_20px_rgba(59,130,246,0.25)] active:scale-[0.98] flex items-center gap-2 cursor-pointer"
+                      className="px-5 py-3 bg-linear-to-r from-blue-600 to-indigo-500 hover:brightness-110 text-white rounded-2xl text-xs font-black tracking-wider uppercase transition-all shadow-[0_4px_15px_rgba(59,130,246,0.15)] hover:shadow-[0_4px_20px_rgba(59,130,246,0.25)] active:scale-[0.98] flex items-center gap-2 cursor-pointer"
                     >
                       <Play size={14} />
                       Mulai Auto-Generate
@@ -414,7 +414,7 @@ export default function SimulationSettings() {
                   ) : (
                     <button
                       onClick={handleStopAutoGenerate}
-                      className="px-5 py-3 bg-gradient-to-r from-rose-600 to-pink-500 hover:brightness-110 text-white rounded-2xl text-xs font-black tracking-wider uppercase transition-all shadow-[0_4px_15px_rgba(244,63,94,0.15)] hover:shadow-[0_4px_20px_rgba(244,63,94,0.25)] active:scale-[0.98] flex items-center gap-2 cursor-pointer"
+                      className="px-5 py-3 bg-linear-to-r from-rose-600 to-pink-500 hover:brightness-110 text-white rounded-2xl text-xs font-black tracking-wider uppercase transition-all shadow-[0_4px_15px_rgba(244,63,94,0.15)] hover:shadow-[0_4px_20px_rgba(244,63,94,0.25)] active:scale-[0.98] flex items-center gap-2 cursor-pointer"
                     >
                       <Square size={14} />
                       Stop Auto-Generate
@@ -444,7 +444,7 @@ export default function SimulationSettings() {
           
           {/* Kartu tips keamanan */}
           <div className="bg-white dark:bg-[#0b1121] border border-slate-200/85 dark:border-slate-800/60 rounded-3xl p-6 shadow-[0_4px_20px_rgba(0,0,0,0.02)] transition-colors duration-300 relative overflow-hidden">
-            <div className="absolute top-[-10%] right-[-10%] w-[150px] h-[150px] rounded-full bg-blue-500/5 blur-[50px] pointer-events-none"></div>
+            <div className="absolute top-[-10%] right-[-10%] w-37.5 h-37.5 rounded-full bg-blue-500/5 blur-[50px] pointer-events-none"></div>
 
             <h4 className="text-xs font-black uppercase tracking-wider text-slate-450 border-b border-slate-100 dark:border-slate-800/60 pb-3 mb-4 flex items-center gap-1.5">
               <ShieldAlert size={14} className="text-blue-500 animate-pulse" />
@@ -456,7 +456,7 @@ export default function SimulationSettings() {
               
               <div className="relative pl-6 border-l-2 border-slate-200 dark:border-slate-800 space-y-4">
                 <div className="relative">
-                  <span className="absolute -left-[31px] top-0 w-4 h-4 rounded-full bg-blue-500 text-[10px] font-black text-white flex items-center justify-center shadow-md">
+                  <span className="absolute -left-7.75 top-0 w-4 h-4 rounded-full bg-blue-500 text-[10px] font-black text-white flex items-center justify-center shadow-md">
                     1
                   </span>
                   <p className="font-extrabold text-slate-800 dark:text-white">Ganti Sandi Berkala</p>
@@ -464,7 +464,7 @@ export default function SimulationSettings() {
                 </div>
                 
                 <div className="relative">
-                  <span className="absolute -left-[31px] top-0 w-4 h-4 rounded-full bg-blue-500 text-[10px] font-black text-white flex items-center justify-center shadow-md">
+                  <span className="absolute -left-7.75 top-0 w-4 h-4 rounded-full bg-blue-500 text-[10px] font-black text-white flex items-center justify-center shadow-md">
                     2
                   </span>
                   <p className="font-extrabold text-slate-800 dark:text-white">Kombinasi Karakter</p>
@@ -472,7 +472,7 @@ export default function SimulationSettings() {
                 </div>
                 
                 <div className="relative">
-                  <span className="absolute -left-[31px] top-0 w-4 h-4 rounded-full bg-blue-500 text-[10px] font-black text-white flex items-center justify-center shadow-md">
+                  <span className="absolute -left-7.75 top-0 w-4 h-4 rounded-full bg-blue-500 text-[10px] font-black text-white flex items-center justify-center shadow-md">
                     3
                   </span>
                   <p className="font-extrabold text-slate-800 dark:text-white">Hindari Berbagi Akun</p>

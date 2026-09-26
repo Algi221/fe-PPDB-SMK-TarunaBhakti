@@ -2,6 +2,7 @@ import { usePPDB } from '@/context/PPDBContext';
 import Swal from 'sweetalert2';
 import React from 'react';
 import { User, Info, Calendar, Heart, HelpCircle, FileCheck , Layers, Users, FileImage, FileText, Check, X, Pencil, School} from 'lucide-react';
+import CustomSelect from "@/components/ui/CustomSelect";
 
 const sanitizeUrl = (url: string) => { if (!url) return '#'; if (url.startsWith('http') || url.startsWith('data:')) return url; return `/${url}`; };
 
@@ -57,7 +58,7 @@ export default function ApplicantDetailModal({
 
             {/* Modal Header */}
             <div className="p-6 md:p-8 border-b border-slate-100 dark:border-white/5 flex items-start justify-between shrink-0 bg-white dark:bg-slate-900 relative">
-              <div className="absolute inset-0 bg-gradient-to-r from-blue-50/50 to-transparent dark:from-blue-900/10 dark:to-transparent pointer-events-none"></div>
+              <div className="absolute inset-0 bg-linear-to-r from-blue-50/50 to-transparent dark:from-blue-900/10 dark:to-transparent pointer-events-none"></div>
                            <div className="flex items-center gap-5 relative z-10">
                 <div className="w-14 h-14 rounded-2xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 flex items-center justify-center text-slate-700 dark:text-slate-200 text-2xl font-black shrink-0">
                   {selectedApplicant.nama.substring(0, 1).toUpperCase()}
@@ -132,7 +133,7 @@ export default function ApplicantDetailModal({
                   <button
                     key={t.id}
                     onClick={() => setActiveTab(t.id)}
-                    className={`px-3 py-2.5 text-[10px] md:text-xs font-black transition-all rounded-xl uppercase tracking-wider flex-1 text-center min-w-[90px] whitespace-nowrap ${activeTab === t.id
+                    className={`px-3 py-2.5 text-[10px] md:text-xs font-black transition-all rounded-xl uppercase tracking-wider flex-1 text-center min-w-22.5 whitespace-nowrap ${activeTab === t.id
                         ? "bg-white dark:bg-slate-800 text-blue-600 dark:text-white shadow-sm border border-slate-200/50 dark:border-white/10"
                         : "text-slate-500 dark:text-slate-450 hover:text-slate-800 dark:hover:text-white hover:bg-slate-200/50 dark:hover:bg-slate-800/50 border border-transparent"
                       }`}
@@ -470,7 +471,7 @@ export default function ApplicantDetailModal({
                       </div>
                       <button
                         onClick={() => window.open(`/invoice?nisn=${selectedApplicant.nisn}`, '_blank')}
-                        className="px-5 py-3 bg-gradient-to-tr from-blue-600 to-indigo-500 hover:from-blue-500 hover:to-indigo-400 text-white rounded-xl text-xs font-black uppercase tracking-wider shadow shadow-blue-500/20 hover:shadow-blue-500/40 transition-all flex items-center gap-2 shrink-0 animate-pulse"
+                        className="px-5 py-3 bg-linear-to-tr from-blue-600 to-indigo-500 hover:from-blue-500 hover:to-indigo-400 text-white rounded-xl text-xs font-black uppercase tracking-wider shadow shadow-blue-500/20 hover:shadow-blue-500/40 transition-all flex items-center gap-2 shrink-0 animate-pulse"
                       >
                         <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
@@ -634,11 +635,11 @@ export default function ApplicantDetailModal({
 
       {/* ===== EDIT MODAL ===== */}
       {editApplicant && (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 lg:p-8 bg-black/70 backdrop-blur-sm animate-in fade-in duration-200">
+        <div className="fixed inset-0 z-60 flex items-center justify-center p-4 lg:p-8 bg-black/70 backdrop-blur-sm animate-in fade-in duration-200">
           <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-white/10 rounded-3xl w-full max-w-4xl max-h-[90vh] flex flex-col shadow-2xl overflow-hidden animate-in zoom-in-95 transition-all">
             {/* Header */}
             <div className="p-6 md:p-8 border-b border-slate-100 dark:border-white/5 flex items-start justify-between bg-white dark:bg-slate-900 shrink-0 relative">
-              <div className="absolute inset-0 bg-gradient-to-r from-blue-50/50 to-transparent dark:from-blue-900/10 dark:to-transparent pointer-events-none"></div>
+              <div className="absolute inset-0 bg-linear-to-r from-blue-50/50 to-transparent dark:from-blue-900/10 dark:to-transparent pointer-events-none"></div>
               
               <div className="flex items-center gap-5 relative z-10">
                 <div className="w-14 h-14 rounded-2xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 flex items-center justify-center text-slate-700 dark:text-slate-200 shadow-sm shrink-0">
@@ -733,13 +734,12 @@ export default function ApplicantDetailModal({
                       <div key={f.key} className="group">
                         <label className="block text-[10px] font-black uppercase tracking-widest text-slate-455 dark:text-slate-450 mb-2 group-focus-within:text-blue-500 dark:group-focus-within:text-blue-400 transition-colors">{f.label}</label>
                         {f.type === "select" ? (
-                          <select
+                          <CustomSelect
                             value={(editForm as any)[f.key] || ""}
-                            onChange={e => setEditForm(prev => ({ ...prev, [f.key]: e.target.value }))}
-                            className="w-full bg-slate-50 hover:bg-slate-100/80 dark:bg-slate-800 border border-slate-200/80 dark:border-white/10 rounded-xl px-4 py-3 text-xs font-bold text-slate-700 dark:text-white focus:outline-none focus:ring-4 focus:ring-blue-500/15 focus:border-blue-500 transition-all cursor-pointer"
-                          >
-                            {(f.options || []).map(o => <option key={o} value={o}>{o}</option>)}
-                          </select>
+                            onChange={(val) => setEditForm((prev) => ({ ...prev, [f.key]: val }))}
+                            options={(f.options || []).map((o: string) => ({ value: o, label: o }))}
+                            placeholder={`Pilih ${f.label}`}
+                          />
                         ) : (
                           <input
                             type={f.type || "text"}

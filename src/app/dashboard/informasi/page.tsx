@@ -480,7 +480,7 @@ export default function KelolaInformasi() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         
         {/* Info & CTA Panel */}
-        <div className="lg:col-span-2 bg-gradient-to-tr from-blue-900 to-indigo-950 dark:from-slate-900 dark:to-slate-950 border border-blue-500/20 dark:border-white/5 rounded-3xl p-8 text-white relative overflow-hidden shadow-xl flex flex-col justify-between min-h-[220px]">
+        <div className="lg:col-span-2 bg-linear-to-tr from-blue-900 to-indigo-950 dark:from-slate-900 dark:to-slate-950 border border-blue-500/20 dark:border-white/5 rounded-3xl p-8 text-white relative overflow-hidden shadow-xl flex flex-col justify-between min-h-55">
           <div className="absolute top-0 right-0 w-80 h-80 bg-blue-600/10 rounded-full blur-[100px] pointer-events-none" />
           <div className="absolute -bottom-10 -left-10 w-60 h-60 bg-indigo-500/10 rounded-full blur-[80px] pointer-events-none" />
           
@@ -609,12 +609,12 @@ export default function KelolaInformasi() {
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                       />
                     ) : (
-                      <div className="w-full h-full bg-gradient-to-br from-blue-500/10 to-indigo-650/10 dark:from-blue-600/5 dark:to-indigo-500/5 flex flex-col items-center justify-center text-slate-400 dark:text-slate-650 gap-2">
+                      <div className="w-full h-full bg-linear-to-br from-blue-500/10 to-indigo-650/10 dark:from-blue-600/5 dark:to-indigo-500/5 flex flex-col items-center justify-center text-slate-400 dark:text-slate-650 gap-2">
                         <ImageIcon size={32} strokeWidth={1.5} className="group-hover:scale-110 transition-transform duration-300" />
                         <span className="text-[10px] font-black uppercase tracking-wider text-slate-400 dark:text-slate-600">Media Poster Kosong</span>
                       </div>
                     )}
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                    <div className="absolute inset-0 bg-linear-to-t from-black/20 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                   </div>
 
                   {/* Content Section */}
@@ -921,7 +921,7 @@ export default function KelolaInformasi() {
               {media.foto ? (
                 <div className="h-80 relative border-b border-slate-150 dark:border-white/5">
                   <img src={sanitizeSrc(media.foto)} alt={previewItem.judul} className="w-full h-full object-cover" />
-                  <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-transparent to-transparent" />
+                  <div className="absolute inset-0 bg-linear-to-t from-slate-900 via-transparent to-transparent" />
                   
                   {/* Floating Date Over Image */}
                   <div className="absolute bottom-6 left-6 z-10 px-3 py-1.5 bg-blue-600 text-white text-[10px] font-black uppercase tracking-widest rounded-xl flex items-center gap-1.5 shadow-md border border-blue-500">
@@ -981,9 +981,9 @@ export default function KelolaInformasi() {
                       {media.dokumen && (
                         <div className="space-y-3 text-left w-full">
                           <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">📄 Pratinjau Dokumen Resmi:</span>
-                                   {media.dokumen.startsWith("data:application/pdf") ? (
+                          {media.dokumen.startsWith("data:application/pdf") ? (
                             <div className="rounded-2xl border border-slate-200 dark:border-white/5 overflow-hidden shadow-md bg-white">
-                              <iframe src={sanitizeSrc(media.dokumen)} className="w-full h-[450px] border-0" />
+                              <iframe src={sanitizeSrc(media.dokumen)} className="w-full h-112.5 border-0" />
                             </div>
                           ) : media.dokumen.startsWith("data:image/") ? (
                             <div className="rounded-2xl border border-slate-200 dark:border-white/5 overflow-hidden shadow-md bg-slate-100 dark:bg-slate-955 flex items-center justify-center p-4">
@@ -1050,7 +1050,7 @@ export default function KelolaInformasi() {
 
       {/* DELETE CONFIRMATION MODAL */}
       {deleteConfirmId && (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/60 backdrop-blur-md overflow-y-auto animate-in fade-in duration-300">
+        <div className="fixed inset-0 z-60 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md overflow-y-auto animate-in fade-in duration-300">
           <div className="bg-white dark:bg-[#0b1121] border border-slate-200/80 dark:border-white/10 rounded-3xl w-full max-w-md shadow-[0_30px_70px_rgba(0,0,0,0.15)] dark:shadow-[0_30px_70px_rgba(0,0,0,0.6)] overflow-hidden animate-in zoom-in-95 my-8 transition-colors duration-300 text-center relative p-8">
             <div className="w-20 h-20 rounded-full bg-rose-100 dark:bg-rose-950/50 flex items-center justify-center text-rose-500 dark:text-rose-400 mx-auto mb-6 border border-rose-200 dark:border-rose-900/30">
               <AlertCircle size={36} strokeWidth={1.5} />

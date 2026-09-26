@@ -6,6 +6,7 @@ import ExcelJS from 'exceljs';
 import { saveAs } from 'file-saver';
 import { generateNipdMap } from "@/utils/nipd";
 import Swal from 'sweetalert2';
+import CustomSelect from "@/components/ui/CustomSelect";
 import { 
   Users, 
   Layers, 
@@ -1111,7 +1112,7 @@ export default function ClassDivisionManagement() {
               <p className="text-[10px] text-slate-400 font-bold uppercase mt-1">Mengupdate Data Calon Siswa ({loadingProgress}%)</p>
             </div>
             <div className="w-full bg-slate-100 dark:bg-slate-800 h-2 rounded-full overflow-hidden">
-              <div className="bg-gradient-to-r from-indigo-600 to-blue-600 h-2 rounded-full transition-all duration-300" style={{ width: `${loadingProgress}%` }}></div>
+              <div className="bg-linear-to-r from-indigo-600 to-blue-600 h-2 rounded-full transition-all duration-300" style={{ width: `${loadingProgress}%` }}></div>
             </div>
           </div>
         </div>
@@ -1246,7 +1247,7 @@ export default function ClassDivisionManagement() {
 
             <button
               type="submit"
-              className="px-5 py-2.5 bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-500 hover:to-blue-500 text-white rounded-xl text-[10px] font-black uppercase tracking-wider transition-all shadow-sm shadow-indigo-500/10 w-full sm:w-auto cursor-pointer"
+              className="px-5 py-2.5 bg-linear-to-r from-indigo-600 to-blue-600 hover:from-indigo-500 hover:to-blue-500 text-white rounded-xl text-[10px] font-black uppercase tracking-wider transition-all shadow-sm shadow-indigo-500/10 w-full sm:w-auto cursor-pointer"
             >
               Simpan Kelas
             </button>
@@ -1272,7 +1273,7 @@ export default function ClassDivisionManagement() {
                 }`}
               >
                 {/* Decorative border line */}
-                <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-500 to-indigo-500" />
+                <div className="absolute top-0 left-0 right-0 h-1 bg-linear-to-r from-blue-500 to-indigo-500" />
                 
                 <div className="flex justify-between items-start gap-2 mb-4">
                   <div>
@@ -1342,31 +1343,31 @@ export default function ClassDivisionManagement() {
             </div>
 
             {/* Assignment Status Filter */}
-            <div className="flex items-center gap-2 bg-slate-50 dark:bg-slate-950/40 border border-slate-200 dark:border-white/5 rounded-xl px-2.5 py-1.5 text-xs font-bold text-slate-500">
-              <Filter size={11} />
-              <select
+            <div className="shrink-0 min-w-40">
+              <CustomSelect
                 value={assignmentFilter}
-                onChange={(e) => setAssignmentFilter(e.target.value as any)}
-                className="bg-transparent focus:outline-none cursor-pointer uppercase tracking-wider font-extrabold text-[9px]"
-              >
-                <option value="ALL">Semua Calon Kelas</option>
-                <option value="UNASSIGNED">Belum Dapat Kelas</option>
-                <option value="ASSIGNED">Sudah Ada Kelas</option>
-              </select>
+                onChange={(val) => setAssignmentFilter(val as any)}
+                options={[
+                  { value: "ALL", label: "Semua Calon Kelas" },
+                  { value: "UNASSIGNED", label: "Belum Dapat Kelas" },
+                  { value: "ASSIGNED", label: "Sudah Ada Kelas" }
+                ]}
+                triggerClassName="py-2 text-[11px] font-bold"
+              />
             </div>
 
             {/* Gender Filter */}
-            <div className="flex items-center gap-2 bg-slate-50 dark:bg-slate-950/40 border border-slate-200 dark:border-white/5 rounded-xl px-2.5 py-1.5 text-xs font-bold text-slate-500">
-              <Filter size={11} />
-              <select
+            <div className="shrink-0 min-w-32.5">
+              <CustomSelect
                 value={genderFilter}
-                onChange={(e) => setGenderFilter(e.target.value as any)}
-                className="bg-transparent focus:outline-none cursor-pointer uppercase tracking-wider font-extrabold text-[9px]"
-              >
-                <option value="ALL">Semua Gender</option>
-                <option value="L">Laki-laki (L)</option>
-                <option value="P">Perempuan (P)</option>
-              </select>
+                onChange={(val) => setGenderFilter(val as any)}
+                options={[
+                  { value: "ALL", label: "Semua Gender" },
+                  { value: "L", label: "Laki-laki (L)" },
+                  { value: "P", label: "Perempuan (P)" }
+                ]}
+                triggerClassName="py-2 text-[11px] font-bold"
+              />
             </div>
           </div>
 
@@ -1476,20 +1477,20 @@ export default function ClassDivisionManagement() {
                     </td>
 
                     <td className="py-3 px-4 text-right pr-6" onClick={(e) => e.stopPropagation()}>
-                      <div className="flex items-center justify-end gap-2">
-                        <select
+                      <div className="flex items-center justify-end gap-2 min-w-32.5">
+                        <CustomSelect
                           value={assignedClass || ""}
-                          onChange={(e) => {
+                          onChange={(val) => {
                             setSelectedStudentIds([student.id]);
-                            handleAssignSelectedToClass(e.target.value);
+                            handleAssignSelectedToClass(val);
                           }}
-                          className="px-2.5 py-1 text-[9px] uppercase font-black bg-slate-50 hover:bg-slate-100 dark:bg-slate-950/40 dark:text-white border border-slate-250 dark:border-white/5 rounded-lg focus:outline-none cursor-pointer"
-                        >
-                          <option value="">Belum Diatur</option>
-                          {classesOfSelectedMajor.map(c => (
-                            <option key={c.id} value={c.name}>{c.name}</option>
-                          ))}
-                        </select>
+                          options={[
+                            { value: "", label: "Belum Diatur" },
+                            ...classesOfSelectedMajor.map(c => ({ value: c.name, label: c.name }))
+                          ]}
+                          triggerClassName="py-1 px-2.5 text-[9px] font-black"
+                          align="right"
+                        />
                       </div>
                     </td>
                   </tr>
@@ -1550,7 +1551,7 @@ export default function ClassDivisionManagement() {
 
               <button
                 onClick={() => handleExportClassCSV(selectedClassDetail.name)}
-                className="w-full sm:w-auto px-4 py-2 bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-950/40 border border-emerald-250 dark:border-emerald-900/40 hover:bg-emerald-600/10 text-emerald-600 dark:text-emerald-400 rounded-xl text-xs font-black uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 shrink-0"
+                className="w-full sm:w-auto px-4 py-2 bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-950/40 border border-emerald-250 dark:border-emerald-900/40 text-emerald-600 dark:text-emerald-400 rounded-xl text-xs font-black uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 shrink-0"
               >
                 <Download size={14} />
                 <span>Cetak Daftar Kelas (XLS)</span>

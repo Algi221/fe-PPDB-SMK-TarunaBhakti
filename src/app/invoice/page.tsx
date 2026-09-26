@@ -430,7 +430,7 @@ function InvoiceContent() {
                   <span style={{ color: '#0f172a', fontFamily: 'monospace', fontWeight: 800 }}>: {data.nisn}</span>
                 </div>
                 <div style={{ display: 'flex', gap: '8px' }}>
-                  <span style={{ color: '#94a3b8', width: '110px', flexShrink: 0 }}>Program Rombel</span>
+                  <span style={{ color: '#94a3b8', width: '110px', flexShrink: 0 }}>Program Kelas</span>
                   <span style={{ color: '#2563eb', fontWeight: 800, textTransform: 'uppercase' }}>: {data.jurusan_1 || "-"}</span>
                 </div>
               </div>
@@ -596,7 +596,7 @@ function InvoiceContent() {
           {/* WhatsApp Action */}
           {data.payment_status === "Paid" && (
             isAdmin ? (
-              <div className="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-slate-900 dark:to-slate-800 border border-blue-200/50 dark:border-slate-700" style={{
+              <div className="bg-linear-to-br from-blue-50 to-indigo-50 dark:from-slate-900 dark:to-slate-800 border border-blue-200/50 dark:border-slate-700" style={{
                 borderRadius: '20px',
                 padding: '24px', boxShadow: '0 4px 12px rgba(0,0,0,0.04)',
                 textAlign: 'center'
@@ -630,7 +630,7 @@ function InvoiceContent() {
                 </button>
               </div>
             ) : (
-              <div className="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-slate-900 dark:to-slate-800 border border-blue-200/50 dark:border-slate-700" style={{
+              <div className="bg-linear-to-br from-blue-50 to-indigo-50 dark:from-slate-900 dark:to-slate-800 border border-blue-200/50 dark:border-slate-700" style={{
                 borderRadius: '20px',
                 padding: '24px', boxShadow: '0 4px 12px rgba(0,0,0,0.04)',
                 textAlign: 'center'

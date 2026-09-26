@@ -6,6 +6,7 @@ import { ArrowRight, Check, Upload, ArrowLeft, Home, Monitor, Code, Palette, Fil
 import { usePPDB } from "@/context/PPDBContext";
 import dompurify from "dompurify";
 import Swal from 'sweetalert2';
+import CustomSelect from "@/components/ui/CustomSelect";
 
 
 const sanitizeUrl = (url: string | undefined | null): string => {
@@ -1076,7 +1077,7 @@ export default function DaftarPage() {
               background-color: transparent !important;
             }
             
-            /* Keep specific colored text for status and rombel */
+            /* Keep specific colored text for status and kelas */
             .printable-invoice-sheet .text-blue-650,
             .printable-invoice-sheet .text-blue-600 {
               color: #2563eb !important;
@@ -1235,7 +1236,7 @@ export default function DaftarPage() {
                 href={sanitizeUrl(waGroupUrl)}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center justify-center gap-2 w-full py-2.5 px-6 bg-gradient-to-r from-emerald-600 to-green-500 hover:from-emerald-700 hover:to-green-600 text-white font-black text-xs uppercase tracking-wider rounded-xl shadow shadow-emerald-500/20 transition duration-300"
+                className="inline-flex items-center justify-center gap-2 w-full py-2.5 px-6 bg-linear-to-r from-emerald-600 to-green-500 hover:from-emerald-700 hover:to-green-600 text-white font-black text-xs uppercase tracking-wider rounded-xl shadow shadow-emerald-500/20 transition duration-300"
               >
                 <Phone size={14} />
                 <span>Gabung Grup WA Pendaftar</span>
@@ -1454,7 +1455,7 @@ export default function DaftarPage() {
                   href={sanitizeUrl(waGroupUrl)}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="w-full inline-flex justify-center items-center gap-2 py-3 bg-gradient-to-r from-emerald-600 to-green-500 hover:from-emerald-700 hover:to-green-600 text-white font-black text-xs uppercase tracking-wider rounded-xl shadow shadow-emerald-500/10 transition"
+                  className="w-full inline-flex justify-center items-center gap-2 py-3 bg-linear-to-r from-emerald-600 to-green-500 hover:from-emerald-700 hover:to-green-600 text-white font-black text-xs uppercase tracking-wider rounded-xl shadow shadow-emerald-500/10 transition"
                 >
                   <Phone size={12} />
                   Gabung Grup WA Pendaftar
@@ -1466,7 +1467,7 @@ export default function DaftarPage() {
             <div className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border border-white/50 dark:border-slate-800/80 shadow-2xl rounded-3xl p-6 space-y-4">
               <button 
                 onClick={() => window.print()}
-                className="w-full flex justify-center items-center gap-2 bg-gradient-to-r from-blue-600 to-indigo-650 hover:from-blue-700 hover:to-indigo-755 text-white font-black text-xs uppercase tracking-wider py-3.5 px-6 rounded-xl shadow-lg shadow-blue-500/15 transition transform hover:scale-[1.01] active:scale-[0.99]"
+                className="w-full flex justify-center items-center gap-2 bg-linear-to-r from-blue-600 to-indigo-650 hover:from-blue-700 hover:to-indigo-755 text-white font-black text-xs uppercase tracking-wider py-3.5 px-6 rounded-xl shadow-lg shadow-blue-500/15 transition transform hover:scale-[1.01] active:scale-[0.99]"
               >
                 <Printer size={14} />
                 Cetak Invoice Resmi (PDF)
@@ -1633,11 +1634,11 @@ export default function DaftarPage() {
             
             {/* Elegant official diagonal stamp seal inside sheet */}
             {successData.payment_status === "Paid" ? (
-              <div className="absolute top-28 right-8 border-4 border-emerald-500/60 text-emerald-500/60 font-black text-sm uppercase tracking-widest px-4 py-2 rounded-xl rotate-[-12deg] pointer-events-none select-none z-10 bg-white/70 backdrop-blur-xs font-mono">
+              <div className="absolute top-28 right-8 border-4 border-emerald-500/60 text-emerald-500/60 font-black text-sm uppercase tracking-widest px-4 py-2 rounded-xl -rotate-12 pointer-events-none select-none z-10 bg-white/70 backdrop-blur-xs font-mono">
                 LUNAS / VERIFIED
               </div>
             ) : (
-              <div className="absolute top-28 right-8 border-4 border-amber-500/60 text-amber-500/60 font-black text-xs uppercase tracking-widest px-3 py-1.5 rounded-xl rotate-[-12deg] pointer-events-none select-none z-10 bg-white/70 backdrop-blur-xs font-mono">
+              <div className="absolute top-28 right-8 border-4 border-amber-500/60 text-amber-500/60 font-black text-xs uppercase tracking-widest px-3 py-1.5 rounded-xl -rotate-12 pointer-events-none select-none z-10 bg-white/70 backdrop-blur-xs font-mono">
                 PROSES VERIFIKASI
               </div>
             )}
@@ -1687,7 +1688,7 @@ export default function DaftarPage() {
                   <span className="text-slate-900 font-mono font-extrabold">{successData.nisn}</span>
                 </div>
                 <div className="flex gap-2">
-                  <span className="text-slate-400 w-24">Program Rombel:</span>
+                  <span className="text-slate-400 w-24">Program Kelas:</span>
                   <span className="text-blue-600 font-extrabold uppercase">{successData.jurusan_1 || successData.jurusan1 || "-"}</span>
                 </div>
               </div>
@@ -1901,7 +1902,7 @@ export default function DaftarPage() {
           {/* Grid Layout: Left Side (Billing Summary), Right Side (Payment Options) */}
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-stretch">
                         {/* Left Side: Summary Panel (Col Span 4) */}
-            <div className="lg:col-span-4 flex flex-col justify-between bg-slate-50/50 dark:bg-slate-950/20 border border-slate-200/50 dark:border-slate-850 rounded-[2rem] p-6 relative overflow-hidden">
+            <div className="lg:col-span-4 flex flex-col justify-between bg-slate-50/50 dark:bg-slate-950/20 border border-slate-200/50 dark:border-slate-850 rounded-4xl p-6 relative overflow-hidden">
               <div className="space-y-6">
                 
                 {/* Profil Calon Siswa */}
@@ -1918,7 +1919,7 @@ export default function DaftarPage() {
                   {/* Langkah 1 */}
                   <div className="flex items-center gap-3">
                     <div className="w-8 h-8 rounded-full bg-emerald-100 dark:bg-emerald-950/60 text-emerald-500 flex items-center justify-center border border-emerald-200 dark:border-emerald-900 shadow-sm shrink-0">
-                      <Check size={14} className="stroke-[3]" />
+                      <Check size={14} className="stroke-3" />
                     </div>
                     <span className="text-xs font-bold text-slate-500 dark:text-slate-400">Informasi Siswa</span>
                   </div>
@@ -1967,7 +1968,7 @@ export default function DaftarPage() {
                             ? "bg-emerald-100 dark:bg-emerald-950/60 border-emerald-200 text-emerald-500"
                             : "bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-400 dark:text-slate-500"
                         }`}>
-                          {manualReceiptBase64 ? <Check size={14} className="stroke-[3]" /> : <Upload size={14} />}
+                          {manualReceiptBase64 ? <Check size={14} className="stroke-3" /> : <Upload size={14} />}
                         </div>
                         <span className={`text-xs font-bold ${
                           manualReceiptBase64 
@@ -2038,7 +2039,7 @@ export default function DaftarPage() {
               <div className="text-left space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-200">
                 
                 {/* Pengantar Formal */}
-                <div className="space-y-1 bg-gradient-to-r from-blue-50/50 to-transparent dark:from-blue-950/10 p-4 rounded-2xl border-l-4 border-blue-600">
+                <div className="space-y-1 bg-linear-to-r from-blue-50/50 to-transparent dark:from-blue-950/10 p-4 rounded-2xl border-l-4 border-blue-600">
                   <h4 className="text-sm font-extrabold text-slate-800 dark:text-white uppercase tracking-wider">
                     Penyelesaian Pembayaran Formulir
                   </h4>
@@ -2087,7 +2088,7 @@ export default function DaftarPage() {
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs font-bold text-slate-600 dark:text-slate-350">
                     <div className="flex justify-between items-center bg-slate-50/50 dark:bg-slate-950/10 px-4 py-2.5 rounded-xl border border-slate-150 dark:border-slate-850">
                       <span className="text-slate-400 dark:text-slate-500">Nama Lengkap:</span>
-                      <span className="text-slate-850 dark:text-white uppercase truncate max-w-[150px]">{submittedCandidate?.nama}</span>
+                      <span className="text-slate-850 dark:text-white uppercase truncate max-w-37.5">{submittedCandidate?.nama}</span>
                     </div>
                     <div className="flex justify-between items-center bg-slate-50/50 dark:bg-slate-950/10 px-4 py-2.5 rounded-xl border border-slate-150 dark:border-slate-850">
                       <span className="text-slate-400 dark:text-slate-500">NISN Pendaftar:</span>
@@ -2150,10 +2151,10 @@ export default function DaftarPage() {
                         return (
                           <div 
                             key={index} 
-                            className="relative overflow-hidden rounded-[2rem] bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-900 p-6 text-white shadow-2xl border border-white/10 w-full transition-all duration-300 hover:scale-[1.02]"
+                            className="relative overflow-hidden rounded-4xl bg-linear-to-br from-slate-900 via-indigo-950 to-slate-900 p-6 text-white shadow-2xl border border-white/10 w-full transition-all duration-300 hover:scale-[1.02]"
                           >
                             {/* Elemen Dekoratif */}
-                            <div className="absolute right-[-10%] top-[-20%] w-48 h-48 rounded-full bg-gradient-to-tr from-blue-500/10 to-indigo-500/10 blur-2xl pointer-events-none"></div>
+                            <div className="absolute right-[-10%] top-[-20%] w-48 h-48 rounded-full bg-linear-to-tr from-blue-500/10 to-indigo-500/10 blur-2xl pointer-events-none"></div>
                             
                             {/* Header Kartu */}
                             <div className="flex justify-between items-start mb-6">
@@ -2215,7 +2216,7 @@ export default function DaftarPage() {
                       
                       {/* File Upload Zone / Area */}
                       {!manualReceiptBase64 ? (
-                        <div className="border-2 border-dashed border-slate-250 dark:border-slate-800 hover:border-blue-500 dark:hover:border-blue-500 rounded-[1.5rem] py-10 px-6 text-center transition bg-slate-50/20 dark:bg-slate-950/5 relative group cursor-pointer">
+                        <div className="border-2 border-dashed border-slate-250 dark:border-slate-800 hover:border-blue-500 dark:hover:border-blue-500 rounded-3xl py-10 px-6 text-center transition bg-slate-50/20 dark:bg-slate-950/5 relative group cursor-pointer">
                           <input
                             type="file"
                             accept="image/*,application/pdf"
@@ -2236,7 +2237,7 @@ export default function DaftarPage() {
                         </div>
                       ) : (
                         
-                        <div className="bg-slate-50/80 dark:bg-slate-950/30 border border-slate-200/60 dark:border-slate-850 rounded-[1.5rem] p-5 flex flex-col md:flex-row items-center justify-between gap-4 animate-in fade-in zoom-in-95 duration-200">
+                        <div className="bg-slate-50/80 dark:bg-slate-950/30 border border-slate-200/60 dark:border-slate-850 rounded-3xl p-5 flex flex-col md:flex-row items-center justify-between gap-4 animate-in fade-in zoom-in-95 duration-200">
                           <div className="flex items-center gap-4 w-full md:w-auto">
                             <div className="w-16 h-16 rounded-2xl bg-white dark:bg-slate-900 border border-slate-205 dark:border-slate-805 flex items-center justify-center text-blue-550 shrink-0 shadow-sm overflow-hidden relative">
                               {manualReceiptBase64.startsWith("data:application/pdf") ? (
@@ -2246,7 +2247,7 @@ export default function DaftarPage() {
                               )}
                             </div>
                             <div className="space-y-0.5 overflow-hidden w-full md:w-auto">
-                              <p className="text-xs font-black text-slate-750 dark:text-slate-200 truncate max-w-[200px] md:max-w-[300px]">
+                              <p className="text-xs font-black text-slate-750 dark:text-slate-200 truncate max-w-50 md:max-w-75">
                                 {manualReceiptName}
                               </p>
                               <span className="text-[9px] font-black uppercase text-emerald-505 bg-emerald-50 dark:bg-emerald-950/50 border border-emerald-100 dark:border-emerald-900/35 px-2 py-0.5 rounded-full inline-block">
@@ -2274,7 +2275,7 @@ export default function DaftarPage() {
                     <button
                       onClick={() => handleConfirmOption("Transfer Manual", manualReceiptBase64)}
                       disabled={!manualReceiptBase64 || isSubmittingReceipt}
-                      className="w-full flex justify-center items-center gap-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-black text-xs md:text-sm uppercase tracking-widest py-4.5 px-6 rounded-2xl shadow-lg disabled:opacity-40 disabled:pointer-events-none transition duration-300 transform hover:scale-[1.01] active:scale-[0.99] mt-4 cursor-pointer"
+                      className="w-full flex justify-center items-center gap-2 bg-linear-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-black text-xs md:text-sm uppercase tracking-widest py-4.5 px-6 rounded-2xl shadow-lg disabled:opacity-40 disabled:pointer-events-none transition duration-300 transform hover:scale-[1.01] active:scale-[0.99] mt-4 cursor-pointer"
                     >
                       {isSubmittingReceipt ? "Mengirim Bukti..." : "Kirim Bukti Pembayaran"}
                       <ArrowRight size={16} />
@@ -2313,7 +2314,7 @@ export default function DaftarPage() {
                     <button
                       onClick={() => handleConfirmOption("Bayar di Sekolah", "")}
                       disabled={isSubmittingReceipt}
-                      className="w-full flex justify-center items-center gap-2 bg-gradient-to-r from-emerald-600 to-green-500 hover:from-emerald-700 hover:to-green-600 text-white font-black text-xs md:text-sm uppercase tracking-widest py-4.5 px-6 rounded-2xl shadow-lg disabled:opacity-40 disabled:pointer-events-none transition duration-300 transform hover:scale-[1.01] active:scale-[0.99] mt-4 cursor-pointer"
+                      className="w-full flex justify-center items-center gap-2 bg-linear-to-r from-emerald-600 to-green-500 hover:from-emerald-700 hover:to-green-600 text-white font-black text-xs md:text-sm uppercase tracking-widest py-4.5 px-6 rounded-2xl shadow-lg disabled:opacity-40 disabled:pointer-events-none transition duration-300 transform hover:scale-[1.01] active:scale-[0.99] mt-4 cursor-pointer"
                     >
                       {isSubmittingReceipt ? "Memproses..." : "Konfirmasi Pembayaran di TU & Daftar"}
                       <ArrowRight size={16} />
@@ -2372,9 +2373,9 @@ export default function DaftarPage() {
 
         {/* Desktop Stepper (hidden on mobile, shown on desktop) */}
         <div className="hidden md:flex justify-between items-center mb-12 relative px-4">
-          <div className="absolute top-1/2 left-0 w-full h-[3px] bg-slate-100 dark:bg-slate-800/80 -translate-y-1/2 z-0 rounded-full"></div>
+          <div className="absolute top-1/2 left-0 w-full h-0.75 bg-slate-100 dark:bg-slate-800/80 -translate-y-1/2 z-0 rounded-full"></div>
           <div
-            className="absolute top-1/2 left-0 h-[3px] bg-blue-600 dark:bg-blue-500 -translate-y-1/2 z-0 rounded-full transition-all duration-500"
+            className="absolute top-1/2 left-0 h-0.75 bg-blue-600 dark:bg-blue-500 -translate-y-1/2 z-0 rounded-full transition-all duration-500"
             style={{ width: `${((wizardStep - 1) / 13) * 100}%` }}
           ></div>
 
@@ -2390,7 +2391,7 @@ export default function DaftarPage() {
                   isCurrent
                     ? "w-7 h-7 bg-blue-600 dark:bg-blue-500 shadow-[0_0_20px_rgba(37,99,235,0.65)] scale-125 ring-[6px] ring-blue-500/20"
                     : isCompleted
-                      ? "w-4.5 h-4.5 bg-blue-600 dark:bg-blue-500 hover:bg-blue-700 ring-[4px] ring-blue-500/10"
+                      ? "w-4.5 h-4.5 bg-blue-600 dark:bg-blue-500 hover:bg-blue-700 ring-4 ring-blue-500/10"
                       : "w-4 h-4 bg-white dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-800 hover:border-blue-500"
                 }`}
               >
@@ -2434,11 +2435,17 @@ export default function DaftarPage() {
               </div>
               <div className="form-group">
                 <label className="block text-xs font-bold text-slate-600 mb-1.5">Jenis Kelamin</label>
-                <select name="jenisKelamin" className="w-full bg-white border border-slate-300 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all appearance-none" value={formData.jenisKelamin} onChange={handleInputChange}>
-                  <option value="">-- Pilih --</option>
-                  <option value="L">Laki-Laki</option>
-                  <option value="P">Perempuan</option>
-                </select>
+                <CustomSelect
+                  name="jenisKelamin"
+                  value={formData.jenisKelamin}
+                  onChange={(val) => setFormData(prev => ({ ...prev, jenisKelamin: val }))}
+                  options={[
+                    { value: "L", label: "Laki-Laki" },
+                    { value: "P", label: "Perempuan" }
+                  ]}
+                  placeholder="-- Pilih --"
+                  triggerClassName="py-3 text-sm"
+                />
               </div>
             </div>
 
@@ -2464,22 +2471,34 @@ export default function DaftarPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
               <div className="form-group">
                 <label className="block text-xs font-bold text-slate-600 mb-1.5">Agama</label>
-                <select name="agama" className="w-full bg-white border border-slate-300 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all appearance-none" value={formData.agama} onChange={handleInputChange}>
-                  <option value="">-- Pilih --</option>
-                  <option value="Islam">Islam</option>
-                  <option value="Kristen">Kristen</option>
-                  <option value="Katolik">Katolik</option>
-                  <option value="Hindu">Hindu</option>
-                  <option value="Buddha">Buddha</option>
-                </select>
+                <CustomSelect
+                  name="agama"
+                  value={formData.agama}
+                  onChange={(val) => setFormData(prev => ({ ...prev, agama: val }))}
+                  options={[
+                    { value: "Islam", label: "Islam" },
+                    { value: "Kristen", label: "Kristen" },
+                    { value: "Katolik", label: "Katolik" },
+                    { value: "Hindu", label: "Hindu" },
+                    { value: "Buddha", label: "Buddha" }
+                  ]}
+                  placeholder="-- Pilih --"
+                  triggerClassName="py-3 text-sm"
+                />
               </div>
               <div className="form-group">
                 <label className="block text-xs font-bold text-slate-600 mb-1.5">Kewarganegaraan</label>
-                <select name="kewarganegaraan" className="w-full bg-white border border-slate-300 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all appearance-none" value={formData.kewarganegaraan} onChange={handleInputChange}>
-                  <option value="">-- Pilih --</option>
-                  <option value="WNI">Warga Negara Indonesia (WNI)</option>
-                  <option value="WNA">Warga Negara Asing (WNA)</option>
-                </select>
+                <CustomSelect
+                  name="kewarganegaraan"
+                  value={formData.kewarganegaraan}
+                  onChange={(val) => setFormData(prev => ({ ...prev, kewarganegaraan: val }))}
+                  options={[
+                    { value: "WNI", label: "Warga Negara Indonesia (WNI)" },
+                    { value: "WNA", label: "Warga Negara Asing (WNA)" }
+                  ]}
+                  placeholder="-- Pilih --"
+                  triggerClassName="py-3 text-sm"
+                />
               </div>
             </div>
           </div>
@@ -2536,30 +2555,42 @@ export default function DaftarPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
               <div className="form-group">
                 <label className="block text-xs font-bold text-slate-600 mb-1.5">Tinggal Bersama dengan</label>
-                <select name="tinggalDengan" className="w-full bg-white border border-slate-300 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all appearance-none" value={formData.tinggalDengan} onChange={handleInputChange}>
-                  <option value="">-- Pilih --</option>
-                  <option value="Orang Tua">Orang Tua</option>
-                  <option value="Saudara">Saudara</option>
-                  <option value="Kos/Asrama">Kos / Asrama</option>
-                  <option value="Wali">Wali</option>
-                  <option value="Panti Asuhan">Panti Asuhan</option>
-                  <option value="Lainnya">Lainnya</option>
-                </select>
+                <CustomSelect
+                  name="tinggalDengan"
+                  value={formData.tinggalDengan}
+                  onChange={(val) => setFormData(prev => ({ ...prev, tinggalDengan: val }))}
+                  options={[
+                    { value: "Orang Tua", label: "Orang Tua" },
+                    { value: "Saudara", label: "Saudara" },
+                    { value: "Kos/Asrama", label: "Kos / Asrama" },
+                    { value: "Wali", label: "Wali" },
+                    { value: "Panti Asuhan", label: "Panti Asuhan" },
+                    { value: "Lainnya", label: "Lainnya" }
+                  ]}
+                  placeholder="-- Pilih --"
+                  triggerClassName="py-3 text-sm"
+                />
               </div>
               <div className="form-group">
                 <label className="block text-xs font-bold text-slate-600 mb-1.5">Moda Transportasi</label>
-                <select name="transportasi" className="w-full bg-white border border-slate-300 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all appearance-none" value={formData.transportasi} onChange={handleInputChange}>
-                  <option value="">-- Pilih --</option>
-                  <option value="Jalan Kaki">Jalan Kaki</option>
-                  <option value="Angkutan Umum">Angkutan Umum</option>
-                  <option value="Mobil Antar Jemput">Mobil Antar Jemput</option>
-                  <option value="Kereta Api">Kereta Api</option>
-                  <option value="Mobil Pribadi">Mobil Pribadi</option>
-                  <option value="Sepeda Motor">Sepeda Motor</option>
-                  <option value="Sepeda">Sepeda</option>
-                  <option value="Ojek">Ojek</option>
-                  <option value="Lainnya">Lainnya</option>
-                </select>
+                <CustomSelect
+                  name="transportasi"
+                  value={formData.transportasi}
+                  onChange={(val) => setFormData(prev => ({ ...prev, transportasi: val }))}
+                  options={[
+                    { value: "Jalan Kaki", label: "Jalan Kaki" },
+                    { value: "Angkutan Umum", label: "Angkutan Umum" },
+                    { value: "Mobil Antar Jemput", label: "Mobil Antar Jemput" },
+                    { value: "Kereta Api", label: "Kereta Api" },
+                    { value: "Mobil Pribadi", label: "Mobil Pribadi" },
+                    { value: "Sepeda Motor", label: "Sepeda Motor" },
+                    { value: "Sepeda", label: "Sepeda" },
+                    { value: "Ojek", label: "Ojek" },
+                    { value: "Lainnya", label: "Lainnya" }
+                  ]}
+                  placeholder="-- Pilih --"
+                  triggerClassName="py-3 text-sm"
+                />
               </div>
             </div>
           </div>
@@ -2646,14 +2677,20 @@ export default function DaftarPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
               <div className="form-group">
                 <label className="block text-xs font-bold text-slate-600 mb-1.5">Golongan Darah</label>
-                <select name="golonganDarah" className="w-full bg-white border border-slate-300 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all appearance-none" value={formData.golonganDarah} onChange={handleInputChange}>
-                  <option value="">-- Pilih --</option>
-                  <option value="A">A</option>
-                  <option value="B">B</option>
-                  <option value="AB">AB</option>
-                  <option value="O">O</option>
-                  <option value="Tidak Tahu">Tidak Tahu</option>
-                </select>
+                <CustomSelect
+                  name="golonganDarah"
+                  value={formData.golonganDarah}
+                  onChange={(val) => setFormData(prev => ({ ...prev, golonganDarah: val }))}
+                  options={[
+                    { value: "A", label: "A" },
+                    { value: "B", label: "B" },
+                    { value: "AB", label: "AB" },
+                    { value: "O", label: "O" },
+                    { value: "Tidak Tahu", label: "Tidak Tahu" }
+                  ]}
+                  placeholder="-- Pilih --"
+                  triggerClassName="py-3 text-sm"
+                />
               </div>
               <div className="form-group">
                 <label className="block text-xs font-bold text-slate-600 mb-1.5">Penyakit Yang Pernah Diderita</label>
@@ -3014,22 +3051,35 @@ export default function DaftarPage() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                 <div className="form-group">
                   <label className="block text-xs font-bold text-slate-600 mb-1.5">3. Agama</label>
-                  <select name="agamaAyah" className="w-full bg-white border border-slate-300 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all appearance-none" value={formData.agamaAyah} onChange={handleInputChange}>
-                    <option value="">-- Pilih Agama --</option>
-                    <option value="Islam">Islam</option>
-                    <option value="Kristen">Kristen Protestan</option>
-                    <option value="Katolik">Katolik</option>
-                    <option value="Hindu">Hindu</option>
-                    <option value="Buddha">Buddha</option>
-                    <option value="Konghucu">Konghucu</option>
-                  </select>
+                  <CustomSelect
+                    name="agamaAyah"
+                    value={formData.agamaAyah}
+                    onChange={(val) => setFormData(prev => ({ ...prev, agamaAyah: val }))}
+                    options={[
+                      { value: "Islam", label: "Islam" },
+                      { value: "Kristen", label: "Kristen Protestan" },
+                      { value: "Katolik", label: "Katolik" },
+                      { value: "Hindu", label: "Hindu" },
+                      { value: "Buddha", label: "Buddha" },
+                      { value: "Konghucu", label: "Konghucu" }
+                    ]}
+                    placeholder="-- Pilih Agama --"
+                    triggerClassName="py-3 text-sm"
+                  />
                 </div>
                 <div className="form-group">
                   <label className="block text-xs font-bold text-slate-600 mb-1.5">4. Kewarganegaraan</label>
-                  <select name="kewarganegaraanAyah" className="w-full bg-white border border-slate-300 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all appearance-none" value={formData.kewarganegaraanAyah} onChange={handleInputChange}>
-                    <option value="WNI">WNI</option>
-                    <option value="WNA">WNA</option>
-                  </select>
+                  <CustomSelect
+                    name="kewarganegaraanAyah"
+                    value={formData.kewarganegaraanAyah}
+                    onChange={(val) => setFormData(prev => ({ ...prev, kewarganegaraanAyah: val }))}
+                    options={[
+                      { value: "WNI", label: "WNI" },
+                      { value: "WNA", label: "WNA" }
+                    ]}
+                    placeholder="-- Pilih --"
+                    triggerClassName="py-3 text-sm"
+                  />
                 </div>
               </div>
 
@@ -3044,13 +3094,19 @@ export default function DaftarPage() {
                 </div>
                 <div className="form-group">
                   <label className="block text-xs font-bold text-slate-600 mb-1.5">7. Penghasilan Per Bulan</label>
-                  <select name="penghasilanAyah" className="w-full bg-white border border-slate-300 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all appearance-none" value={formData.penghasilanAyah} onChange={handleInputChange}>
-                    <option value="">-- Pilih --</option>
-                    <option value="< Rp 1.000.000">&lt; Rp 1.000.000</option>
-                    <option value="Rp 1.000.000 - Rp 3.000.000">Rp 1.000.000 - Rp 3.000.000</option>
-                    <option value="Rp 3.000.000 - Rp 5.000.000">Rp 3.000.000 - Rp 5.000.000</option>
-                    <option value="> Rp 5.000.000">&gt; Rp 5.000.000</option>
-                  </select>
+                  <CustomSelect
+                    name="penghasilanAyah"
+                    value={formData.penghasilanAyah}
+                    onChange={(val) => setFormData(prev => ({ ...prev, penghasilanAyah: val }))}
+                    options={[
+                      { value: "< Rp 1.000.000", label: "< Rp 1.000.000" },
+                      { value: "Rp 1.000.000 - Rp 3.000.000", label: "Rp 1.000.000 - Rp 3.000.000" },
+                      { value: "Rp 3.000.000 - Rp 5.000.000", label: "Rp 3.000.000 - Rp 5.000.000" },
+                      { value: "> Rp 5.000.000", label: "> Rp 5.000.000" }
+                    ]}
+                    placeholder="-- Pilih --"
+                    triggerClassName="py-3 text-sm"
+                  />
                 </div>
               </div>
 
@@ -3079,10 +3135,17 @@ export default function DaftarPage() {
 
               <div className="form-group">
                 <label className="block text-xs font-bold text-slate-600 mb-1.5">9. Status Hidup/Meninggal Dunia</label>
-                <select name="statusAyah" className="w-full bg-white border border-slate-300 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all appearance-none" value={formData.statusAyah} onChange={handleInputChange}>
-                  <option value="Masih Hidup">Masih Hidup</option>
-                  <option value="Meninggal Dunia">Meninggal Dunia</option>
-                </select>
+                <CustomSelect
+                  name="statusAyah"
+                  value={formData.statusAyah}
+                  onChange={(val) => setFormData(prev => ({ ...prev, statusAyah: val }))}
+                  options={[
+                    { value: "Masih Hidup", label: "Masih Hidup" },
+                    { value: "Meninggal Dunia", label: "Meninggal Dunia" }
+                  ]}
+                  placeholder="-- Pilih Status --"
+                  triggerClassName="py-3 text-sm"
+                />
               </div>
             </div>
           </div>
@@ -3119,22 +3182,35 @@ export default function DaftarPage() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                 <div className="form-group">
                   <label className="block text-xs font-bold text-slate-600 mb-1.5">3. Agama</label>
-                  <select name="agamaIbu" className="w-full bg-white border border-slate-300 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all appearance-none" value={formData.agamaIbu} onChange={handleInputChange}>
-                    <option value="">-- Pilih Agama --</option>
-                    <option value="Islam">Islam</option>
-                    <option value="Kristen">Kristen Protestan</option>
-                    <option value="Katolik">Katolik</option>
-                    <option value="Hindu">Hindu</option>
-                    <option value="Buddha">Buddha</option>
-                    <option value="Konghucu">Konghucu</option>
-                  </select>
+                  <CustomSelect
+                    name="agamaIbu"
+                    value={formData.agamaIbu}
+                    onChange={(val) => setFormData(prev => ({ ...prev, agamaIbu: val }))}
+                    options={[
+                      { value: "Islam", label: "Islam" },
+                      { value: "Kristen", label: "Kristen Protestan" },
+                      { value: "Katolik", label: "Katolik" },
+                      { value: "Hindu", label: "Hindu" },
+                      { value: "Buddha", label: "Buddha" },
+                      { value: "Konghucu", label: "Konghucu" }
+                    ]}
+                    placeholder="-- Pilih Agama --"
+                    triggerClassName="py-3 text-sm"
+                  />
                 </div>
                 <div className="form-group">
                   <label className="block text-xs font-bold text-slate-600 mb-1.5">4. Kewarganegaraan</label>
-                  <select name="kewarganegaraanIbu" className="w-full bg-white border border-slate-300 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all appearance-none" value={formData.kewarganegaraanIbu} onChange={handleInputChange}>
-                    <option value="WNI">WNI</option>
-                    <option value="WNA">WNA</option>
-                  </select>
+                  <CustomSelect
+                    name="kewarganegaraanIbu"
+                    value={formData.kewarganegaraanIbu}
+                    onChange={(val) => setFormData(prev => ({ ...prev, kewarganegaraanIbu: val }))}
+                    options={[
+                      { value: "WNI", label: "WNI" },
+                      { value: "WNA", label: "WNA" }
+                    ]}
+                    placeholder="-- Pilih Kewarganegaraan --"
+                    triggerClassName="py-3 text-sm"
+                  />
                 </div>
               </div>
 
@@ -3149,13 +3225,19 @@ export default function DaftarPage() {
                 </div>
                 <div className="form-group">
                   <label className="block text-xs font-bold text-slate-600 mb-1.5">7. Penghasilan Per Bulan</label>
-                  <select name="penghasilanIbu" className="w-full bg-white border border-slate-300 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all appearance-none" value={formData.penghasilanIbu} onChange={handleInputChange}>
-                    <option value="">-- Pilih --</option>
-                    <option value="< Rp 1.000.000">&lt; Rp 1.000.000</option>
-                    <option value="Rp 1.000.000 - Rp 3.000.000">Rp 1.000.000 - Rp 3.000.000</option>
-                    <option value="Rp 3.000.000 - Rp 5.000.000">Rp 3.000.000 - Rp 5.000.000</option>
-                    <option value="> Rp 5.000.000">&gt; Rp 5.000.000</option>
-                  </select>
+                  <CustomSelect
+                    name="penghasilanIbu"
+                    value={formData.penghasilanIbu}
+                    onChange={(val) => setFormData(prev => ({ ...prev, penghasilanIbu: val }))}
+                    options={[
+                      { value: "< Rp 1.000.000", label: "< Rp 1.000.000" },
+                      { value: "Rp 1.000.000 - Rp 3.000.000", label: "Rp 1.000.000 - Rp 3.000.000" },
+                      { value: "Rp 3.000.000 - Rp 5.000.000", label: "Rp 3.000.000 - Rp 5.000.000" },
+                      { value: "> Rp 5.000.000", label: "> Rp 5.000.000" }
+                    ]}
+                    placeholder="-- Pilih --"
+                    triggerClassName="py-3 text-sm"
+                  />
                 </div>
               </div>
 
@@ -3184,10 +3266,17 @@ export default function DaftarPage() {
 
               <div className="form-group">
                 <label className="block text-xs font-bold text-slate-600 mb-1.5">9. Status Hidup/Meninggal Dunia</label>
-                <select name="statusIbu" className="w-full bg-white border border-slate-300 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all appearance-none" value={formData.statusIbu} onChange={handleInputChange}>
-                  <option value="Masih Hidup">Masih Hidup</option>
-                  <option value="Meninggal Dunia">Meninggal Dunia</option>
-                </select>
+                <CustomSelect
+                  name="statusIbu"
+                  value={formData.statusIbu}
+                  onChange={(val) => setFormData(prev => ({ ...prev, statusIbu: val }))}
+                  options={[
+                    { value: "Masih Hidup", label: "Masih Hidup" },
+                    { value: "Meninggal Dunia", label: "Meninggal Dunia" }
+                  ]}
+                  placeholder="-- Pilih Status --"
+                  triggerClassName="py-3 text-sm"
+                />
               </div>
             </div>
           </div>
@@ -3224,22 +3313,35 @@ export default function DaftarPage() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                 <div className="form-group">
                   <label className="block text-xs font-bold text-slate-600 mb-1.5">3. Agama</label>
-                  <select name="agamaWali" className="w-full bg-white border border-slate-300 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all appearance-none" value={formData.agamaWali} onChange={handleInputChange}>
-                    <option value="">-- Pilih Agama --</option>
-                    <option value="Islam">Islam</option>
-                    <option value="Kristen">Kristen Protestan</option>
-                    <option value="Katolik">Katolik</option>
-                    <option value="Hindu">Hindu</option>
-                    <option value="Buddha">Buddha</option>
-                    <option value="Konghucu">Konghucu</option>
-                  </select>
+                  <CustomSelect
+                    name="agamaWali"
+                    value={formData.agamaWali}
+                    onChange={(val) => setFormData(prev => ({ ...prev, agamaWali: val }))}
+                    options={[
+                      { value: "Islam", label: "Islam" },
+                      { value: "Kristen", label: "Kristen Protestan" },
+                      { value: "Katolik", label: "Katolik" },
+                      { value: "Hindu", label: "Hindu" },
+                      { value: "Buddha", label: "Buddha" },
+                      { value: "Konghucu", label: "Konghucu" }
+                    ]}
+                    placeholder="-- Pilih Agama --"
+                    triggerClassName="py-3 text-sm"
+                  />
                 </div>
                 <div className="form-group">
                   <label className="block text-xs font-bold text-slate-600 mb-1.5">4. Kewarganegaraan</label>
-                  <select name="kewarganegaraanWali" className="w-full bg-white border border-slate-300 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all appearance-none" value={formData.kewarganegaraanWali} onChange={handleInputChange}>
-                    <option value="WNI">WNI</option>
-                    <option value="WNA">WNA</option>
-                  </select>
+                  <CustomSelect
+                    name="kewarganegaraanWali"
+                    value={formData.kewarganegaraanWali}
+                    onChange={(val) => setFormData(prev => ({ ...prev, kewarganegaraanWali: val }))}
+                    options={[
+                      { value: "WNI", label: "WNI" },
+                      { value: "WNA", label: "WNA" }
+                    ]}
+                    placeholder="-- Pilih Kewarganegaraan --"
+                    triggerClassName="py-3 text-sm"
+                  />
                 </div>
               </div>
 
@@ -3254,13 +3356,19 @@ export default function DaftarPage() {
                 </div>
                 <div className="form-group">
                   <label className="block text-xs font-bold text-slate-600 mb-1.5">7. Penghasilan Per Bulan</label>
-                  <select name="penghasilanWali" className="w-full bg-white border border-slate-300 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all appearance-none" value={formData.penghasilanWali} onChange={handleInputChange}>
-                    <option value="">-- Pilih --</option>
-                    <option value="< Rp 1.000.000">&lt; Rp 1.000.000</option>
-                    <option value="Rp 1.000.000 - Rp 3.000.000">Rp 1.000.000 - Rp 3.000.000</option>
-                    <option value="Rp 3.000.000 - Rp 5.000.000">Rp 3.000.000 - Rp 5.000.000</option>
-                    <option value="> Rp 5.000.000">&gt; Rp 5.000.000</option>
-                  </select>
+                  <CustomSelect
+                    name="penghasilanWali"
+                    value={formData.penghasilanWali}
+                    onChange={(val) => setFormData(prev => ({ ...prev, penghasilanWali: val }))}
+                    options={[
+                      { value: "< Rp 1.000.000", label: "< Rp 1.000.000" },
+                      { value: "Rp 1.000.000 - Rp 3.000.000", label: "Rp 1.000.000 - Rp 3.000.000" },
+                      { value: "Rp 3.000.000 - Rp 5.000.000", label: "Rp 3.000.000 - Rp 5.000.000" },
+                      { value: "> Rp 5.000.000", label: "> Rp 5.000.000" }
+                    ]}
+                    placeholder="-- Pilih --"
+                    triggerClassName="py-3 text-sm"
+                  />
                 </div>
               </div>
 
@@ -3289,10 +3397,17 @@ export default function DaftarPage() {
 
               <div className="form-group">
                 <label className="block text-xs font-bold text-slate-600 mb-1.5">9. Status Hidup/Meninggal Dunia</label>
-                <select name="statusWali" className="w-full bg-white border border-slate-300 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all appearance-none" value={formData.statusWali} onChange={handleInputChange}>
-                  <option value="Masih Hidup">Masih Hidup</option>
-                  <option value="Meninggal Dunia">Meninggal Dunia</option>
-                </select>
+                <CustomSelect
+                  name="statusWali"
+                  value={formData.statusWali}
+                  onChange={(val) => setFormData(prev => ({ ...prev, statusWali: val }))}
+                  options={[
+                    { value: "Masih Hidup", label: "Masih Hidup" },
+                    { value: "Meninggal Dunia", label: "Meninggal Dunia" }
+                  ]}
+                  placeholder="-- Pilih Status --"
+                  triggerClassName="py-3 text-sm"
+                />
               </div>
             </div>
           </div>
@@ -3331,17 +3446,23 @@ export default function DaftarPage() {
               </div>
               <div className="form-group">
                 <label className="block text-xs font-bold text-slate-600 mb-3">2. Cita-cita</label>
-                <select name="citaCita" className="w-full bg-white border border-slate-300 shadow-sm rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all appearance-none" value={formData.citaCita} onChange={handleInputChange}>
-                  <option value="">-- Pilih Cita-cita --</option>
-                  <option value="PNS">PNS</option>
-                  <option value="TNI/POLRI">TNI/POLRI</option>
-                  <option value="Guru/Dosen">Guru/Dosen</option>
-                  <option value="Dokter">Dokter</option>
-                  <option value="Politikus">Politikus</option>
-                  <option value="Wiraswasta">Wiraswasta</option>
-                  <option value="Seni Lukis/Artis">Seni Lukis/Artis/Sejenisnya</option>
-                  <option value="Lainnya">Lainnya</option>
-                </select>
+                <CustomSelect
+                  name="citaCita"
+                  value={formData.citaCita}
+                  onChange={(val) => setFormData(prev => ({ ...prev, citaCita: val }))}
+                  options={[
+                    { value: "PNS", label: "PNS" },
+                    { value: "TNI/POLRI", label: "TNI/POLRI" },
+                    { value: "Guru/Dosen", label: "Guru/Dosen" },
+                    { value: "Dokter", label: "Dokter" },
+                    { value: "Politikus", label: "Politikus" },
+                    { value: "Wiraswasta", label: "Wiraswasta" },
+                    { value: "Seni Lukis/Artis", label: "Seni Lukis/Artis/Sejenisnya" },
+                    { value: "Lainnya", label: "Lainnya" }
+                  ]}
+                  placeholder="-- Pilih Cita-cita --"
+                  triggerClassName="py-3 text-sm"
+                />
               </div>
             </div>
 
@@ -3542,7 +3663,7 @@ export default function DaftarPage() {
                     <div>
                       <p>Apakah Orang Tua Mempunyai / Memiliki /</p>
                       <div className="flex items-center gap-2 mt-1">
-                        <p className="w-[280px]">Penerima Kartu Perlindungan Sosial (KPS)</p>
+                        <p className="w-70">Penerima Kartu Perlindungan Sosial (KPS)</p>
                         <span>:</span>
                         <div className="flex gap-4 ml-2">
                           {["Ya", "Tidak"].map((option) => (
@@ -3556,7 +3677,7 @@ export default function DaftarPage() {
                     </div>
                   </div>
                   <div className="flex items-center text-xs font-semibold text-slate-500 mt-2 ml-4 pl-1.5">
-                    <div className="w-[280px]">
+                    <div className="w-70">
                       <p>Jika Ya, Sebutkan Nomor KPS-nya, dan</p>
                       <p>Lampirkan Fotocopy Kartu KPS-nya</p>
                     </div>
@@ -3574,7 +3695,7 @@ export default function DaftarPage() {
                     <div>
                       <p>Apakah Orang Tua Mempunyai / Memiliki /</p>
                       <div className="flex items-center gap-2 mt-1">
-                        <p className="w-[280px]">Penerima Kartu Indonesia Pintar (KIP)</p>
+                        <p className="w-70">Penerima Kartu Indonesia Pintar (KIP)</p>
                         <span>:</span>
                         <div className="flex gap-4 ml-2">
                           {["Ya", "Tidak"].map((option) => (
@@ -3588,7 +3709,7 @@ export default function DaftarPage() {
                     </div>
                   </div>
                   <div className="flex items-center text-xs font-semibold text-slate-500 mt-2 ml-4 pl-1.5">
-                    <div className="w-[280px]">
+                    <div className="w-70">
                       <p>Jika Ya, Sebutkan Nomor KIP-nya, dan</p>
                       <p>Lampirkan Fotocopy Kartu KIP-nya</p>
                     </div>
@@ -3651,7 +3772,7 @@ export default function DaftarPage() {
                   </button>
                 </div>
                 <div className="text-xs space-y-2.5 font-bold text-slate-655 dark:text-slate-350">
-                  <div className="flex justify-between"><span className="text-slate-400">Alamat Rumah:</span><span className="text-right max-w-[180px] truncate">{formData.alamat || "-"}</span></div>
+                  <div className="flex justify-between"><span className="text-slate-400">Alamat Rumah:</span><span className="text-right max-w-45 truncate">{formData.alamat || "-"}</span></div>
                   <div className="flex justify-between"><span className="text-slate-400">RT / RW:</span><span>{formData.rtRw || "-"}</span></div>
                   <div className="flex justify-between"><span className="text-slate-400">Kelurahan:</span><span>{formData.kelurahan || "-"}</span></div>
                   <div className="flex justify-between"><span className="text-slate-400">Kecamatan:</span><span>{formData.kecamatan || "-"}</span></div>
@@ -3752,7 +3873,7 @@ export default function DaftarPage() {
             </p>
 
             {/* Premium Notice Box - Expanded and Amber Highlighted */}
-            <div className="bg-amber-500/[0.07] dark:bg-amber-500/[0.03] border-2 border-amber-500/30 rounded-[2.5rem] p-8 md:p-10 mb-8 shadow-lg shadow-amber-500/[0.02]">
+            <div className="bg-amber-500/7 dark:bg-amber-500/3 border-2 border-amber-500/30 rounded-[2.5rem] p-8 md:p-10 mb-8 shadow-lg shadow-amber-500/2">
               <div className="flex flex-col md:flex-row gap-6 items-start">
                 <div className="w-14 h-14 bg-amber-500/10 dark:bg-amber-500/20 text-amber-600 dark:text-amber-400 rounded-2xl flex items-center justify-center shrink-0 shadow-sm border border-amber-500/20 animate-bounce">
                   <AlertCircle size={28} />

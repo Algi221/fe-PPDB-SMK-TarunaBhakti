@@ -202,14 +202,14 @@ export default function ForumPage() {
             >
               {isDark ? <Sun size={18} /> : <Moon size={18} />}
             </button>
-            <Link href="/daftar" className="btn-primary-pill !hidden md:!inline-flex">
+            <Link href="/daftar" className="btn-primary-pill hidden! md:inline-flex!">
               Daftar
             </Link>
 
             {/* Hamburger Button visible only on mobile/tablet */}
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="flex md:hidden items-center justify-center w-10 h-10 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors border border-slate-200 dark:border-slate-700 z-[101] cursor-pointer"
+              className="flex md:hidden items-center justify-center w-10 h-10 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors border border-slate-200 dark:border-slate-700 z-101 cursor-pointer"
               aria-label="Toggle Mobile Menu"
             >
               {mobileMenuOpen ? <X size={18} /> : <Menu size={18} />}
@@ -220,7 +220,7 @@ export default function ForumPage() {
 
       {/* Fullscreen Mobile Navigation Menu Overlay */}
       {mobileMenuOpen && (
-        <div className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-white/95 dark:bg-slate-900/98 backdrop-blur-2xl animate-in fade-in duration-300 md:hidden animate-out fade-out">
+        <div className="fixed inset-0 z-100 flex flex-col items-center justify-center bg-white/95 dark:bg-slate-900/98 backdrop-blur-2xl animate-in fade-in duration-300 md:hidden animate-out fade-out">
           <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] rounded-full bg-blue-500/10 blur-[80px] pointer-events-none"></div>
           <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] rounded-full bg-amber-500/10 blur-[80px] pointer-events-none"></div>
 
@@ -286,7 +286,7 @@ export default function ForumPage() {
       )}
 
       {/* ── MAIN CONTENT ── */}
-      <main className="max-w-7xl mx-auto px-6 pt-28 pb-20 grid grid-cols-1 lg:grid-cols-12 gap-10 w-full flex-grow">
+      <main className="max-w-7xl mx-auto px-6 pt-28 pb-20 grid grid-cols-1 lg:grid-cols-12 gap-10 w-full grow">
         
         {/* ── LEFT COLUMN ── */}
         <div className="lg:col-span-8 space-y-8">
@@ -469,7 +469,7 @@ export default function ForumPage() {
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.5, delay: 0.4 }}
-            className="bg-gradient-to-br from-blue-600 to-indigo-600 rounded-2xl p-6 text-white relative overflow-hidden shadow-lg shadow-blue-500/20"
+            className="bg-linear-to-br from-blue-600 to-indigo-600 rounded-2xl p-6 text-white relative overflow-hidden shadow-lg shadow-blue-500/20"
           >
             <div className="absolute -top-10 -right-10 w-32 h-32 bg-white/10 rounded-full blur-2xl"></div>
             <div className="absolute -bottom-10 -left-10 w-32 h-32 bg-indigo-400/20 rounded-full blur-2xl"></div>
@@ -490,7 +490,7 @@ export default function ForumPage() {
         const media = parseMedia(selectedPost.foto_url);
         return (
           <div
-            className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-md overflow-y-auto"
+            className="fixed inset-0 z-100 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md overflow-y-auto"
             onClick={() => setSelectedPost(null)}
           >
             <div
@@ -500,7 +500,7 @@ export default function ForumPage() {
               {media.foto && (
                 <div 
                   onClick={() => setLightboxImage(media.foto)}
-                  className="w-full md:w-auto md:max-w-[45%] bg-slate-100 dark:bg-slate-950 flex items-center justify-center p-4 border-b md:border-b-0 md:border-r border-slate-200 dark:border-slate-800 cursor-zoom-in relative group max-h-[350px] md:max-h-none shrink-0"
+                  className="w-full md:w-auto md:max-w-[45%] bg-slate-100 dark:bg-slate-950 flex items-center justify-center p-4 border-b md:border-b-0 md:border-r border-slate-200 dark:border-slate-800 cursor-zoom-in relative group max-h-87.5 md:max-h-none shrink-0"
                 >
                   <img src={sanitizeSrc(media.foto)} alt={selectedPost.judul} className="max-w-full max-h-full md:max-h-[75vh] w-auto h-auto object-contain rounded-xl" />
                   <div className="absolute inset-0 bg-slate-955/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center pointer-events-none">
@@ -554,7 +554,7 @@ export default function ForumPage() {
                             
                             {media.dokumen.startsWith("data:application/pdf") ? (
                               <div className="rounded-2xl border border-slate-200 dark:border-slate-800 overflow-hidden shadow-md bg-white">
-                                <iframe src={sanitizeSrc(media.dokumen)} className="w-full h-[350px] border-0" />
+                                <iframe src={sanitizeSrc(media.dokumen)} className="w-full h-87.5 border-0" />
                               </div>
                             ) : media.dokumen.startsWith("data:image/") ? (
                               <div 
@@ -611,7 +611,7 @@ export default function ForumPage() {
       {/* ── LIGHTBOX MODAL ── */}
       {lightboxImage && (
         <div 
-          className="fixed inset-0 z-[200] bg-black/95 flex items-center justify-center p-4 animate-in fade-in duration-200 cursor-zoom-out"
+          className="fixed inset-0 z-200 bg-black/95 flex items-center justify-center p-4 animate-in fade-in duration-200 cursor-zoom-out"
           onClick={() => setLightboxImage(null)}
         >
           <button 

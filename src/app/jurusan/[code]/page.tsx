@@ -528,7 +528,7 @@ export default function MajorPage() {
           <div className="bg-glow bg-glow-2"></div>
         </div>
         
-        <div className="bg-white/60 dark:bg-slate-900/60 backdrop-blur-2xl border border-slate-200/50 dark:border-slate-800 p-10 rounded-[32px] max-w-md w-full text-center shadow-2xl relative z-10">
+        <div className="bg-white/60 dark:bg-slate-900/60 backdrop-blur-2xl border border-slate-200/50 dark:border-slate-800 p-10 rounded-4xl max-w-md w-full text-center shadow-2xl relative z-10">
           <div className="w-20 h-20 bg-rose-500/10 dark:bg-rose-500/20 text-rose-500 rounded-2xl flex items-center justify-center mx-auto mb-6">
             <Palette size={40} />
           </div>
@@ -642,7 +642,7 @@ export default function MajorPage() {
       </div>
 
       {/* HERO SECTION - Premium Branding */}
-      <main className="flex-grow w-full">
+      <main className="grow w-full">
       <section className="pt-32 pb-16 px-6 max-w-6xl mx-auto w-full relative z-10 flex flex-col lg:flex-row gap-12 items-center">
         
         {/* Left Copy Column */}
@@ -740,11 +740,11 @@ export default function MajorPage() {
         <div className="w-full lg:w-1/2 relative group">
           <div className="absolute -inset-1.5 major-gradient-bg rounded-[36px] blur-lg opacity-40 group-hover:opacity-60 transition duration-700 pointer-events-none"></div>
           
-          <div className="relative bg-white dark:bg-slate-900 rounded-[32px] p-3 border border-slate-200/40 dark:border-slate-800/40 shadow-2xl overflow-hidden aspect-video flex items-center justify-center">
+          <div className="relative bg-white dark:bg-slate-900 rounded-4xl p-3 border border-slate-200/40 dark:border-slate-800/40 shadow-2xl overflow-hidden aspect-video flex items-center justify-center">
             <img 
               src={sanitizeSrc(major.banner)} 
               alt={`${major.title} Banner`}
-              className="w-full h-full object-cover rounded-[24px] transform group-hover:scale-[1.02] transition duration-700" 
+              className="w-full h-full object-cover rounded-3xl transform group-hover:scale-[1.02] transition duration-700" 
             />
           </div>
         </div>
@@ -814,7 +814,7 @@ export default function MajorPage() {
                 key={idx} 
                 className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border border-white/50 dark:border-slate-800 rounded-3xl p-6 shadow-md hover:shadow-xl hover:-translate-y-1.5 hover:border-blue-500/20 transition-all duration-300 relative group overflow-hidden"
               >
-                <div className="absolute top-0 left-0 w-full h-[4px] major-gradient-bg opacity-0 scale-x-0 group-hover:opacity-100 group-hover:scale-x-100 origin-left transition-all duration-300"></div>
+                <div className="absolute top-0 left-0 w-full h-1 major-gradient-bg opacity-0 scale-x-0 group-hover:opacity-100 group-hover:scale-x-100 origin-left transition-all duration-300"></div>
                 
                 <div className="w-10 h-10 rounded-xl flex items-center justify-center mb-4 major-bg-accent major-text-accent">
                   <BookOpen size={20} />
@@ -939,7 +939,7 @@ export default function MajorPage() {
               {major.facilities.map((fac, idx) => (
                 <div key={idx} className="flex items-center gap-3.5 text-slate-700 dark:text-slate-300 font-semibold text-sm">
                   <div className={`w-5 h-5 rounded-full flex items-center justify-center text-white bg-emerald-500 shadow-sm shrink-0`}>
-                    <Check size={12} className="stroke-[3]" />
+                    <Check size={12} className="stroke-3" />
                   </div>
                   <span>{fac}</span>
                 </div>
@@ -948,7 +948,7 @@ export default function MajorPage() {
           </div>
 
           {/* Partners Column */}
-          <div className="w-full lg:w-1/2 bg-white/50 dark:bg-slate-900/50 border border-slate-200/50 dark:border-slate-800 backdrop-blur-md rounded-[32px] p-8 flex flex-col justify-between shadow-md">
+          <div className="w-full lg:w-1/2 bg-white/50 dark:bg-slate-900/50 border border-slate-200/50 dark:border-slate-800 backdrop-blur-md rounded-4xl p-8 flex flex-col justify-between shadow-md">
             <div className="space-y-4">
               <div className="w-12 h-12 rounded-2xl bg-amber-500/10 text-amber-500 flex items-center justify-center">
                 <Award size={24} />
